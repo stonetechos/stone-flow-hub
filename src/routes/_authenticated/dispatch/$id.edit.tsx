@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ErrorBlock, LoadingBlock } from "@/components/layout/States";
@@ -70,6 +70,17 @@ function EditDispatchPage() {
   const [form, setForm] = useState<DispatchCreateInput | null>(null);
   const [items, setItems] = useState<DispatchItemInput[]>([]);
   const [selectedQuoteId, setSelectedQuoteId] = useState<string | null>(null);
+
+  const customerQuotes = useMemo(() => {
+    if (!form?.customer_id || !quotesList.data) return [];
+    return quotesList.data.filter((q) => q.customer_id === form.customer_id);
+  }, [form?.customer_id, quotesList.data]);
+
+  const otherQuotes = useMemo(() => {
+    if (!quotesList.data) return [];
+    if (!form?.customer_id) return quotesList.data;
+    return quotesList.data.filter((q) => q.customer_id !== form.customer_id);
+  }, [form?.customer_id, quotesList.data]);
 
   useEffect(() => {
     if (query.data) {
@@ -192,7 +203,7 @@ function EditDispatchPage() {
         }
       }
 
-      await updateDispatch(id, payload.form);
+      await updateDispatch(id, { ...payload.form, quote_id: selectedQuoteId });
       await replaceDispatchItems(id, payload.items);
 
       let varianceReport: ReturnType<typeof compareQuoteAndDispatchItems> | null = null;
@@ -321,7 +332,22 @@ function EditDispatchPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">— None (Custom Challan) —</SelectItem>
-                  {(quotesList.data ?? []).map((q) => (
+                  {form.customer_id && customerQuotes.length > 0 && (
+                    <>
+                      <div className="px-2 py-1 text-[11px] font-bold text-primary uppercase tracking-wider bg-primary/5">
+                        Quotes for this customer
+                      </div>
+                      {customerQuotes.map((q) => (
+                        <SelectItem key={q.id} value={q.id}>
+                          {q.quote_no} — {formatInr(q.total)} ({q.status})
+                        </SelectItem>
+                      ))}
+                      <div className="px-2 py-1 text-[11px] font-bold text-muted-foreground uppercase tracking-wider bg-muted/40 mt-1">
+                        Other quotes
+                      </div>
+                    </>
+                  )}
+                  {otherQuotes.map((q) => (
                     <SelectItem key={q.id} value={q.id}>
                       {q.quote_no} — {q.customer?.name ?? "Customer"} ({formatInr(q.total)})
                     </SelectItem>
@@ -337,6 +363,31 @@ function EditDispatchPage() {
                 placeholder="Search customers…"
               />
             </Field>
+            {form.customer_id && !selectedQuoteId && customerQuotes.length > 0 && (
+              <div className="col-span-full rounded-lg border border-primary/30 bg-primary/5 p-3 text-xs flex flex-wrap items-center justify-between gap-2 shadow-2xs">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-primary shrink-0" />
+                  <span>
+                    Customer has {customerQuotes.length} active quotation(s). Link one to pull items
+                    & establish lineage:
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {customerQuotes.map((cq) => (
+                    <Button
+                      key={cq.id}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs border-primary/40 hover:bg-primary hover:text-primary-foreground"
+                      onClick={() => handleQuoteSelect(cq.id)}
+                    >
+                      Link {cq.quote_no} ({formatInr(cq.total)})
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
             <Field label="Sales order (optional)">
               <Select
                 value={form.sales_order_id ?? "none"}

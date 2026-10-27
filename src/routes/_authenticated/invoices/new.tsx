@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
   ArrowRightCircle,
@@ -11,6 +11,7 @@ import {
   AlertTriangle,
   Truck,
   Plus,
+  Link2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -46,8 +47,18 @@ import {
   reuseVoidInvoice,
 } from "@/lib/invoices/api";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
   getDispatchesForQuotes,
   listQuoteChallanDiscrepancies,
+  linkQuoteToDispatch,
+  listDispatches,
   type DispatchListItem,
 } from "@/lib/dispatch/api";
 import type { FlaggedChallanDiscrepancy } from "@/lib/dispatch/variance";
@@ -79,6 +90,34 @@ function NewInvoicePage() {
   );
   const query = useQuery({ queryKey: qk.quotes.list(q), queryFn: () => listQuotes(q) });
   const [busyId, setBusyId] = useState<string | null>(null);
+  const qc = useQueryClient();
+  const [linkingQuote, setLinkingQuote] = useState<QuoteListItem | null>(null);
+
+  const allDispatchesQ = useQuery({
+    queryKey: qk.dispatch.list("", ""),
+    queryFn: () => listDispatches("", ""),
+    enabled: !!linkingQuote,
+  });
+
+  const linkMut = useMutation({
+    mutationFn: async (params: {
+      quoteId: string;
+      dispatchId: string;
+      customerId?: string | null;
+      projectId?: string | null;
+      quoteNo?: string | null;
+      dispatchNo?: string | null;
+    }) => {
+      await linkQuoteToDispatch(params);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["invoices", "new", "dispatches-by-quote"] });
+      qc.invalidateQueries({ queryKey: ["dispatch"] });
+      toast.success("Delivery challan linked to quotation");
+      setLinkingQuote(null);
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
 
   const voidInvoicesQ = useQuery({
     queryKey: ["invoices", "void-list"],
@@ -398,6 +437,16 @@ function NewInvoicePage() {
                               >
                                 {d.status.replace(/_/g, " ")}
                               </Badge>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground"
+                                title="Change or link another delivery challan"
+                                onClick={() => setLinkingQuote(r)}
+                              >
+                                <Link2 className="h-3 w-3" />
+                              </Button>
                             </div>
                           ))}
                           {discrepancy && (
@@ -419,14 +468,27 @@ function NewInvoicePage() {
                           >
                             Challan Pending
                           </Badge>
-                          <Link
-                            to="/dispatch/new"
-                            search={{ quote: r.id, customer: r.customer_id }}
-                            className="text-[11px] font-medium text-primary hover:underline inline-flex items-center gap-0.5 whitespace-nowrap"
-                            title="Raise Delivery Challan first before generating tax invoice"
-                          >
-                            <Plus className="h-3 w-3" /> Raise Challan
-                          </Link>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 text-[11px] px-1.5 text-primary hover:underline font-medium inline-flex items-center gap-1"
+                              onClick={() => setLinkingQuote(r)}
+                              title="Link an existing delivery challan to this quotation"
+                            >
+                              <Link2 className="h-3 w-3" /> Link Challan
+                            </Button>
+                            <span className="text-muted-foreground text-xs">•</span>
+                            <Link
+                              to="/dispatch/new"
+                              search={{ quote: r.id, customer: r.customer_id }}
+                              className="text-[11px] font-medium text-muted-foreground hover:text-primary hover:underline inline-flex items-center gap-0.5 whitespace-nowrap"
+                              title="Raise a new Delivery Challan first before generating tax invoice"
+                            >
+                              <Plus className="h-3 w-3" /> New
+                            </Link>
+                          </div>
                         </div>
                       )}
                     </TableCell>
@@ -482,6 +544,150 @@ function NewInvoicePage() {
             </TableBody>
           </Table>
         </Card>
+      )}
+
+      {linkingQuote && (
+        <Dialog open={!!linkingQuote} onOpenChange={(open) => !open && setLinkingQuote(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Truck className="h-5 w-5 text-primary" />
+                Link Delivery Challan
+              </DialogTitle>
+              <DialogDescription>
+                Associate an existing delivery challan with Quote #{linkingQuote.quote_no} (
+                {linkingQuote.customer?.name} • {formatInr(linkingQuote.total)}).
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-3 py-2 max-h-[60vh] overflow-y-auto">
+              {allDispatchesQ.isLoading ? (
+                <div className="py-6 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" /> Loading delivery challans…
+                </div>
+              ) : (allDispatchesQ.data ?? []).length === 0 ? (
+                <div className="py-6 text-center text-xs text-muted-foreground">
+                  No delivery challans found.
+                </div>
+              ) : (
+                (() => {
+                  const candidateList = allDispatchesQ.data ?? [];
+                  const customerMatches = candidateList.filter(
+                    (d) => d.customer_id === linkingQuote.customer_id,
+                  );
+                  const otherMatches = candidateList.filter(
+                    (d) => d.customer_id !== linkingQuote.customer_id,
+                  );
+                  const currentlyLinkedId = dispatchesByQuote[linkingQuote.id]?.[0]?.id;
+
+                  return (
+                    <div className="space-y-2">
+                      {customerMatches.length > 0 && (
+                        <div>
+                          <div className="text-[11px] font-semibold text-primary uppercase tracking-wider mb-1.5">
+                            Challans for {linkingQuote.customer?.name}
+                          </div>
+                          <div className="space-y-1.5">
+                            {customerMatches.map((d) => {
+                              const isSelected = currentlyLinkedId === d.id;
+                              return (
+                                <button
+                                  key={d.id}
+                                  type="button"
+                                  disabled={linkMut.isPending}
+                                  onClick={() =>
+                                    linkMut.mutate({
+                                      quoteId: linkingQuote.id,
+                                      dispatchId: d.id,
+                                      customerId: linkingQuote.customer_id,
+                                      projectId: linkingQuote.project_id,
+                                      quoteNo: linkingQuote.quote_no,
+                                      dispatchNo: d.dispatch_no,
+                                    })
+                                  }
+                                  className={cn(
+                                    "w-full text-left p-2.5 rounded-lg border transition-colors flex items-center justify-between gap-2",
+                                    isSelected
+                                      ? "border-primary bg-primary/10 text-primary font-medium"
+                                      : "border-border hover:border-primary/50 hover:bg-muted/40",
+                                  )}
+                                >
+                                  <div>
+                                    <div className="font-mono font-bold text-xs flex items-center gap-1.5">
+                                      {d.dispatch_no}
+                                      <Badge
+                                        variant="outline"
+                                        className="text-[10px] px-1 py-0 capitalize"
+                                      >
+                                        {d.status}
+                                      </Badge>
+                                    </div>
+                                    <div className="text-[11px] text-muted-foreground mt-0.5">
+                                      Date: {d.dispatch_date} • Carrier: {d.carrier || "Self"}
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <span className="text-xs font-semibold text-primary">
+                                      {isSelected ? "Linked ✓" : "Select"}
+                                    </span>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {otherMatches.length > 0 && (
+                        <div className="mt-3">
+                          <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+                            Other Delivery Challans
+                          </div>
+                          <div className="space-y-1.5">
+                            {otherMatches.slice(0, 10).map((d) => (
+                              <button
+                                key={d.id}
+                                type="button"
+                                disabled={linkMut.isPending}
+                                onClick={() =>
+                                  linkMut.mutate({
+                                    quoteId: linkingQuote.id,
+                                    dispatchId: d.id,
+                                    customerId: linkingQuote.customer_id,
+                                    projectId: linkingQuote.project_id,
+                                    quoteNo: linkingQuote.quote_no,
+                                    dispatchNo: d.dispatch_no,
+                                  })
+                                }
+                                className="w-full text-left p-2 rounded-md border border-border/70 hover:border-primary/50 hover:bg-muted/30 transition-colors flex items-center justify-between text-xs"
+                              >
+                                <div>
+                                  <span className="font-mono font-semibold">{d.dispatch_no}</span>
+                                  <span className="text-muted-foreground ml-2">
+                                    {d.customer?.name || "No customer"}
+                                  </span>
+                                </div>
+                                <span className="text-[11px] text-muted-foreground">
+                                  {d.dispatch_date}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()
+              )}
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" size="sm" onClick={() => setLinkingQuote(null)}>
+                Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

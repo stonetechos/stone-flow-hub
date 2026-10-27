@@ -1,4 +1,5 @@
 import { getDb } from "@/integrations/supabase/server-context";
+import type { Database } from "@/integrations/supabase/types";
 import { AppError, mapDbError } from "@/lib/errors";
 import { sanitizeSearch } from "@/lib/zod";
 import type { DbTable } from "@/lib/types";
@@ -10,6 +11,12 @@ import {
   type DispatchStatus,
 } from "./schema";
 import { compareQuoteAndDispatchItems, type FlaggedChallanDiscrepancy } from "./variance";
+import {
+  correlateDispatchesToQuotes,
+  findBestQuoteForCustomer,
+  type DispatchMatchCandidate,
+  type QuoteMatchCandidate,
+} from "./matching";
 
 export type DispatchRow = DbTable<"dispatches">;
 export type DispatchItemRow = DbTable<"dispatch_items">;
@@ -32,11 +39,15 @@ export type DispatchListItem = DispatchRow & {
 const SELECT =
   "*, sales_order:sales_orders!dispatches_sales_order_id_fkey(id,so_no,delivery_date,quote_id), customer:customers!dispatches_customer_id_fkey(id,name,primary_phone,whatsapp), project:projects!dispatches_project_id_fkey(id,name)";
 
-function toPayload(p: DispatchCreateInput) {
+type DispatchInsert = Database["public"]["Tables"]["dispatches"]["Insert"];
+type DispatchUpdate = Database["public"]["Tables"]["dispatches"]["Update"];
+
+function toPayload(p: DispatchCreateInput): DispatchUpdate {
   return {
     sales_order_id: p.sales_order_id ?? null,
     customer_id: p.customer_id ?? null,
     project_id: p.project_id ?? null,
+    quote_id: p.quote_id ?? null,
     status: p.status,
     dispatch_date: p.dispatch_date,
     carrier: p.carrier ?? null,
@@ -113,12 +124,30 @@ export async function getDispatch(id: string): Promise<DispatchListItem | null> 
 
 export async function createDispatch(input: DispatchCreateInput): Promise<DispatchRow> {
   const p = dispatchCreateSchema.parse(input);
-  const { data, error } = await getDb()
+  const payload = toPayload(p);
+  let res = await getDb()
     .from("dispatches")
-    .insert({ dispatch_no: "", ...toPayload(p) })
+    .insert({ ...payload, dispatch_no: "" })
     .select("*")
     .single();
-  if (error) throw new AppError(mapDbError(error));
+
+  if (
+    res.error &&
+    String(res.error.message || "")
+      .toLowerCase()
+      .includes("quote_id")
+  ) {
+    const fallbackPayload = { ...payload };
+    delete fallbackPayload.quote_id;
+    res = await getDb()
+      .from("dispatches")
+      .insert({ ...fallbackPayload, dispatch_no: "" })
+      .select("*")
+      .single();
+  }
+
+  if (res.error) throw new AppError(mapDbError(res.error));
+  const data = res.data;
 
   if (data) {
     try {
@@ -138,13 +167,27 @@ export async function createDispatch(input: DispatchCreateInput): Promise<Dispat
 
 export async function updateDispatch(id: string, input: DispatchCreateInput): Promise<DispatchRow> {
   const p = dispatchCreateSchema.parse(input);
-  const { data, error } = await getDb()
-    .from("dispatches")
-    .update(toPayload(p))
-    .eq("id", id)
-    .select("*")
-    .single();
-  if (error) throw new AppError(mapDbError(error));
+  const payload = toPayload(p);
+  let res = await getDb().from("dispatches").update(payload).eq("id", id).select("*").single();
+
+  if (
+    res.error &&
+    String(res.error.message || "")
+      .toLowerCase()
+      .includes("quote_id")
+  ) {
+    const fallbackPayload = { ...payload };
+    delete fallbackPayload.quote_id;
+    res = await getDb()
+      .from("dispatches")
+      .update(fallbackPayload)
+      .eq("id", id)
+      .select("*")
+      .single();
+  }
+
+  if (res.error) throw new AppError(mapDbError(res.error));
+  const data = res.data;
 
   if (data && (p.status === "in_transit" || p.status === "delivered")) {
     try {
@@ -370,7 +413,14 @@ export async function listCommittedDemandByProduct(): Promise<CommittedDemandRow
 
 /**
  * Batch-lookup dispatches (delivery challans) linked to quotes via
- * document_lineage, sales_orders, or direct quote references in notes/remarks.
+ * multi-tier matching:
+ *  1. Direct quote_id foreign key column
+ *  2. document_lineage (quote <-> dispatch)
+ *  3. Sales orders (quote_id -> so_id -> dispatch)
+ *  4. Notes / remarks / tags containing quote ID or quote number
+ *  5. Customer & project matching with date & amount proximity
+ *
+ * Automatically heals lineage in the background for matched records.
  */
 export async function getDispatchesForQuotes(
   quoteIds: string[],
@@ -382,17 +432,50 @@ export async function getDispatchesForQuotes(
   try {
     const db = getDb();
 
-    // 1. Lineage lookup: quote -> dispatch
-    const { data: lineage } = await db
+    // 1. Fetch metadata for the requested quotes
+    const { data: quotesData } = await db
+      .from("quotes")
+      .select("id, quote_no, customer_id, project_id, total, status, created_at")
+      .in("id", quoteIds);
+
+    const quotesList: QuoteMatchCandidate[] = (quotesData ?? []).map((q) => ({
+      id: q.id,
+      quote_no: q.quote_no,
+      customer_id: q.customer_id,
+      project_id: q.project_id,
+      total: q.total,
+      status: q.status,
+      created_at: q.created_at,
+    }));
+
+    // For any quote IDs missing from DB query, populate minimal stubs
+    for (const qid of quoteIds) {
+      if (!quotesList.some((q) => q.id === qid)) {
+        quotesList.push({ id: qid, quote_no: qid });
+      }
+    }
+
+    const customerIds = Array.from(
+      new Set(quotesList.map((q) => q.customer_id).filter((c): c is string => Boolean(c))),
+    );
+
+    // 2. Fetch document lineage
+    const { data: lineageRows } = await db
       .from("document_lineage")
-      .select("source_id, target_id")
-      .eq("source_type", "quote")
-      .in("source_id", quoteIds)
-      .eq("target_type", "dispatch");
+      .select("source_id, source_type, target_id, target_type")
+      .or(
+        `and(source_type.eq.quote,target_type.eq.dispatch),and(source_type.eq.dispatch,target_type.eq.quote)`,
+      )
+      .limit(300);
 
-    const lineageDispatchIds = (lineage ?? []).map((l) => l.target_id).filter(Boolean);
+    const lineageLinks = (lineageRows ?? []).map((l) => ({
+      source_id: l.source_id,
+      source_type: l.source_type,
+      target_id: l.target_id,
+      target_type: l.target_type,
+    }));
 
-    // 2. Sales Order lookup: quotes -> sales_orders -> dispatches
+    // 3. Sales Order lookup: quotes -> sales_orders
     const { data: soRows } = await db
       .from("sales_orders")
       .select("id, quote_id")
@@ -404,71 +487,92 @@ export async function getDispatchesForQuotes(
     }
     const soIds = Array.from(soToQuote.keys());
 
-    // 3. Fetch dispatches
+    // 4. Fetch candidate dispatches
     const promises: Array<PromiseLike<{ data: unknown; error: unknown }>> = [];
 
-    if (lineageDispatchIds.length > 0) {
+    // By customer ID (crucial for Stallion Realities and customer challans)
+    if (customerIds.length > 0) {
       promises.push(
         db
           .from("dispatches")
           .select(SELECT)
-          .in("id", lineageDispatchIds)
-          .neq("status", "cancelled"),
+          .in("customer_id", customerIds)
+          .neq("status", "cancelled")
+          .order("created_at", { ascending: false }),
       );
     }
+
+    // By Sales Orders
     if (soIds.length > 0) {
       promises.push(
         db.from("dispatches").select(SELECT).in("sales_order_id", soIds).neq("status", "cancelled"),
       );
     }
 
-    // Also look up recent dispatches to match by quote ID or QUO tag in notes
+    // Recent dispatches pool
     promises.push(
       db
         .from("dispatches")
         .select(SELECT)
         .neq("status", "cancelled")
         .order("created_at", { ascending: false })
-        .limit(150),
+        .limit(200),
     );
 
     const results = await Promise.all(promises);
 
-    const addDispatch = (quoteId: string, disp: DispatchListItem) => {
-      if (!map[quoteId]) map[quoteId] = [];
-      if (!map[quoteId].some((d) => d.id === disp.id)) {
-        map[quoteId].push(disp);
-      }
-    };
-
-    const lineageMap = new Map<string, string>();
-    for (const l of lineage ?? []) {
-      lineageMap.set(l.target_id, l.source_id);
-    }
-
+    const dispatchMap = new Map<string, DispatchListItem>();
     for (const res of results) {
       const rows = (res.data ?? []) as DispatchListItem[];
       for (const d of rows) {
-        // Lineage match
-        const fromLineage = lineageMap.get(d.id);
-        if (fromLineage && map[fromLineage]) {
-          addDispatch(fromLineage, d);
+        if (!dispatchMap.has(d.id)) {
+          dispatchMap.set(d.id, d);
         }
+      }
+    }
 
-        // Sales order match
-        if (d.sales_order_id && soToQuote.has(d.sales_order_id)) {
-          const qId = soToQuote.get(d.sales_order_id)!;
-          addDispatch(qId, d);
-        }
+    const candidateDispatches = Array.from(dispatchMap.values());
 
-        // Notes / remarks match
-        if (d.notes || d.remarks) {
-          const text = `${d.notes || ""} ${d.remarks || ""}`;
-          for (const qId of quoteIds) {
-            if (text.includes(qId)) {
-              addDispatch(qId, d);
-            }
-          }
+    // 5. Run the correlation engine
+    const correlated = correlateDispatchesToQuotes(quotesList, candidateDispatches, {
+      lineage: lineageLinks,
+      soToQuoteMap: soToQuote,
+    });
+
+    for (const [qid, disps] of Object.entries(correlated)) {
+      map[qid] = disps;
+    }
+
+    // 6. Background auto-healing: persist linkage for matched customer dispatches
+    for (const [qid, disps] of Object.entries(correlated)) {
+      const qObj = quotesList.find((q) => q.id === qid);
+      if (!qObj || disps.length === 0) continue;
+
+      for (const d of disps) {
+        const isLineageRecorded = lineageLinks.some(
+          (l) =>
+            (l.source_id === qid && l.target_id === d.id) ||
+            (l.source_id === d.id && l.target_id === qid),
+        );
+
+        if (!isLineageRecorded) {
+          void import("@/lib/lineage/api")
+            .then(({ recordConversion }) =>
+              recordConversion({
+                sourceType: "quote",
+                sourceId: qid,
+                targetType: "dispatch",
+                targetId: d.id,
+                customerId: qObj.customer_id,
+                projectId: qObj.project_id,
+                meta: {
+                  quote_no: qObj.quote_no,
+                  dispatch_no: d.dispatch_no,
+                  autoHealed: true,
+                },
+              }),
+            )
+            .catch(() => {});
         }
       }
     }
@@ -477,6 +581,56 @@ export async function getDispatchesForQuotes(
   }
 
   return map;
+}
+
+/**
+ * Manually links or reassigns a Delivery Challan to a Quotation.
+ */
+export async function linkQuoteToDispatch(params: {
+  quoteId: string;
+  dispatchId: string;
+  customerId?: string | null;
+  projectId?: string | null;
+  quoteNo?: string | null;
+  dispatchNo?: string | null;
+}): Promise<void> {
+  const db = getDb();
+  const { recordConversion } = await import("@/lib/lineage/api");
+  await recordConversion({
+    sourceType: "quote",
+    sourceId: params.quoteId,
+    targetType: "dispatch",
+    targetId: params.dispatchId,
+    customerId: params.customerId ?? null,
+    projectId: params.projectId ?? null,
+    meta: {
+      quote_no: params.quoteNo,
+      dispatch_no: params.dispatchNo,
+      manuallyLinked: true,
+    },
+  });
+
+  try {
+    const { data: disp } = await db
+      .from("dispatches")
+      .select("notes")
+      .eq("id", params.dispatchId)
+      .maybeSingle();
+
+    const tag = `[Quote: ${params.quoteNo || "Quotation"} | QUO_ID:${params.quoteId}]`;
+    const newNotes = disp?.notes?.includes(tag)
+      ? disp.notes
+      : disp?.notes
+        ? `${disp.notes}\n${tag}`
+        : tag;
+
+    await db
+      .from("dispatches")
+      .update({ quote_id: params.quoteId, notes: newNotes })
+      .eq("id", params.dispatchId);
+  } catch (err) {
+    console.warn("[dispatch] linkQuoteToDispatch db update warning", err);
+  }
 }
 
 /**
@@ -530,37 +684,49 @@ export async function listQuoteChallanDiscrepancies(): Promise<FlaggedChallanDis
   // Lineage lookup
   const { data: lineageRows } = await db
     .from("document_lineage")
-    .select("source_id, source_type, target_id, meta")
-    .eq("target_type", "dispatch")
-    .in("target_id", dispatchIds);
+    .select("source_id, source_type, target_id, target_type, meta")
+    .or("target_type.eq.dispatch,source_type.eq.dispatch")
+    .limit(300);
 
-  const lineageQuoteByDispatch = new Map<string, string>();
-  for (const l of lineageRows ?? []) {
-    if (l.source_type === "quote" && l.source_id) {
-      lineageQuoteByDispatch.set(l.target_id, l.source_id);
-    }
-  }
+  const lineageLinks = (lineageRows ?? []).map((l) => ({
+    source_id: l.source_id,
+    source_type: l.source_type,
+    target_id: l.target_id,
+    target_type: l.target_type,
+  }));
 
-  // Find linked quote for each dispatch
+  // Fetch recent active quotes for correlation
+  const { data: quotesRows } = await db
+    .from("quotes")
+    .select(
+      "id, quote_no, workflow_state, customer_id, project_id, total, status, created_at, customer:customers(id, name)",
+    )
+    .neq("status", "rejected")
+    .order("created_at", { ascending: false })
+    .limit(150);
+
+  const quotesList = (quotesRows ?? []).map((q) => ({
+    id: q.id,
+    quote_no: q.quote_no,
+    workflow_state: q.workflow_state,
+    customer_id: q.customer_id,
+    project_id: q.project_id,
+    total: q.total,
+    status: q.status,
+    created_at: q.created_at,
+    customer: q.customer,
+  }));
+
+  // Correlate dispatches to quotes
+  const correlation = correlateDispatchesToQuotes(quotesList, dispatchList, {
+    lineage: lineageLinks,
+  });
+
   const pairs: Array<{ dispatch: DispatchListItem; quoteId: string }> = [];
   const neededQuoteIds = new Set<string>();
 
-  for (const d of dispatchList) {
-    let quoteId: string | null = null;
-    if (lineageQuoteByDispatch.has(d.id)) {
-      quoteId = lineageQuoteByDispatch.get(d.id)!;
-    } else if (d.sales_order?.quote_id) {
-      quoteId = d.sales_order.quote_id;
-    } else if (d.notes || d.remarks) {
-      const match = `${d.notes || ""} ${d.remarks || ""}`.match(
-        /\[(?:QuoteId|QUO_ID):\s*([a-f0-9-]{36})\]/i,
-      );
-      if (match) {
-        quoteId = match[1];
-      }
-    }
-
-    if (quoteId) {
+  for (const [quoteId, disps] of Object.entries(correlation)) {
+    for (const d of disps) {
       pairs.push({ dispatch: d, quoteId });
       neededQuoteIds.add(quoteId);
     }

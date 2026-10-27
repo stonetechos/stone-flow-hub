@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Truck } from "lucide-react";
+import { Loader2, Truck, FileText, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -36,6 +36,7 @@ import { EntityPicker } from "@/components/forms/EntityPicker";
 import { recordConversion } from "@/lib/lineage/api";
 import { dispatchSystemNotification } from "@/lib/notifications/systemNotifications.functions";
 import { compareQuoteAndDispatchItems } from "@/lib/dispatch/variance";
+import { findBestQuoteForCustomer } from "@/lib/dispatch/matching";
 
 const search = z.object({
   so: z.string().uuid().optional(),
@@ -93,6 +94,32 @@ function NewDispatchPage() {
 
   const set = <K extends keyof DispatchCreateInput>(k: K, v: DispatchCreateInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
+
+  const customerQuotes = useMemo(() => {
+    if (!form.customer_id || !quotesList.data) return [];
+    return quotesList.data.filter((q) => q.customer_id === form.customer_id);
+  }, [form.customer_id, quotesList.data]);
+
+  const otherQuotes = useMemo(() => {
+    if (!quotesList.data) return [];
+    if (!form.customer_id) return quotesList.data;
+    return quotesList.data.filter((q) => q.customer_id !== form.customer_id);
+  }, [form.customer_id, quotesList.data]);
+
+  const handleCustomerSelect = (customerId: string | null) => {
+    set("customer_id", customerId);
+    if (!customerId) return;
+
+    if (!selectedQuoteId && quotesList.data) {
+      const best = findBestQuoteForCustomer(customerId, quotesList.data, form.project_id);
+      if (best) {
+        handleQuoteSelect(best.id);
+        toast.info(
+          `Auto-linked open Quotation #${best.quote_no} (${formatInr(best.total)}) for this customer`,
+        );
+      }
+    }
+  };
 
   const handleQuoteSelect = async (quoteId: string | null) => {
     setSelectedQuoteId(quoteId);
@@ -243,7 +270,7 @@ function NewDispatchPage() {
         }
       }
 
-      const row = await createDispatch(payload.form);
+      const row = await createDispatch({ ...payload.form, quote_id: linkedQuoteId });
       if (payload.items.length > 0) {
         await replaceDispatchItems(row.id, payload.items);
       }
@@ -381,7 +408,22 @@ function NewDispatchPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">— None (Custom Challan) —</SelectItem>
-                  {(quotesList.data ?? []).map((q) => (
+                  {form.customer_id && customerQuotes.length > 0 && (
+                    <>
+                      <div className="px-2 py-1 text-[11px] font-bold text-primary uppercase tracking-wider bg-primary/5">
+                        Quotes for selected customer
+                      </div>
+                      {customerQuotes.map((q) => (
+                        <SelectItem key={q.id} value={q.id}>
+                          {q.quote_no} — {formatInr(q.total)} ({q.status})
+                        </SelectItem>
+                      ))}
+                      <div className="px-2 py-1 text-[11px] font-bold text-muted-foreground uppercase tracking-wider bg-muted/40 mt-1">
+                        Other quotes
+                      </div>
+                    </>
+                  )}
+                  {otherQuotes.map((q) => (
                     <SelectItem key={q.id} value={q.id}>
                       {q.quote_no} — {q.customer?.name ?? "Customer"} ({formatInr(q.total)})
                     </SelectItem>
@@ -393,10 +435,35 @@ function NewDispatchPage() {
               <EntityPicker
                 type="customer"
                 value={form.customer_id ?? null}
-                onChange={(id) => set("customer_id", id)}
+                onChange={(id) => handleCustomerSelect(id)}
                 placeholder="Search customers…"
               />
             </Field>
+            {form.customer_id && !selectedQuoteId && customerQuotes.length > 0 && (
+              <div className="col-span-full rounded-lg border border-primary/30 bg-primary/5 p-3 text-xs flex flex-wrap items-center justify-between gap-2 shadow-2xs">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-primary shrink-0" />
+                  <span>
+                    Customer has {customerQuotes.length} active quotation(s). Link one to pull items
+                    & establish lineage:
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {customerQuotes.map((cq) => (
+                    <Button
+                      key={cq.id}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs border-primary/40 hover:bg-primary hover:text-primary-foreground"
+                      onClick={() => handleQuoteSelect(cq.id)}
+                    >
+                      Link {cq.quote_no} ({formatInr(cq.total)})
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
             <Field label="Sales order (optional)">
               <Select
                 value={form.sales_order_id ?? "none"}

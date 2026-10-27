@@ -19,6 +19,7 @@ export const dispatchCreateSchema = z.object({
   sales_order_id: z.string().uuid().nullable().optional(),
   customer_id: z.string().uuid().nullable().optional(),
   project_id: z.string().uuid().nullable().optional(),
+  quote_id: z.string().uuid().nullable().optional(),
   status: z.enum(DISPATCH_STATUSES).default("planned"),
   dispatch_date: z.string().min(1, "Dispatch date required"),
   carrier: z.string().nullable().optional(),

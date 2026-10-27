@@ -945,6 +945,7 @@ export type Database = {
           lr_no: string | null
           notes: string | null
           project_id: string | null
+          quote_id: string | null
           received_by: string | null
           remarks: string | null
           sales_order_id: string | null
@@ -970,6 +971,7 @@ export type Database = {
           lr_no?: string | null
           notes?: string | null
           project_id?: string | null
+          quote_id?: string | null
           received_by?: string | null
           remarks?: string | null
           sales_order_id?: string | null
@@ -995,6 +997,7 @@ export type Database = {
           lr_no?: string | null
           notes?: string | null
           project_id?: string | null
+          quote_id?: string | null
           received_by?: string | null
           remarks?: string | null
           sales_order_id?: string | null
