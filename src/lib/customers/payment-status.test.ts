@@ -101,9 +101,9 @@ describe("getCustomerPaymentStatus", () => {
     expect(CUSTOMER_PAYMENT_STATUS_CONFIG.no_dues.value).toBe("no_dues");
   });
 
-  it("verifies MATERIAL_OPTIONS contains the complete 29-product range including marble, granite, waterfall, fountain", async () => {
+  it("verifies MATERIAL_OPTIONS contains the complete 30-product range including marble, granite, waterfall, fountain, artwork", async () => {
     const { MATERIAL_OPTIONS } = await import("./schema");
-    expect(MATERIAL_OPTIONS.length).toBe(29);
+    expect(MATERIAL_OPTIONS.length).toBe(30);
     const keys = MATERIAL_OPTIONS.map((m) => m.value);
     expect(keys).toContain("italian_marble_slabs");
     expect(keys).toContain("indian_marble_slabs");
@@ -113,6 +113,7 @@ describe("getCustomerPaymentStatus", () => {
     expect(keys).toContain("pebblestone");
     expect(keys).toContain("boulders");
     expect(keys).toContain("sculptures");
+    expect(keys).toContain("artwork");
     expect(keys).toContain("custom_stone_basins");
     expect(keys).toContain("waterfall");
     expect(keys).toContain("fountain");

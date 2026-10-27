@@ -164,6 +164,19 @@ export const DEFAULT_NATURAL_STONE_PRODUCTS: readonly DefaultProductDef[] = [
 
   // 3. Art & Articles
   {
+    name: "Artwork",
+    categorySlug: "art-articles",
+    categoryName: "Art & Articles",
+    categorySort: 30,
+    stoneType: "marble",
+    finish: "other",
+    thicknessMm: null,
+    defaultUnit: "piece",
+    hsnCode: "97030090",
+    description:
+      "Bespoke architectural stone artwork, relief carvings, and fine decorative stone art",
+  },
+  {
     name: "Sculptures",
     categorySlug: "art-articles",
     categoryName: "Art & Articles",

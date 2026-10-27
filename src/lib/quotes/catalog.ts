@@ -201,6 +201,13 @@ export const STONE_PRODUCTS_CATALOG: CatalogItem[] = [
     hsnCode: "2517",
   },
   {
+    id: "sp_artwork",
+    name: "Artwork",
+    category: "stone_product",
+    defaultUnit: "pcs",
+    hsnCode: "9703",
+  },
+  {
     id: "sp_sculptures",
     name: "Sculptures",
     category: "stone_product",

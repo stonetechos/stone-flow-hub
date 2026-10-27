@@ -57,6 +57,7 @@ import {
   productCreateSchema,
   type ProductCreateInput,
 } from "@/lib/products/schema";
+import { DEFAULT_NATURAL_STONE_PRODUCTS } from "@/lib/products/default-catalog";
 
 export const Route = createFileRoute("/_authenticated/products/")({
   ssr: false,
@@ -119,7 +120,9 @@ function ProductsPage() {
       if (res.seeded > 0) {
         toast.success(`Loaded ${res.seeded} default natural stone products.`);
       } else {
-        toast.info("All 29 default natural stone products are already in catalogue.");
+        toast.info(
+          `All ${DEFAULT_NATURAL_STONE_PRODUCTS.length} default natural stone products are already in catalogue.`,
+        );
       }
       invalidateProduct(qc);
     },
@@ -179,14 +182,14 @@ function ProductsPage() {
               className="h-8 text-xs text-cyan-900 border-cyan-300 hover:bg-cyan-50"
               onClick={() => seedMut.mutate()}
               disabled={seedMut.isPending}
-              title="Ensure all 29 standard natural stone products are loaded"
+              title={`Ensure all ${DEFAULT_NATURAL_STONE_PRODUCTS.length} standard natural stone products are loaded`}
             >
               {seedMut.isPending ? (
                 <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
               ) : (
                 <Sparkles className="mr-1.5 h-3.5 w-3.5 text-amber-500" />
               )}
-              Sync Default Stones (29)
+              Sync Default Stones ({DEFAULT_NATURAL_STONE_PRODUCTS.length})
             </Button>
             <Button asChild variant="outline" size="sm" className="h-8">
               <Link to="/products/configure">{t("common.configure", "Configure")}</Link>

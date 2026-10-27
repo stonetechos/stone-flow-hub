@@ -154,6 +154,11 @@ const MASTER_PRODUCT_OPTIONS: ProductOption[] = [
     tagline: "Hand-carved architectural stone statues and bespoke artistic sculptures",
   },
   {
+    id: "artwork",
+    name: "Artwork",
+    tagline: "Bespoke architectural stone artwork, relief carvings & fine decorative stone art",
+  },
+  {
     id: "custom_stone_basins",
     name: "Custom Stone Basins",
     tagline: "Monolithic hand-carved stone washbasins and natural vanity bowls",
@@ -427,6 +432,9 @@ function HomePage() {
     }
     if (trimmed.includes("sculpt")) {
       return "Sculptures";
+    }
+    if (trimmed.includes("artwork") || trimmed.includes("art piece")) {
+      return "Artwork";
     }
     if (trimmed.includes("basin") || trimmed.includes("sink")) {
       return "Custom Stone Basins";

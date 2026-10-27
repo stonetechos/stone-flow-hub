@@ -111,6 +111,7 @@ export const MATERIAL_OPTIONS: ReadonlyArray<{
   { value: "pebblestone", label: "Pebblestone" },
   { value: "boulders", label: "Boulders" },
   { value: "sculptures", label: "Sculptures" },
+  { value: "artwork", label: "Artwork" },
   { value: "custom_stone_basins", label: "Custom Stone Basins" },
   { value: "agate_stone_articles", label: "Agate Stone Articles" },
   { value: "waterfall", label: "Waterfall" },
