@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { listPendingOperations } from "@/lib/pwa/sync-queue";
 import { isCapacitorAppOrigin } from "@/lib/capacitor/server-origin-allowlist";
 
+const SW_CACHE_VERSION = "stos-24";
 let registered = false;
 
 export function registerServiceWorker(): void {
@@ -34,7 +35,7 @@ export function registerServiceWorker(): void {
       for (const key of keys) {
         if (
           key.startsWith("stos-pages-") ||
-          (key.startsWith("stos-static-") && key !== "stos-static-stos-23")
+          (key.startsWith("stos-static-") && key !== `stos-static-${SW_CACHE_VERSION}`)
         ) {
           void caches.delete(key);
         }
@@ -46,12 +47,18 @@ export function registerServiceWorker(): void {
     void navigator.serviceWorker
       .register("/sw.js", { scope: "/" })
       .then((registration) => {
-        // Proactively check for an updated worker on every page load and tab focus
+        // Proactively check for an updated worker on page load
         void registration.update();
 
+        // Throttle tab-focus update checks to at most once every 5 minutes
+        let lastUpdateCheck = Date.now();
         document.addEventListener("visibilitychange", () => {
           if (document.visibilityState === "visible") {
-            void registration.update();
+            const now = Date.now();
+            if (now - lastUpdateCheck > 5 * 60 * 1000) {
+              lastUpdateCheck = now;
+              void registration.update();
+            }
           }
         });
 

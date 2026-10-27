@@ -16,7 +16,7 @@
  * are swept in `activate`.
  */
 
-const CACHE_VERSION = "stos-23";
+const CACHE_VERSION = "stos-24";
 const STATIC_CACHE = `stos-static-${CACHE_VERSION}`;
 const OFFLINE_URL = "/offline.html";
 
@@ -116,7 +116,13 @@ function isStaticAsset(url) {
     // (Google Fonts) but nothing else cross-origin.
     return url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com";
   }
-  return /\.(?:js|css|woff2?|ttf|otf|png|jpg|jpeg|svg|webp|ico)$/.test(url.pathname);
+  // DO NOT intercept /assets/ — Vite chunks are content-hashed and immutable,
+  // already cached by the browser's native HTTP cache via Cloudflare headers.
+  // Intercepting hundreds of module preloads in the SW serializes requests,
+  // overwhelms WebKit CacheStorage, and causes severe loading hangs in Safari.
+  if (url.pathname.startsWith("/assets/")) return false;
+
+  return /\.(?:woff2?|ttf|otf|png|jpg|jpeg|svg|webp|ico)$/.test(url.pathname);
 }
 
 async function staleWhileRevalidate(request, cacheName) {

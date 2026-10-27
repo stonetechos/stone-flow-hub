@@ -38,10 +38,12 @@ export const Route = createFileRoute("/_authenticated")({
     // router error instead of the configuration screen.
     if (!getSupabaseConfigStatus().ok) return { user: null };
 
-    // Verify session locally first (instant, non-blocking from storage)
-    const { data: sessionData } = await supabase.auth
-      .getSession()
-      .catch(() => ({ data: { session: null } }));
+    // Verify session locally first (instant, non-blocking from storage, guarded with 2s safety timeout)
+    const sessionPromise = supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+    const sessionTimeout = new Promise<{ data: { session: null } }>((resolve) =>
+      setTimeout(() => resolve({ data: { session: null } }), 2000),
+    );
+    const { data: sessionData } = await Promise.race([sessionPromise, sessionTimeout]);
     const session = sessionData?.session;
 
     if (!session?.user) {
@@ -86,13 +88,21 @@ export const Route = createFileRoute("/_authenticated")({
     let activeUser = session.user;
 
     if (isExpired) {
-      // Attempt token refresh if local session timestamp is past expiration
-      const { data: refreshed, error: refreshErr } = await supabase.auth
-        .refreshSession()
-        .catch((err) => ({
-          data: { session: null },
-          error: err as Error,
-        }));
+      // Attempt token refresh if local session timestamp is past expiration (guarded with 3s timeout)
+      const refreshPromise = supabase.auth.refreshSession().catch((err) => ({
+        data: { session: null },
+        error: err as Error,
+      }));
+      const refreshTimeout = new Promise<{ data: { session: null }; error: Error }>((resolve) =>
+        setTimeout(
+          () => resolve({ data: { session: null }, error: new Error("Auth refresh timeout") }),
+          3000,
+        ),
+      );
+      const { data: refreshed, error: refreshErr } = await Promise.race([
+        refreshPromise,
+        refreshTimeout,
+      ]);
       if (refreshErr || !refreshed?.session?.user) {
         beginManagedSignOut();
         try {
@@ -185,8 +195,6 @@ export const Route = createFileRoute("/_authenticated")({
     } catch {
       // ignore storage error
     }
-
-    return { user: activeUser };
 
     return { user: activeUser };
   },

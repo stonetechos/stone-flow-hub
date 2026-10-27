@@ -17,7 +17,7 @@ export function LoadingBlock({ label = "Loading…" }: { label?: string }) {
   const [slow, setSlow] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setSlow(true), 15000);
+    const timer = setTimeout(() => setSlow(true), 5000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -33,6 +33,14 @@ export function LoadingBlock({ label = "Loading…" }: { label?: string }) {
         <div className="mt-3 flex flex-col items-center gap-2 text-xs">
           <span className="text-muted-foreground">Synchronizing data with database…</span>
           <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="text-muted-foreground underline hover:text-foreground cursor-pointer"
+            >
+              Reload
+            </button>
+            <span>·</span>
             <a
               href="/auth?flow=signin"
               className="text-muted-foreground underline hover:text-foreground"
