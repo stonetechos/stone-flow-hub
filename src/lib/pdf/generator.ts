@@ -189,20 +189,12 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
     )
     .join("");
 
-  // Total in Words computation
+  // Total in Words computation - strictly remove any balance or payment lines from invoices
   const totalsToRender = (doc.totals ?? []).filter((t) => {
     const lbl = (t.label || "").toLowerCase().trim();
-    // Invoices must never show "Balance due" or running balance lines (customer statements only)
-    if (
-      isInvoice &&
-      (lbl.includes("balance") || lbl.includes("amount paid") || lbl.includes("paid"))
-    ) {
-      return false;
-    }
-    if (
-      lbl.includes("balance due") &&
-      (isInvoice || /tax\s*invoice|gst\s*invoice/i.test(doc.title || ""))
-    ) {
+    // Balance due belongs strictly in customer statements, never in an invoice PDF
+    if (lbl.includes("balance")) return false;
+    if (isInvoice && (lbl.includes("amount paid") || lbl.includes("paid"))) {
       return false;
     }
     return true;
@@ -222,13 +214,10 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
   const totalsHtml = totalsToRender
     .map((t, i, arr) => {
       const isTotal = t.label.toLowerCase() === "total" || (arr.length > 0 && i === arr.length - 1);
-      const isBalance = t.label.toLowerCase().includes("balance");
       return `<div style="display:flex;justify-content:space-between;align-items:center;padding:4.5px 0;${
         isTotal
           ? `border-top:1.5px solid ${deepTurquoise};border-bottom:1.5px solid ${deepTurquoise};margin:6px 0;padding:8px 0;font-weight:800;font-size:13.5px;color:${deepTurquoise};`
-          : isBalance
-            ? "font-weight:800;font-size:12px;color:#0f172a;padding:5px 0;"
-            : "color:#475569;font-size:10.5px;"
+          : "color:#475569;font-size:10.5px;"
       }">
         <span style="${isTotal ? "font-weight:800;" : ""}">${esc(t.label)}</span>
         <span style="font-variant-numeric:tabular-nums;${isTotal ? "font-weight:800;" : ""}">${esc(t.value ?? "")}</span>
@@ -805,20 +794,11 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
   }
 
   y += 6;
-  // Totals
+  // Totals - strictly remove any balance or payment lines from invoices
   const totals = (doc.totals ?? []).filter((t) => {
     const lbl = (t.label || "").toLowerCase().trim();
-    // Invoices must never show "Balance due" or running balance lines (customer statements only)
-    if (
-      isInvoice &&
-      (lbl.includes("balance") || lbl.includes("amount paid") || lbl.includes("paid"))
-    ) {
-      return false;
-    }
-    if (
-      lbl.includes("balance due") &&
-      (isInvoice || /tax\s*invoice|gst\s*invoice/i.test(doc.title || ""))
-    ) {
+    if (lbl.includes("balance")) return false;
+    if (isInvoice && (lbl.includes("amount paid") || lbl.includes("paid"))) {
       return false;
     }
     return true;

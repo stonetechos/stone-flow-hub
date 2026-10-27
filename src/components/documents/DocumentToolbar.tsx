@@ -69,6 +69,12 @@ export function DocumentToolbar({ entity, entityId, hideEmail, hideWhatsapp, com
     setBusy(kind);
     try {
       const { doc } = await buildDocument(entity, entityId);
+      if (entity === "invoice" || doc.kind === "invoice" || /invoice/i.test(doc.title || "")) {
+        delete (doc as { balanceDue?: number }).balanceDue;
+        if (doc.totals) {
+          doc.totals = doc.totals.filter((t) => !t.label.toLowerCase().includes("balance"));
+        }
+      }
       await fn(doc);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to render document");
@@ -108,6 +114,18 @@ export function DocumentToolbar({ entity, entityId, hideEmail, hideWhatsapp, com
 
     try {
       const built = await buildDocument(entity, entityId);
+      if (
+        entity === "invoice" ||
+        built.doc.kind === "invoice" ||
+        /invoice/i.test(built.doc.title || "")
+      ) {
+        delete (built.doc as { balanceDue?: number }).balanceDue;
+        if (built.doc.totals) {
+          built.doc.totals = built.doc.totals.filter(
+            (t) => !t.label.toLowerCase().includes("balance"),
+          );
+        }
+      }
       const phone = built.meta.toPhone?.trim();
       const docTitle = built.doc.title || "Document";
       const docNo = built.doc.number || "";

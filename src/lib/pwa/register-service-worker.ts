@@ -34,7 +34,7 @@ export function registerServiceWorker(): void {
       for (const key of keys) {
         if (
           key.startsWith("stos-pages-") ||
-          (key.startsWith("stos-static-") && key !== "stos-static-stos-22")
+          (key.startsWith("stos-static-") && key !== "stos-static-stos-23")
         ) {
           void caches.delete(key);
         }
@@ -46,46 +46,36 @@ export function registerServiceWorker(): void {
     void navigator.serviceWorker
       .register("/sw.js", { scope: "/" })
       .then((registration) => {
-        // Proactively check for an updated worker on every page load
+        // Proactively check for an updated worker on every page load and tab focus
         void registration.update();
+
+        document.addEventListener("visibilitychange", () => {
+          if (document.visibilityState === "visible") {
+            void registration.update();
+          }
+        });
 
         registration.addEventListener("updatefound", () => {
           const installing = registration.installing;
           if (!installing) return;
           installing.addEventListener("statechange", () => {
             if (installing.state === "installed" && navigator.serviceWorker.controller) {
-              // Immediately activate the new worker and reload
+              // Immediately activate the new worker
               installing.postMessage({ type: "SKIP_WAITING" });
-              toast("STOS Updated", {
-                description: "Applying latest release...",
-                duration: 3_000,
-              });
             }
           });
         });
       })
       .catch((err) => console.warn("[pwa] service worker registration failed", err));
 
-    // Reload only when an already-controlled page swaps to a new worker,
-    // which is the case this is for. On a first-ever install the page
-    // starts uncontrolled and `clients.claim()` in the worker's activate
-    // handler fires this same event — reloading there throws away a page
-    // the user is already using, and because the guard flag does not
-    // survive the reload it triggers, a worker that re-activates can do it
-    // again and again.
+    // Reload immediately when an already-controlled page swaps to a new worker
+    // to guarantee all active tabs run the latest deployment without requiring manual action.
     const hadController = Boolean(navigator.serviceWorker.controller);
     let reloading = false;
     navigator.serviceWorker.addEventListener("controllerchange", () => {
       if (!hadController || reloading) return;
       reloading = true;
-      toast.info("A new STOS update is available", {
-        description: "Click to refresh and load the latest updates",
-        action: {
-          label: "Refresh",
-          onClick: () => window.location.reload(),
-        },
-        duration: 8000,
-      });
+      window.location.reload();
     });
 
     navigator.serviceWorker.addEventListener("message", (event) => {
