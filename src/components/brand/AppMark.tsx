@@ -52,7 +52,7 @@ export function AppMark({ size, className }: { size: number; className?: string 
       style={{ width: size, height: size }}
     >
       <img
-        src="/branding/stone-tech-icon.png"
+        src="/branding/stone-tech-logo.png"
         alt="Stone Tech"
         width={size}
         height={size}

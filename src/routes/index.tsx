@@ -840,22 +840,26 @@ function HomePage() {
       {/* 1. STOS ENTERPRISE NAVBAR (TURQUOISE & PAPER WHITE) */}
       <header className="sticky top-0 z-40 border-b border-border/80 bg-background/95 backdrop-blur-md shadow-2xs pt-[max(env(safe-area-inset-top),0px)]">
         <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
-          {/* Brand Logo & Tagline */}
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink">
-            <img
-              src="/branding/stone-tech-icon.png"
-              alt="Stone Tech"
-              className="h-8 w-8 sm:h-10 sm:w-10 object-contain drop-shadow-2xs shrink-0"
-            />
-            <div className="flex flex-col min-w-0">
-              <span className="text-base sm:text-xl font-black tracking-tight uppercase text-foreground leading-none truncate">
+          {/* Brand Logo & Name — HD Logo & Never Truncated */}
+          <Link to="/" className="flex items-center gap-2.5 sm:gap-3 shrink-0 group">
+            <div className="flex h-9 w-9 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl bg-white/95 p-1 shadow-sm shadow-cyan-950/15 border border-cyan-200/70 ring-1 ring-cyan-500/20 transition-transform group-hover:scale-105">
+              <img
+                src="/branding/stone-tech-logo.png"
+                alt="Stone Tech"
+                className="h-full w-full object-contain"
+                width={44}
+                height={44}
+              />
+            </div>
+            <div className="flex flex-col shrink-0">
+              <span className="text-base sm:text-xl font-black tracking-tight uppercase text-foreground leading-tight whitespace-nowrap">
                 STONE TECH
               </span>
-              <span className="hidden sm:inline-block text-[9px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none mt-1 whitespace-nowrap">
+              <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-wider sm:tracking-widest leading-none mt-0.5 whitespace-nowrap">
                 {texts.brandSubtitle}
               </span>
             </div>
-          </div>
+          </Link>
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-6 xl:gap-8 text-sm font-semibold text-foreground/80">
@@ -888,44 +892,44 @@ function HomePage() {
           </nav>
 
           {/* Action CTAs */}
-          <div className="flex items-center gap-1 sm:gap-2.5 shrink-0">
-            {/* Language Switcher */}
-            <LanguageToggle className="h-8 sm:h-9 px-1.5 sm:px-2.5 text-xs rounded-lg border border-border/80 bg-background/80" />
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+            {/* Language Switcher — visible on sm+ (mobile already has it fixed in bottom bar) */}
+            <LanguageToggle className="hidden sm:inline-flex h-8 sm:h-9 px-2 sm:px-2.5 text-xs rounded-lg border border-border/80 bg-background/80" />
 
-            {/* Customer Tracking Dialog */}
-            <CustomerInquiryLookupDialog
-              trigger={
-                <Button
-                  variant="outline"
-                  size="default"
-                  className="h-8 sm:h-9 px-2 sm:px-3.5 gap-1 sm:gap-1.5 text-xs font-semibold shadow-2xs border-border/90 hover:border-primary/60 hover:text-primary shrink-0 rounded-lg"
-                >
-                  <Search className="h-3.5 w-3.5 text-primary shrink-0" />
-                  <span className="hidden sm:inline whitespace-nowrap">
-                    {texts.nav.trackInquiry}
-                  </span>
-                  <span className="sm:hidden text-xs">{texts.nav.track}</span>
-                </Button>
-              }
-            />
+            {/* Customer Tracking Dialog — visible on sm+ */}
+            <div className="hidden sm:block">
+              <CustomerInquiryLookupDialog
+                trigger={
+                  <Button
+                    variant="outline"
+                    size="default"
+                    className="h-8 sm:h-9 px-2 sm:px-3.5 gap-1 sm:gap-1.5 text-xs font-semibold shadow-2xs border-border/90 hover:border-primary/60 hover:text-primary shrink-0 rounded-lg"
+                  >
+                    <Search className="h-3.5 w-3.5 text-primary shrink-0" />
+                    <span className="whitespace-nowrap">{texts.nav.trackInquiry}</span>
+                  </Button>
+                }
+              />
+            </div>
 
-            {/* Employees Login CTA */}
+            {/* Employees Login CTA — full on desktop, sleek compact icon on mobile */}
             <Button
               asChild
               size="default"
-              className="h-8 sm:h-9 px-2.5 sm:px-3.5 gap-1 sm:gap-1.5 text-xs font-semibold shadow-2xs transition-colors shrink-0 rounded-lg border bg-primary text-primary-foreground hover:bg-primary/90 border-primary"
+              className="h-8 sm:h-9 px-2 sm:px-3.5 gap-1 sm:gap-1.5 text-xs font-semibold shadow-2xs transition-colors shrink-0 rounded-lg border bg-primary text-primary-foreground hover:bg-primary/90 border-primary"
             >
               <Link
                 to="/auth"
                 search={{ flow: "signin" }}
                 className="inline-flex items-center gap-1 sm:gap-1.5 whitespace-nowrap"
+                title={texts.nav.employeesLogin}
+                aria-label={texts.nav.employeesLogin}
               >
                 <Lock
                   className="h-3.5 w-3.5 shrink-0 stroke-[2.25] text-primary-foreground"
                   aria-hidden="true"
                 />
                 <span className="hidden sm:inline">{texts.nav.employeesLogin}</span>
-                <span className="sm:hidden text-xs">{texts.nav.employeesLogin}</span>
               </Link>
             </Button>
           </div>
@@ -1765,6 +1769,42 @@ function HomePage() {
 
       {/* 3. BROAD "HOW TO REACH US" & VERIFIED RATINGS FOOTER */}
       <ContactCenter />
+
+      {/* 4. FOOTER WITH BRAND ATELIER & EMPLOYEES LOGIN */}
+      <footer className="border-t border-border/80 bg-background/80 py-6 px-4 text-xs text-muted-foreground pb-24 sm:pb-6">
+        <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+          <div className="flex items-center gap-2">
+            <img
+              src="/branding/stone-tech-logo.png"
+              alt="Stone Tech"
+              className="h-5 w-5 object-contain rounded"
+            />
+            <span className="font-bold text-foreground tracking-tight">STONE TECH</span>
+            <span>• {texts.brandSubtitle}</span>
+          </div>
+          <div className="flex items-center gap-4 text-xs">
+            <CustomerInquiryLookupDialog
+              trigger={
+                <button
+                  type="button"
+                  className="hover:text-primary transition-colors cursor-pointer underline-offset-4 hover:underline"
+                >
+                  {texts.nav.trackInquiry}
+                </button>
+              }
+            />
+            <span>•</span>
+            <Link
+              to="/auth"
+              search={{ flow: "signin" }}
+              className="inline-flex items-center gap-1 hover:text-primary transition-colors underline-offset-4 hover:underline"
+            >
+              <Lock className="h-3 w-3" />
+              <span>{texts.nav.employeesLogin}</span>
+            </Link>
+          </div>
+        </div>
+      </footer>
 
       {/* 9. STICKY MOBILE ACTION BAR (LIVSPACE MOBILE PATTERN) */}
       <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border p-2 sm:p-2.5 pb-[max(env(safe-area-inset-bottom),0.625rem)] flex items-center gap-1.5 sm:gap-2 shadow-xl">

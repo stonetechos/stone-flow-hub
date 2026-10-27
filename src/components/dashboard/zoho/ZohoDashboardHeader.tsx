@@ -27,7 +27,7 @@ export function ZohoDashboardHeader({
           {/* Stone Tech Official Logo */}
           <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl bg-white/95 p-1 shadow-md shadow-cyan-950/20 border border-cyan-200/60 ring-1 ring-cyan-500/20">
             <img
-              src="/branding/stone-tech-icon.png"
+              src="/branding/stone-tech-logo.png"
               alt="Stone Tech"
               className="h-full w-full object-contain"
             />

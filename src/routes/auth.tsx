@@ -237,7 +237,7 @@ function StoneTechMark() {
     <div className="flex items-center gap-3">
       <div className="relative grid h-12 w-12 place-items-center overflow-hidden rounded-xl bg-white/95 p-1 shadow-md ring-1 ring-white/40">
         <img
-          src="/branding/stone-tech-icon.png"
+          src="/branding/stone-tech-logo.png"
           alt="Stone Tech"
           className="h-full w-full object-contain"
         />
@@ -391,7 +391,7 @@ function AuthCard({
       <div className="mb-8 flex items-center justify-center gap-2.5 md:hidden">
         <span className="grid h-9 w-9 place-items-center rounded-lg bg-white/95 p-0.5 shadow-xs ring-1 ring-slate-200">
           <img
-            src="/branding/stone-tech-icon.png"
+            src="/branding/stone-tech-logo.png"
             alt="Stone Tech"
             className="h-full w-full object-contain"
           />
