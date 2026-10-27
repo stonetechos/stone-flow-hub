@@ -117,7 +117,11 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
   const border = "#E5E7EB";
 
   const isQuote = doc.kind === "quotation" || doc.kind === "estimate";
-  const isInvoice = doc.kind === "invoice";
+  const isInvoice =
+    doc.kind === "invoice" ||
+    /invoice/i.test(doc.title || "") ||
+    /invoice/i.test(doc.number || "") ||
+    /inv[-_\d]/i.test(doc.number || "");
 
   const titleText = isQuote
     ? "QUOTE"
@@ -187,8 +191,20 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
 
   // Total in Words computation
   const totalsToRender = (doc.totals ?? []).filter((t) => {
+    const lbl = (t.label || "").toLowerCase().trim();
     // Invoices must never show "Balance due" or running balance lines (customer statements only)
-    if (isInvoice && t.label.toLowerCase().includes("balance")) return false;
+    if (
+      isInvoice &&
+      (lbl.includes("balance") || lbl.includes("amount paid") || lbl.includes("paid"))
+    ) {
+      return false;
+    }
+    if (
+      lbl.includes("balance due") &&
+      (isInvoice || /tax\s*invoice|gst\s*invoice/i.test(doc.title || ""))
+    ) {
+      return false;
+    }
     return true;
   });
 
@@ -205,7 +221,7 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
 
   const totalsHtml = totalsToRender
     .map((t, i, arr) => {
-      const isTotal = t.label.toLowerCase() === "total" || i === arr.length - 1;
+      const isTotal = t.label.toLowerCase() === "total" || (arr.length > 0 && i === arr.length - 1);
       const isBalance = t.label.toLowerCase().includes("balance");
       return `<div style="display:flex;justify-content:space-between;align-items:center;padding:4.5px 0;${
         isTotal
@@ -315,10 +331,9 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
     text-transform:uppercase;
     letter-spacing:.04em;
     font-weight:700;
-    line-height:1;
+    line-height:13px;
     vertical-align:middle;
-    height:30px;
-    padding:6px 8px;
+    padding:8.5px 8px;
     box-sizing:border-box;
   }
   .notes { margin-top:10px; font-size:10px; color:#475569; }
@@ -383,15 +398,15 @@ India</div>
 
     ${
       isInvoice
-        ? `<div style="background:${deepTurquoise};color:#ffffff;border-radius:2px 2px 0 0;display:grid;grid-template-columns:1fr 1fr 1fr;padding:7px 14px;font-size:10px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;">
-            <div>Invoice Date</div>
+        ? `<div style="background:${deepTurquoise};color:#ffffff;border-radius:2px 2px 0 0;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;padding:8px 14px;box-sizing:border-box;font-size:10px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;line-height:12px;">
+            <div style="text-align:center;">Invoice Date</div>
             <div style="text-align:center;">Terms</div>
-            <div style="text-align:right;">Due Date</div>
+            <div style="text-align:center;">Due Date</div>
           </div>
-          <div style="background:#ffffff;border:1px solid #cbd5e1;border-top:none;border-radius:0 0 2px 2px;display:grid;grid-template-columns:1fr 1fr 1fr;padding:8px 14px;font-size:10.5px;color:#0f172a;margin-bottom:14px;">
-            <div style="font-weight:500;">${formatDocDate(doc.date)}</div>
+          <div style="background:#ffffff;border:1px solid #cbd5e1;border-top:none;border-radius:0 0 2px 2px;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;padding:8px 14px;box-sizing:border-box;font-size:10.5px;color:#0f172a;margin-bottom:14px;line-height:14px;">
+            <div style="text-align:center;font-weight:500;">${formatDocDate(doc.date)}</div>
             <div style="text-align:center;">${esc(termsText)}</div>
-            <div style="text-align:right;font-weight:500;">${formatDocDate(dueDate)}</div>
+            <div style="text-align:center;font-weight:500;">${formatDocDate(dueDate)}</div>
           </div>`
         : ""
     }
@@ -400,13 +415,13 @@ India</div>
       rows
         ? `<table>
             <thead><tr>
-              <th style="width:34px;text-align:center;">#</th>
-              ${showPhoto ? `<th style="width:52px;text-align:center;">Photo</th>` : ""}
-              <th style="text-align:left;padding-left:10px;">Item &amp; Description</th>
-              ${showHsn ? `<th style="width:75px;text-align:center;">HSN/SAC</th>` : ""}
-              <th style="width:65px;text-align:right;">Qty</th>
-              <th style="width:80px;text-align:right;">Rate</th>
-              <th style="width:95px;text-align:right;padding-right:10px;">Amount</th>
+              <th style="width:34px;text-align:center;vertical-align:middle;padding:8.5px 4px;">#</th>
+              ${showPhoto ? `<th style="width:52px;text-align:center;vertical-align:middle;padding:8.5px 4px;">Photo</th>` : ""}
+              <th style="text-align:left;vertical-align:middle;padding:8.5px 10px;">Item &amp; Description</th>
+              ${showHsn ? `<th style="width:75px;text-align:center;vertical-align:middle;padding:8.5px 6px;">HSN/SAC</th>` : ""}
+              <th style="width:65px;text-align:right;vertical-align:middle;padding:8.5px 8px;">Qty</th>
+              <th style="width:80px;text-align:right;vertical-align:middle;padding:8.5px 8px;">Rate</th>
+              <th style="width:95px;text-align:right;vertical-align:middle;padding:8.5px 10px;">Amount</th>
             </tr></thead>
             <tbody>${rows}</tbody>
           </table>`
@@ -792,8 +807,20 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
   y += 6;
   // Totals
   const totals = (doc.totals ?? []).filter((t) => {
+    const lbl = (t.label || "").toLowerCase().trim();
     // Invoices must never show "Balance due" or running balance lines (customer statements only)
-    if (isInvoice && t.label.toLowerCase().includes("balance")) return false;
+    if (
+      isInvoice &&
+      (lbl.includes("balance") || lbl.includes("amount paid") || lbl.includes("paid"))
+    ) {
+      return false;
+    }
+    if (
+      lbl.includes("balance due") &&
+      (isInvoice || /tax\s*invoice|gst\s*invoice/i.test(doc.title || ""))
+    ) {
+      return false;
+    }
     return true;
   });
   for (let i = 0; i < totals.length; i++) {

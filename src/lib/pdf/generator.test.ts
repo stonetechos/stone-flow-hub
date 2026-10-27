@@ -135,4 +135,21 @@ describe("PDF Generator", () => {
     expect(html).toContain("₹56,700");
     expect(html.toLowerCase()).not.toContain("balance due");
   });
+
+  it("centrally aligns Invoice Date, Terms, and Due Date both horizontally and vertically in the bar", () => {
+    const invoiceDoc: PdfDoc = {
+      ...sampleDoc,
+      kind: "invoice",
+      title: "Tax Invoice",
+      number: "INV-000005",
+      date: "2026-10-27",
+      terms: "Due on Receipt",
+      meta: [{ label: "Due date", value: "2026-11-11" }],
+    };
+    const html = renderDocHtml(invoiceDoc);
+    expect(html).toContain('<div style="text-align:center;">Invoice Date</div>');
+    expect(html).toContain('<div style="text-align:center;">Terms</div>');
+    expect(html).toContain('<div style="text-align:center;">Due Date</div>');
+    expect(html).toContain("padding:8.5px 8px;");
+  });
 });
