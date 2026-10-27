@@ -419,8 +419,6 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
         { label: "Subtotal", value: inr(i.subtotal) },
         ...(gstSplit.length ? gstSplit : [{ label: "Tax", value: inr(i.tax_amount) }]),
         { label: "Total", value: inr(i.total) },
-        ...(Number(i.amount_paid) > 0 ? [{ label: "Amount paid", value: inr(i.amount_paid) }] : []),
-        { label: "Balance due", value: inr(i.balance_due) },
       ];
       const invAny = i as unknown as {
         place_of_supply?: string | null;
@@ -444,7 +442,6 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
           to: customerParty(cust),
           lines,
           totals,
-          balanceDue: Number(i.balance_due),
           meta: invMeta,
           notes: i.notes ?? undefined,
           terms: i.terms ?? undefined,

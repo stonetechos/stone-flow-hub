@@ -114,4 +114,25 @@ describe("PDF Generator", () => {
     expect(invoiceHtml).toContain("Authorized Signatory");
     expect(invoiceHtml).toContain("GST INVOICE");
   });
+
+  it("never renders Balance due on Invoice PDFs (only customer statements)", () => {
+    const invoiceWithBalance: PdfDoc = {
+      ...sampleDoc,
+      kind: "invoice",
+      title: "Tax Invoice",
+      number: "INV-2026-0002",
+      totals: [
+        { label: "Subtotal", value: "₹54,000" },
+        { label: "Tax", value: "₹2,700" },
+        { label: "Total", value: "₹56,700" },
+        { label: "Balance due", value: "₹56,700" },
+      ],
+      balanceDue: 56700,
+    };
+    const html = renderDocHtml(invoiceWithBalance);
+    expect(html).toContain("GST INVOICE");
+    expect(html).toContain("Total");
+    expect(html).toContain("₹56,700");
+    expect(html.toLowerCase()).not.toContain("balance due");
+  });
 });

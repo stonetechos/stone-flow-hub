@@ -186,9 +186,15 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
     .join("");
 
   // Total in Words computation
+  const totalsToRender = (doc.totals ?? []).filter((t) => {
+    // Invoices must never show "Balance due" or running balance lines (customer statements only)
+    if (isInvoice && t.label.toLowerCase().includes("balance")) return false;
+    return true;
+  });
+
   const totalMeta =
-    doc.totals?.find((t) => t.label.toLowerCase() === "total") ||
-    doc.totals?.[(doc.totals?.length ?? 1) - 1];
+    totalsToRender.find((t) => t.label.toLowerCase() === "total") ||
+    totalsToRender[(totalsToRender.length ?? 1) - 1];
   let totalInWords = "";
   if (totalMeta && totalMeta.value) {
     const rawNum = parseFloat(String(totalMeta.value).replace(/[^0-9.-]/g, ""));
@@ -197,7 +203,7 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
     }
   }
 
-  const totalsHtml = (doc.totals ?? [])
+  const totalsHtml = totalsToRender
     .map((t, i, arr) => {
       const isTotal = t.label.toLowerCase() === "total" || i === arr.length - 1;
       const isBalance = t.label.toLowerCase().includes("balance");
@@ -785,7 +791,11 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
 
   y += 6;
   // Totals
-  const totals = doc.totals ?? [];
+  const totals = (doc.totals ?? []).filter((t) => {
+    // Invoices must never show "Balance due" or running balance lines (customer statements only)
+    if (isInvoice && t.label.toLowerCase().includes("balance")) return false;
+    return true;
+  });
   for (let i = 0; i < totals.length; i++) {
     const t = totals[i];
     if (y > 255) {
@@ -803,8 +813,7 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
 
   // Total in Words
   const totalMeta =
-    doc.totals?.find((t) => t.label.toLowerCase() === "total") ||
-    doc.totals?.[(doc.totals?.length ?? 1) - 1];
+    totals.find((t) => t.label.toLowerCase() === "total") || totals[(totals.length ?? 1) - 1];
   if (totalMeta && totalMeta.value) {
     const rawNum = parseFloat(String(totalMeta.value).replace(/[^0-9.-]/g, ""));
     if (!isNaN(rawNum) && rawNum > 0) {
