@@ -150,6 +150,6 @@ describe("PDF Generator", () => {
     expect(html).toContain('<div style="text-align:center;">Invoice Date</div>');
     expect(html).toContain('<div style="text-align:center;">Terms</div>');
     expect(html).toContain('<div style="text-align:center;">Due Date</div>');
-    expect(html).toContain("padding:8.5px 8px;");
+    expect(html).toContain("padding:7px 8px 8px;");
   });
 });

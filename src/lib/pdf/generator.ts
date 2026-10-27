@@ -320,9 +320,9 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
     text-transform:uppercase;
     letter-spacing:.04em;
     font-weight:700;
-    line-height:13px;
+    line-height:12px;
     vertical-align:middle;
-    padding:8.5px 8px;
+    padding:7px 8px 8px;
     box-sizing:border-box;
   }
   .notes { margin-top:10px; font-size:10px; color:#475569; }
@@ -387,7 +387,7 @@ India</div>
 
     ${
       isInvoice
-        ? `<div style="background:${deepTurquoise};color:#ffffff;border-radius:2px 2px 0 0;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;padding:8px 14px;box-sizing:border-box;font-size:10px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;line-height:12px;">
+        ? `<div style="background:${deepTurquoise};color:#ffffff;border-radius:2px 2px 0 0;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;padding:7px 14px 8px;box-sizing:border-box;font-size:10px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;line-height:12px;">
             <div style="text-align:center;">Invoice Date</div>
             <div style="text-align:center;">Terms</div>
             <div style="text-align:center;">Due Date</div>
@@ -404,13 +404,13 @@ India</div>
       rows
         ? `<table>
             <thead><tr>
-              <th style="width:34px;text-align:center;vertical-align:middle;padding:8.5px 4px;">#</th>
-              ${showPhoto ? `<th style="width:52px;text-align:center;vertical-align:middle;padding:8.5px 4px;">Photo</th>` : ""}
-              <th style="text-align:left;vertical-align:middle;padding:8.5px 10px;">Item &amp; Description</th>
-              ${showHsn ? `<th style="width:75px;text-align:center;vertical-align:middle;padding:8.5px 6px;">HSN/SAC</th>` : ""}
-              <th style="width:65px;text-align:right;vertical-align:middle;padding:8.5px 8px;">Qty</th>
-              <th style="width:80px;text-align:right;vertical-align:middle;padding:8.5px 8px;">Rate</th>
-              <th style="width:95px;text-align:right;vertical-align:middle;padding:8.5px 10px;">Amount</th>
+              <th style="width:34px;text-align:center;vertical-align:middle;padding:7px 4px 8px;">#</th>
+              ${showPhoto ? `<th style="width:52px;text-align:center;vertical-align:middle;padding:7px 4px 8px;">Photo</th>` : ""}
+              <th style="text-align:left;vertical-align:middle;padding:7px 10px 8px;">Item &amp; Description</th>
+              ${showHsn ? `<th style="width:75px;text-align:center;vertical-align:middle;padding:7px 6px 8px;">HSN/SAC</th>` : ""}
+              <th style="width:65px;text-align:right;vertical-align:middle;padding:7px 8px 8px;">Qty</th>
+              <th style="width:80px;text-align:right;vertical-align:middle;padding:7px 8px 8px;">Rate</th>
+              <th style="width:95px;text-align:right;vertical-align:middle;padding:7px 10px 8px;">Amount</th>
             </tr></thead>
             <tbody>${rows}</tbody>
           </table>`
