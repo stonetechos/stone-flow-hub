@@ -2,6 +2,7 @@ import { ChevronDown, RefreshCw, HelpCircle, CheckCircle2, Megaphone, Gauge } fr
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAnnouncements } from "./announcements-state";
 
 export type DashboardViewTab = "operations" | "announcements" | "help";
 
@@ -17,6 +18,7 @@ export function ZohoDashboardHeader({
   isRefreshing?: boolean;
 }) {
   const { t } = useTranslation();
+  const { hasUnread } = useAnnouncements();
   return (
     <div className="card-3d-milky mb-4 sm:mb-6 p-3 sm:px-6 sm:py-5 w-full max-w-full overflow-hidden">
       {/* Top row: Company name + actions */}
@@ -91,7 +93,7 @@ export function ZohoDashboardHeader({
         >
           <Megaphone className="h-4 w-4" />
           <span>{t("dashboard.zoho.announcementsTab", "Announcements")}</span>
-          <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
+          {hasUnread && <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />}
         </button>
 
         <button
