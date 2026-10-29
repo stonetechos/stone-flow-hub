@@ -1,0 +1,179 @@
+import { describe, expect, it } from "bun:test";
+import {
+  ADVANCE_PAYMENT_THRESHOLD_INR,
+  buildDeliveryTimelineTerm,
+  buildPaymentTermsTerm,
+  detectDealScopeFromItems,
+  formatTimelineDate,
+  generateQuoteTerms,
+  getQuoteTermsList,
+} from "./terms";
+
+describe("Quote Terms & Conditions Engine", () => {
+  describe("formatTimelineDate", () => {
+    it("formats ISO YYYY-MM-DD into readable DD MMM YYYY", () => {
+      expect(formatTimelineDate("2026-11-20")).toBe("20 Nov 2026");
+      expect(formatTimelineDate("2026-06-05")).toBe("5 Jun 2026");
+      expect(formatTimelineDate("2026-12-31")).toBe("31 Dec 2026");
+    });
+
+    it("passes through already formatted strings or empty strings safely", () => {
+      expect(formatTimelineDate("15th November")).toBe("15th November");
+      expect(formatTimelineDate("")).toBe("");
+    });
+  });
+
+  describe("buildDeliveryTimelineTerm", () => {
+    it("formats delivery timeline with number of days", () => {
+      const term = buildDeliveryTimelineTerm("days", { timelineDays: 15 });
+      expect(term).toContain("The time duration to deliver and dispatch the product is 15 days");
+      expect(term).toContain("from the date of design confirmation and advance payment clearance");
+    });
+
+    it("handles string days with 'working days' or 'days'", () => {
+      const term = buildDeliveryTimelineTerm("days", { timelineDays: "10-12 working days" });
+      expect(term).toContain(
+        "The time duration to deliver and dispatch the product is 10-12 working days",
+      );
+    });
+
+    it("formats delivery timeline with on or before date", () => {
+      const term = buildDeliveryTimelineTerm("date", { deliveryDate: "2026-11-20" });
+      expect(term).toContain(
+        "The product delivery and dispatch will be completed on or before 20 Nov 2026",
+      );
+      expect(term).toContain("subject to site readiness and advance payment clearance");
+    });
+
+    it("falls back gracefully when neither days nor date is provided", () => {
+      const term = buildDeliveryTimelineTerm("days", {});
+      expect(term).toContain("The estimated delivery and dispatch timeline will be communicated");
+    });
+  });
+
+  describe("buildPaymentTermsTerm & < ₹50,000 Rule", () => {
+    it("enforces 100% advance payment when order total is less than ₹50,000 for Supply Only", () => {
+      expect(ADVANCE_PAYMENT_THRESHOLD_INR).toBe(50000);
+      const term = buildPaymentTermsTerm("supply_only", 35000);
+      expect(term).toContain("100% advance payment required");
+      expect(term).toContain("applicable for order value under ₹50,000");
+    });
+
+    it("enforces 100% advance payment when order total is less than ₹50,000 for Supply + Installation", () => {
+      const term = buildPaymentTermsTerm("supply_and_installation", 49999);
+      expect(term).toContain("100% advance payment required");
+    });
+
+    it("applies 80% advance and 20% on delivery for Supply Only when total >= ₹50,000", () => {
+      const term = buildPaymentTermsTerm("supply_only", 50000);
+      expect(term).toContain("80% advance token upon order booking");
+      expect(term).toContain(
+        "20% balance payment has to be provided once the material gets delivered",
+      );
+      expect(term).not.toContain("100% advance");
+    });
+
+    it("applies 50% advance, 30% delivery, and 20% installation for Supply + Installation when total >= ₹50,000", () => {
+      const term = buildPaymentTermsTerm("supply_and_installation", 125000);
+      expect(term).toContain("50% advance token upon order booking");
+      expect(term).toContain("30% on delivery of the material at site");
+      expect(term).toContain(
+        "remaining 20% balance payment to be provided upon completion of installation",
+      );
+      expect(term).not.toContain("100% advance");
+    });
+  });
+
+  describe("generateQuoteTerms & getQuoteTermsList", () => {
+    it("generates exactly 7 terms for Supply Only", () => {
+      const termsList = getQuoteTermsList({
+        dealScope: "supply_only",
+        totalAmount: 65000,
+        timelineMode: "days",
+        timelineDays: 20,
+      });
+
+      expect(termsList.length).toBe(7);
+      expect(termsList[0]).toContain("1. Delivery Timeline:");
+      expect(termsList[1]).toContain("2. Payment Terms: The payment terms are 80% advance token");
+      expect(termsList[2]).toContain("3. Natural Variation:");
+      expect(termsList[3]).toContain("4. Material Evolution:");
+      expect(termsList[4]).toContain("5. Non-Returnable: Material once sold");
+      expect(termsList[5]).toContain("6. Transportation & Freight: Local transportation");
+      expect(termsList[6]).toContain(
+        "7. Jurisdiction: Any dispute arising out of or related to this quotation is strictly subject to Ahmedabad Jurisdiction.",
+      );
+    });
+
+    it("generates exactly 9 terms for Supply + Installation including Scaffolding and Surface Readiness", () => {
+      const termsList = getQuoteTermsList({
+        dealScope: "supply_and_installation",
+        totalAmount: 85000,
+        timelineMode: "date",
+        deliveryDate: "2026-12-15",
+      });
+
+      expect(termsList.length).toBe(9);
+      expect(termsList[0]).toContain(
+        "1. Delivery Timeline: The product delivery and dispatch will be completed on or before 15 Dec 2026",
+      );
+      expect(termsList[1]).toContain("2. Payment Terms: The payment terms are 50% advance token");
+      expect(termsList[2]).toContain("3. Natural Variation:");
+      expect(termsList[3]).toContain("4. Material Evolution:");
+      expect(termsList[4]).toContain("5. Non-Returnable:");
+      expect(termsList[5]).toContain("6. Transportation & Freight:");
+      expect(termsList[6]).toContain(
+        "7. Scaffolding & Site Facilities: Necessary scaffolding, H-frames",
+      );
+      expect(termsList[7]).toContain(
+        "8. Site & Surface Readiness: The workable surface must be verified by the client",
+      );
+      expect(termsList[8]).toContain(
+        "9. Jurisdiction: Any dispute arising out of or related to this quotation is strictly subject to Ahmedabad Jurisdiction.",
+      );
+    });
+
+    it("joins terms with double newline in generateQuoteTerms", () => {
+      const fullText = generateQuoteTerms({
+        dealScope: "supply_only",
+        totalAmount: 25000,
+        timelineMode: "days",
+        timelineDays: 14,
+      });
+
+      expect(fullText).toContain("1. Delivery Timeline:");
+      expect(fullText).toContain("100% advance payment required");
+      expect(fullText).toContain("Ahmedabad Jurisdiction");
+      expect(fullText.split("\n\n").length).toBe(7);
+    });
+  });
+
+  describe("detectDealScopeFromItems", () => {
+    it("detects supply_and_installation when any item has fulfilment flag", () => {
+      expect(
+        detectDealScopeFromItems([
+          { fulfilment: "supply_only", description: "Mint Sandstone Tiles" },
+          { fulfilment: "supply_and_installation", description: "Cladding Work" },
+        ]),
+      ).toBe("supply_and_installation");
+    });
+
+    it("detects supply_and_installation when description mentions installation or labour", () => {
+      expect(
+        detectDealScopeFromItems([
+          { description: "Mint Sandstone 20mm" },
+          { description: "Installation Labour Charges" },
+        ]),
+      ).toBe("supply_and_installation");
+    });
+
+    it("defaults to supply_only when only material is present", () => {
+      expect(
+        detectDealScopeFromItems([
+          { description: "Teakwood Sandstone Slabs" },
+          { description: "Local Carting" },
+        ]),
+      ).toBe("supply_only");
+    });
+  });
+});

@@ -846,6 +846,7 @@ export function StoneMuralCalculator({
           cartingLocation: cartingLocation.trim() || undefined,
           totalEstimate: total,
           estimatedDeliveryDate: estimatedDeliveryDate.trim() || undefined,
+          deliveryTimelineDays: timeToComplete.trim() || undefined,
           validityDays: validityDays.trim() || undefined,
           preparerName: preparerName.trim(),
         },

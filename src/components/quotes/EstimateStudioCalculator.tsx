@@ -721,6 +721,7 @@ export function EstimateStudioCalculator({
           cartingLocation: cartingLocation.trim() || undefined,
           totalEstimate: total,
           estimatedDeliveryDate: estimatedDeliveryDate || undefined,
+          deliveryTimelineDays: estimatedDeliveryDate || undefined,
           validityDays: validityDays || undefined,
           preparerName,
         },

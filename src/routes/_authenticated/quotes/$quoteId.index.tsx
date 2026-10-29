@@ -26,7 +26,17 @@ import {
   Building2,
   PackageCheck,
   AlertTriangle,
+  ShieldCheck,
+  FileText,
 } from "lucide-react";
+
+import { QuoteTermsManager } from "@/components/quotes/QuoteTermsManager";
+import {
+  generateQuoteTerms,
+  detectDealScopeFromItems,
+  ADVANCE_PAYMENT_THRESHOLD_INR,
+  type DealScope,
+} from "@/lib/quotes/terms";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
@@ -82,6 +92,7 @@ import {
   getSalesOrderForQuote,
   reviseQuote,
   setQuoteStatus,
+  updateQuote,
 } from "@/lib/quotes/api";
 import { formatInr } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -149,6 +160,37 @@ function QuoteDetailPage() {
   }, [items.data, dispatchItemsQ.data]);
 
   const [previewImage, setPreviewImage] = useState<{ url: string; title: string } | null>(null);
+  const [termsDialogOpen, setTermsDialogOpen] = useState(false);
+  const [editingTerms, setEditingTerms] = useState("");
+  const [editingScope, setEditingScope] = useState<DealScope>("supply_only");
+
+  const detectedScope: DealScope = useMemo(() => {
+    if (q.data?.category === "supply_and_installation") return "supply_and_installation";
+    return detectDealScopeFromItems(items.data ?? []);
+  }, [q.data?.category, items.data]);
+
+  const updateTermsMut = useMutation({
+    mutationFn: (newTerms: string) => updateQuote(quoteId, { terms: newTerms }),
+    onSuccess: () => {
+      toast.success("Quotation terms updated");
+      invalidateQuote(qc, quoteId);
+      setTermsDialogOpen(false);
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
+  const openTermsDialog = () => {
+    setEditingScope(detectedScope);
+    setEditingTerms(
+      q.data?.terms && q.data.terms.trim()
+        ? q.data.terms.trim()
+        : generateQuoteTerms({
+            dealScope: detectedScope,
+            totalAmount: Number(q.data?.total) || 0,
+          }),
+    );
+    setTermsDialogOpen(true);
+  };
 
   const quoteImages = useQuery({
     queryKey: ["quotes", "images", quoteId],
@@ -618,260 +660,325 @@ function QuoteDetailPage() {
       )}
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="shadow-1 md:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-sm">Line items</CardTitle>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-8 text-xs"
-              onClick={() => nav({ to: "/quotes/$quoteId/edit", params: { quoteId } })}
-            >
-              <Pencil className="mr-1.5 h-3.5 w-3.5" /> Edit items
-            </Button>
-          </CardHeader>
-          <CardContent className="p-3 sm:p-6">
-            {/* Mobile Responsive Line Items Card View (< sm) */}
-            <div className="sm:hidden space-y-3">
-              {(items.data ?? []).map((it) => {
-                const img = getLineItemImage(it, quoteImages.data ?? new Map());
-                const linePreTax = Number(it.quantity ?? 0) * Number(it.unit_price ?? 0);
-                const itemNotes = (it as { notes?: string | null }).notes;
-                return (
-                  <div
-                    key={it.id}
-                    className="rounded-lg border border-border bg-card p-3 shadow-2xs space-y-2.5"
-                  >
-                    <div className="flex items-start gap-2.5">
-                      {img ? (
-                        <button
-                          type="button"
-                          onClick={() => setPreviewImage({ url: img, title: it.description })}
-                          className="group relative h-13 w-13 shrink-0 overflow-hidden rounded-md border border-border bg-muted/40 shadow-xs cursor-pointer"
-                          title="Click to view full photo"
-                        >
-                          <img
-                            src={img}
-                            alt={it.description}
-                            className="h-full w-full object-cover"
-                          />
-                          <span className="absolute inset-0 flex items-center justify-center bg-black/30 text-white">
-                            <Eye className="h-3.5 w-3.5" />
-                          </span>
-                        </button>
-                      ) : (
-                        <div
-                          className="flex h-13 w-13 shrink-0 items-center justify-center rounded-md border border-dashed border-border/80 bg-muted/20 text-muted-foreground/30"
-                          title="No photo attached"
-                        >
-                          <ImageIcon className="h-4 w-4" />
-                        </div>
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <h4 className="font-semibold text-xs sm:text-sm text-foreground leading-snug">
-                          {it.description}
-                        </h4>
-                        {itemNotes && (
-                          <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
-                            {itemNotes}
-                          </p>
+        <div className="space-y-4 md:col-span-2">
+          <Card className="shadow-1">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className="text-sm">Line items</CardTitle>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 text-xs"
+                onClick={() => nav({ to: "/quotes/$quoteId/edit", params: { quoteId } })}
+              >
+                <Pencil className="mr-1.5 h-3.5 w-3.5" /> Edit items
+              </Button>
+            </CardHeader>
+            <CardContent className="p-3 sm:p-6">
+              {/* Mobile Responsive Line Items Card View (< sm) */}
+              <div className="sm:hidden space-y-3">
+                {(items.data ?? []).map((it) => {
+                  const img = getLineItemImage(it, quoteImages.data ?? new Map());
+                  const linePreTax = Number(it.quantity ?? 0) * Number(it.unit_price ?? 0);
+                  const itemNotes = (it as { notes?: string | null }).notes;
+                  return (
+                    <div
+                      key={it.id}
+                      className="rounded-lg border border-border bg-card p-3 shadow-2xs space-y-2.5"
+                    >
+                      <div className="flex items-start gap-2.5">
+                        {img ? (
+                          <button
+                            type="button"
+                            onClick={() => setPreviewImage({ url: img, title: it.description })}
+                            className="group relative h-13 w-13 shrink-0 overflow-hidden rounded-md border border-border bg-muted/40 shadow-xs cursor-pointer"
+                            title="Click to view full photo"
+                          >
+                            <img
+                              src={img}
+                              alt={it.description}
+                              className="h-full w-full object-cover"
+                            />
+                            <span className="absolute inset-0 flex items-center justify-center bg-black/30 text-white">
+                              <Eye className="h-3.5 w-3.5" />
+                            </span>
+                          </button>
+                        ) : (
+                          <div
+                            className="flex h-13 w-13 shrink-0 items-center justify-center rounded-md border border-dashed border-border/80 bg-muted/20 text-muted-foreground/30"
+                            title="No photo attached"
+                          >
+                            <ImageIcon className="h-4 w-4" />
+                          </div>
                         )}
-                        <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                          {(it as unknown as { hsn_sac?: string | null }).hsn_sac && (
-                            <span className="font-mono text-[10px] text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">
-                              HSN: {(it as unknown as { hsn_sac?: string | null }).hsn_sac}
-                            </span>
+                        <div className="min-w-0 flex-1">
+                          <h4 className="font-semibold text-xs sm:text-sm text-foreground leading-snug">
+                            {it.description}
+                          </h4>
+                          {itemNotes && (
+                            <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
+                              {itemNotes}
+                            </p>
                           )}
-                          {it.unit && (
-                            <span className="text-[10px] text-muted-foreground bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
-                              Unit: {it.unit}
-                            </span>
-                          )}
-                          {img && (
-                            <span className="inline-flex items-center gap-0.5 text-[10px] text-primary">
-                              <Sparkles className="h-2.5 w-2.5" /> Photo
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Financial Numbers Bar */}
-                    <div className="grid grid-cols-3 gap-2 bg-muted/30 p-2 rounded-md text-xs border border-border/60">
-                      <div>
-                        <span className="text-[10px] uppercase text-muted-foreground block font-medium">
-                          Qty
-                        </span>
-                        <span className="font-semibold text-foreground">
-                          {it.quantity} {it.unit ?? ""}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-[10px] uppercase text-muted-foreground block font-medium">
-                          Rate
-                        </span>
-                        <span className="font-semibold text-foreground">
-                          {formatInr(it.unit_price)}
-                        </span>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-[10px] uppercase text-muted-foreground block font-medium">
-                          Amount {it.tax_pct ? `(${it.tax_pct}% GST)` : ""}
-                        </span>
-                        <span className="font-bold text-primary">{formatInr(linePreTax)}</span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Desktop / Tablet Table View (>= sm) */}
-            <div className="hidden sm:block">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-14 text-center">Photo</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>HSN</TableHead>
-                    <TableHead className="text-right">Qty</TableHead>
-                    <TableHead>Unit</TableHead>
-                    <TableHead className="text-right">Rate</TableHead>
-                    <TableHead className="text-right">Tax %</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {(items.data ?? []).map((it) => {
-                    const img = getLineItemImage(it, quoteImages.data ?? new Map());
-                    const linePreTax = Number(it.quantity ?? 0) * Number(it.unit_price ?? 0);
-                    const itemNotes = (it as { notes?: string | null }).notes;
-                    return (
-                      <TableRow key={it.id}>
-                        <TableCell className="p-2 text-center align-middle">
-                          {img ? (
-                            <button
-                              type="button"
-                              onClick={() => setPreviewImage({ url: img, title: it.description })}
-                              className="group relative inline-block h-11 w-11 overflow-hidden rounded-md border border-border bg-muted/40 shadow-xs hover:border-primary transition cursor-pointer"
-                              title="Click to view full photo"
-                            >
-                              <img
-                                src={img}
-                                alt={it.description}
-                                className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-110"
-                              />
-                              <span className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity text-white">
-                                <Eye className="h-3.5 w-3.5" />
+                          <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                            {(it as unknown as { hsn_sac?: string | null }).hsn_sac && (
+                              <span className="font-mono text-[10px] text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">
+                                HSN: {(it as unknown as { hsn_sac?: string | null }).hsn_sac}
                               </span>
-                            </button>
-                          ) : (
-                            <div
-                              className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-dashed border-border/80 bg-muted/20 text-muted-foreground/30"
-                              title="No photo attached"
-                            >
-                              <ImageIcon className="h-4 w-4" />
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          <div className="flex flex-col">
-                            <span>{it.description}</span>
-                            {itemNotes && (
-                              <span className="text-xs text-muted-foreground font-normal mt-0.5 whitespace-pre-wrap">
-                                {itemNotes}
+                            )}
+                            {it.unit && (
+                              <span className="text-[10px] text-muted-foreground bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
+                                Unit: {it.unit}
                               </span>
                             )}
                             {img && (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-normal text-primary/80">
-                                <Sparkles className="h-2.5 w-2.5" /> Visual attached
+                              <span className="inline-flex items-center gap-0.5 text-[10px] text-primary">
+                                <Sparkles className="h-2.5 w-2.5" /> Photo
                               </span>
                             )}
                           </div>
-                        </TableCell>
-                        <TableCell className="font-mono text-xs text-muted-foreground">
-                          {(it as unknown as { hsn_sac?: string | null }).hsn_sac || "—"}
-                        </TableCell>
-                        <TableCell className="text-right">{it.quantity}</TableCell>
-                        <TableCell>{it.unit ?? "—"}</TableCell>
-                        <TableCell className="text-right">{formatInr(it.unit_price)}</TableCell>
-                        <TableCell className="text-right">{it.tax_pct}%</TableCell>
-                        <TableCell className="text-right">{formatInr(linePreTax)}</TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-
-            {/* Responsive Quote Totals Card */}
-            <div className="mt-4 rounded-lg bg-muted/30 border border-border/70 p-3.5 space-y-2 text-xs sm:text-sm">
-              <div className="flex justify-between items-center text-muted-foreground">
-                <span>Subtotal:</span>
-                <span className="font-medium text-foreground">{formatInr(quote.subtotal)}</span>
-              </div>
-              {saleMode === "cash" ? (
-                <div className="flex justify-between items-center text-xs text-emerald-700 font-medium">
-                  <span>GST (Cash Deal · Challan Only):</span>
-                  <span className="font-semibold">0% (₹0)</span>
-                </div>
-              ) : (
-                <div className="flex justify-between items-center text-muted-foreground">
-                  <span>GST Tax:</span>
-                  <span className="font-medium text-foreground">{formatInr(quote.tax_amount)}</span>
-                </div>
-              )}
-              <div className="border-t border-border pt-2 flex justify-between items-center text-sm sm:text-base font-bold text-foreground">
-                <span>Total Quotation:</span>
-                <span className="text-primary font-black">{formatInr(quote.total)}</span>
-              </div>
-              {saleMode === "hybrid" && (
-                <div className="text-xs text-purple-700 bg-purple-50 px-2.5 py-1.5 rounded-md border border-purple-200 mt-2">
-                  <span className="font-semibold">Hybrid Deal Split:</span> Cash{" "}
-                  {formatInr(hybridSplit.cashAmount ?? 0)} · Invoiced{" "}
-                  {formatInr(hybridSplit.invoicedAmount ?? 0)}
-                </div>
-              )}
-            </div>
-
-            {quoteImages.data && quoteImages.data.size > 0 && (
-              <div className="mt-6 border-t border-border pt-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <h4 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    <ImageIcon className="h-3.5 w-3.5 text-primary" /> Product Visuals & Material
-                    Samples ({getQuoteGalleryImages(items.data ?? [], quoteImages.data).length})
-                  </h4>
-                </div>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-                  {getQuoteGalleryImages(items.data ?? [], quoteImages.data).map((gImg) => (
-                    <div
-                      key={gImg.id}
-                      onClick={() => setPreviewImage({ url: gImg.url, title: gImg.label })}
-                      className="group relative cursor-pointer overflow-hidden rounded-lg border border-border bg-card shadow-xs transition hover:border-primary/50 hover:shadow-md"
-                    >
-                      <div className="aspect-square w-full overflow-hidden bg-muted/20">
-                        <img
-                          src={gImg.url}
-                          alt={gImg.label}
-                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
+                        </div>
                       </div>
-                      <div className="p-2">
-                        <p className="truncate text-xs font-medium text-foreground group-hover:text-primary">
-                          {gImg.label}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground">{gImg.source}</p>
-                      </div>
-                      <div className="absolute top-2 right-2 rounded-full bg-black/60 p-1 text-white opacity-0 transition group-hover:opacity-100">
-                        <Eye className="h-3 w-3" />
+
+                      {/* Financial Numbers Bar */}
+                      <div className="grid grid-cols-3 gap-2 bg-muted/30 p-2 rounded-md text-xs border border-border/60">
+                        <div>
+                          <span className="text-[10px] uppercase text-muted-foreground block font-medium">
+                            Qty
+                          </span>
+                          <span className="font-semibold text-foreground">
+                            {it.quantity} {it.unit ?? ""}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase text-muted-foreground block font-medium">
+                            Rate
+                          </span>
+                          <span className="font-semibold text-foreground">
+                            {formatInr(it.unit_price)}
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[10px] uppercase text-muted-foreground block font-medium">
+                            Amount {it.tax_pct ? `(${it.tax_pct}% GST)` : ""}
+                          </span>
+                          <span className="font-bold text-primary">{formatInr(linePreTax)}</span>
+                        </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
-            )}
-          </CardContent>
-        </Card>
+
+              {/* Desktop / Tablet Table View (>= sm) */}
+              <div className="hidden sm:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-14 text-center">Photo</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead>HSN</TableHead>
+                      <TableHead className="text-right">Qty</TableHead>
+                      <TableHead>Unit</TableHead>
+                      <TableHead className="text-right">Rate</TableHead>
+                      <TableHead className="text-right">Tax %</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {(items.data ?? []).map((it) => {
+                      const img = getLineItemImage(it, quoteImages.data ?? new Map());
+                      const linePreTax = Number(it.quantity ?? 0) * Number(it.unit_price ?? 0);
+                      const itemNotes = (it as { notes?: string | null }).notes;
+                      return (
+                        <TableRow key={it.id}>
+                          <TableCell className="p-2 text-center align-middle">
+                            {img ? (
+                              <button
+                                type="button"
+                                onClick={() => setPreviewImage({ url: img, title: it.description })}
+                                className="group relative inline-block h-11 w-11 overflow-hidden rounded-md border border-border bg-muted/40 shadow-xs hover:border-primary transition cursor-pointer"
+                                title="Click to view full photo"
+                              >
+                                <img
+                                  src={img}
+                                  alt={it.description}
+                                  className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-110"
+                                />
+                                <span className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity text-white">
+                                  <Eye className="h-3.5 w-3.5" />
+                                </span>
+                              </button>
+                            ) : (
+                              <div
+                                className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-dashed border-border/80 bg-muted/20 text-muted-foreground/30"
+                                title="No photo attached"
+                              >
+                                <ImageIcon className="h-4 w-4" />
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            <div className="flex flex-col">
+                              <span>{it.description}</span>
+                              {itemNotes && (
+                                <span className="text-xs text-muted-foreground font-normal mt-0.5 whitespace-pre-wrap">
+                                  {itemNotes}
+                                </span>
+                              )}
+                              {img && (
+                                <span className="inline-flex items-center gap-1 text-[11px] font-normal text-primary/80">
+                                  <Sparkles className="h-2.5 w-2.5" /> Visual attached
+                                </span>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell className="font-mono text-xs text-muted-foreground">
+                            {(it as unknown as { hsn_sac?: string | null }).hsn_sac || "—"}
+                          </TableCell>
+                          <TableCell className="text-right">{it.quantity}</TableCell>
+                          <TableCell>{it.unit ?? "—"}</TableCell>
+                          <TableCell className="text-right">{formatInr(it.unit_price)}</TableCell>
+                          <TableCell className="text-right">{it.tax_pct}%</TableCell>
+                          <TableCell className="text-right">{formatInr(linePreTax)}</TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Responsive Quote Totals Card */}
+              <div className="mt-4 rounded-lg bg-muted/30 border border-border/70 p-3.5 space-y-2 text-xs sm:text-sm">
+                <div className="flex justify-between items-center text-muted-foreground">
+                  <span>Subtotal:</span>
+                  <span className="font-medium text-foreground">{formatInr(quote.subtotal)}</span>
+                </div>
+                {saleMode === "cash" ? (
+                  <div className="flex justify-between items-center text-xs text-emerald-700 font-medium">
+                    <span>GST (Cash Deal · Challan Only):</span>
+                    <span className="font-semibold">0% (₹0)</span>
+                  </div>
+                ) : (
+                  <div className="flex justify-between items-center text-muted-foreground">
+                    <span>GST Tax:</span>
+                    <span className="font-medium text-foreground">
+                      {formatInr(quote.tax_amount)}
+                    </span>
+                  </div>
+                )}
+                <div className="border-t border-border pt-2 flex justify-between items-center text-sm sm:text-base font-bold text-foreground">
+                  <span>Total Quotation:</span>
+                  <span className="text-primary font-black">{formatInr(quote.total)}</span>
+                </div>
+                {saleMode === "hybrid" && (
+                  <div className="text-xs text-purple-700 bg-purple-50 px-2.5 py-1.5 rounded-md border border-purple-200 mt-2">
+                    <span className="font-semibold">Hybrid Deal Split:</span> Cash{" "}
+                    {formatInr(hybridSplit.cashAmount ?? 0)} · Invoiced{" "}
+                    {formatInr(hybridSplit.invoicedAmount ?? 0)}
+                  </div>
+                )}
+              </div>
+
+              {quoteImages.data && quoteImages.data.size > 0 && (
+                <div className="mt-6 border-t border-border pt-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <h4 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      <ImageIcon className="h-3.5 w-3.5 text-primary" /> Product Visuals & Material
+                      Samples ({getQuoteGalleryImages(items.data ?? [], quoteImages.data).length})
+                    </h4>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                    {getQuoteGalleryImages(items.data ?? [], quoteImages.data).map((gImg) => (
+                      <div
+                        key={gImg.id}
+                        onClick={() => setPreviewImage({ url: gImg.url, title: gImg.label })}
+                        className="group relative cursor-pointer overflow-hidden rounded-lg border border-border bg-card shadow-xs transition hover:border-primary/50 hover:shadow-md"
+                      >
+                        <div className="aspect-square w-full overflow-hidden bg-muted/20">
+                          <img
+                            src={gImg.url}
+                            alt={gImg.label}
+                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          />
+                        </div>
+                        <div className="p-2">
+                          <p className="truncate text-xs font-medium text-foreground group-hover:text-primary">
+                            {gImg.label}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">{gImg.source}</p>
+                        </div>
+                        <div className="absolute top-2 right-2 rounded-full bg-black/60 p-1 text-white opacity-0 transition group-hover:opacity-100">
+                          <Eye className="h-3 w-3" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Terms & Conditions Card */}
+          <Card className="shadow-1 border-border">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                <CardTitle className="text-sm">Terms &amp; Conditions</CardTitle>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {Number(quote.total) > 0 && Number(quote.total) < ADVANCE_PAYMENT_THRESHOLD_INR && (
+                  <Badge
+                    variant="outline"
+                    className="bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/30 dark:text-amber-300 text-[10px]"
+                  >
+                    &lt; ₹50k: 100% Advance
+                  </Badge>
+                )}
+                <Badge variant="outline" className="text-[10px]">
+                  {detectedScope === "supply_and_installation"
+                    ? "Supply + Installation"
+                    : "Supply Only"}
+                </Badge>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs"
+                  onClick={openTermsDialog}
+                >
+                  <Pencil className="mr-1 h-3 w-3" /> Edit Terms
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-4 pt-1">
+              {quote.terms && quote.terms.trim() ? (
+                <div className="rounded-md border border-border/70 bg-muted/20 p-3 text-xs font-mono leading-relaxed whitespace-pre-line text-slate-800 dark:text-slate-200">
+                  {quote.terms}
+                </div>
+              ) : (
+                <div className="rounded-md border border-dashed border-amber-300 bg-amber-50/50 dark:bg-amber-950/20 p-3 text-xs text-amber-900 dark:text-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                  <div>
+                    <span className="font-semibold">Standard Terms Active: </span>
+                    <span>
+                      No custom terms stored. The polished standard{" "}
+                      {detectedScope === "supply_and_installation"
+                        ? "Supply + Installation"
+                        : "Supply"}{" "}
+                      terms are dynamically attached to PDF exports and WhatsApp messages.
+                    </span>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs shrink-0 bg-white dark:bg-slate-900"
+                    onClick={openTermsDialog}
+                  >
+                    Affix / Customize Terms
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
         <Card className="shadow-1">
           <CardHeader>
@@ -1077,6 +1184,45 @@ function QuoteDetailPage() {
         busy={delMut.isPending}
         onConfirm={() => delMut.mutate()}
       />
+
+      {/* Terms & Conditions Dialog */}
+      <Dialog open={termsDialogOpen} onOpenChange={setTermsDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-base font-semibold flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5 text-emerald-600" />
+              Edit Terms &amp; Conditions — {quote.quote_no}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            <QuoteTermsManager
+              terms={editingTerms}
+              onChangeTerms={setEditingTerms}
+              dealScope={editingScope}
+              onChangeDealScope={setEditingScope}
+              totalAmount={Number(quote.total) || 0}
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-3 border-t">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setTermsDialogOpen(false)}
+              disabled={updateTermsMut.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={() => updateTermsMut.mutate(editingTerms)}
+              disabled={updateTermsMut.isPending}
+            >
+              {updateTermsMut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Save Terms
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {canReassign && (
         <ReassignCustomerDialog

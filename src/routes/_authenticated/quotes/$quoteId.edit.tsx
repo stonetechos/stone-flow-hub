@@ -15,6 +15,8 @@ import {
   Truck,
 } from "lucide-react";
 import { ReassignCustomerDialog } from "@/components/quotes/ReassignCustomerDialog";
+import { QuoteTermsManager } from "@/components/quotes/QuoteTermsManager";
+import { type DealScope } from "@/lib/quotes/terms";
 import { useRoles } from "@/hooks/use-roles";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -344,13 +346,24 @@ function EditQuotePage() {
               onChange={(e) => set("notes", e.target.value || null)}
             />
           </Field>
-          <Field label="Terms" className="md:col-span-2">
-            <Textarea
-              rows={3}
-              value={form.terms ?? ""}
-              onChange={(e) => set("terms", e.target.value || null)}
+          <div className="md:col-span-2">
+            <QuoteTermsManager
+              terms={form.terms ?? ""}
+              onChangeTerms={(t) => set("terms", t || null)}
+              dealScope={
+                form.category === "supply_and_installation"
+                  ? "supply_and_installation"
+                  : "supply_only"
+              }
+              onChangeDealScope={(s: DealScope) =>
+                set(
+                  "category",
+                  s === "supply_and_installation" ? "supply_and_installation" : "supply_only",
+                )
+              }
+              totalAmount={Number(query.data?.total) || 0}
             />
-          </Field>
+          </div>
         </QuickForm.MoreDetails>
         <QuickForm.Actions>
           <Button

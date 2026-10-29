@@ -13,6 +13,7 @@ import { loadBranding, DEFAULT_BRANDING, type BrandingConfig } from "@/lib/brand
 import { getEstimate, getEstimateItems, getEstimateSchedule } from "@/lib/estimates/api";
 import { getQuote, getQuoteItems } from "@/lib/quotes/api";
 import { resolveAllQuoteImages, getLineItemImage } from "@/lib/quotes/quote-images";
+import { detectDealScopeFromItems, generateQuoteTerms } from "@/lib/quotes/terms";
 import { getInvoice, getInvoiceItems } from "@/lib/invoices/api";
 import { getReceipt, getReceiptAllocations } from "@/lib/receipts/api";
 import { RECEIPT_METHOD_LABELS, type ReceiptMethod } from "@/lib/receipts/schema";
@@ -270,6 +271,14 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
         ...(gstSplit.length ? gstSplit : [{ label: "Tax", value: inr(q.tax_amount) }]),
         { label: "Total", value: inr(q.total) },
       ];
+      const scope = detectDealScopeFromItems(items);
+      const effectiveTerms =
+        q.terms && q.terms.trim()
+          ? q.terms.trim()
+          : generateQuoteTerms({
+              dealScope: scope,
+              totalAmount: Number(q.total) || 0,
+            });
       return {
         doc: {
           kind: "quotation",
@@ -285,7 +294,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
           lines,
           totals,
           notes: q.notes ?? undefined,
-          terms: q.terms ?? undefined,
+          terms: effectiveTerms || undefined,
         },
         meta: {
           toName: cust?.name ?? "—",
@@ -686,6 +695,12 @@ export function renderDocWhatsAppText(built: BuiltDocument): string {
   }
   if (doc.terms) {
     lines.push("");
+    if (
+      !doc.terms.toLowerCase().startsWith("terms") &&
+      !doc.terms.toLowerCase().startsWith("*terms")
+    ) {
+      lines.push("*Terms & Conditions:*");
+    }
     lines.push(doc.terms);
   }
   return lines.join("\n");

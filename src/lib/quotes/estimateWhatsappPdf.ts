@@ -14,6 +14,7 @@
 import { loadBranding, DEFAULT_BRANDING, type BrandingConfig } from "@/lib/branding";
 import { formatInr } from "@/lib/format";
 import { normalizeMobile } from "@/lib/zod";
+import { generateQuoteTerms } from "@/lib/quotes/terms";
 
 export interface EstimateWhatsappMessageInput {
   greetingName: string;
@@ -30,6 +31,9 @@ export interface EstimateWhatsappMessageInput {
   cartingLocation?: string;
   totalEstimate: number;
   estimatedDeliveryDate?: string;
+  deliveryTimelineDays?: number | string;
+  deliveryTimelineDate?: string;
+  terms?: string;
   validityDays?: string;
   preparerName: string;
 }
@@ -86,7 +90,17 @@ export function buildEstimateWhatsappMessage(
       : [`Transportation charges will be extra and on actuals.`]),
     deliveryLine,
     validityLine,
-    `Payment Terms: 75% advance and remaining 25% upon completion of work.`,
+    "",
+    "Terms & Conditions:",
+    input.terms && input.terms.trim()
+      ? input.terms.trim()
+      : generateQuoteTerms({
+          dealScope: hasInstallation ? "supply_and_installation" : "supply_only",
+          totalAmount: input.totalEstimate,
+          timelineDays: input.deliveryTimelineDays,
+          deliveryDate: input.deliveryTimelineDate || input.estimatedDeliveryDate,
+        }),
+    "",
     `Please confirm if you'd like to proceed or if any modifications are needed.`,
     `Warm regards,`,
     input.preparerName || "[Your Name]",
@@ -266,6 +280,9 @@ export interface MuralEstimateWhatsappInput {
   cartingLocation?: string;
   totalEstimate: number;
   estimatedDeliveryDate?: string;
+  deliveryTimelineDays?: number | string;
+  deliveryTimelineDate?: string;
+  terms?: string;
   validityDays?: string;
   preparerName: string;
 }
@@ -330,7 +347,17 @@ export function buildMuralEstimateWhatsappMessage(
       : null,
     deliveryLine,
     validityLine,
-    `Payment Terms: 75% advance and remaining 25% upon completion of work.`,
+    "",
+    "Terms & Conditions:",
+    input.terms && input.terms.trim()
+      ? input.terms.trim()
+      : generateQuoteTerms({
+          dealScope: input.installationLabourAmount > 0 ? "supply_and_installation" : "supply_only",
+          totalAmount: input.totalEstimate,
+          timelineDays: input.deliveryTimelineDays,
+          deliveryDate: input.deliveryTimelineDate || input.estimatedDeliveryDate,
+        }),
+    "",
     `Please confirm if you'd like to proceed or if any modifications are needed.`,
     `Warm regards,`,
     input.preparerName || "[Your Name]",

@@ -24,6 +24,8 @@ import { parseQuoteVendorAssignment, assignVendorToQuote } from "@/lib/quotes/ve
 import { AssignQuoteVendorDialog } from "@/components/quotes/AssignQuoteVendorDialog";
 import { QuoteSendRfqDialog } from "@/components/rfqs/QuoteSendRfqDialog";
 import { CustomerAssigneeSelect } from "@/components/customers/CustomerAssigneeSelect";
+import { QuoteTermsManager } from "@/components/quotes/QuoteTermsManager";
+import { detectDealScopeFromItems, generateQuoteTerms, type DealScope } from "@/lib/quotes/terms";
 import { cn } from "@/lib/utils";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
@@ -1020,6 +1022,9 @@ function CreateQuoteDialog({
   const [validUntil, setValidUntil] = useState("");
   const [notes, setNotes] = useState("");
   const [terms, setTerms] = useState("");
+  const [dealScope, setDealScope] = useState<DealScope>("supply_only");
+  const [deliveryDays, setDeliveryDays] = useState<string>("15");
+  const [deliveryDate, setDeliveryDate] = useState<string>("");
   const [items, setItems] = useState<FormItem[]>([emptyItem("", false)]);
   const [mode, setMode] = useState<"manual" | "wall_cladding" | "stone_mural" | "calculator">(
     initialStudio === "mural"
@@ -1043,6 +1048,9 @@ function CreateQuoteDialog({
       setValidUntil("");
       setNotes("");
       setTerms("");
+      setDealScope("supply_only");
+      setDeliveryDays("15");
+      setDeliveryDate("");
       setItems([emptyItem("", false)]);
       if (initialStudio === "mural") setMode("stone_mural");
       else if (initialStudio === "cladding") setMode("wall_cladding");
@@ -1067,6 +1075,25 @@ function CreateQuoteDialog({
       total: saleMode === "cash" ? sub : sub + tax,
     };
   }, [items, saleMode]);
+
+  const effectiveTotal = useMemo(() => {
+    if (mode === "manual") return totals.total;
+    return calcResult ? calcResult.total : totals.total;
+  }, [mode, totals.total, calcResult]);
+
+  useEffect(() => {
+    if (mode === "manual") {
+      setDealScope(detectDealScopeFromItems(items));
+    } else if (calcResult) {
+      const hasInstall = calcResult.items.some(
+        (i) =>
+          i.fulfilment === "supply_and_installation" ||
+          i.description.toLowerCase().includes("installation") ||
+          i.description.toLowerCase().includes("labour"),
+      );
+      setDealScope(hasInstall ? "supply_and_installation" : "supply_only");
+    }
+  }, [items, calcResult, mode]);
 
   const mutation = useMutation({
     mutationFn: createQuote,
@@ -1164,7 +1191,14 @@ function CreateQuoteDialog({
               : null),
         valid_until: validUntil || null,
         notes: [notes, discountNote, sceneNote].filter(Boolean).join("\n\n") || null,
-        terms: terms || null,
+        terms:
+          terms ||
+          generateQuoteTerms({
+            dealScope,
+            totalAmount: effectiveTotal,
+            timelineDays: deliveryDays,
+            deliveryDate,
+          }),
         sale_mode: saleMode,
         hybrid_cash_amount:
           saleMode === "hybrid" && hybridCashAmount ? Number(hybridCashAmount) : undefined,
@@ -1226,7 +1260,14 @@ function CreateQuoteDialog({
       category: category || null,
       valid_until: validUntil || null,
       notes: notes || null,
-      terms: terms || null,
+      terms:
+        terms ||
+        generateQuoteTerms({
+          dealScope,
+          totalAmount: effectiveTotal,
+          timelineDays: deliveryDays,
+          deliveryDate,
+        }),
       sale_mode: saleMode,
       hybrid_cash_amount:
         saleMode === "hybrid" && hybridCashAmount ? Number(hybridCashAmount) : undefined,
@@ -1696,9 +1737,21 @@ function CreateQuoteDialog({
               <Field label="Notes" className="md:col-span-2">
                 <Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
               </Field>
-              <Field label="Terms" className="md:col-span-2">
-                <Textarea rows={2} value={terms} onChange={(e) => setTerms(e.target.value)} />
-              </Field>
+              <div className="md:col-span-2">
+                <QuoteTermsManager
+                  terms={terms}
+                  onChangeTerms={setTerms}
+                  dealScope={dealScope}
+                  onChangeDealScope={setDealScope}
+                  totalAmount={effectiveTotal}
+                  initialTimelineDays={deliveryDays}
+                  initialDeliveryDate={deliveryDate}
+                  onTimelineChange={({ mode: tMode, days: tDays, date: tDate }) => {
+                    if (tMode === "days") setDeliveryDays(tDays || "15");
+                    if (tMode === "date") setDeliveryDate(tDate || "");
+                  }}
+                />
+              </div>
             </QuickForm.Advanced>
 
             <QuickForm.Actions>
