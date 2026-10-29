@@ -307,7 +307,16 @@ export function buildMuralEstimateWhatsappMessage(
     input.baseStoneSourcing === "client_provided"
       ? `• Base Stone Slabs: Provided by Client (No stone cost; carving & processing only)`
       : `• Base Stone Slabs: ${formatInr(input.slabAmount)} (@ ${formatInr(input.slabPricePerSqft)}/sq ft)`,
-    `• Base Stone CNC Work: ${formatInr(input.cncAmount)} (${input.cncWorkSummary})`,
+    input.cncAmount > 0
+      ? `• Base Stone CNC Work: ${formatInr(input.cncAmount)} (${input.cncWorkSummary})`
+      : null,
+    input.polishingAmount > 0
+      ? `• Base Stone Polishing Work: ${formatInr(input.polishingAmount)}`
+      : null,
+    input.rubbingAmount > 0 ? `• Surface Rubbing: ${formatInr(input.rubbingAmount)}` : null,
+    input.pastingAmount && input.pastingAmount > 0
+      ? `• Stone Pasting Work: ${formatInr(input.pastingAmount)} (Specialized epoxy & artisan bonding, lump sum)`
+      : null,
     input.overlayDetails
       ? input.overlayDetails.sourcing === "client_provided"
         ? `• Overlay Stone Piece: ${input.overlayDetails.stoneType} (${input.overlayDetails.thicknessMm}mm, ${input.overlayDetails.sqft.toFixed(1)} sq ft) — Provided by Client`
@@ -316,11 +325,6 @@ export function buildMuralEstimateWhatsappMessage(
     input.overlayDetails?.cncAmount && input.overlayDetails.cncAmount > 0
       ? `• Overlay CNC Carving: ${formatInr(input.overlayDetails.cncAmount)}${input.overlayDetails.cncSummary ? ` (${input.overlayDetails.cncSummary})` : ""}`
       : null,
-    input.pastingAmount && input.pastingAmount > 0
-      ? `• Overlay Pasting & Bonding Work: ${formatInr(input.pastingAmount)} (Specialized epoxy & artisan fixing)`
-      : null,
-    input.rubbingAmount > 0 ? `• Surface Rubbing: ${formatInr(input.rubbingAmount)}` : null,
-    input.polishingAmount > 0 ? `• Polishing Work: ${formatInr(input.polishingAmount)}` : null,
     input.installationLabourAmount > 0
       ? `• Installation Labour: ${formatInr(input.installationLabourAmount)}`
       : null,

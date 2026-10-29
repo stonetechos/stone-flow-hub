@@ -121,11 +121,18 @@ export const estimateMuralWorksheetSchema = z.object({
     amount: z.number().nonnegative(),
   }),
   cnc: z.object({
+    enabled: z.boolean().optional(),
     selectedKey: z.string(),
     label: z.string(),
     ratePerSqft: z.number().nonnegative(),
     amount: z.number().nonnegative(),
   }),
+  pasting: z
+    .object({
+      enabled: z.boolean(),
+      amount: z.number().nonnegative(),
+    })
+    .optional(),
   overlay: z
     .object({
       enabled: z.boolean(),

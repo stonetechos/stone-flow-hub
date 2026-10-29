@@ -410,7 +410,7 @@ describe("estimateCatalog - rounding and wastage calculations", () => {
       );
       expect(msg).toContain("• Overlay CNC Carving: ₹2,400 (Engraving (6mm) @ ₹200/sq ft)");
       expect(msg).toContain(
-        "• Overlay Pasting & Bonding Work: ₹1,800 (Specialized epoxy & artisan fixing)",
+        "• Stone Pasting Work: ₹1,800 (Specialized epoxy & artisan bonding, lump sum)",
       );
       expect(msg).toContain("Total Estimate: ₹60,400");
     });
@@ -465,7 +465,7 @@ describe("estimateCatalog - rounding and wastage calculations", () => {
       );
       expect(msg).toContain("• Overlay CNC Carving: ₹5,000 (Relief Carving @ ₹250/sq ft)");
       expect(msg).toContain(
-        "• Overlay Pasting & Bonding Work: ₹3,000 (Specialized epoxy & artisan fixing)",
+        "• Stone Pasting Work: ₹3,000 (Specialized epoxy & artisan bonding, lump sum)",
       );
       expect(msg).toContain(
         "Base stone slabs to be supplied at site/factory by client as per specified dimensions and thickness.",
@@ -540,6 +540,48 @@ describe("estimateCatalog - rounding and wastage calculations", () => {
       expect(parsed.overlay?.enabled).toBe(true);
       expect(parsed.overlay?.pastingAmount).toBe(1500);
       expect(parsed.sceneDescription).toBe("Mandir Sanctum Backwall with Tree of Life");
+    });
+
+    it("handles Base Stone Polishing Work and Dedicated Lump Sum Pasting in WhatsApp estimate", () => {
+      const msg = buildMuralEstimateWhatsappMessage(
+        {
+          greetingName: "Harish",
+          sceneDescription: "Contemporary CNC geometric stone mural",
+          wallSizeSummary: "8ft x 4ft",
+          wallSqft: 32,
+          slabsCount: 1,
+          slabDetails: "50mm Sandstone (32.0 sq ft coverage)",
+          totalSlabSqft: 32,
+          slabPricePerSqft: 550,
+          slabAmount: 17600,
+          baseStoneSourcing: "stone_tech",
+          cncAmount: 14400,
+          cncWorkSummary: "Engraving / Dipping Work (uptil 6 mm) @ ₹450/sq ft",
+          polishingAmount: 9600,
+          rubbingAmount: 800,
+          pastingAmount: 5000,
+          installationLabourAmount: 6400,
+          adhesivesAmount: 1800,
+          adhesivesSummary: "2 bag(s) Standard Cement Based Stone Adhesive White",
+          touchUpAmount: 6400,
+          cartingAmount: 2000,
+          cartingLocation: "Ahmedabad Site",
+          totalEstimate: 64000,
+          preparerName: "Stone Tech Atelier",
+        },
+        "Stone Tech",
+      );
+
+      expect(msg).toContain("• Base Stone Slabs: ₹17,600 (@ ₹550/sq ft)");
+      expect(msg).toContain(
+        "• Base Stone CNC Work: ₹14,400 (Engraving / Dipping Work (uptil 6 mm) @ ₹450/sq ft)",
+      );
+      expect(msg).toContain("• Base Stone Polishing Work: ₹9,600");
+      expect(msg).toContain("• Surface Rubbing: ₹800");
+      expect(msg).toContain(
+        "• Stone Pasting Work: ₹5,000 (Specialized epoxy & artisan bonding, lump sum)",
+      );
+      expect(msg).toContain("Total Estimate: ₹64,000");
     });
   });
 });
