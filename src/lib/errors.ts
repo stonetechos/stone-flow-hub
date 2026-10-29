@@ -202,11 +202,8 @@ export function mapDbError(
   const hint = err.hint ?? "";
   const combined = `${msg} ${details} ${hint}`.toLowerCase();
 
-  // Only log raw DB internals in dev/local — never in the published app,
-  // where they would leak table / constraint / RPC names to end users.
-  const diagnostics = isDiagnosticsMode();
-  if (diagnostics && typeof console !== "undefined") {
-    recordDbErrorForDiagnostics(err);
+  // Always log raw DB internals to the browser console for developer inspection and telemetry
+  if (typeof console !== "undefined") {
     console.error("[db error]", {
       code: err.code,
       message: msg,
@@ -214,6 +211,11 @@ export function mapDbError(
       hint,
       object: extractDbObject(msg, details, hint),
     });
+  }
+
+  const diagnostics = isDiagnosticsMode();
+  if (diagnostics) {
+    recordDbErrorForDiagnostics(err);
   }
 
   const diag = isDiagnosticsMode() ? buildDiagnostic(err) : "";

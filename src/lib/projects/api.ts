@@ -83,30 +83,42 @@ export async function getProject(id: string): Promise<ProjectWithCustomer | null
 }
 
 export async function getNextProjectCode(): Promise<string> {
-  const { data } = await getDb()
-    .from("projects")
-    .select("project_code")
-    .order("project_code", { ascending: false })
-    .limit(20);
+  try {
+    const [{ data: byCode }, { data: byDate }] = await Promise.all([
+      getDb()
+        .from("projects")
+        .select("project_code")
+        .order("project_code", { ascending: false })
+        .limit(50),
+      getDb()
+        .from("projects")
+        .select("project_code")
+        .order("created_at", { ascending: false })
+        .limit(50),
+    ]);
 
-  let maxNum = 0;
-  if (data) {
-    for (const row of data) {
+    let maxNum = 0;
+    const rows = [...(byCode ?? []), ...(byDate ?? [])];
+    for (const row of rows) {
       const match = /PRJ-(\d+)/i.exec(row.project_code || "");
       if (match) {
         const n = parseInt(match[1], 10);
         if (n > maxNum) maxNum = n;
       }
     }
+    return `PRJ-${String(maxNum + 1).padStart(6, "0")}`;
+  } catch (e) {
+    console.warn("[getNextProjectCode] Failed to query existing projects, using fallback code:", e);
+    return `PRJ-${String(Date.now()).slice(-6)}`;
   }
-  return `PRJ-${String(maxNum + 1).padStart(6, "0")}`;
 }
 
 export async function createProject(input: ProjectCreateInput): Promise<ProjectRow> {
   const parsed = projectCreateSchema.parse(input);
+  const safeCode = await getNextProjectCode();
 
   const payload = {
-    project_code: "",
+    project_code: safeCode,
     customer_id: parsed.customer_id,
     name: parsed.name,
     city: parsed.city,
@@ -124,24 +136,37 @@ export async function createProject(input: ProjectCreateInput): Promise<ProjectR
 
   if (!error && data) return data;
 
-  // Collision recovery: if DB sequence hits an existing code or trigger fails
-  const isUniqueViolation =
+  // Collision or timeout recovery: if DB sequence hits an existing code or times out on lock
+  const isRetryable =
     error?.code === "23505" ||
-    /unique|duplicate/i.test(error?.message || "") ||
+    error?.code === "57014" ||
+    /unique|duplicate|timeout|deadlock/i.test(error?.message || "") ||
     /projects_project_code_key/i.test(error?.details || error?.message || "");
 
-  if (isUniqueViolation) {
-    const safeCode = await getNextProjectCode();
+  if (isRetryable) {
+    console.warn(
+      `[createProject] Initial project insert encountered ${error?.code || error?.message}. Retrying with next sequence...`,
+    );
+    await new Promise((r) => setTimeout(r, 100));
+    const nextCode = await getNextProjectCode();
+    const match = /PRJ-(\d+)/i.exec(nextCode);
+    const prevMatch = /PRJ-(\d+)/i.exec(safeCode);
+    const nextNum = Math.max(
+      match ? parseInt(match[1], 10) : 1,
+      (prevMatch ? parseInt(prevMatch[1], 10) : 0) + 1,
+    );
+    const finalSafeCode = `PRJ-${String(nextNum).padStart(6, "0")}`;
+
     const { data: retryData, error: retryErr } = await getDb()
       .from("projects")
-      .insert({ ...payload, project_code: safeCode })
+      .insert({ ...payload, project_code: finalSafeCode })
       .select("*")
       .single();
     if (!retryErr && retryData) return retryData;
     throw new AppError(mapDbError(retryErr || error));
   }
 
-  if (error) throw new AppError(mapDbError(error));
+  if (error || !data) throw new AppError(mapDbError(error));
   return data;
 }
 
@@ -165,7 +190,7 @@ export async function updateProject(id: string, input: ProjectCreateInput): Prom
     .eq("id", id)
     .select("*")
     .single();
-  if (error) throw new AppError(mapDbError(error));
+  if (error || !data) throw new AppError(mapDbError(error));
   return data;
 }
 

@@ -48,6 +48,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { compressImageToDataUrl } from "@/lib/images/compress";
 import { Field } from "@/components/forms/Field";
 import { formatInr } from "@/lib/format";
 import { MATERIAL_OPTIONS } from "@/lib/customers/schema";
@@ -265,14 +266,19 @@ export function EstimateStudioCalculator({
   function updateProduct(id: string, patch: Partial<ProductForm>) {
     setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
   }
-  function onProductImage(id: string, file: File | null) {
+  async function onProductImage(id: string, file: File | null) {
     if (!file) {
       updateProduct(id, { imageDataUrl: null });
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => updateProduct(id, { imageDataUrl: String(reader.result) });
-    reader.readAsDataURL(file);
+    try {
+      const dataUrl = await compressImageToDataUrl(file, 1000, 0.75);
+      updateProduct(id, { imageDataUrl: dataUrl });
+    } catch {
+      const reader = new FileReader();
+      reader.onload = () => updateProduct(id, { imageDataUrl: String(reader.result) });
+      reader.readAsDataURL(file);
+    }
   }
 
   // ---- Derived calculations ----------------------------------------------

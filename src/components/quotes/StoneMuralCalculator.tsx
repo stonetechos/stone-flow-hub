@@ -48,6 +48,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { compressImageToDataUrl } from "@/lib/images/compress";
 import { formatInr } from "@/lib/format";
 import {
   LENGTH_UNITS,
@@ -794,12 +795,17 @@ export function StoneMuralCalculator({
     }
   }, [items, worksheet, wallAreaSqft, total, onResult]);
 
-  function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setImageDataUrl(String(reader.result));
-    reader.readAsDataURL(file);
+    try {
+      const dataUrl = await compressImageToDataUrl(file, 1000, 0.75);
+      setImageDataUrl(dataUrl);
+    } catch {
+      const reader = new FileReader();
+      reader.onload = () => setImageDataUrl(String(reader.result));
+      reader.readAsDataURL(file);
+    }
   }
 
   async function handleGenerateAndSend() {
