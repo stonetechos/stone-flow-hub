@@ -34,6 +34,7 @@ import { QuoteTermsManager } from "@/components/quotes/QuoteTermsManager";
 import {
   generateQuoteTerms,
   detectDealScopeFromItems,
+  detectClientProvidedSlabFromItems,
   ADVANCE_PAYMENT_THRESHOLD_INR,
   type DealScope,
 } from "@/lib/quotes/terms";
@@ -180,6 +181,7 @@ function QuoteDetailPage() {
   });
 
   const openTermsDialog = () => {
+    const isClientSlab = detectClientProvidedSlabFromItems(items.data, q.data?.wall_estimate);
     setEditingScope(detectedScope);
     setEditingTerms(
       q.data?.terms && q.data.terms.trim()
@@ -187,6 +189,7 @@ function QuoteDetailPage() {
         : generateQuoteTerms({
             dealScope: detectedScope,
             totalAmount: Number(q.data?.total) || 0,
+            clientProvidedSlab: isClientSlab,
           }),
     );
     setTermsDialogOpen(true);
@@ -1201,6 +1204,10 @@ function QuoteDetailPage() {
               dealScope={editingScope}
               onChangeDealScope={setEditingScope}
               totalAmount={Number(quote.total) || 0}
+              clientProvidedSlab={detectClientProvidedSlabFromItems(
+                items.data,
+                quote.wall_estimate,
+              )}
             />
           </div>
           <div className="flex justify-end gap-2 pt-3 border-t">

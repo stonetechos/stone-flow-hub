@@ -32,6 +32,7 @@ import {
   CheckCircle2,
   X,
   FileText,
+  ShieldAlert,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -384,6 +385,8 @@ export function StoneMuralCalculator({
       version: 1,
       scenario: "stone_mural",
       unit,
+      baseStoneSourcing,
+      clientProvidedSlab: baseStoneSourcing === "client_provided",
       wall: {
         height: wallH,
         length: wallL,
@@ -947,6 +950,9 @@ export function StoneMuralCalculator({
                 key={chip}
                 type="button"
                 onClick={() => {
+                  if (chip === "Base Stone Provided by Client") {
+                    setBaseStoneSourcing("client_provided");
+                  }
                   setSceneDescription((prev) => {
                     const trimmed = prev.trim();
                     if (!trimmed) return chip;
@@ -1044,44 +1050,79 @@ export function StoneMuralCalculator({
           </CardHeader>
           <CardContent className="p-4 pt-2 space-y-3">
             {/* Base Stone Sourcing Selector */}
-            <div className="rounded-md border border-border/80 bg-muted/15 p-2 space-y-1">
+            <div className="rounded-md border border-border/80 bg-muted/15 p-2 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-medium text-foreground">Base Stone Sourcing</span>
                 <Badge
                   variant={baseStoneSourcing === "stone_tech" ? "default" : "outline"}
-                  className="text-[10px]"
+                  className={`text-[10px] ${
+                    baseStoneSourcing === "client_provided"
+                      ? "border-emerald-600 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 font-semibold"
+                      : ""
+                  }`}
                 >
                   {baseStoneSourcing === "stone_tech"
                     ? "Procured by Stone Tech"
-                    : "Client-Provided Slab"}
+                    : "Client-Supplied Slab (CNC Work Only)"}
                 </Badge>
               </div>
-              <div className="grid grid-cols-2 gap-1.5">
+              <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setBaseStoneSourcing("stone_tech")}
-                  className={`text-xs py-1 px-2 rounded font-medium border text-left cursor-pointer transition-all ${
+                  className={`text-xs py-2 px-2.5 rounded-md font-medium border text-left cursor-pointer transition-all ${
                     baseStoneSourcing === "stone_tech"
-                      ? "border-primary bg-primary/10 text-primary font-semibold ring-1 ring-primary"
+                      ? "border-primary bg-primary/10 text-primary font-semibold ring-1 ring-primary shadow-2xs"
                       : "border-border bg-background text-muted-foreground hover:bg-muted/50"
                   }`}
                 >
-                  <div className="font-semibold text-[11px]">Procured by Stone Tech</div>
-                  <div className="text-[9px] text-muted-foreground">We supply base stone</div>
+                  <div className="font-semibold text-xs">Procured by Stone Tech</div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5">
+                    We supply base stone slab
+                  </div>
                 </button>
                 <button
                   type="button"
                   onClick={() => setBaseStoneSourcing("client_provided")}
-                  className={`text-xs py-1 px-2 rounded font-medium border text-left cursor-pointer transition-all ${
+                  className={`text-xs py-2 px-2.5 rounded-md font-medium border text-left cursor-pointer transition-all ${
                     baseStoneSourcing === "client_provided"
-                      ? "border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 font-semibold ring-1 ring-emerald-600"
+                      ? "border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-100 font-semibold ring-1 ring-emerald-600 shadow-2xs"
                       : "border-border bg-background text-muted-foreground hover:bg-muted/50"
                   }`}
                 >
-                  <div className="font-semibold text-[11px]">Provided by Client</div>
-                  <div className="text-[9px] text-muted-foreground">Client supplies (₹0 stone)</div>
+                  <div className="font-semibold text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-1">
+                    <span>Provided by Client</span>
+                    <span className="text-[10px] bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 px-1 rounded font-bold">
+                      ₹0 Slab
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-emerald-700/80 dark:text-emerald-300/80 mt-0.5">
+                    Client supplies slab (CNC job work only)
+                  </div>
                 </button>
               </div>
+
+              {/* Informational banner when Client supplies slab */}
+              {baseStoneSourcing === "client_provided" && (
+                <div className="rounded-md border border-emerald-300/80 bg-emerald-50/90 dark:bg-emerald-950/30 p-2.5 text-xs text-emerald-950 dark:text-emerald-200 space-y-1">
+                  <div className="flex items-center gap-1.5 font-semibold text-emerald-800 dark:text-emerald-300">
+                    <ShieldAlert className="h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-400" />
+                    <span>Client-Supplied Slab Mode — CNC Job Work Only</span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed text-emerald-900/90 dark:text-emerald-300/90">
+                    Base stone slab material is supplied by the client (₹0 stone charge). Only CNC
+                    carving job work and selected finishing services will be billed.
+                  </p>
+                  <p className="text-[10px] font-medium text-emerald-800 dark:text-emerald-300 flex items-center gap-1">
+                    <span>🛡️</span>
+                    <span>
+                      Priority Breakage Disclaimer #1 (Waiver for natural stone brittleness/cracking
+                      during CNC job work or transport) will be automatically affixed to quotation
+                      terms.
+                    </span>
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-3 gap-2">
@@ -2256,8 +2297,19 @@ export function StoneMuralCalculator({
               return (
                 <div key={idx} className="py-2 flex items-center justify-between gap-4">
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-slate-800 dark:text-slate-200 truncate">
-                      {idx + 1}. {it.description}
+                    <div className="font-semibold text-slate-800 dark:text-slate-200 truncate flex items-center gap-1.5">
+                      <span className="truncate">
+                        {idx + 1}. {it.description}
+                      </span>
+                      {Number(it.unit_price) === 0 &&
+                        it.description.toLowerCase().includes("client") && (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] shrink-0 bg-emerald-50 text-emerald-800 border-emerald-300 font-semibold"
+                          >
+                            Client Scope
+                          </Badge>
+                        )}
                     </div>
                     <div className="text-[11px] text-muted-foreground mt-0.5">
                       Qty:{" "}

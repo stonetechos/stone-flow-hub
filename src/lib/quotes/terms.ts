@@ -30,6 +30,7 @@ export interface QuoteTermsOptions {
   timelineDays?: number | string;
   deliveryDate?: string;
   customTimelineText?: string;
+  clientProvidedSlab?: boolean;
 }
 
 /** Formats a date string (YYYY-MM-DD or readable) into Indian standard "DD MMM YYYY". */
@@ -111,6 +112,11 @@ export function buildPaymentTermsTerm(
   return `The payment terms are 80% advance token upon order booking, and the remaining 20% balance payment has to be provided once the material gets delivered / prior to dispatch.`;
 }
 
+/** Builds the priority breakage liability disclaimer term when stone slab is provided by the client. */
+export function buildClientProvidedSlabBreakageTerm(): string {
+  return `Priority Condition — Client-Supplied Stone / Slab Breakage Disclaimer: As the base stone slab / material is provided directly by the client, Stone Tech undertakes CNC job work, carving, handling, and transportation strictly at the client's own risk. Stone Tech holds no responsibility or financial liability for any damage, cracking, fracturing, or breakage of the slab during CNC job work, carving, handling, fabrication, or transit if the natural stone exhibits inherent brittleness, internal fissures, structural weakness, or easily crackable characteristics.`;
+}
+
 /** Generates the complete list of polished terms and conditions as individual strings. */
 export function getQuoteTermsList(options: QuoteTermsOptions = {}): string[] {
   const scope: DealScope = options.dealScope || "supply_only";
@@ -126,28 +132,35 @@ export function getQuoteTermsList(options: QuoteTermsOptions = {}): string[] {
 
   const paymentTerm = buildPaymentTermsTerm(scope, total);
 
-  const commonTerms = [
-    `1. Delivery Timeline: ${deliveryTerm}`,
-    `2. Payment Terms: ${paymentTerm}`,
-    `3. Natural Variation: This is a natural stone product; variation in color, veining, tonal shade, and surface texture is an inherent characteristic and consistency cannot be guaranteed.`,
-    `4. Material Evolution: Natural stone has the intrinsic tendency to show its geological character, oxidation, or natural tonal patina after days or months post-installation, which cannot be predicted despite technical expertise.`,
-    `5. Non-Returnable: Material once sold, custom fabricated, cut, or dispatched will not be taken back, exchanged, or cancelled under any circumstances.`,
-    `6. Transportation & Freight: Local transportation, freight, and unloading, if not explicitly itemized in this quotation, will be charged extra at actuals and conveyed during dispatch.`,
-  ];
+  const rawTerms: string[] = [];
 
-  if (scope === "supply_and_installation") {
-    return [
-      ...commonTerms,
-      `7. Scaffolding & Site Facilities: Necessary scaffolding, H-frames, electricity, water, and secure material storage at the site must be provided by the client.`,
-      `8. Site & Surface Readiness: The workable surface must be verified by the client prior to initiation of installation; Stone Tech will not be held responsible for substrate defects, wall undulations, or existing structural alignment flaws on the workable wall.`,
-      `9. Jurisdiction: Any dispute arising out of or related to this quotation is strictly subject to Ahmedabad Jurisdiction.`,
-    ];
+  // Priority condition #1 when client provides stone slab
+  if (options.clientProvidedSlab) {
+    rawTerms.push(buildClientProvidedSlabBreakageTerm());
   }
 
-  return [
-    ...commonTerms,
-    `7. Jurisdiction: Any dispute arising out of or related to this quotation is strictly subject to Ahmedabad Jurisdiction.`,
-  ];
+  rawTerms.push(
+    `Delivery Timeline: ${deliveryTerm}`,
+    `Payment Terms: ${paymentTerm}`,
+    `Natural Variation: This is a natural stone product; variation in color, veining, tonal shade, and surface texture is an inherent characteristic and consistency cannot be guaranteed.`,
+    `Material Evolution: Natural stone has the intrinsic tendency to show its geological character, oxidation, or natural tonal patina after days or months post-installation, which cannot be predicted despite technical expertise.`,
+    `Non-Returnable: Material once sold, custom fabricated, cut, or dispatched will not be taken back, exchanged, or cancelled under any circumstances.`,
+    `Transportation & Freight: Local transportation, freight, and unloading, if not explicitly itemized in this quotation, will be charged extra at actuals and conveyed during dispatch.`,
+  );
+
+  if (scope === "supply_and_installation") {
+    rawTerms.push(
+      `Scaffolding & Site Facilities: Necessary scaffolding, H-frames, electricity, water, and secure material storage at the site must be provided by the client.`,
+      `Site & Surface Readiness: The workable surface must be verified by the client prior to initiation of installation; Stone Tech will not be held responsible for substrate defects, wall undulations, or existing structural alignment flaws on the workable wall.`,
+      `Jurisdiction: Any dispute arising out of or related to this quotation is strictly subject to Ahmedabad Jurisdiction.`,
+    );
+  } else {
+    rawTerms.push(
+      `Jurisdiction: Any dispute arising out of or related to this quotation is strictly subject to Ahmedabad Jurisdiction.`,
+    );
+  }
+
+  return rawTerms.map((term, idx) => `${idx + 1}. ${term}`);
 }
 
 /** Generates the full formatted Terms & Conditions string for storing in `quotes.terms` or appending to PDF/WhatsApp. */
@@ -170,4 +183,60 @@ export function detectDealScopeFromItems(
     );
   });
   return hasInstall ? "supply_and_installation" : "supply_only";
+}
+
+/** Helper to detect if a quotation involves client-provided stone / slab from items or worksheet metadata. */
+export function detectClientProvidedSlabFromItems(
+  items?: Array<{ description?: string | null; unit_price?: number | string | null }>,
+  worksheet?: unknown,
+): boolean {
+  // Check worksheet metadata if available
+  if (worksheet && typeof worksheet === "object") {
+    const ws = worksheet as Record<string, unknown>;
+    const slab = ws.slab as Record<string, unknown> | undefined;
+    if (slab && typeof slab === "object" && slab.sourcing === "client_provided") return true;
+    if (ws.baseStoneSourcing === "client_provided") return true;
+    const overlay = ws.overlay as Record<string, unknown> | undefined;
+    if (overlay && typeof overlay === "object" && overlay.sourcing === "client_provided")
+      return true;
+  }
+
+  // Check line items descriptions & notes
+  if (Array.isArray(items)) {
+    return items.some((it) => {
+      const desc = (it.description || "").toLowerCase();
+      const isClientProvided =
+        desc.includes("provided by client") ||
+        desc.includes("client-provided") ||
+        desc.includes("client provided") ||
+        desc.includes("client scope") ||
+        desc.includes("supplied by client");
+
+      if (isClientProvided) return true;
+
+      // In case description has "base stone" and unit_price is 0
+      if (
+        (desc.includes("base stone") || desc.includes("slab")) &&
+        (Number(it.unit_price) === 0 || it.unit_price === "0") &&
+        desc.includes("client")
+      ) {
+        return true;
+      }
+      return false;
+    });
+  }
+
+  return false;
+}
+
+/** Checks whether a terms text already contains the client breakage disclaimer clause. */
+export function hasClientBreakageDisclaimer(termsText?: string | null): boolean {
+  if (!termsText) return false;
+  const lower = termsText.toLowerCase();
+  return (
+    lower.includes("client-supplied stone") ||
+    lower.includes("slab breakage disclaimer") ||
+    lower.includes("breakage of the slab") ||
+    lower.includes("brittle and easily crackable")
+  );
 }

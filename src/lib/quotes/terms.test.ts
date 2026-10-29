@@ -1,12 +1,15 @@
 import { describe, expect, it } from "bun:test";
 import {
   ADVANCE_PAYMENT_THRESHOLD_INR,
+  buildClientProvidedSlabBreakageTerm,
   buildDeliveryTimelineTerm,
   buildPaymentTermsTerm,
+  detectClientProvidedSlabFromItems,
   detectDealScopeFromItems,
   formatTimelineDate,
   generateQuoteTerms,
   getQuoteTermsList,
+  hasClientBreakageDisclaimer,
 } from "./terms";
 
 describe("Quote Terms & Conditions Engine", () => {
@@ -145,6 +148,143 @@ describe("Quote Terms & Conditions Engine", () => {
       expect(fullText).toContain("100% advance payment required");
       expect(fullText).toContain("Ahmedabad Jurisdiction");
       expect(fullText.split("\n\n").length).toBe(7);
+    });
+  });
+
+  describe("Client Provided Slab & Priority Breakage Condition", () => {
+    it("builds the priority breakage disclaimer containing CNC job work and transportation waiver", () => {
+      const term = buildClientProvidedSlabBreakageTerm();
+      expect(term).toContain(
+        "Priority Condition — Client-Supplied Stone / Slab Breakage Disclaimer:",
+      );
+      expect(term).toContain(
+        "Stone Tech undertakes CNC job work, carving, handling, and transportation strictly at the client's own risk",
+      );
+      expect(term).toContain("inherent brittleness");
+      expect(term).toContain("easily crackable characteristics");
+      expect(term).toContain(
+        "breakage of the slab during CNC job work, carving, handling, fabrication, or transit",
+      );
+    });
+
+    it("prepends Priority Condition as Term #1 for Supply Only, increasing total terms from 7 to 8", () => {
+      const termsList = getQuoteTermsList({
+        dealScope: "supply_only",
+        totalAmount: 65000,
+        timelineMode: "days",
+        timelineDays: 15,
+        clientProvidedSlab: true,
+      });
+
+      expect(termsList.length).toBe(8);
+      expect(termsList[0]).toContain(
+        "1. Priority Condition — Client-Supplied Stone / Slab Breakage Disclaimer:",
+      );
+      expect(termsList[1]).toContain(
+        "2. Delivery Timeline: The time duration to deliver and dispatch the product is 15 days",
+      );
+      expect(termsList[2]).toContain("3. Payment Terms: The payment terms are 80% advance token");
+      expect(termsList[3]).toContain("4. Natural Variation:");
+      expect(termsList[4]).toContain("5. Material Evolution:");
+      expect(termsList[5]).toContain("6. Non-Returnable:");
+      expect(termsList[6]).toContain("7. Transportation & Freight:");
+      expect(termsList[7]).toContain(
+        "8. Jurisdiction: Any dispute arising out of or related to this quotation is strictly subject to Ahmedabad Jurisdiction.",
+      );
+    });
+
+    it("prepends Priority Condition as Term #1 for Supply + Installation, increasing total terms from 9 to 10", () => {
+      const termsList = getQuoteTermsList({
+        dealScope: "supply_and_installation",
+        totalAmount: 95000,
+        timelineMode: "date",
+        deliveryDate: "2026-12-25",
+        clientProvidedSlab: true,
+      });
+
+      expect(termsList.length).toBe(10);
+      expect(termsList[0]).toContain(
+        "1. Priority Condition — Client-Supplied Stone / Slab Breakage Disclaimer:",
+      );
+      expect(termsList[1]).toContain(
+        "2. Delivery Timeline: The product delivery and dispatch will be completed on or before 25 Dec 2026",
+      );
+      expect(termsList[2]).toContain("3. Payment Terms: The payment terms are 50% advance token");
+      expect(termsList[3]).toContain("4. Natural Variation:");
+      expect(termsList[4]).toContain("5. Material Evolution:");
+      expect(termsList[5]).toContain("6. Non-Returnable:");
+      expect(termsList[6]).toContain("7. Transportation & Freight:");
+      expect(termsList[7]).toContain("8. Scaffolding & Site Facilities:");
+      expect(termsList[8]).toContain("9. Site & Surface Readiness:");
+      expect(termsList[9]).toContain(
+        "10. Jurisdiction: Any dispute arising out of or related to this quotation is strictly subject to Ahmedabad Jurisdiction.",
+      );
+    });
+
+    it("correctly identifies breakage disclaimer presence with hasClientBreakageDisclaimer", () => {
+      const withDisclaimer = generateQuoteTerms({
+        dealScope: "supply_only",
+        clientProvidedSlab: true,
+      });
+      const withoutDisclaimer = generateQuoteTerms({
+        dealScope: "supply_only",
+        clientProvidedSlab: false,
+      });
+
+      expect(hasClientBreakageDisclaimer(withDisclaimer)).toBe(true);
+      expect(hasClientBreakageDisclaimer(withoutDisclaimer)).toBe(false);
+      expect(hasClientBreakageDisclaimer("")).toBe(false);
+      expect(hasClientBreakageDisclaimer(null)).toBe(false);
+    });
+
+    it("detects client provided slab from line items or worksheet", () => {
+      // From item description
+      expect(
+        detectClientProvidedSlabFromItems([
+          {
+            description:
+              "Base Stone Slabs — Provided by Client (Mint Sandstone 50mm) [Client Scope]",
+          },
+          { description: "Base Stone CNC Carving — Deep 3D Bas-Relief" },
+        ]),
+      ).toBe(true);
+
+      // From item with unit_price: 0 and client scope
+      expect(
+        detectClientProvidedSlabFromItems([
+          { description: "Stone Slab Client Supplied", unit_price: 0 },
+        ]),
+      ).toBe(true);
+
+      // From worksheet metadata
+      expect(
+        detectClientProvidedSlabFromItems([], {
+          scenario: "stone_mural",
+          slab: { sourcing: "client_provided" },
+        }),
+      ).toBe(true);
+
+      // From worksheet baseStoneSourcing
+      expect(
+        detectClientProvidedSlabFromItems([], {
+          scenario: "stone_mural",
+          baseStoneSourcing: "client_provided",
+        }),
+      ).toBe(true);
+
+      // When procured by stone tech
+      expect(
+        detectClientProvidedSlabFromItems(
+          [
+            { description: "Base Stone Slabs — Mint Sandstone 50mm", unit_price: 550 },
+            { description: "Base Stone CNC Carving — Deep 3D Bas-Relief", unit_price: 450 },
+          ],
+          {
+            scenario: "stone_mural",
+            slab: { sourcing: "stone_tech" },
+          },
+        ),
+      ).toBe(false);
     });
   });
 

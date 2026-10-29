@@ -101,6 +101,8 @@ export const estimateMuralWorksheetSchema = z.object({
   version: z.literal(1),
   scenario: z.literal("stone_mural"),
   unit: z.enum(LENGTH_UNITS),
+  baseStoneSourcing: z.enum(["stone_tech", "client_provided"]).optional(),
+  clientProvidedSlab: z.boolean().optional(),
   wall: z.object({
     height: z.number().nonnegative(),
     length: z.number().nonnegative(),

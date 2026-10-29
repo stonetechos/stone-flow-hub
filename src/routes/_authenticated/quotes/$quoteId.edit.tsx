@@ -16,7 +16,11 @@ import {
 } from "lucide-react";
 import { ReassignCustomerDialog } from "@/components/quotes/ReassignCustomerDialog";
 import { QuoteTermsManager } from "@/components/quotes/QuoteTermsManager";
-import { type DealScope } from "@/lib/quotes/terms";
+import {
+  type DealScope,
+  detectClientProvidedSlabFromItems,
+  hasClientBreakageDisclaimer,
+} from "@/lib/quotes/terms";
 import { useRoles } from "@/hooks/use-roles";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -362,6 +366,10 @@ function EditQuotePage() {
                 )
               }
               totalAmount={Number(query.data?.total) || 0}
+              clientProvidedSlab={
+                detectClientProvidedSlabFromItems(undefined, query.data?.wall_estimate) ||
+                hasClientBreakageDisclaimer(form.terms)
+              }
             />
           </div>
         </QuickForm.MoreDetails>

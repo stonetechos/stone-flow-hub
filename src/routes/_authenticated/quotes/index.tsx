@@ -25,7 +25,12 @@ import { AssignQuoteVendorDialog } from "@/components/quotes/AssignQuoteVendorDi
 import { QuoteSendRfqDialog } from "@/components/rfqs/QuoteSendRfqDialog";
 import { CustomerAssigneeSelect } from "@/components/customers/CustomerAssigneeSelect";
 import { QuoteTermsManager } from "@/components/quotes/QuoteTermsManager";
-import { detectDealScopeFromItems, generateQuoteTerms, type DealScope } from "@/lib/quotes/terms";
+import {
+  detectClientProvidedSlabFromItems,
+  detectDealScopeFromItems,
+  generateQuoteTerms,
+  type DealScope,
+} from "@/lib/quotes/terms";
 import { cn } from "@/lib/utils";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
@@ -1023,6 +1028,7 @@ function CreateQuoteDialog({
   const [notes, setNotes] = useState("");
   const [terms, setTerms] = useState("");
   const [dealScope, setDealScope] = useState<DealScope>("supply_only");
+  const [isClientProvidedSlab, setIsClientProvidedSlab] = useState<boolean>(false);
   const [deliveryDays, setDeliveryDays] = useState<string>("15");
   const [deliveryDate, setDeliveryDate] = useState<string>("");
   const [items, setItems] = useState<FormItem[]>([emptyItem("", false)]);
@@ -1049,6 +1055,7 @@ function CreateQuoteDialog({
       setNotes("");
       setTerms("");
       setDealScope("supply_only");
+      setIsClientProvidedSlab(false);
       setDeliveryDays("15");
       setDeliveryDate("");
       setItems([emptyItem("", false)]);
@@ -1084,6 +1091,7 @@ function CreateQuoteDialog({
   useEffect(() => {
     if (mode === "manual") {
       setDealScope(detectDealScopeFromItems(items));
+      setIsClientProvidedSlab(detectClientProvidedSlabFromItems(items));
     } else if (calcResult) {
       const hasInstall = calcResult.items.some(
         (i) =>
@@ -1092,6 +1100,9 @@ function CreateQuoteDialog({
           i.description.toLowerCase().includes("labour"),
       );
       setDealScope(hasInstall ? "supply_and_installation" : "supply_only");
+      setIsClientProvidedSlab(
+        detectClientProvidedSlabFromItems(calcResult.items, calcResult.worksheet),
+      );
     }
   }, [items, calcResult, mode]);
 
@@ -1201,6 +1212,7 @@ function CreateQuoteDialog({
             totalAmount: effectiveTotal,
             timelineDays: deliveryDays,
             deliveryDate,
+            clientProvidedSlab: isClientProvidedSlab,
           }),
         sale_mode: saleMode,
         hybrid_cash_amount:
@@ -1271,6 +1283,7 @@ function CreateQuoteDialog({
           totalAmount: effectiveTotal,
           timelineDays: deliveryDays,
           deliveryDate,
+          clientProvidedSlab: isClientProvidedSlab,
         }),
       sale_mode: saleMode,
       hybrid_cash_amount:
@@ -1750,6 +1763,8 @@ function CreateQuoteDialog({
                   totalAmount={effectiveTotal}
                   initialTimelineDays={deliveryDays}
                   initialDeliveryDate={deliveryDate}
+                  clientProvidedSlab={isClientProvidedSlab}
+                  onChangeClientProvidedSlab={setIsClientProvidedSlab}
                   onTimelineChange={({ mode: tMode, days: tDays, date: tDate }) => {
                     if (tMode === "days") setDeliveryDays(tDays || "15");
                     if (tMode === "date") setDeliveryDate(tDate || "");

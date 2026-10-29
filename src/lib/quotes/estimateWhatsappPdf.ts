@@ -360,6 +360,7 @@ export function buildMuralEstimateWhatsappMessage(
           totalAmount: input.totalEstimate,
           timelineDays: input.deliveryTimelineDays,
           deliveryDate: input.deliveryTimelineDate || input.estimatedDeliveryDate,
+          clientProvidedSlab: input.baseStoneSourcing === "client_provided",
         }),
     "",
     `Please confirm if you'd like to proceed or if any modifications are needed.`,

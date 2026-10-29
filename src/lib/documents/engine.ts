@@ -13,7 +13,11 @@ import { loadBranding, DEFAULT_BRANDING, type BrandingConfig } from "@/lib/brand
 import { getEstimate, getEstimateItems, getEstimateSchedule } from "@/lib/estimates/api";
 import { getQuote, getQuoteItems } from "@/lib/quotes/api";
 import { resolveAllQuoteImages, getLineItemImage } from "@/lib/quotes/quote-images";
-import { detectDealScopeFromItems, generateQuoteTerms } from "@/lib/quotes/terms";
+import {
+  detectClientProvidedSlabFromItems,
+  detectDealScopeFromItems,
+  generateQuoteTerms,
+} from "@/lib/quotes/terms";
 import { getInvoice, getInvoiceItems } from "@/lib/invoices/api";
 import { getReceipt, getReceiptAllocations } from "@/lib/receipts/api";
 import { RECEIPT_METHOD_LABELS, type ReceiptMethod } from "@/lib/receipts/schema";
@@ -272,12 +276,14 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
         { label: "Total", value: inr(q.total) },
       ];
       const scope = detectDealScopeFromItems(items);
+      const isClientSlab = detectClientProvidedSlabFromItems(items, q.wall_estimate);
       const effectiveTerms =
         q.terms && q.terms.trim()
           ? q.terms.trim()
           : generateQuoteTerms({
               dealScope: scope,
               totalAmount: Number(q.total) || 0,
+              clientProvidedSlab: isClientSlab,
             });
       return {
         doc: {

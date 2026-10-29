@@ -12,6 +12,7 @@ import {
   type DealScope,
   type DeliveryTimelineMode,
   generateQuoteTerms,
+  hasClientBreakageDisclaimer,
   ADVANCE_PAYMENT_THRESHOLD_INR,
 } from "@/lib/quotes/terms";
 import { Label } from "@/components/ui/label";
@@ -19,7 +20,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, RefreshCw, ShieldCheck, AlertCircle, FileText } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  RefreshCw,
+  ShieldCheck,
+  AlertCircle,
+  FileText,
+  ShieldAlert,
+} from "lucide-react";
 
 export interface QuoteTermsManagerProps {
   terms: string;
@@ -29,6 +38,8 @@ export interface QuoteTermsManagerProps {
   totalAmount: number;
   initialTimelineDays?: string;
   initialDeliveryDate?: string;
+  clientProvidedSlab?: boolean;
+  onChangeClientProvidedSlab?: (clientProvided: boolean) => void;
   onTimelineChange?: (timeline: {
     mode: DeliveryTimelineMode;
     days?: string;
@@ -47,6 +58,8 @@ export function QuoteTermsManager({
   totalAmount,
   initialTimelineDays = "15",
   initialDeliveryDate = "",
+  clientProvidedSlab,
+  onChangeClientProvidedSlab,
   onTimelineChange,
   className = "",
 }: QuoteTermsManagerProps) {
@@ -55,6 +68,18 @@ export function QuoteTermsManager({
   );
   const [days, setDays] = useState<string>(initialTimelineDays);
   const [date, setDate] = useState<string>(initialDeliveryDate);
+  const [isClientProvided, setIsClientProvided] = useState<boolean>(
+    clientProvidedSlab ?? hasClientBreakageDisclaimer(terms),
+  );
+
+  // Sync external clientProvidedSlab prop changes
+  useEffect(() => {
+    if (clientProvidedSlab !== undefined && clientProvidedSlab !== isClientProvided) {
+      setIsClientProvided(clientProvidedSlab);
+      handleApplyStandardTerms(dealScope, timelineMode, days, date, clientProvidedSlab);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clientProvidedSlab]);
 
   const isUnderFiftyThousand = totalAmount > 0 && totalAmount < ADVANCE_PAYMENT_THRESHOLD_INR;
 
@@ -64,11 +89,13 @@ export function QuoteTermsManager({
     overrideMode?: DeliveryTimelineMode,
     overrideDays?: string,
     overrideDate?: string,
+    overrideClientSlab?: boolean,
   ) => {
     const activeScope = overrideScope ?? dealScope;
     const activeMode = overrideMode ?? timelineMode;
     const activeDays = overrideDays ?? days;
     const activeDate = overrideDate ?? date;
+    const activeClientSlab = overrideClientSlab ?? isClientProvided;
 
     const generated = generateQuoteTerms({
       dealScope: activeScope,
@@ -76,6 +103,7 @@ export function QuoteTermsManager({
       timelineMode: activeMode,
       timelineDays: activeDays,
       deliveryDate: activeDate,
+      clientProvidedSlab: activeClientSlab,
     });
 
     onChangeTerms(generated);
@@ -91,24 +119,32 @@ export function QuoteTermsManager({
 
   const handleModeChange = (newMode: DeliveryTimelineMode) => {
     setTimelineMode(newMode);
-    handleApplyStandardTerms(dealScope, newMode, days, date);
+    handleApplyStandardTerms(dealScope, newMode, days, date, isClientProvided);
   };
 
   const handleDaysChange = (newDays: string) => {
     setDays(newDays);
-    handleApplyStandardTerms(dealScope, "days", newDays, date);
+    handleApplyStandardTerms(dealScope, "days", newDays, date, isClientProvided);
   };
 
   const handleDateChange = (newDate: string) => {
     setDate(newDate);
-    handleApplyStandardTerms(dealScope, "date", days, newDate);
+    handleApplyStandardTerms(dealScope, "date", days, newDate, isClientProvided);
   };
 
   const handleScopeChange = (newScope: DealScope) => {
     if (onChangeDealScope) {
       onChangeDealScope(newScope);
     }
-    handleApplyStandardTerms(newScope, timelineMode, days, date);
+    handleApplyStandardTerms(newScope, timelineMode, days, date, isClientProvided);
+  };
+
+  const handleToggleClientSlab = (enabled: boolean) => {
+    setIsClientProvided(enabled);
+    if (onChangeClientProvidedSlab) {
+      onChangeClientProvidedSlab(enabled);
+    }
+    handleApplyStandardTerms(dealScope, timelineMode, days, date, enabled);
   };
 
   // If terms are empty on mount, initialize them with polished defaults
@@ -118,6 +154,9 @@ export function QuoteTermsManager({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const totalTermsCount =
+    dealScope === "supply_only" ? (isClientProvided ? 8 : 7) : isClientProvided ? 10 : 9;
 
   return (
     <div className={`rounded-lg border border-border bg-card p-4 space-y-4 shadow-xs ${className}`}>
@@ -148,8 +187,19 @@ export function QuoteTermsManager({
                 : "Payment: 50% Adv + 30% Del + 20% Install"}
             </Badge>
           )}
+          {isClientProvided && (
+            <Badge
+              variant="outline"
+              className="bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/30 dark:text-emerald-300 text-[11px] gap-1 font-semibold"
+            >
+              <ShieldAlert className="h-3 w-3 text-emerald-700" />
+              Priority Breakage Disclaimer Active
+            </Badge>
+          )}
           <Badge variant="outline" className="text-[11px]">
-            {dealScope === "supply_only" ? "Supply Only (7 terms)" : "Supply + Install (9 terms)"}
+            {dealScope === "supply_only"
+              ? `Supply Only (${totalTermsCount} terms)`
+              : `Supply + Install (${totalTermsCount} terms)`}
           </Badge>
         </div>
       </div>
@@ -266,6 +316,37 @@ export function QuoteTermsManager({
               </p>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Client Stone Sourcing & Breakage Clause Toggle */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-md border border-border/70 bg-muted/20 px-3 py-2 text-xs">
+        <div className="flex items-center gap-2">
+          <ShieldAlert
+            className={`h-4 w-4 shrink-0 ${isClientProvided ? "text-emerald-600" : "text-muted-foreground"}`}
+          />
+          <div>
+            <span className="font-semibold text-foreground">
+              Client-Supplied Stone / Slab Scope
+            </span>
+            <span className="text-[11px] text-muted-foreground ml-1.5 hidden sm:inline">
+              (Affixes Priority Term #1: Stone breakage &amp; cracking liability waiver during CNC
+              carving &amp; transit)
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5 self-end sm:self-auto">
+          <button
+            type="button"
+            onClick={() => handleToggleClientSlab(!isClientProvided)}
+            className={`text-xs px-2.5 py-1 rounded font-medium border transition-colors cursor-pointer flex items-center gap-1.5 ${
+              isClientProvided
+                ? "bg-emerald-600 text-white border-emerald-600 shadow-2xs font-semibold"
+                : "bg-background text-muted-foreground border-border hover:bg-muted"
+            }`}
+          >
+            {isClientProvided ? "Disclaimer Active (Term #1)" : "Enable Disclaimer"}
+          </button>
         </div>
       </div>
 
