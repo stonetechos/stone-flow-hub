@@ -239,6 +239,23 @@ export const DEFAULT_MURAL_RUBBING_RATE = 25; // Rs 25 per sq ft
 export const DEFAULT_MURAL_POLISHING_RATE = 300; // Rs 300 per sq ft (optional)
 export const DEFAULT_MURAL_INSTALLATION_LABOUR_RATE = 200; // Rs 200 per sq ft
 export const DEFAULT_MURAL_TOUCH_UP_RATE = 200; // Rs 200 per sq ft
+export const DEFAULT_MURAL_PASTING_RATE = 150; // Rs 150 per sq ft for overlay stone pasting & epoxy fixing
+export const DEFAULT_MURAL_OVERLAY_THICKNESS_MM = 20; // 20 mm default overlay thickness
+export const DEFAULT_MURAL_OVERLAY_STONE_PRICE = 450; // Rs 450 per sq ft
+
+export type StoneSourcing = "stone_tech" | "client_provided";
+
+export const COMMON_OVERLAY_STONE_TYPES = [
+  "White Marble",
+  "Makrana White Marble",
+  "Mint Sandstone",
+  "Teakwood Sandstone",
+  "Rainbow Sandstone",
+  "Red Sandstone",
+  "Black Granite",
+  "Jaisalmer Yellow Stone",
+  "Other Natural Stone",
+];
 
 export interface MuralCncOption {
   key: string;

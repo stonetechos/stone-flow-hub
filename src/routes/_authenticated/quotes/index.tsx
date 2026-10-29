@@ -1104,6 +1104,19 @@ function CreateQuoteDialog({
       fulfilment: it.fulfilment || "",
     }));
     setItems(newItems);
+    const muralScene =
+      calcResult &&
+      "scenario" in calcResult.worksheet &&
+      calcResult.worksheet.scenario === "stone_mural"
+        ? calcResult.worksheet.sceneDescription
+        : undefined;
+    if (muralScene) {
+      setNotes((prev) =>
+        prev
+          ? `${prev}\n\nMural Scene & Scope: ${muralScene}`
+          : `Mural Scene & Scope: ${muralScene}`,
+      );
+    }
     setMode("manual");
     toast.success(
       "Imported into line items! You can now freely edit, modify quantities/rates, or add notes before creating the quote.",
@@ -1127,6 +1140,13 @@ function CreateQuoteDialog({
         discount && discount.applied && discount.eligible
           ? `Estimate Studio: ${discount.pct}% discount applied (${formatInr(discount.amount)} off) — final estimate total ${formatInr(calcResult.total)}. This quote's own stored total below is the pre-discount subtotal, since quotations have no discount field yet.`
           : null;
+      const sceneNote =
+        calcResult &&
+        "scenario" in calcResult.worksheet &&
+        calcResult.worksheet.scenario === "stone_mural" &&
+        calcResult.worksheet.sceneDescription
+          ? `Mural Scene & Scope: ${calcResult.worksheet.sceneDescription}`
+          : null;
       mutation.mutate({
         project_id: initialProjectId ? projectId : undefined,
         customer_id: initialProjectId ? undefined : customerId,
@@ -1143,7 +1163,7 @@ function CreateQuoteDialog({
                 : "supply_and_installation"
               : null),
         valid_until: validUntil || null,
-        notes: [notes, discountNote].filter(Boolean).join("\n\n") || null,
+        notes: [notes, discountNote, sceneNote].filter(Boolean).join("\n\n") || null,
         terms: terms || null,
         sale_mode: saleMode,
         hybrid_cash_amount:

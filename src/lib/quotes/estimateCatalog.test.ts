@@ -11,9 +11,17 @@ import {
   STANDARD_ADHESIVE_COVERAGE_SQFT_PER_BAG,
   isCrazyPatternProduct,
   calculateAdhesiveUnits,
+  DEFAULT_MURAL_PASTING_RATE,
+  DEFAULT_MURAL_OVERLAY_THICKNESS_MM,
+  DEFAULT_MURAL_OVERLAY_STONE_PRICE,
+  COMMON_OVERLAY_STONE_TYPES,
 } from "./estimateCatalog";
 import { CARTING_CATALOG, MASTER_PRODUCT_CATALOG } from "./catalog";
-import { buildEstimateWhatsappMessage } from "./estimateWhatsappPdf";
+import {
+  buildEstimateWhatsappMessage,
+  buildMuralEstimateWhatsappMessage,
+} from "./estimateWhatsappPdf";
+import { estimateMuralWorksheetSchema } from "./estimateSchema";
 
 describe("estimateCatalog - rounding and wastage calculations", () => {
   describe("ceilWhole", () => {
@@ -335,6 +343,200 @@ describe("estimateCatalog - rounding and wastage calculations", () => {
       expect(msg).not.toContain("Scaffolding, if required, will be provided by the customer.");
       expect(msg).not.toContain("installation will commence shortly after delivery");
       expect(msg).toContain("Total Estimate: ₹21,280");
+    });
+  });
+
+  describe("Stone Mural - Overlay, Pasting, Sourcing & Scene Description", () => {
+    it("defines default overlay and pasting constants correctly", () => {
+      expect(DEFAULT_MURAL_PASTING_RATE).toBe(150);
+      expect(DEFAULT_MURAL_OVERLAY_THICKNESS_MM).toBe(20);
+      expect(DEFAULT_MURAL_OVERLAY_STONE_PRICE).toBe(450);
+      expect(COMMON_OVERLAY_STONE_TYPES).toContain("White Marble");
+      expect(COMMON_OVERLAY_STONE_TYPES).toContain("Black Granite");
+      expect(COMMON_OVERLAY_STONE_TYPES).toContain("Red Sandstone");
+    });
+
+    it("formats WhatsApp message with Scene Description, Base Sourcing, Overlay Stone, and Pasting charges", () => {
+      const msg = buildMuralEstimateWhatsappMessage(
+        {
+          greetingName: "Vikram",
+          sceneDescription: "Lord Ganesha in deep meditation with radiating aura",
+          wallSizeSummary: "8ft (H) x 6ft (L)",
+          wallSqft: 48,
+          slabsCount: 2,
+          slabDetails: "4ft x 6ft (50mm Mint Sandstone)",
+          totalSlabSqft: 48,
+          slabPricePerSqft: 550,
+          slabAmount: 26400,
+          baseStoneSourcing: "stone_tech",
+          cncAmount: 14400,
+          cncWorkSummary: "CNC Deep Engraving (12mm) @ ₹300/sq ft",
+          overlayDetails: {
+            sourcing: "stone_tech",
+            stoneType: "White Marble",
+            thicknessMm: 20,
+            sqft: 12,
+            stonePricePerSqft: 450,
+            stoneAmount: 5400,
+            cncAmount: 2400,
+            cncSummary: "Engraving (6mm) @ ₹200/sq ft",
+          },
+          pastingAmount: 1800,
+          rubbingAmount: 2400,
+          polishingAmount: 0,
+          installationLabourAmount: 4800,
+          adhesivesAmount: 2500,
+          adhesivesSummary: "Standard Cementitious Grey — 2 bag(s)",
+          touchUpAmount: 1200,
+          cartingAmount: 1500,
+          cartingLocation: "Bodakdev site delivery",
+          totalEstimate: 60400,
+          timeToComplete: "15 to 20 working days",
+          preparerName: "Stone Tech Sales",
+        },
+        "Stone Tech",
+      );
+
+      expect(msg).toContain(
+        "• Artwork Scene & Scope: Lord Ganesha in deep meditation with radiating aura",
+      );
+      expect(msg).toContain("• Base Stone Slabs: ₹26,400 (@ ₹550/sq ft)");
+      expect(msg).toContain(
+        "• Base Stone CNC Work: ₹14,400 (CNC Deep Engraving (12mm) @ ₹300/sq ft)",
+      );
+      expect(msg).toContain(
+        "• Overlay Stone Piece: White Marble (20mm, 12.0 sq ft) — ₹5,400 (@ ₹450/sq ft)",
+      );
+      expect(msg).toContain("• Overlay CNC Carving: ₹2,400 (Engraving (6mm) @ ₹200/sq ft)");
+      expect(msg).toContain(
+        "• Overlay Pasting & Bonding Work: ₹1,800 (Specialized epoxy & artisan fixing)",
+      );
+      expect(msg).toContain("Total Estimate: ₹60,400");
+    });
+
+    it("handles Client-Provided Base Stone and Client-Provided Overlay gracefully in messages and notes", () => {
+      const msg = buildMuralEstimateWhatsappMessage(
+        {
+          greetingName: "Amit Patel",
+          sceneDescription: "7 Running Horses in Gallop",
+          wallSizeSummary: "10ft (H) x 12ft (L)",
+          wallSqft: 120,
+          slabsCount: 4,
+          slabDetails: "5ft x 6ft (40mm Beige Sandstone)",
+          totalSlabSqft: 120,
+          slabPricePerSqft: 0,
+          slabAmount: 0,
+          baseStoneSourcing: "client_provided",
+          cncAmount: 36000,
+          cncWorkSummary: "CNC 3D Relief @ ₹300/sq ft",
+          overlayDetails: {
+            sourcing: "client_provided",
+            stoneType: "Makrana Albeta Marble",
+            thicknessMm: 25,
+            sqft: 20,
+            stonePricePerSqft: 0,
+            stoneAmount: 0,
+            cncAmount: 5000,
+            cncSummary: "Relief Carving @ ₹250/sq ft",
+          },
+          pastingAmount: 3000,
+          rubbingAmount: 6000,
+          polishingAmount: 4800,
+          installationLabourAmount: 12000,
+          adhesivesAmount: 5000,
+          adhesivesSummary: "Standard Cement White — 4 bag(s)",
+          touchUpAmount: 3000,
+          cartingAmount: 0,
+          cartingLocation: "",
+          totalEstimate: 74800,
+          preparerName: "Stone Tech Studio",
+        },
+        "Stone Tech",
+      );
+
+      expect(msg).toContain(
+        "• Base Stone Slabs: Provided by Client (No stone cost; carving & processing only)",
+      );
+      expect(msg).toContain(
+        "• Overlay Stone Piece: Makrana Albeta Marble (25mm, 20.0 sq ft) — Provided by Client",
+      );
+      expect(msg).toContain("• Overlay CNC Carving: ₹5,000 (Relief Carving @ ₹250/sq ft)");
+      expect(msg).toContain(
+        "• Overlay Pasting & Bonding Work: ₹3,000 (Specialized epoxy & artisan fixing)",
+      );
+      expect(msg).toContain(
+        "Base stone slabs to be supplied at site/factory by client as per specified dimensions and thickness.",
+      );
+      expect(msg).toContain("Overlay stone material to be provided by client.");
+    });
+
+    it("validates and parses mural worksheet schema with overlay and base stone sourcing", () => {
+      const parsed = estimateMuralWorksheetSchema.parse({
+        version: 1,
+        scenario: "stone_mural",
+        unit: "ft",
+        wall: { height: 8, length: 6, sqft: 48 },
+        slab: {
+          height: 4,
+          length: 6,
+          sqft: 24,
+          thicknessMm: 50,
+          stoneType: "Mint Sandstone",
+          sourcing: "client_provided",
+          slabsRequired: 2,
+          gridCols: 1,
+          gridRows: 2,
+          totalSlabSqft: 48,
+          pricePerSqft: 0,
+          amount: 0,
+        },
+        cnc: {
+          selectedKey: "deep_engraving_12mm",
+          label: "Deep Engraving (12mm)",
+          ratePerSqft: 300,
+          amount: 14400,
+        },
+        overlay: {
+          enabled: true,
+          stoneType: "White Marble",
+          thicknessMm: 20,
+          sourcing: "stone_tech",
+          sqft: 10,
+          stonePricePerSqft: 450,
+          stoneAmount: 4500,
+          cncKey: "engraving_6mm",
+          cncLabel: "Engraving (6mm)",
+          cncRatePerSqft: 200,
+          cncAmount: 2000,
+          pastingRatePerSqft: 150,
+          pastingAmount: 1500,
+          totalAmount: 8000,
+        },
+        rubbing: { enabled: true, ratePerSqft: 50, amount: 2400 },
+        polishing: { enabled: false, ratePerSqft: 40, amount: 0 },
+        installationLabour: { ratePerSqft: 100, amount: 4800 },
+        adhesives: [
+          {
+            key: "standard_cementitious_grey",
+            label: "Standard Cementitious Grey",
+            units: 2,
+            unitLabel: "bag (20 kg)",
+            pricePerUnit: 450,
+            amount: 900,
+          },
+        ],
+        adhesivesAmount: 900,
+        touchUp: { enabled: true, ratePerSqft: 25, amount: 1200 },
+        carting: { location: "Ahmedabad", amount: 1500 },
+        sceneDescription: "Mandir Sanctum Backwall with Tree of Life",
+        subtotal: 25200,
+        total: 25200,
+      });
+
+      expect(parsed.slab.sourcing).toBe("client_provided");
+      expect(parsed.overlay?.enabled).toBe(true);
+      expect(parsed.overlay?.pastingAmount).toBe(1500);
+      expect(parsed.sceneDescription).toBe("Mandir Sanctum Backwall with Tree of Life");
     });
   });
 });

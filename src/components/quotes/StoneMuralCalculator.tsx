@@ -36,6 +36,7 @@ import {
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -61,6 +62,11 @@ import {
   DEFAULT_MURAL_POLISHING_RATE,
   DEFAULT_MURAL_INSTALLATION_LABOUR_RATE,
   DEFAULT_MURAL_TOUCH_UP_RATE,
+  DEFAULT_MURAL_PASTING_RATE,
+  DEFAULT_MURAL_OVERLAY_THICKNESS_MM,
+  DEFAULT_MURAL_OVERLAY_STONE_PRICE,
+  COMMON_OVERLAY_STONE_TYPES,
+  type StoneSourcing,
   getDefaultSlabPrice,
   calculateMuralSlabs,
 } from "@/lib/quotes/estimateCatalog";
@@ -122,11 +128,15 @@ export function StoneMuralCalculator({
     }
   }, [category]);
 
+  // Mural Scene & Artwork Subject Description
+  const [sceneDescription, setSceneDescription] = useState<string>("");
+
   // 1) Wall Size
   const [wallHeight, setWallHeight] = useState<string>("");
   const [wallLength, setWallLength] = useState<string>("");
 
-  // 2) Slab Size & Thickness
+  // 2) Base Stone Slab Size & Thickness
+  const [baseStoneSourcing, setBaseStoneSourcing] = useState<StoneSourcing>("stone_tech");
   const [slabHeight, setSlabHeight] = useState<string>("");
   const [slabLength, setSlabLength] = useState<string>("");
   const [slabThickness, setSlabThickness] = useState<string>(String(DEFAULT_MURAL_THICKNESS_MM));
@@ -137,35 +147,55 @@ export function StoneMuralCalculator({
   );
   const [slabsOverride, setSlabsOverride] = useState<string>("");
 
-  // 3) CNC Job Work
+  // 3) CNC Job Work on Base Stone
   const [cncKey, setCncKey] = useState<string>("");
   const [cncCustomRate, setCncCustomRate] = useState<string>("");
 
-  // 4) Rubbing
+  // 4) Overlay / Inlay Worked Stone Piece & Pasting Charges (Optional)
+  const [overlayEnabled, setOverlayEnabled] = useState<boolean>(false);
+  const [overlaySourcing, setOverlaySourcing] = useState<StoneSourcing>("stone_tech");
+  const [overlayStoneType, setOverlayStoneType] = useState<string>("White Marble");
+  const [customOverlayStoneType, setCustomOverlayStoneType] = useState<string>("");
+  const [overlayThickness, setOverlayThickness] = useState<string>(
+    String(DEFAULT_MURAL_OVERLAY_THICKNESS_MM),
+  );
+  const [overlayLength, setOverlayLength] = useState<string>("");
+  const [overlayHeight, setOverlayHeight] = useState<string>("");
+  const [overlayCustomSqft, setOverlayCustomSqft] = useState<string>("");
+  const [overlayStonePrice, setOverlayStonePrice] = useState<string>(
+    String(DEFAULT_MURAL_OVERLAY_STONE_PRICE),
+  );
+  const [overlayCncEnabled, setOverlayCncEnabled] = useState<boolean>(false);
+  const [overlayCncKey, setOverlayCncKey] = useState<string>("engraving_6mm");
+  const [overlayCncCustomRate, setOverlayCncCustomRate] = useState<string>("");
+  const [pastingRate, setPastingRate] = useState<string>(String(DEFAULT_MURAL_PASTING_RATE));
+  const [pastingCustomAmount, setPastingCustomAmount] = useState<string>("");
+
+  // 5) Rubbing
   const [rubbingEnabled, setRubbingEnabled] = useState<boolean>(true);
   const [rubbingRate, setRubbingRate] = useState<string>(String(DEFAULT_MURAL_RUBBING_RATE));
 
-  // 5) Polishing (Optional)
+  // 6) Polishing (Optional)
   const [polishingEnabled, setPolishingEnabled] = useState<boolean>(false);
   const [polishingRate, setPolishingRate] = useState<string>(String(DEFAULT_MURAL_POLISHING_RATE));
 
-  // 6) Installation Labour
+  // 7) Installation Labour
   const [labourRate, setLabourRate] = useState<string>(
     String(DEFAULT_MURAL_INSTALLATION_LABOUR_RATE),
   );
 
-  // 7) Adhesives (fetched from Wall Stone Cladding catalog)
+  // 8) Adhesives (fetched from Wall Stone Cladding catalog)
   const [selectedAdhesiveKey, setSelectedAdhesiveKey] = useState<string>(
     ADHESIVE_CATALOG[0]?.key ?? "standard_cement_white",
   );
   const [adhesiveCustomPrice, setAdhesiveCustomPrice] = useState<string>("");
   const [adhesiveCustomUnits, setAdhesiveCustomUnits] = useState<string | null>(null);
 
-  // 8) Touch Up Work
+  // 9) Touch Up Work
   const [touchUpEnabled, setTouchUpEnabled] = useState<boolean>(true);
   const [touchUpRate, setTouchUpRate] = useState<string>(String(DEFAULT_MURAL_TOUCH_UP_RATE));
 
-  // 9) Carting / Freight
+  // 10) Carting / Freight
   const [cartingLocation, setCartingLocation] = useState<string>("");
   const [cartingAmount, setCartingAmount] = useState<string>("");
 
@@ -183,6 +213,9 @@ export function StoneMuralCalculator({
 
   // When stone type or thickness changes, adjust default slab price if user hasn't explicitly customized
   const effectiveStoneType = stoneType === "Other Natural Stone" ? customStoneType : stoneType;
+  const effectiveOverlayStoneType =
+    overlayStoneType === "Other Natural Stone" ? customOverlayStoneType : overlayStoneType;
+
   useEffect(() => {
     const thk = Number(slabThickness) || 0;
     const def = getDefaultSlabPrice(effectiveStoneType, thk);
@@ -236,11 +269,11 @@ export function StoneMuralCalculator({
   const slabsCount = slabCalc.slabsRequired;
   const totalSlabSqft = slabCalc.totalSlabSqft;
 
-  // 2) Stone Slabs Cost
+  // 2) Base Stone Slabs Cost
   const ratePerSlabSqft = Number(slabPrice) || 0;
-  const stoneSlabsAmount = totalSlabSqft * ratePerSlabSqft;
+  const stoneSlabsAmount = baseStoneSourcing === "stone_tech" ? totalSlabSqft * ratePerSlabSqft : 0;
 
-  // 3) CNC Job Work Cost
+  // 3) CNC Job Work Cost on Base Stone
   const selectedCnc = MURAL_CNC_OPTIONS.find((c) => c.key === cncKey);
   const cncRate =
     cncKey === "custom"
@@ -250,19 +283,54 @@ export function StoneMuralCalculator({
         : 0;
   const cncAmount = wallAreaSqft * cncRate;
 
-  // 4) Rubbing Cost
+  // 4) Overlay / Inlay Worked Stone Piece & Pasting Calculations
+  const overlayL = Number(overlayLength) || 0;
+  const overlayH = Number(overlayHeight) || 0;
+  const calculatedOverlaySqft = wallSqft(overlayH, overlayL, unit);
+  const effectiveOverlaySqft =
+    overlayCustomSqft !== "" && !isNaN(Number(overlayCustomSqft))
+      ? Math.max(0, Number(overlayCustomSqft))
+      : calculatedOverlaySqft;
+
+  const overlayRatePerSqft = Number(overlayStonePrice) || 0;
+  const overlayStoneAmount =
+    overlayEnabled && overlaySourcing === "stone_tech"
+      ? effectiveOverlaySqft * overlayRatePerSqft
+      : 0;
+
+  const selectedOverlayCnc = MURAL_CNC_OPTIONS.find((c) => c.key === overlayCncKey);
+  const overlayCncRate =
+    overlayCncKey === "custom"
+      ? Number(overlayCncCustomRate) || 0
+      : selectedOverlayCnc
+        ? selectedOverlayCnc.defaultRatePerSqft
+        : 0;
+  const overlayCncAmount =
+    overlayEnabled && overlayCncEnabled ? effectiveOverlaySqft * overlayCncRate : 0;
+  const overlayCncLabel = selectedOverlayCnc ? selectedOverlayCnc.label : "Custom Overlay CNC Work";
+
+  const pastingRateNum = Number(pastingRate) || 0;
+  const pastingAmount = overlayEnabled
+    ? pastingCustomAmount !== "" && !isNaN(Number(pastingCustomAmount))
+      ? Math.max(0, Number(pastingCustomAmount))
+      : effectiveOverlaySqft * pastingRateNum
+    : 0;
+
+  const totalOverlayCost = overlayStoneAmount + overlayCncAmount + pastingAmount;
+
+  // 5) Rubbing Cost
   const rubRate = Number(rubbingRate) || 0;
   const rubbingAmount = rubbingEnabled ? wallAreaSqft * rubRate : 0;
 
-  // 5) Polishing Cost
+  // 6) Polishing Cost
   const polRate = Number(polishingRate) || 0;
   const polishingAmount = polishingEnabled ? wallAreaSqft * polRate : 0;
 
-  // 6) Installation Labour Cost
+  // 7) Installation Labour Cost
   const instRate = Number(labourRate) || 0;
   const labourAmount = wallAreaSqft * instRate;
 
-  // 7) Adhesives (fetched from Wall Stone Cladding catalog)
+  // 8) Adhesives (fetched from Wall Stone Cladding catalog)
   const activeAdhesiveCatalog =
     ADHESIVE_CATALOG.find((a) => a.key === selectedAdhesiveKey) || ADHESIVE_CATALOG[0];
   const autoAdhesiveUnits =
@@ -281,11 +349,11 @@ export function StoneMuralCalculator({
       : activeAdhesiveCatalog?.defaultPricePerUnit || 0;
   const adhesivesAmount = adhesiveUnits * adhesiveUnitPrice;
 
-  // 8) Touch Up Work Cost
+  // 9) Touch Up Work Cost
   const touchRate = Number(touchUpRate) || 0;
   const touchUpAmount = touchUpEnabled ? wallAreaSqft * touchRate : 0;
 
-  // 9) Carting Cost
+  // 10) Carting Cost
   const cartingNum = Number(cartingAmount) || 0;
 
   const effectiveLabourAmount = includeInstallation ? labourAmount : 0;
@@ -295,6 +363,7 @@ export function StoneMuralCalculator({
   const subtotal =
     stoneSlabsAmount +
     cncAmount +
+    (overlayEnabled ? totalOverlayCost : 0) +
     rubbingAmount +
     polishingAmount +
     effectiveLabourAmount +
@@ -320,11 +389,12 @@ export function StoneMuralCalculator({
         sqft: slabAreaSqft,
         thicknessMm: slabThk,
         stoneType: effectiveStoneType,
+        sourcing: baseStoneSourcing,
         slabsRequired: slabsCount,
         gridCols: slabCalc.slabsGrid.cols,
         gridRows: slabCalc.slabsGrid.rows,
         totalSlabSqft,
-        pricePerSqft: ratePerSlabSqft,
+        pricePerSqft: baseStoneSourcing === "stone_tech" ? ratePerSlabSqft : 0,
         amount: stoneSlabsAmount,
       },
       cnc: {
@@ -333,6 +403,26 @@ export function StoneMuralCalculator({
         ratePerSqft: cncRate,
         amount: cncAmount,
       },
+      overlay: overlayEnabled
+        ? {
+            enabled: true,
+            stoneType: effectiveOverlayStoneType,
+            thicknessMm: Number(overlayThickness) || 20,
+            sourcing: overlaySourcing,
+            sqft: effectiveOverlaySqft,
+            length: overlayL > 0 ? overlayL : undefined,
+            height: overlayH > 0 ? overlayH : undefined,
+            stonePricePerSqft: overlaySourcing === "stone_tech" ? overlayRatePerSqft : 0,
+            stoneAmount: overlayStoneAmount,
+            cncKey: overlayCncEnabled ? overlayCncKey : undefined,
+            cncLabel: overlayCncEnabled ? overlayCncLabel : undefined,
+            cncRatePerSqft: overlayCncEnabled ? overlayCncRate : undefined,
+            cncAmount: overlayCncAmount,
+            pastingRatePerSqft: pastingRateNum,
+            pastingAmount,
+            totalAmount: totalOverlayCost,
+          }
+        : undefined,
       rubbing: {
         enabled: rubbingEnabled,
         ratePerSqft: rubRate,
@@ -370,6 +460,7 @@ export function StoneMuralCalculator({
         location: cartingLocation.trim() || undefined,
         amount: cartingNum,
       },
+      sceneDescription: sceneDescription.trim() || undefined,
       timeToComplete: timeToComplete.trim() || undefined,
       imageDataUrl: imageDataUrl || undefined,
       subtotal,
@@ -385,6 +476,7 @@ export function StoneMuralCalculator({
     slabAreaSqft,
     slabThk,
     effectiveStoneType,
+    baseStoneSourcing,
     slabsCount,
     slabCalc.slabsGrid.cols,
     slabCalc.slabsGrid.rows,
@@ -395,6 +487,23 @@ export function StoneMuralCalculator({
     selectedCnc,
     cncRate,
     cncAmount,
+    overlayEnabled,
+    effectiveOverlayStoneType,
+    overlayThickness,
+    overlaySourcing,
+    effectiveOverlaySqft,
+    overlayL,
+    overlayH,
+    overlayRatePerSqft,
+    overlayStoneAmount,
+    overlayCncEnabled,
+    overlayCncKey,
+    overlayCncLabel,
+    overlayCncRate,
+    overlayCncAmount,
+    pastingRateNum,
+    pastingAmount,
+    totalOverlayCost,
     rubbingEnabled,
     rubRate,
     rubbingAmount,
@@ -413,6 +522,7 @@ export function StoneMuralCalculator({
     touchUpAmount,
     cartingLocation,
     cartingNum,
+    sceneDescription,
     timeToComplete,
     imageDataUrl,
     subtotal,
@@ -424,26 +534,39 @@ export function StoneMuralCalculator({
     if (wallAreaSqft <= 0) return [];
     const out: QuoteItemInput[] = [];
 
-    // 1. Stone Slabs
-    if (stoneSlabsAmount > 0) {
+    // 1. Base Stone Slabs
+    if (baseStoneSourcing === "stone_tech") {
+      if (stoneSlabsAmount > 0) {
+        out.push({
+          product_id: null,
+          description: `Base Stone Slabs — ${effectiveStoneType} (${slabThk}mm) [${slabsCount} slab(s) of ${slabL}x${slabH}${unit}]`,
+          quantity: totalSlabSqft,
+          unit: "sqft",
+          unit_price: ratePerSlabSqft,
+          tax_pct: 0,
+          fulfilment: null,
+          image_url: imageDataUrl || null,
+        });
+      }
+    } else {
       out.push({
         product_id: null,
-        description: `Stone Mural Slabs — ${effectiveStoneType} (${slabThk}mm) [${slabsCount} slab(s) of ${slabL}x${slabH}${unit}]`,
+        description: `Base Stone Slabs — Provided by Client (${effectiveStoneType} ${slabThk}mm) [${slabsCount} slab(s) of ${slabL}x${slabH}${unit}, Client Scope]`,
         quantity: totalSlabSqft,
         unit: "sqft",
-        unit_price: ratePerSlabSqft,
+        unit_price: 0,
         tax_pct: 0,
         fulfilment: null,
         image_url: imageDataUrl || null,
       });
     }
 
-    // 2. CNC Job Work
+    // 2. Base Stone CNC Job Work
     if (cncAmount > 0) {
       const cncLabel = selectedCnc ? selectedCnc.label : "Custom CNC Job Work";
       out.push({
         product_id: null,
-        description: `CNC Job Work — ${cncLabel}`,
+        description: `Base Stone CNC Carving — ${cncLabel}`,
         quantity: wallAreaSqft,
         unit: "sqft",
         unit_price: cncRate,
@@ -452,7 +575,61 @@ export function StoneMuralCalculator({
       });
     }
 
-    // 3. Rubbing
+    // 3. Overlay Stone & Pasting Work (if enabled)
+    if (overlayEnabled && effectiveOverlaySqft > 0) {
+      if (overlaySourcing === "stone_tech") {
+        if (overlayStoneAmount > 0) {
+          out.push({
+            product_id: null,
+            description: `Overlay Stone Piece — ${effectiveOverlayStoneType} (${overlayThickness}mm) [${effectiveOverlaySqft.toFixed(1)} sq ft]`,
+            quantity: Math.round(effectiveOverlaySqft * 10) / 10,
+            unit: "sqft",
+            unit_price: overlayRatePerSqft,
+            tax_pct: 0,
+            fulfilment: null,
+          });
+        }
+      } else {
+        out.push({
+          product_id: null,
+          description: `Overlay Stone Piece — Provided by Client (${effectiveOverlayStoneType} ${overlayThickness}mm) [${effectiveOverlaySqft.toFixed(1)} sq ft, Client Scope]`,
+          quantity: Math.round(effectiveOverlaySqft * 10) / 10,
+          unit: "sqft",
+          unit_price: 0,
+          tax_pct: 0,
+          fulfilment: null,
+        });
+      }
+
+      if (overlayCncEnabled && overlayCncAmount > 0) {
+        out.push({
+          product_id: null,
+          description: `Overlay Stone CNC Carving — ${overlayCncLabel} (${effectiveOverlaySqft.toFixed(1)} sq ft)`,
+          quantity: Math.round(effectiveOverlaySqft * 10) / 10,
+          unit: "sqft",
+          unit_price: overlayCncRate,
+          tax_pct: 0,
+          fulfilment: null,
+        });
+      }
+
+      if (pastingAmount > 0) {
+        out.push({
+          product_id: null,
+          description: `Stone Overlay / Inlay Pasting Work — Artisan Bonding & Specialized Epoxy (${effectiveOverlaySqft.toFixed(1)} sq ft)`,
+          quantity: Math.round(effectiveOverlaySqft * 10) / 10,
+          unit: "sqft",
+          unit_price:
+            pastingCustomAmount !== ""
+              ? Math.round((pastingAmount / (effectiveOverlaySqft || 1)) * 100) / 100
+              : pastingRateNum,
+          tax_pct: 0,
+          fulfilment: null,
+        });
+      }
+    }
+
+    // 4. Rubbing
     if (rubbingAmount > 0) {
       out.push({
         product_id: null,
@@ -465,7 +642,7 @@ export function StoneMuralCalculator({
       });
     }
 
-    // 4. Polishing (Optional)
+    // 5. Polishing (Optional)
     if (polishingAmount > 0) {
       out.push({
         product_id: null,
@@ -478,7 +655,7 @@ export function StoneMuralCalculator({
       });
     }
 
-    // 5. Installation Labour
+    // 6. Installation Labour
     if (includeInstallation && effectiveLabourAmount > 0) {
       out.push({
         product_id: null,
@@ -491,7 +668,7 @@ export function StoneMuralCalculator({
       });
     }
 
-    // 6. Adhesives
+    // 7. Adhesives
     if (includeInstallation && effectiveAdhesivesAmount > 0 && activeAdhesiveCatalog) {
       out.push({
         product_id: null,
@@ -504,7 +681,7 @@ export function StoneMuralCalculator({
       });
     }
 
-    // 7. Touch Up Work
+    // 8. Touch Up Work
     if (touchUpAmount > 0) {
       out.push({
         product_id: null,
@@ -517,7 +694,7 @@ export function StoneMuralCalculator({
       });
     }
 
-    // 8. Carting / Freight
+    // 9. Carting / Freight
     if (cartingNum > 0) {
       out.push({
         product_id: null,
@@ -534,6 +711,7 @@ export function StoneMuralCalculator({
     return out;
   }, [
     wallAreaSqft,
+    baseStoneSourcing,
     stoneSlabsAmount,
     effectiveStoneType,
     slabThk,
@@ -547,6 +725,20 @@ export function StoneMuralCalculator({
     cncAmount,
     selectedCnc,
     cncRate,
+    overlayEnabled,
+    effectiveOverlaySqft,
+    overlaySourcing,
+    overlayStoneAmount,
+    effectiveOverlayStoneType,
+    overlayThickness,
+    overlayRatePerSqft,
+    overlayCncEnabled,
+    overlayCncAmount,
+    overlayCncLabel,
+    overlayCncRate,
+    pastingAmount,
+    pastingCustomAmount,
+    pastingRateNum,
     rubbingAmount,
     rubRate,
     polishingAmount,
@@ -615,15 +807,35 @@ export function StoneMuralCalculator({
       const message = buildMuralEstimateWhatsappMessage(
         {
           greetingName: greetingName.trim() || "there",
+          sceneDescription: sceneDescription.trim() || undefined,
           wallSizeSummary,
           wallSqft: wallAreaSqft,
           slabDetails,
+          baseStoneSourcing,
           slabsCount,
           totalSlabSqft,
           slabAmount: stoneSlabsAmount,
           slabPricePerSqft: ratePerSlabSqft,
           cncWorkSummary,
           cncAmount,
+          overlayDetails:
+            overlayEnabled && effectiveOverlaySqft > 0
+              ? {
+                  stoneType: effectiveOverlayStoneType,
+                  thicknessMm: Number(overlayThickness) || 20,
+                  sourcing: overlaySourcing,
+                  sqft: effectiveOverlaySqft,
+                  stoneAmount: overlayStoneAmount,
+                  stonePricePerSqft: overlayRatePerSqft,
+                  cncAmount: overlayCncAmount,
+                  cncSummary: overlayCncEnabled
+                    ? `${overlayCncLabel} @ ${formatInr(overlayCncRate)}/sq ft`
+                    : undefined,
+                  pastingAmount,
+                  totalAmount: totalOverlayCost,
+                }
+              : undefined,
+          pastingAmount: overlayEnabled ? pastingAmount : 0,
           rubbingAmount,
           polishingAmount,
           installationLabourAmount: labourAmount,
@@ -668,6 +880,62 @@ export function StoneMuralCalculator({
           CNC Carving & Inlay
         </Badge>
       </div>
+
+      {/* Mural Scene Description Card */}
+      <Card className="shadow-sm border-border">
+        <CardHeader className="p-4 pb-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <FileText className="h-4 w-4 text-primary" />
+              <CardTitle className="text-sm font-semibold">
+                Mural Scene & Artwork Details (What the scene is about)
+              </CardTitle>
+            </div>
+            <span className="text-[11px] text-muted-foreground">
+              Saved in estimate & proposal for site & factory reference
+            </span>
+          </div>
+        </CardHeader>
+        <CardContent className="p-4 pt-2 space-y-2.5">
+          <Textarea
+            value={sceneDescription}
+            onChange={(e) => setSceneDescription(e.target.value)}
+            rows={3}
+            placeholder="Describe what the mural depicts and the scope of work (e.g. Lord Ganesha in meditation under Banyan tree; 3D high-relief floral frame; base stone pocketed with contrasting white marble overlay piece pasted with epoxy. Sourced: Base slab by client, marble overlay by Stone Tech)..."
+            className="text-xs resize-y"
+          />
+          <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+            <span className="text-[10px] text-muted-foreground font-medium mr-1">
+              Quick Suggestions:
+            </span>
+            {[
+              "Lord Ganesha in Meditation",
+              "7 Running Horses (Vastu)",
+              "Tree of Life & Birds",
+              "Mandir Sanctum Deity",
+              "Abstract Geometric Relief",
+              "Base Engraved + Marble Overlay Inlay",
+              "Base Stone Provided by Client",
+            ].map((chip) => (
+              <button
+                key={chip}
+                type="button"
+                onClick={() => {
+                  setSceneDescription((prev) => {
+                    const trimmed = prev.trim();
+                    if (!trimmed) return chip;
+                    if (trimmed.includes(chip)) return prev;
+                    return `${trimmed}; ${chip}`;
+                  });
+                }}
+                className="text-[10px] px-2 py-0.5 rounded-full border border-border/80 bg-muted/30 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              >
+                + {chip}
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Grid: Dimensions & Slabs */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -740,7 +1008,7 @@ export function StoneMuralCalculator({
               <div className="flex items-center gap-2">
                 <Layers className="h-4 w-4 text-primary" />
                 <CardTitle className="text-sm font-semibold">
-                  2) Slab Size & Thickness Calculation
+                  2) Base Stone Slab Size & Sourcing
                 </CardTitle>
               </div>
               <Badge variant="outline" className="text-[11px] font-mono">
@@ -749,6 +1017,47 @@ export function StoneMuralCalculator({
             </div>
           </CardHeader>
           <CardContent className="p-4 pt-2 space-y-3">
+            {/* Base Stone Sourcing Selector */}
+            <div className="rounded-md border border-border/80 bg-muted/15 p-2 space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-medium text-foreground">Base Stone Sourcing</span>
+                <Badge
+                  variant={baseStoneSourcing === "stone_tech" ? "default" : "outline"}
+                  className="text-[10px]"
+                >
+                  {baseStoneSourcing === "stone_tech"
+                    ? "Procured by Stone Tech"
+                    : "Client-Provided Slab"}
+                </Badge>
+              </div>
+              <div className="grid grid-cols-2 gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setBaseStoneSourcing("stone_tech")}
+                  className={`text-xs py-1 px-2 rounded font-medium border text-left cursor-pointer transition-all ${
+                    baseStoneSourcing === "stone_tech"
+                      ? "border-primary bg-primary/10 text-primary font-semibold ring-1 ring-primary"
+                      : "border-border bg-background text-muted-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  <div className="font-semibold text-[11px]">Procured by Stone Tech</div>
+                  <div className="text-[9px] text-muted-foreground">We supply base stone</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBaseStoneSourcing("client_provided")}
+                  className={`text-xs py-1 px-2 rounded font-medium border text-left cursor-pointer transition-all ${
+                    baseStoneSourcing === "client_provided"
+                      ? "border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 font-semibold ring-1 ring-emerald-600"
+                      : "border-border bg-background text-muted-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  <div className="font-semibold text-[11px]">Provided by Client</div>
+                  <div className="text-[9px] text-muted-foreground">Client supplies (₹0 stone)</div>
+                </button>
+              </div>
+            </div>
+
             <div className="grid grid-cols-3 gap-2">
               <div>
                 <label className="text-xs font-medium text-muted-foreground">
@@ -819,20 +1128,30 @@ export function StoneMuralCalculator({
               <div>
                 <label className="text-xs font-medium text-muted-foreground flex items-center justify-between">
                   <span>Price (₹/sq ft)</span>
-                  {slabThk === 50 && effectiveStoneType.toLowerCase().includes("sandstone") && (
-                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
-                      Default 50mm Sandstone
+                  {baseStoneSourcing === "client_provided" ? (
+                    <span className="text-[10px] text-emerald-600 font-semibold">
+                      Client Scope (₹0)
                     </span>
+                  ) : (
+                    slabThk === 50 &&
+                    effectiveStoneType.toLowerCase().includes("sandstone") && (
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                        Default 50mm Sandstone
+                      </span>
+                    )
                   )}
                 </label>
                 <Input
                   type="number"
                   inputMode="decimal"
                   min="0"
-                  value={slabPrice}
+                  disabled={baseStoneSourcing === "client_provided"}
+                  value={baseStoneSourcing === "client_provided" ? "0" : slabPrice}
                   onChange={(e) => setSlabPrice(e.target.value)}
-                  className="mt-1 h-8 text-sm font-mono font-medium"
-                  placeholder="550"
+                  className={`mt-1 h-8 text-sm font-mono font-medium ${
+                    baseStoneSourcing === "client_provided" ? "opacity-60 bg-muted/50" : ""
+                  }`}
+                  placeholder={baseStoneSourcing === "client_provided" ? "0" : "550"}
                 />
               </div>
             </div>
@@ -871,7 +1190,9 @@ export function StoneMuralCalculator({
                 <div className="text-right">
                   <div className="font-mono font-bold text-foreground">
                     {slabsCount > 0
-                      ? `${totalSlabSqft} sq ft = ${formatInr(stoneSlabsAmount)}`
+                      ? baseStoneSourcing === "stone_tech"
+                        ? `${totalSlabSqft} sq ft = ${formatInr(stoneSlabsAmount)}`
+                        : `${totalSlabSqft} sq ft = ₹0 (Client Scope)`
                       : "—"}
                   </div>
                 </div>
@@ -887,7 +1208,9 @@ export function StoneMuralCalculator({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Wrench className="h-4 w-4 text-primary" />
-              <CardTitle className="text-sm font-semibold">3) CNC Job Work Pricing</CardTitle>
+              <CardTitle className="text-sm font-semibold">
+                3) Base Stone CNC Job Work Pricing
+              </CardTitle>
             </div>
             <div className="font-mono text-xs font-semibold text-primary">
               {cncKey && cncAmount > 0
@@ -967,13 +1290,364 @@ export function StoneMuralCalculator({
         </CardContent>
       </Card>
 
+      {/* 4) Overlay / Inlay Worked Stone Piece & Pasting Work */}
+      <Card
+        className={`shadow-sm transition-all border-border ${
+          overlayEnabled ? "border-primary/40 bg-primary/[0.015]" : ""
+        }`}
+      >
+        <CardHeader className="p-4 pb-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="mural-overlay-toggle"
+                checked={overlayEnabled}
+                onCheckedChange={(c) => setOverlayEnabled(!!c)}
+              />
+              <label
+                htmlFor="mural-overlay-toggle"
+                className="cursor-pointer text-sm font-semibold text-foreground flex items-center gap-1.5"
+              >
+                <span>4) Overlay / Inlay Worked Stone Piece & Pasting Charges</span>
+                <Badge variant="outline" className="text-[10px] py-0 px-1.5">
+                  Optional 2-Layer Carving
+                </Badge>
+              </label>
+            </div>
+            {overlayEnabled && (
+              <div className="font-mono text-xs font-semibold text-primary">
+                Total Overlay: {formatInr(totalOverlayCost)}
+              </div>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground ml-6">
+            For murals where a contrasting carved stone (e.g. Makrana white marble deity or inlay
+            motif) is pasted into CNC-cut pockets on the base stone.
+          </p>
+        </CardHeader>
+
+        {overlayEnabled && (
+          <CardContent className="p-4 pt-2 space-y-4">
+            {/* Overlay Stone Sourcing */}
+            <div className="rounded-md border border-border/80 bg-muted/15 p-2.5 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-foreground">
+                  Overlay Stone Sourcing / Procurement
+                </span>
+                <Badge
+                  variant={overlaySourcing === "stone_tech" ? "default" : "outline"}
+                  className="text-[10px]"
+                >
+                  {overlaySourcing === "stone_tech"
+                    ? "Procured by Stone Tech"
+                    : "Client-Provided Overlay Stone"}
+                </Badge>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setOverlaySourcing("stone_tech")}
+                  className={`text-xs py-1.5 px-2.5 rounded-md font-medium border text-left cursor-pointer transition-all ${
+                    overlaySourcing === "stone_tech"
+                      ? "border-primary bg-primary/10 text-primary font-semibold ring-1 ring-primary"
+                      : "border-border bg-background text-muted-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  <div className="font-semibold text-xs">Procured by Stone Tech</div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5">
+                    We supply the overlay stone piece
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOverlaySourcing("client_provided")}
+                  className={`text-xs py-1.5 px-2.5 rounded-md font-medium border text-left cursor-pointer transition-all ${
+                    overlaySourcing === "client_provided"
+                      ? "border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 font-semibold ring-1 ring-emerald-600"
+                      : "border-border bg-background text-muted-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  <div className="font-semibold text-xs">Provided by Client</div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5">
+                    Client supplies overlay piece (₹0 stone cost)
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* Overlay Stone Specifications */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">
+                  Overlay Stone Type
+                </label>
+                <Select value={overlayStoneType} onValueChange={setOverlayStoneType}>
+                  <SelectTrigger className="mt-1 h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COMMON_OVERLAY_STONE_TYPES.map((st) => (
+                      <SelectItem key={st} value={st}>
+                        {st}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {overlayStoneType === "Other Natural Stone" && (
+                  <Input
+                    value={customOverlayStoneType}
+                    onChange={(e) => setCustomOverlayStoneType(e.target.value)}
+                    placeholder="Enter custom overlay stone name…"
+                    className="mt-1.5 h-8 text-xs"
+                  />
+                )}
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Thickness (mm)</label>
+                <Input
+                  type="number"
+                  inputMode="decimal"
+                  min="1"
+                  value={overlayThickness}
+                  onChange={(e) => setOverlayThickness(e.target.value)}
+                  className="mt-1 h-8 text-sm font-mono"
+                  placeholder="20"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-muted-foreground flex items-center justify-between">
+                  <span>Overlay Stone Price (₹/sq ft)</span>
+                  {overlaySourcing === "client_provided" && (
+                    <span className="text-[10px] text-emerald-600 font-semibold">Client Scope</span>
+                  )}
+                </label>
+                <Input
+                  type="number"
+                  inputMode="decimal"
+                  min="0"
+                  disabled={overlaySourcing === "client_provided"}
+                  value={overlaySourcing === "client_provided" ? "0" : overlayStonePrice}
+                  onChange={(e) => setOverlayStonePrice(e.target.value)}
+                  className={`mt-1 h-8 text-sm font-mono font-medium ${
+                    overlaySourcing === "client_provided" ? "opacity-60 bg-muted/50" : ""
+                  }`}
+                  placeholder={overlaySourcing === "client_provided" ? "0" : "450"}
+                />
+              </div>
+            </div>
+
+            {/* Overlay Piece Dimensions & Area Coverage */}
+            <div className="rounded-md border border-border/80 bg-muted/20 p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-foreground">
+                  Overlay Piece Dimensions & Coverage
+                </span>
+                <span className="font-mono text-xs font-bold text-foreground">
+                  {effectiveOverlaySqft > 0 ? `${effectiveOverlaySqft.toFixed(2)} sq ft` : "—"}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div>
+                  <label className="text-[11px] text-muted-foreground">
+                    Overlay Length ({unit})
+                  </label>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    min="0"
+                    value={overlayLength}
+                    onChange={(e) => {
+                      setOverlayLength(e.target.value);
+                      if (overlayCustomSqft) setOverlayCustomSqft("");
+                    }}
+                    className="mt-0.5 h-7 text-xs"
+                    placeholder="e.g. 4"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] text-muted-foreground">
+                    Overlay Height ({unit})
+                  </label>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    min="0"
+                    value={overlayHeight}
+                    onChange={(e) => {
+                      setOverlayHeight(e.target.value);
+                      if (overlayCustomSqft) setOverlayCustomSqft("");
+                    }}
+                    className="mt-0.5 h-7 text-xs"
+                    placeholder="e.g. 3"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] text-muted-foreground flex items-center justify-between">
+                    <span>Or Direct Area (sq ft)</span>
+                    {overlayCustomSqft && (
+                      <span className="text-[9px] text-blue-600 font-semibold">Custom Sqft</span>
+                    )}
+                  </label>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    min="0"
+                    value={overlayCustomSqft}
+                    onChange={(e) => setOverlayCustomSqft(e.target.value)}
+                    className="mt-0.5 h-7 text-xs font-mono font-medium"
+                    placeholder={
+                      calculatedOverlaySqft > 0 ? calculatedOverlaySqft.toFixed(2) : "e.g. 15"
+                    }
+                  />
+                </div>
+              </div>
+              <div className="flex items-center justify-between pt-1 border-t border-border/60 text-xs">
+                <span className="text-muted-foreground">Overlay Stone Material Subtotal:</span>
+                <span className="font-mono font-semibold text-foreground">
+                  {overlaySourcing === "stone_tech"
+                    ? formatInr(overlayStoneAmount)
+                    : "₹0 (Provided by Client)"}
+                </span>
+              </div>
+            </div>
+
+            {/* Overlay Piece Additional CNC Carving Work (Optional) */}
+            <div className="rounded-md border border-border p-3 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="overlay-cnc-toggle"
+                    checked={overlayCncEnabled}
+                    onCheckedChange={(c) => setOverlayCncEnabled(!!c)}
+                  />
+                  <label
+                    htmlFor="overlay-cnc-toggle"
+                    className="cursor-pointer text-xs font-semibold text-foreground"
+                  >
+                    Additional CNC Carving on Overlay Piece
+                  </label>
+                </div>
+                {overlayCncEnabled && (
+                  <span className="font-mono text-xs font-semibold text-foreground">
+                    {formatInr(overlayCncAmount)}
+                  </span>
+                )}
+              </div>
+
+              {overlayCncEnabled && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-border/60">
+                  <div>
+                    <label className="text-[11px] text-muted-foreground">
+                      Select Carving Style
+                    </label>
+                    <Select value={overlayCncKey} onValueChange={setOverlayCncKey}>
+                      <SelectTrigger className="mt-0.5 h-7 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {MURAL_CNC_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.key} value={opt.key}>
+                            {opt.label} (₹{opt.defaultRatePerSqft}/sq ft)
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="custom">Custom Carving Rate</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-muted-foreground">
+                      Carving Rate (₹/sq ft)
+                    </label>
+                    {overlayCncKey === "custom" ? (
+                      <Input
+                        type="number"
+                        min="0"
+                        value={overlayCncCustomRate}
+                        onChange={(e) => setOverlayCncCustomRate(e.target.value)}
+                        placeholder="Rate in ₹ / sq ft"
+                        className="mt-0.5 h-7 text-xs font-mono"
+                      />
+                    ) : (
+                      <div className="mt-0.5 h-7 flex items-center text-xs font-mono font-medium text-foreground">
+                        ₹{overlayCncRate} / sq ft
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Pasting Charges */}
+            <div className="rounded-md border border-amber-500/40 bg-amber-500/[0.04] p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <span>Pasting Charges (Epoxy Bonding & Artisan Fixing)</span>
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] border-amber-500/40 text-amber-800 dark:text-amber-300"
+                    >
+                      Required for Overlay
+                    </Badge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    Specialized stone epoxy chemical & master artisan charges for inserting and
+                    bonding the worked piece into the base stone pocket.
+                  </p>
+                </div>
+                <div className="font-mono text-sm font-bold text-amber-700 dark:text-amber-400">
+                  {formatInr(pastingAmount)}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-amber-500/20">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-muted-foreground shrink-0">Rate (₹/sq ft):</span>
+                  <Input
+                    type="number"
+                    min="0"
+                    disabled={pastingCustomAmount !== ""}
+                    value={pastingRate}
+                    onChange={(e) => setPastingRate(e.target.value)}
+                    className="h-7 w-20 text-right text-xs font-mono font-medium"
+                  />
+                  <span className="text-[11px] text-muted-foreground">/sq ft</span>
+                </div>
+                <div className="flex items-center gap-1.5 justify-end">
+                  <span className="text-xs text-muted-foreground shrink-0">Or Lump Sum (₹):</span>
+                  <Input
+                    type="number"
+                    min="0"
+                    placeholder="Auto rate"
+                    value={pastingCustomAmount}
+                    onChange={(e) => setPastingCustomAmount(e.target.value)}
+                    className="h-7 w-28 text-right text-xs font-mono font-medium"
+                  />
+                  {pastingCustomAmount && (
+                    <button
+                      type="button"
+                      onClick={() => setPastingCustomAmount("")}
+                      className="text-[10px] text-blue-600 hover:underline cursor-pointer"
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        )}
+      </Card>
+
       {/* Finishing & Site Labour Breakdown (Rubbing, Polishing, Labour, Touch Up) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Card 4 & 5: Surface Finishing (Rubbing & Polishing) */}
+        {/* Card 5 & 6: Surface Finishing (Rubbing & Polishing) */}
         <Card className="shadow-sm border-border">
           <CardHeader className="p-4 pb-2">
             <CardTitle className="text-sm font-semibold">
-              4 & 5) Finishing (Rubbing & Optional Polishing)
+              5 & 6) Finishing (Rubbing & Optional Polishing)
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-2 space-y-3">
@@ -1059,10 +1733,10 @@ export function StoneMuralCalculator({
           </CardContent>
         </Card>
 
-        {/* Card 6 & 7: Site Labour & Touch Up */}
+        {/* Card 7 & 8: Site Labour & Touch Up */}
         <Card className="shadow-sm border-border">
           <CardHeader className="p-4 pb-2">
-            <CardTitle className="text-sm font-semibold">6 & 7) Labour & Touch Up Work</CardTitle>
+            <CardTitle className="text-sm font-semibold">7 & 8) Labour & Touch Up Work</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-2 space-y-3">
             {/* Installation Labour */}
@@ -1159,14 +1833,14 @@ export function StoneMuralCalculator({
         </Card>
       </div>
 
-      {/* 6) Adhesives & 8) Carting */}
+      {/* 9) Adhesives & 10) Carting */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Adhesives Card */}
         <Card className="shadow-sm border-border">
           <CardHeader className="p-4 pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-semibold">
-                6) Adhesives (Fetched from Cladding Studio)
+                9) Adhesives (Fetched from Cladding Studio)
               </CardTitle>
               <span className="font-mono text-xs font-semibold text-foreground">
                 {effectiveAdhesivesAmount > 0
@@ -1263,7 +1937,7 @@ export function StoneMuralCalculator({
               <div className="flex items-center gap-2">
                 <Truck className="h-4 w-4 text-primary" />
                 <CardTitle className="text-sm font-semibold">
-                  8) Carting / Freight (As per Location)
+                  10) Carting / Freight (As per Location)
                 </CardTitle>
               </div>
               <span className="font-mono text-xs font-semibold text-foreground">
@@ -1385,6 +2059,16 @@ export function StoneMuralCalculator({
           )}
         </div>
 
+        {sceneDescription.trim() && (
+          <div className="rounded-md border border-primary/20 bg-primary/[0.03] p-2.5 text-xs text-foreground flex items-start gap-2">
+            <Sparkles className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+            <div>
+              <span className="font-semibold text-primary">Artwork Scene & Scope: </span>
+              <span className="text-muted-foreground">{sceneDescription}</span>
+            </div>
+          </div>
+        )}
+
         {items.length === 0 ? (
           <div className="text-xs text-muted-foreground py-2 text-center">
             Enter wall dimensions and select CNC work above to generate quote line items.
@@ -1440,7 +2124,7 @@ export function StoneMuralCalculator({
               </div>
               <div className="text-xs text-muted-foreground">
                 {wallAreaSqft > 0
-                  ? `Wall coverage: ${wallAreaSqft.toFixed(1)} sq ft • Stone slabs: ${totalSlabSqft} sq ft (${slabsCount} slabs)`
+                  ? `Wall coverage: ${wallAreaSqft.toFixed(1)} sq ft • Base slabs: ${totalSlabSqft} sq ft (${slabsCount} slabs) [${baseStoneSourcing === "client_provided" ? "Client Provided" : "Stone Tech Supply"}]${overlayEnabled && effectiveOverlaySqft > 0 ? ` • Overlay: ${effectiveOverlaySqft.toFixed(1)} sq ft (${effectiveOverlayStoneType})` : ""}`
                   : "Enter wall dimensions and slab sizes above to compute estimate."}
               </div>
             </div>

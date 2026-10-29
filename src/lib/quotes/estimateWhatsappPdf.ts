@@ -232,15 +232,30 @@ export function openWhatsappWithMessage(customerMobile: string, message: string)
 
 export interface MuralEstimateWhatsappInput {
   greetingName: string;
+  sceneDescription?: string;
   wallSizeSummary: string;
   wallSqft: number;
   slabDetails: string;
+  baseStoneSourcing?: "stone_tech" | "client_provided";
   slabsCount: number;
   totalSlabSqft: number;
   slabAmount: number;
   slabPricePerSqft: number;
   cncWorkSummary: string;
   cncAmount: number;
+  overlayDetails?: {
+    stoneType: string;
+    thicknessMm: number;
+    sourcing: "stone_tech" | "client_provided";
+    sqft: number;
+    stoneAmount: number;
+    stonePricePerSqft: number;
+    cncAmount?: number;
+    cncSummary?: string;
+    pastingAmount: number;
+    totalAmount: number;
+  };
+  pastingAmount?: number;
   rubbingAmount: number;
   polishingAmount: number;
   installationLabourAmount: number;
@@ -269,10 +284,24 @@ export function buildMuralEstimateWhatsappMessage(
   const lines: Array<string | null> = [
     `Hi ${input.greetingName},`,
     `Here is the estimate for the Stone Mural project based on the shared details:`,
+    input.sceneDescription ? `• Artwork Scene & Scope: ${input.sceneDescription}` : null,
     `• Wall Size: ${input.wallSizeSummary} (${input.wallSqft.toFixed(1)} sq ft)`,
     `• Slabs Required: ${input.slabsCount} slab(s) — ${input.slabDetails} (Total: ${input.totalSlabSqft} sq ft)`,
-    `• Stone Slabs: ${formatInr(input.slabAmount)} (@ ${formatInr(input.slabPricePerSqft)}/sq ft)`,
-    `• CNC Job Work: ${formatInr(input.cncAmount)} (${input.cncWorkSummary})`,
+    input.baseStoneSourcing === "client_provided"
+      ? `• Base Stone Slabs: Provided by Client (No stone cost; carving & processing only)`
+      : `• Base Stone Slabs: ${formatInr(input.slabAmount)} (@ ${formatInr(input.slabPricePerSqft)}/sq ft)`,
+    `• Base Stone CNC Work: ${formatInr(input.cncAmount)} (${input.cncWorkSummary})`,
+    input.overlayDetails
+      ? input.overlayDetails.sourcing === "client_provided"
+        ? `• Overlay Stone Piece: ${input.overlayDetails.stoneType} (${input.overlayDetails.thicknessMm}mm, ${input.overlayDetails.sqft.toFixed(1)} sq ft) — Provided by Client`
+        : `• Overlay Stone Piece: ${input.overlayDetails.stoneType} (${input.overlayDetails.thicknessMm}mm, ${input.overlayDetails.sqft.toFixed(1)} sq ft) — ${formatInr(input.overlayDetails.stoneAmount)} (@ ${formatInr(input.overlayDetails.stonePricePerSqft)}/sq ft)`
+      : null,
+    input.overlayDetails?.cncAmount && input.overlayDetails.cncAmount > 0
+      ? `• Overlay CNC Carving: ${formatInr(input.overlayDetails.cncAmount)}${input.overlayDetails.cncSummary ? ` (${input.overlayDetails.cncSummary})` : ""}`
+      : null,
+    input.pastingAmount && input.pastingAmount > 0
+      ? `• Overlay Pasting & Bonding Work: ${formatInr(input.pastingAmount)} (Specialized epoxy & artisan fixing)`
+      : null,
     input.rubbingAmount > 0 ? `• Surface Rubbing: ${formatInr(input.rubbingAmount)}` : null,
     input.polishingAmount > 0 ? `• Polishing Work: ${formatInr(input.polishingAmount)}` : null,
     input.installationLabourAmount > 0
@@ -287,6 +316,12 @@ export function buildMuralEstimateWhatsappMessage(
       : `• Carting / Freight: To be confirmed with carting agency as per location`,
     `Total Estimate: ${formatInr(input.totalEstimate)}`,
     `Notes:`,
+    input.baseStoneSourcing === "client_provided"
+      ? `Base stone slabs to be supplied at site/factory by client as per specified dimensions and thickness.`
+      : null,
+    input.overlayDetails?.sourcing === "client_provided"
+      ? `Overlay stone material to be provided by client.`
+      : null,
     input.installationLabourAmount > 0
       ? `Scaffolding, if required, will be provided by the customer.`
       : null,
