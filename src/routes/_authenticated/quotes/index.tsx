@@ -1103,7 +1103,10 @@ function CreateQuoteDialog({
       onOpenChange(false);
       nav({ to: "/quotes/$quoteId", params: { quoteId: row.id } });
     },
-    onError: (err) => toast.error(toUserMessage(err)),
+    onError: (err) => {
+      console.error("[CreateQuoteDialog] Quote creation failed:", err);
+      toast.error(toUserMessage(err), { duration: 6000 });
+    },
   });
 
   function updateItem(key: string, patch: Partial<FormItem>) {
@@ -1206,6 +1209,7 @@ function CreateQuoteDialog({
           saleMode === "hybrid" && hybridInvoicedAmount ? Number(hybridInvoicedAmount) : undefined,
         items: calcResult.items.map((it) => ({
           ...it,
+          quantity: Math.round(Number(it.quantity) * 100) / 100,
           tax_pct: saleMode === "cash" ? 0 : it.tax_pct,
         })),
         wall_estimate: calcResult.worksheet as Record<string, unknown>,

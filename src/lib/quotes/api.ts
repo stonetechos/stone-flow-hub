@@ -124,6 +124,26 @@ export async function getQuoteItems(quoteId: string): Promise<QuoteItemRow[]> {
   });
 }
 
+export async function getNextQuoteNumber(): Promise<string> {
+  const { data } = await getDb()
+    .from("quotes")
+    .select("quote_no")
+    .order("quote_no", { ascending: false })
+    .limit(20);
+
+  let maxNum = 0;
+  if (data) {
+    for (const row of data) {
+      const match = /QUO-(\d+)/i.exec(row.quote_no || "");
+      if (match) {
+        const n = parseInt(match[1], 10);
+        if (n > maxNum) maxNum = n;
+      }
+    }
+  }
+  return `QUO-${String(maxNum + 1).padStart(6, "0")}`;
+}
+
 export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
   const parsed = quoteCreateSchema.parse(input);
 
@@ -135,19 +155,30 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
     projectId = project.id;
     customerId = project.customer_id;
   } else {
-    // Customer-first flow: no project was shown/picked in the UI. Auto-create
-    // a lightweight project behind the scenes so quotes.project_id (still
-    // NOT NULL) and the downstream Sales Order / Invoice chain keep working
-    // unchanged, without surfacing "Project" as a concept to the user.
+    // Customer-first flow: reuse customer's existing project if one exists,
+    // otherwise auto-create a lightweight project behind the scenes so
+    // quotes.project_id (still NOT NULL) and downstream SO/Invoice chains work.
     const customer = await getCustomer(parsed.customer_id!);
     if (!customer) throw new AppError("Selected customer not found", "NOT_FOUND", 404);
-    const project = await createProject({
-      customer_id: customer.id,
-      name: customer.name,
-      city: customer.city?.trim() || "Not specified",
-      project_type: "other",
-    });
-    projectId = project.id;
+
+    const { data: existingProjects } = await getDb()
+      .from("projects")
+      .select("id")
+      .eq("customer_id", customer.id)
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    if (existingProjects && existingProjects.length > 0 && existingProjects[0]?.id) {
+      projectId = existingProjects[0].id;
+    } else {
+      const project = await createProject({
+        customer_id: customer.id,
+        name: customer.name?.trim() || "General Project",
+        city: customer.city?.trim() || "Not specified",
+        project_type: "other",
+      });
+      projectId = project.id;
+    }
     customerId = customer.id;
   }
   const lineItemImages: Record<string, string> = {};
@@ -189,30 +220,68 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
     ...(Object.keys(lineItemNotes).length > 0 ? { line_item_notes: lineItemNotes } : {}),
   };
 
-  const { data: quote, error } = await getDb()
+  const quotePayload = {
+    quote_no: "",
+    project_id: projectId,
+    customer_id: customerId,
+    enquiry_id: parsed.enquiry_id ?? null,
+    valid_until: parsed.valid_until ?? null,
+    notes: parsed.notes ?? null,
+    terms: parsed.terms ?? null,
+    wall_estimate: parsed.wall_estimate ?? null,
+    workflow_state: workflowState,
+    ...(parsed.category ? { category: parsed.category } : {}),
+  };
+
+  let { data: quote, error } = await getDb()
     .from("quotes")
-    .insert({
-      quote_no: "",
-      project_id: projectId,
-      customer_id: customerId,
-      enquiry_id: parsed.enquiry_id ?? null,
-      valid_until: parsed.valid_until ?? null,
-      notes: parsed.notes ?? null,
-      terms: parsed.terms ?? null,
-      wall_estimate: parsed.wall_estimate ?? null,
-      workflow_state: workflowState,
-      ...(parsed.category ? { category: parsed.category } : {}),
-    } as never)
+    .insert(quotePayload as never)
     .select("*")
     .single();
-  if (error) throw new AppError(mapDbError(error));
+
+  // Collision recovery: if DB sequence hits an existing quote_no or trigger fails
+  if (error) {
+    const isUniqueViolation =
+      error.code === "23505" ||
+      /unique|duplicate/i.test(error.message || "") ||
+      /quotes_quote_no_key/i.test(error.details || error.message || "");
+
+    if (isUniqueViolation) {
+      console.warn(
+        "[createQuote] quote_no collision detected. Auto-resolving next unique quote_no...",
+      );
+      const safeQuoteNo = await getNextQuoteNumber();
+      const retry = await getDb()
+        .from("quotes")
+        .insert({ ...quotePayload, quote_no: safeQuoteNo } as never)
+        .select("*")
+        .single();
+      quote = retry.data;
+      error = retry.error;
+
+      if (error?.code === "23505") {
+        const match = /QUO-(\d+)/i.exec(safeQuoteNo);
+        const num = match ? parseInt(match[1], 10) + 1 : 999999;
+        const finalSafeQuoteNo = `QUO-${String(num).padStart(6, "0")}`;
+        const finalRetry = await getDb()
+          .from("quotes")
+          .insert({ ...quotePayload, quote_no: finalSafeQuoteNo } as never)
+          .select("*")
+          .single();
+        quote = finalRetry.data;
+        error = finalRetry.error;
+      }
+    }
+  }
+
+  if (error || !quote) throw new AppError(mapDbError(error));
 
   const isCashSale = parsed.sale_mode === "cash";
   const rows = parsed.items.map((it, idx) => ({
     quote_id: quote.id,
     product_id: it.product_id ?? null,
     description: it.description,
-    quantity: it.quantity,
+    quantity: Math.round(Number(it.quantity) * 1000) / 1000,
     unit: it.unit ?? null,
     unit_price: it.unit_price,
     tax_pct: isCashSale ? 0 : it.tax_pct,
@@ -236,16 +305,27 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
       }
     });
     if (hasNotes) {
-      await getDb()
-        .from("quotes")
-        .update({ workflow_state: { ...workflowState, line_item_notes: lineItemNotes } } as never)
-        .eq("id", quote.id);
+      try {
+        await getDb()
+          .from("quotes")
+          .update({ workflow_state: { ...workflowState, line_item_notes: lineItemNotes } } as never)
+          .eq("id", quote.id);
+      } catch (err) {
+        console.warn(
+          "[createQuote] Non-fatal error updating line_item_notes in workflow_state:",
+          err,
+        );
+      }
     }
   }
 
   // Reload to reflect totals
-  const { data: reloaded } = await getDb().from("quotes").select("*").eq("id", quote.id).single();
-  return reloaded ?? quote;
+  try {
+    const { data: reloaded } = await getDb().from("quotes").select("*").eq("id", quote.id).single();
+    return reloaded ?? quote;
+  } catch {
+    return quote;
+  }
 }
 
 export async function setQuoteStatus(

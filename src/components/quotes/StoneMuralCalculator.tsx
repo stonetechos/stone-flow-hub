@@ -557,7 +557,7 @@ export function StoneMuralCalculator({
         out.push({
           product_id: null,
           description: desc,
-          quantity: totalSlabSqft,
+          quantity: Math.round(totalSlabSqft * 100) / 100,
           unit: "sqft",
           unit_price: ratePerSlabSqft,
           tax_pct: 0,
@@ -572,7 +572,7 @@ export function StoneMuralCalculator({
       out.push({
         product_id: null,
         description: desc,
-        quantity: totalSlabSqft,
+        quantity: Math.round(totalSlabSqft * 100) / 100,
         unit: "sqft",
         unit_price: 0,
         tax_pct: 0,
@@ -587,7 +587,7 @@ export function StoneMuralCalculator({
       out.push({
         product_id: null,
         description: `Base Stone CNC Carving — ${cncLabel}`,
-        quantity: wallAreaSqft,
+        quantity: Math.round(wallAreaSqft * 100) / 100,
         unit: "sqft",
         unit_price: cncRate,
         tax_pct: 0,
@@ -600,7 +600,7 @@ export function StoneMuralCalculator({
       out.push({
         product_id: null,
         description: "Base Stone Polishing Work — Mirror / High-Gloss Machine Polishing",
-        quantity: wallAreaSqft,
+        quantity: Math.round(wallAreaSqft * 100) / 100,
         unit: "sqft",
         unit_price: polRate,
         tax_pct: 0,
@@ -613,7 +613,7 @@ export function StoneMuralCalculator({
       out.push({
         product_id: null,
         description: "Base Stone Surface Rubbing Work",
-        quantity: wallAreaSqft,
+        quantity: Math.round(wallAreaSqft * 100) / 100,
         unit: "sqft",
         unit_price: rubRate,
         tax_pct: 0,
@@ -678,7 +678,7 @@ export function StoneMuralCalculator({
       out.push({
         product_id: null,
         description: "Stone Mural Installation Labour",
-        quantity: wallAreaSqft,
+        quantity: Math.round(wallAreaSqft * 100) / 100,
         unit: "sqft",
         unit_price: instRate,
         tax_pct: 0,
@@ -704,7 +704,7 @@ export function StoneMuralCalculator({
       out.push({
         product_id: null,
         description: "Mural On-Site Touch Up & Finishing Work",
-        quantity: wallAreaSqft,
+        quantity: Math.round(wallAreaSqft * 100) / 100,
         unit: "sqft",
         unit_price: touchRate,
         tax_pct: 0,

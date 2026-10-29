@@ -574,7 +574,7 @@ export function EstimateStudioCalculator({
       out.push({
         product_id: null,
         description: "Installation Labour",
-        quantity: effectiveLabourSqft,
+        quantity: Math.round(effectiveLabourSqft * 100) / 100,
         unit: "sqft",
         unit_price: Number(labourRate) || 0,
         tax_pct: 0,
@@ -610,7 +610,7 @@ export function EstimateStudioCalculator({
       out.push({
         product_id: null,
         description: "Sealer Application Labour",
-        quantity: totalWallSqft,
+        quantity: Math.round(totalWallSqft * 100) / 100,
         unit: "sqft",
         unit_price: Number(sealerAppRate) || 0,
         tax_pct: 0,

@@ -82,27 +82,65 @@ export async function getProject(id: string): Promise<ProjectWithCustomer | null
   return (data as ProjectWithCustomer | null) ?? null;
 }
 
+export async function getNextProjectCode(): Promise<string> {
+  const { data } = await getDb()
+    .from("projects")
+    .select("project_code")
+    .order("project_code", { ascending: false })
+    .limit(20);
+
+  let maxNum = 0;
+  if (data) {
+    for (const row of data) {
+      const match = /PRJ-(\d+)/i.exec(row.project_code || "");
+      if (match) {
+        const n = parseInt(match[1], 10);
+        if (n > maxNum) maxNum = n;
+      }
+    }
+  }
+  return `PRJ-${String(maxNum + 1).padStart(6, "0")}`;
+}
+
 export async function createProject(input: ProjectCreateInput): Promise<ProjectRow> {
   const parsed = projectCreateSchema.parse(input);
 
-  const { data, error } = await getDb()
-    .from("projects")
-    .insert({
-      project_code: "",
-      customer_id: parsed.customer_id,
-      name: parsed.name,
-      city: parsed.city,
-      project_type: parsed.project_type,
-      site_address: parsed.site_address ?? null,
-      state: parsed.state ?? null,
-      pincode: parsed.pincode ?? null,
-      expected_value_inr: parsed.expected_value_inr ?? null,
-      expected_start_date: parsed.expected_start_date ?? null,
-      expected_completion_date: parsed.expected_completion_date ?? null,
-      notes: parsed.notes ?? null,
-    })
-    .select("*")
-    .single();
+  const payload = {
+    project_code: "",
+    customer_id: parsed.customer_id,
+    name: parsed.name,
+    city: parsed.city,
+    project_type: parsed.project_type,
+    site_address: parsed.site_address ?? null,
+    state: parsed.state ?? null,
+    pincode: parsed.pincode ?? null,
+    expected_value_inr: parsed.expected_value_inr ?? null,
+    expected_start_date: parsed.expected_start_date ?? null,
+    expected_completion_date: parsed.expected_completion_date ?? null,
+    notes: parsed.notes ?? null,
+  };
+
+  const { data, error } = await getDb().from("projects").insert(payload).select("*").single();
+
+  if (!error && data) return data;
+
+  // Collision recovery: if DB sequence hits an existing code or trigger fails
+  const isUniqueViolation =
+    error?.code === "23505" ||
+    /unique|duplicate/i.test(error?.message || "") ||
+    /projects_project_code_key/i.test(error?.details || error?.message || "");
+
+  if (isUniqueViolation) {
+    const safeCode = await getNextProjectCode();
+    const { data: retryData, error: retryErr } = await getDb()
+      .from("projects")
+      .insert({ ...payload, project_code: safeCode })
+      .select("*")
+      .single();
+    if (!retryErr && retryData) return retryData;
+    throw new AppError(mapDbError(retryErr || error));
+  }
+
   if (error) throw new AppError(mapDbError(error));
   return data;
 }
