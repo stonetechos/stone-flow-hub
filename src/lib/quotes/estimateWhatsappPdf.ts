@@ -252,8 +252,8 @@ export interface MuralEstimateWhatsappInput {
     stonePricePerSqft: number;
     cncAmount?: number;
     cncSummary?: string;
-    pastingAmount: number;
-    totalAmount: number;
+    pastingAmount?: number;
+    totalAmount?: number;
   };
   pastingAmount?: number;
   rubbingAmount: number;
