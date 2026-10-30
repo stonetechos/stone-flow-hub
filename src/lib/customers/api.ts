@@ -383,6 +383,9 @@ export interface UpdateCustomerCrmStatusOptions {
   payment_reminder_flag_days?: number | null;
   payment_reminder_notes?: string | null;
   payment_reminder_completed?: boolean;
+  status_whatsapp_sent?: boolean | null;
+  status_whatsapp_sent_at?: string | null;
+  status_whatsapp_status_key?: string | null;
 }
 
 export async function updateCustomerCrmStatus(
@@ -419,6 +422,29 @@ export async function updateCustomerCrmStatus(
   }
 
   const nowIso = new Date().toISOString();
+
+  // Track WhatsApp notification for CRM status update
+  if (input.status_whatsapp_sent !== undefined) {
+    if (input.status_whatsapp_sent) {
+      updatedWf.status_whatsapp_sent = true;
+      updatedWf.status_whatsapp_sent_at = input.status_whatsapp_sent_at || nowIso;
+      updatedWf.status_whatsapp_status_key =
+        input.status_whatsapp_status_key ||
+        (updatedWf.response_status as string) ||
+        input.response_status ||
+        null;
+    } else {
+      updatedWf.status_whatsapp_sent = false;
+      delete updatedWf.status_whatsapp_sent_at;
+      delete updatedWf.status_whatsapp_status_key;
+    }
+  } else if (input.response_status && input.response_status !== currentWf.response_status) {
+    // Reset notification flag when new status is set
+    updatedWf.status_whatsapp_sent = false;
+    delete updatedWf.status_whatsapp_sent_at;
+    delete updatedWf.status_whatsapp_status_key;
+    updatedWf.status_updated_at = nowIso;
+  }
 
   if (input.call_note || input.call_outcome) {
     updatedWf.last_call_at = nowIso;

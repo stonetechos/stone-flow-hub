@@ -711,8 +711,8 @@ function CustomersPage() {
                       {t("common.createdDate", "Created")}
                     </TableHead>
                     <TableHead className="w-26 whitespace-nowrap px-1.5">Type</TableHead>
-                    <TableHead className="w-36 whitespace-nowrap px-1.5 overflow-hidden">
-                      CRM Status
+                    <TableHead className="min-w-[190px] whitespace-nowrap px-1.5">
+                      CRM Status & Updates
                     </TableHead>
                     <TableHead className="w-32 whitespace-nowrap px-1.5 overflow-hidden">
                       Assigned To
@@ -848,10 +848,18 @@ function CustomersPage() {
                             );
                           })()}
                         </TableCell>
-                        <TableCell className="w-36 whitespace-nowrap px-1.5 overflow-hidden">
+                        <TableCell className="min-w-[190px] px-1.5 align-middle">
                           <CustomerResponseStatusSelect
                             customerId={c.id}
                             customerName={c.name}
+                            contactPerson={
+                              c.contact_person ||
+                              ((c.external_ref as Record<string, unknown> | null)
+                                ?.contact_person as string | undefined)
+                            }
+                            phone={c.primary_phone || c.whatsapp}
+                            whatsapp={c.whatsapp || c.primary_phone}
+                            companyName={c.company_name}
                             isActive={c.is_active}
                             workflowState={c.workflow_state}
                             externalRef={c.external_ref}

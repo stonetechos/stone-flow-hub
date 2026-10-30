@@ -14,6 +14,7 @@ import {
   History,
   FileText,
   AlertCircle,
+  AlertTriangle,
   ChevronDown,
   ChevronUp,
   CreditCard,
@@ -51,6 +52,7 @@ import {
   getCustomerPaymentReminderInfo,
   getCustomerResponseStatus,
   getCustomerSalesperson,
+  getCustomerStatusNotificationInfo,
   type CustomerResponseStatus,
 } from "@/lib/customers/crm-status";
 import { buildWhatsappUrl } from "@/lib/whatsapp";
@@ -61,6 +63,7 @@ import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { formatDate, formatInr } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { StatusWhatsappNotificationDialog } from "./StatusWhatsappNotificationDialog";
 
 interface CustomerCrmFollowupCardProps {
   customer: CustomerRow;
@@ -95,9 +98,11 @@ export function CustomerCrmFollowupCard({ customer }: CustomerCrmFollowupCardPro
 
   // Outcome dialog state
   const [completionNotes, setCompletionNotes] = useState("");
+  const [statusWhatsappDialogOpen, setStatusWhatsappDialogOpen] = useState(false);
 
   const crmState = getCustomerCrmState(customer);
   const paymentReminder = getCustomerPaymentReminderInfo(customer);
+  const statusNotification = getCustomerStatusNotificationInfo(customer);
   const phone = customer.primary_phone ?? "";
   const wa = customer.whatsapp ?? customer.primary_phone ?? "";
   const waDigits = wa.replace(/[^0-9]/g, "");
@@ -328,6 +333,15 @@ export function CustomerCrmFollowupCard({ customer }: CustomerCrmFollowupCardPro
           <CustomerResponseStatusSelect
             customerId={customerId}
             customerName={customer.name}
+            contactPerson={
+              customer.contact_person ||
+              ((customer.external_ref as Record<string, unknown> | null)?.contact_person as
+                | string
+                | undefined)
+            }
+            phone={customer.primary_phone || customer.whatsapp}
+            whatsapp={customer.whatsapp || customer.primary_phone}
+            companyName={customer.company_name}
             isActive={customer.is_active}
             workflowState={customer.workflow_state}
             externalRef={customer.external_ref}
@@ -337,6 +351,36 @@ export function CustomerCrmFollowupCard({ customer }: CustomerCrmFollowupCardPro
       </CardHeader>
 
       <CardContent className="space-y-4 pt-4">
+        {/* CRM Status WhatsApp Notification Banner */}
+        {statusNotification.needsNotification && (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-amber-300 bg-amber-50/90 p-3.5 shadow-2xs text-amber-950">
+            <div className="flex items-start gap-2.5">
+              <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs font-bold text-amber-950">
+                  The customer is not updated with the current status
+                </p>
+                <p className="text-[11px] text-amber-800 mt-0.5 leading-snug">
+                  CRM status is set to{" "}
+                  <span className="font-semibold text-amber-950">
+                    {statusNotification.statusLabel}
+                  </span>
+                  , but the WhatsApp notification has not yet been sent to the client.
+                </p>
+              </div>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => setStatusWhatsappDialogOpen(true)}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs h-7 gap-1.5 shrink-0 self-start sm:self-center shadow-2xs"
+            >
+              <MessageCircle className="h-3.5 w-3.5" />
+              <span>Send WhatsApp</span>
+            </Button>
+          </div>
+        )}
+
         {/* Payment Request & Promise Alert Banner */}
         {paymentReminder.hasReminder && (
           <div
@@ -1074,6 +1118,24 @@ export function CustomerCrmFollowupCard({ customer }: CustomerCrmFollowupCardPro
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <StatusWhatsappNotificationDialog
+        open={statusWhatsappDialogOpen}
+        onOpenChange={setStatusWhatsappDialogOpen}
+        customerId={customerId}
+        customerName={customer.name}
+        contactPerson={
+          customer.contact_person ||
+          ((customer.external_ref as Record<string, unknown> | null)?.contact_person as
+            | string
+            | undefined)
+        }
+        phone={customer.primary_phone || customer.whatsapp}
+        whatsapp={customer.whatsapp || customer.primary_phone}
+        status={statusNotification.status}
+        salesperson={getCustomerSalesperson(customer)}
+        companyName={customer.company_name}
+      />
     </Card>
   );
 }

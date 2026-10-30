@@ -787,6 +787,15 @@ function CustomerHub() {
               <CustomerResponseStatusSelect
                 customerId={customerId}
                 customerName={c.name}
+                contactPerson={
+                  c.contact_person ||
+                  ((c.external_ref as Record<string, unknown> | null)?.contact_person as
+                    | string
+                    | undefined)
+                }
+                phone={c.primary_phone || c.whatsapp}
+                whatsapp={c.whatsapp || c.primary_phone}
+                companyName={c.company_name}
                 isActive={c.is_active}
                 workflowState={c.workflow_state}
                 externalRef={c.external_ref}

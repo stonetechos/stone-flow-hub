@@ -446,6 +446,9 @@ const updateCustomerCrmStatusInput = z.object({
   payment_reminder_flag_days: z.number().int().nonnegative().nullish(),
   payment_reminder_notes: z.string().nullish(),
   payment_reminder_completed: z.boolean().nullish(),
+  status_whatsapp_sent: z.boolean().nullish(),
+  status_whatsapp_sent_at: z.string().nullish(),
+  status_whatsapp_status_key: z.string().nullish(),
 });
 
 export const updateCustomerCrmStatusServerFn = createServerFn({ method: "POST" })
@@ -475,6 +478,30 @@ export const updateCustomerCrmStatusServerFn = createServerFn({ method: "POST" }
     }
 
     const nowIso = new Date().toISOString();
+
+    // Track WhatsApp notification for CRM status update
+    if (data.status_whatsapp_sent !== undefined) {
+      if (data.status_whatsapp_sent) {
+        updatedWf.status_whatsapp_sent = true;
+        updatedWf.status_whatsapp_sent_at = data.status_whatsapp_sent_at || nowIso;
+        updatedWf.status_whatsapp_status_key =
+          data.status_whatsapp_status_key ||
+          (updatedWf.response_status as string) ||
+          data.response_status ||
+          null;
+      } else {
+        updatedWf.status_whatsapp_sent = false;
+        delete updatedWf.status_whatsapp_sent_at;
+        delete updatedWf.status_whatsapp_status_key;
+      }
+    } else if (data.response_status && data.response_status !== currentWf.response_status) {
+      // Whenever a new status is set and WhatsApp notification has not yet been marked sent,
+      // reset notification flag so the customer is marked as "not updated with current status"
+      updatedWf.status_whatsapp_sent = false;
+      delete updatedWf.status_whatsapp_sent_at;
+      delete updatedWf.status_whatsapp_status_key;
+      updatedWf.status_updated_at = nowIso;
+    }
 
     if (data.call_note || data.call_outcome) {
       updatedWf.last_call_at = nowIso;

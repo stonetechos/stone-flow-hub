@@ -4,9 +4,11 @@ import {
   CUSTOMER_RESPONSE_STATUS_CONFIG,
   buildCustomerFollowupWhatsappMessage,
   buildCustomerPaymentReminderWhatsappMessage,
+  buildCustomerStatusWhatsappMessage,
   getCustomerCrmState,
   getCustomerPaymentReminderInfo,
   getCustomerResponseStatus,
+  getCustomerStatusNotificationInfo,
   type CustomerResponseStatus,
 } from "./crm-status";
 
@@ -350,6 +352,111 @@ describe("Customer CRM Status", () => {
       expect(msg).toContain("gentle reminder regarding the payment of ₹1,25,000");
       expect(msg).toContain("Raman Pupneja");
       expect(msg).toContain("Stone Tech");
+    });
+  });
+
+  describe("Customer Status WhatsApp Notification & Tracking", () => {
+    it("builds polite WhatsApp status messages for Installation Team Working", () => {
+      const msg = buildCustomerStatusWhatsappMessage({
+        customerName: "Sharma Villa",
+        contactPerson: "Mr. Sharma",
+        status: "installation_team_working",
+        salesperson: "rishi",
+      });
+
+      expect(msg).toContain("Hi Mr. Sharma,");
+      expect(msg).toContain("Installation Team Working");
+      expect(msg).toContain("Installation Team is actively working on site");
+      expect(msg).toContain("Rishi Rai");
+      expect(msg).toContain("Stone Tech · Architectural Stone Atelier");
+    });
+
+    it("builds polite WhatsApp status messages for Artwork Team Working", () => {
+      const msg = buildCustomerStatusWhatsappMessage({
+        customerName: "Lotus Temple Residency",
+        contactPerson: "Ananya",
+        status: "artwork_team_working",
+        salesperson: "raman",
+      });
+
+      expect(msg).toContain("Hi Ananya,");
+      expect(msg).toContain("Artwork Team Working");
+      expect(msg).toContain("Artwork & Stone Fabrication Team is actively carving");
+      expect(msg).toContain("Raman Pupneja");
+    });
+
+    it("builds polite WhatsApp status messages for Order Placed", () => {
+      const msg = buildCustomerStatusWhatsappMessage({
+        customerName: "Grand Vista",
+        status: "order_placed",
+      });
+
+      expect(msg).toContain("Order Placed");
+      expect(msg).toContain("Thank you for confirming your order with Stone Tech");
+      expect(msg).toContain("Warm regards");
+    });
+
+    it("identifies when customer is NOT updated with the current status", () => {
+      const customer = {
+        is_active: true,
+        workflow_state: {
+          response_status: "installation_team_working" as const,
+          status_whatsapp_sent: false,
+          status_whatsapp_status_key: null,
+        },
+      };
+
+      const info = getCustomerStatusNotificationInfo(customer);
+      expect(info.isNotified).toBe(false);
+      expect(info.needsNotification).toBe(true);
+      expect(info.status).toBe("installation_team_working");
+      expect(info.statusLabel).toBe("Installation Team Working");
+      expect(info.message).toBe("The customer is not updated with the current status");
+    });
+
+    it("identifies when customer IS notified for the current status", () => {
+      const customer = {
+        is_active: true,
+        workflow_state: {
+          response_status: "installation_team_working" as const,
+          status_whatsapp_sent: true,
+          status_whatsapp_status_key: "installation_team_working",
+          status_whatsapp_sent_at: "2026-10-30T10:00:00.000Z",
+        },
+      };
+
+      const info = getCustomerStatusNotificationInfo(customer);
+      expect(info.isNotified).toBe(true);
+      expect(info.needsNotification).toBe(false);
+      expect(info.sentAt).toBe("2026-10-30T10:00:00.000Z");
+      expect(info.sentStatusKey).toBe("installation_team_working");
+    });
+
+    it("marks customer as needing notification if status changes to another key", () => {
+      // Previously sent for order_placed, but now changed to artwork_team_working
+      const customer = {
+        is_active: true,
+        workflow_state: {
+          response_status: "artwork_team_working" as const,
+          status_whatsapp_sent: true,
+          status_whatsapp_status_key: "order_placed", // outdated!
+        },
+      };
+
+      const info = getCustomerStatusNotificationInfo(customer);
+      expect(info.isNotified).toBe(false);
+      expect(info.needsNotification).toBe(true);
+      expect(info.message).toBe("The customer is not updated with the current status");
+    });
+
+    it("does not flag legacy customer with default active status as needing notification", () => {
+      const customer = {
+        is_active: true,
+        workflow_state: {},
+      };
+
+      const info = getCustomerStatusNotificationInfo(customer);
+      expect(info.needsNotification).toBe(false);
     });
   });
 });

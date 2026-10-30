@@ -22,6 +22,10 @@ export type CustomerResponseStatus =
 
 export interface CustomerCrmWorkflowState {
   response_status?: CustomerResponseStatus;
+  status_updated_at?: string | null;
+  status_whatsapp_sent?: boolean | null;
+  status_whatsapp_sent_at?: string | null;
+  status_whatsapp_status_key?: string | null;
   assigned_to?: string | null;
   assigned_salesperson?: string | null;
   assigned_at?: string;
@@ -506,4 +510,195 @@ export function buildCustomerPaymentReminderWhatsappMessage(
     "",
     signature,
   ].join("\n");
+}
+
+export interface BuildCustomerStatusWhatsappOptions {
+  customerName?: string | null;
+  contactPerson?: string | null;
+  status: CustomerResponseStatus;
+  salesperson?: CustomerSalespersonKey | string | null;
+  companyName?: string | null;
+  customNotes?: string | null;
+}
+
+/**
+ * Builds a tailored, polite, and professional WhatsApp status update message for a customer.
+ */
+export function buildCustomerStatusWhatsappMessage(
+  options: BuildCustomerStatusWhatsappOptions,
+): string {
+  const greetingName = options.contactPerson?.trim() || options.customerName?.trim() || "";
+  const greeting = greetingName ? `Hi ${greetingName},` : "Hello,";
+
+  const statusConfig = CUSTOMER_RESPONSE_STATUS_CONFIG[options.status];
+  const statusLabel = statusConfig?.label || "Status Updated";
+
+  let statusDetails = "";
+  switch (options.status) {
+    case "installation_team_working":
+      statusDetails =
+        "Our Installation Team is actively working on site for your project. Please feel free to reach out to us for any site coordination or queries.";
+      break;
+    case "artwork_team_working":
+      statusDetails =
+        "Our Artwork & Stone Fabrication Team is actively carving, detailing, and producing your stone requirement. Our master artisans are ensuring every detail meets high architectural standards.";
+      break;
+    case "order_placed":
+      statusDetails =
+        "Thank you for confirming your order with Stone Tech! Your order has been placed and handed over to our operations and production team. We will keep you updated as work proceeds.";
+      break;
+    case "order_completed":
+      statusDetails =
+        "We are delighted to share that your stone requirement/order has been successfully completed and delivered! Thank you for choosing Stone Tech. It has been a pleasure working on your project.";
+      break;
+    case "payment_pending":
+      statusDetails =
+        "This is a gentle update regarding the pending payment for your natural stone order with Stone Tech as discussed. Kindly arrange the transfer or share the confirmation once processed.";
+      break;
+    case "active_responsive":
+      statusDetails =
+        "We are actively coordinating your natural stone requirements. Please let us know if you need any assistance, design revisions, or material specifications.";
+      break;
+    case "awaiting_reply":
+      statusDetails =
+        "We have shared the proposal/quotation for your natural stone requirements. Kindly review at your convenience and let us know your valuable thoughts or if you need any adjustments.";
+      break;
+    case "followup_pending":
+      statusDetails =
+        "We wanted to follow up on your natural stone requirements with Stone Tech. Please let us know how we can best assist you with samples, sizes, or estimates.";
+      break;
+    case "regular_future_requirement":
+      statusDetails =
+        "Thank you for connecting with Stone Tech. We have documented your requirements and look forward to collaborating with you on your upcoming projects.";
+      break;
+    case "order_cancelled_delay":
+      statusDetails =
+        "We note the current status regarding unexpected project delays. Please let us know whenever you are ready to resume work, and our team will be glad to assist.";
+      break;
+    case "order_cancelled_change_of_plans":
+      statusDetails =
+        "We note the change in your project plans. Please feel free to reach back out whenever your stone requirements realign.";
+      break;
+    case "inactive_no_response":
+      statusDetails =
+        "We tried reaching out regarding your stone requirement. Whenever you are free, please feel free to drop us a reply or call back so we can assist you.";
+      break;
+    case "do_not_contact":
+      statusDetails =
+        "Thank you for your time with Stone Tech. We have updated our records accordingly.";
+      break;
+    default:
+      statusDetails =
+        "We wanted to share an update regarding the progress of your natural stone requirement with Stone Tech.";
+  }
+
+  const salespersonKey =
+    options.salesperson === "raman" || options.salesperson === "rishi"
+      ? (options.salesperson as CustomerSalespersonKey)
+      : null;
+  const salespersonConfig = salespersonKey ? CUSTOMER_SALESPEOPLE[salespersonKey] : null;
+  const signatureName =
+    salespersonConfig?.label ||
+    (typeof options.salesperson === "string" && options.salesperson.trim()
+      ? options.salesperson.trim()
+      : null);
+
+  const signature = signatureName
+    ? `Warm regards,\n${signatureName}\nStone Tech · Architectural Stone Atelier`
+    : `Warm regards,\nStone Tech · Architectural Stone Atelier`;
+
+  const lines = [
+    greeting,
+    "",
+    "Greetings from Stone Tech!",
+    "",
+    `*Order / Project Status Update:* ${statusLabel}`,
+    "",
+    statusDetails,
+  ];
+
+  if (options.customNotes && options.customNotes.trim()) {
+    lines.push("", `Note: ${options.customNotes.trim()}`);
+  }
+
+  lines.push("", signature);
+
+  return lines.join("\n");
+}
+
+export interface CustomerStatusNotificationInfo {
+  isNotified: boolean;
+  needsNotification: boolean;
+  status: CustomerResponseStatus;
+  statusLabel: string;
+  sentAt: string | null;
+  sentStatusKey: string | null;
+  statusUpdatedAt: string | null;
+  message: string;
+}
+
+/**
+ * Determines whether the customer is updated with the current CRM status via WhatsApp.
+ *
+ * If a status has been set or updated, but a WhatsApp notification has not been sent
+ * for this specific status, it informs staff that "the customer is not updated with the current status".
+ */
+export function getCustomerStatusNotificationInfo(
+  customer?: {
+    is_active?: boolean;
+    workflow_state?: unknown;
+    external_ref?: unknown;
+  } | null,
+): CustomerStatusNotificationInfo {
+  if (!customer) {
+    return {
+      isNotified: true,
+      needsNotification: false,
+      status: "active_responsive",
+      statusLabel: "Active · Responding",
+      sentAt: null,
+      sentStatusKey: null,
+      statusUpdatedAt: null,
+      message: "Customer status is current.",
+    };
+  }
+
+  const crm = getCustomerCrmState(customer);
+  const currentStatus = getCustomerResponseStatus(customer);
+  const config = CUSTOMER_RESPONSE_STATUS_CONFIG[currentStatus];
+  const statusLabel = config?.label || currentStatus;
+
+  // A customer has been notified if status_whatsapp_sent is true
+  // and status_whatsapp_status_key matches currentStatus.
+  const isSent =
+    crm.status_whatsapp_sent === true && crm.status_whatsapp_status_key === currentStatus;
+
+  // Has staff explicitly assigned/updated a response_status or workflow state?
+  const hasConfiguredStatus = Boolean(
+    crm.response_status ||
+    crm.status_updated_at ||
+    crm.status_whatsapp_status_key ||
+    crm.status_whatsapp_sent !== undefined,
+  );
+
+  // If status was configured/updated and notification was not sent for this status:
+  const needsNotification = hasConfiguredStatus && !isSent;
+
+  return {
+    isNotified: isSent,
+    needsNotification,
+    status: currentStatus,
+    statusLabel,
+    sentAt: typeof crm.status_whatsapp_sent_at === "string" ? crm.status_whatsapp_sent_at : null,
+    sentStatusKey:
+      typeof crm.status_whatsapp_status_key === "string" ? crm.status_whatsapp_status_key : null,
+    statusUpdatedAt: typeof crm.status_updated_at === "string" ? crm.status_updated_at : null,
+    message: needsNotification
+      ? "The customer is not updated with the current status"
+      : isSent
+        ? `Customer notified via WhatsApp on ${new Date(
+            crm.status_whatsapp_sent_at as string,
+          ).toLocaleDateString("en-IN")}`
+        : "Customer status is active",
+  };
 }
