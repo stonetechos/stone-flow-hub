@@ -79,10 +79,10 @@ function PurchaseLedgerIndexPage() {
   return (
     <div>
       <PageHeader
-        title={t("purchaseLedger.title", "Purchase Ledger")}
+        title={t("purchaseLedger.title", "Team Ledgers")}
         subtitle={t(
           "purchaseLedger.subtitle",
-          "Running balance per vendor — purchase orders, material received, payments and debit/credit notes.",
+          "Running balances and statements across our sourcing, fabrication, and quarry team partners.",
         )}
       />
 
@@ -93,7 +93,7 @@ function PurchaseLedgerIndexPage() {
           setQ(v);
           setPage(1);
         }}
-        searchPlaceholder={t("purchaseLedger.searchPlaceholder", "Search vendor, code, GST…")}
+        searchPlaceholder={t("purchaseLedger.searchPlaceholder", "Search team partner, code, GST…")}
         extra={
           <span className="hidden text-xs text-muted-foreground md:inline">
             {t("purchaseLedger.totalOutstanding", "Total outstanding")}{" "}
@@ -139,7 +139,7 @@ function PurchaseLedgerIndexPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t("purchaseLedger.columns.vendor", "Vendor")}</TableHead>
+                <TableHead>{t("purchaseLedger.columns.vendor", "Team Partner")}</TableHead>
                 <TableHead>{t("purchaseLedger.columns.lastActivity", "Last activity")}</TableHead>
                 <TableHead className="text-right">
                   {t("purchaseLedger.columns.totalDebit", "Total Debit")}

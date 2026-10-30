@@ -44,10 +44,10 @@ function InstallationLedgerIndex() {
   return (
     <div>
       <PageHeader
-        title={t("installationLedger.title", "Installation Agency Ledger")}
+        title={t("installationLedger.title", "Installation Team Ledger")}
         subtitle={t(
           "installationLedger.subtitle",
-          "Manual charge/payment entries for installation agencies — recorded by hand, same as vendor payments.",
+          "Charge and payment entries for installation teams — tracking balances and settlements.",
         )}
       />
 
@@ -57,10 +57,10 @@ function InstallationLedgerIndex() {
         <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
       ) : rows.length === 0 ? (
         <EmptyState
-          title={t("installationLedger.emptyTitle", "No installation agencies yet")}
+          title={t("installationLedger.emptyTitle", "No installation teams yet")}
           message={t(
             "installationLedger.emptyMessage",
-            "Add an installation agency under Masters, then record entries against it here.",
+            "Add an installation team under Masters, then record entries against it here.",
           )}
         />
       ) : (
@@ -68,7 +68,7 @@ function InstallationLedgerIndex() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t("installationLedger.columns.agency", "Agency")}</TableHead>
+                <TableHead>{t("installationLedger.columns.agency", "Installation Team")}</TableHead>
                 <TableHead>
                   {t("installationLedger.columns.totalCharged", "Total charged")}
                 </TableHead>

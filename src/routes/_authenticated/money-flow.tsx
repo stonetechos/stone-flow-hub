@@ -213,7 +213,7 @@ function MoneyFlowCommandCenterPage() {
           title={t("moneyFlow.title", "Money Flow")}
           subtitle={t(
             "moneyFlow.subtitle",
-            "Unified capital radar: payments received from customers, disbursements to vendors & installation agencies, and running ledgers.",
+            "Unified capital radar: payments received from customers, disbursements to team partners & installation teams, and running ledgers.",
           )}
           actions={
             <div className="flex flex-wrap items-center gap-2">
@@ -235,7 +235,7 @@ function MoneyFlowCommandCenterPage() {
               >
                 <Link to="/vendor-payments/new">
                   <Plus className="mr-1.5 h-3.5 w-3.5" />{" "}
-                  {t("moneyFlow.recordVendorPayment", "Record Vendor Payment")}
+                  {t("moneyFlow.recordVendorPayment", "Record Team Payment")}
                 </Link>
               </Button>
               <Button
@@ -246,7 +246,7 @@ function MoneyFlowCommandCenterPage() {
               >
                 <Link to="/agency-payments">
                   <Plus className="mr-1.5 h-3.5 w-3.5" />{" "}
-                  {t("moneyFlow.agencyDisbursements", "Agency Disbursements")}
+                  {t("moneyFlow.agencyDisbursements", "Installation Team Disbursements")}
                 </Link>
               </Button>
               <Button
@@ -301,7 +301,7 @@ function MoneyFlowCommandCenterPage() {
             <CardContent className="p-4 space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
-                  {t("moneyFlow.vendorOutflow", "Vendor Outflow")}
+                  {t("moneyFlow.vendorOutflow", "Team Outflow")}
                 </span>
                 <div className="h-6 w-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center dark:bg-amber-900/50 dark:text-amber-300">
                   <Factory className="h-3.5 w-3.5" />
@@ -311,7 +311,7 @@ function MoneyFlowCommandCenterPage() {
                 {formatInr(metrics.totalVendorOutflow)}
               </div>
               <div className="text-[10px] text-muted-foreground flex items-center justify-between">
-                <span>{t("moneyFlow.stoneSuppliers", "Stone Suppliers")}</span>
+                <span>{t("moneyFlow.stoneSuppliers", "Team Partners")}</span>
                 <Badge
                   variant="secondary"
                   className="text-[9px] px-1.5 py-0 bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300"
@@ -330,7 +330,7 @@ function MoneyFlowCommandCenterPage() {
             <CardContent className="p-4 space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-400">
-                  {t("moneyFlow.agencyOutflow", "Agency Outflow")}
+                  {t("moneyFlow.agencyOutflow", "Installation Team Outflow")}
                 </span>
                 <div className="h-6 w-6 rounded-full bg-cyan-100 text-cyan-700 flex items-center justify-center dark:bg-cyan-900/50 dark:text-cyan-300">
                   <HandCoins className="h-3.5 w-3.5" />
@@ -340,7 +340,7 @@ function MoneyFlowCommandCenterPage() {
                 {formatInr(metrics.totalAgencyOutflow)}
               </div>
               <div className="text-[10px] text-muted-foreground flex items-center justify-between">
-                <span>{t("moneyFlow.siteInstallers", "Site Installers")}</span>
+                <span>{t("moneyFlow.siteInstallers", "Installation Teams")}</span>
                 <Badge
                   variant="secondary"
                   className="text-[9px] px-1.5 py-0 bg-cyan-100 dark:bg-cyan-950/50 text-cyan-800 dark:text-cyan-300"
@@ -450,11 +450,11 @@ function MoneyFlowCommandCenterPage() {
               </TabsTrigger>
               <TabsTrigger value="vendor-payments" className="gap-1.5 text-xs">
                 <Banknote className="h-3.5 w-3.5 text-amber-600" />
-                <span>{t("moneyFlow.tabs.vendorPayments", "Vendor Payments")}</span>
+                <span>{t("moneyFlow.tabs.vendorPayments", "Team Payments")}</span>
               </TabsTrigger>
               <TabsTrigger value="agency-payments" className="gap-1.5 text-xs">
                 <HandCoins className="h-3.5 w-3.5 text-cyan-600" />
-                <span>{t("moneyFlow.tabs.agencyPayments", "Agency Payments")}</span>
+                <span>{t("moneyFlow.tabs.agencyPayments", "Installation Team Payments")}</span>
               </TabsTrigger>
               <TabsTrigger value="customer-ledgers" className="gap-1.5 text-xs">
                 <Users className="h-3.5 w-3.5" />
@@ -462,11 +462,11 @@ function MoneyFlowCommandCenterPage() {
               </TabsTrigger>
               <TabsTrigger value="vendor-ledgers" className="gap-1.5 text-xs">
                 <Factory className="h-3.5 w-3.5" />
-                <span>{t("moneyFlow.tabs.vendorLedgers", "Vendor Ledgers")}</span>
+                <span>{t("moneyFlow.tabs.vendorLedgers", "Team Ledgers")}</span>
               </TabsTrigger>
               <TabsTrigger value="agency-ledgers" className="gap-1.5 text-xs">
                 <Layers className="h-3.5 w-3.5" />
-                <span>{t("moneyFlow.tabs.agencyLedgers", "Agency Ledgers")}</span>
+                <span>{t("moneyFlow.tabs.agencyLedgers", "Installation Team Ledgers")}</span>
               </TabsTrigger>
               <TabsTrigger value="personal-transfers" className="gap-1.5 text-xs">
                 <ArrowLeftRight className="h-3.5 w-3.5 text-purple-600" />
@@ -531,7 +531,7 @@ function MoneyFlowCommandCenterPage() {
                     <div className="flex justify-between text-xs font-semibold">
                       <span className="flex items-center gap-1.5 text-amber-700 dark:text-amber-400">
                         <span className="h-2 w-2 rounded-full bg-amber-500" />
-                        {t("moneyFlow.overview.vendorMaterialPayments", "Vendor Material Payments")}
+                        {t("moneyFlow.overview.vendorMaterialPayments", "Team Material Payments")}
                       </span>
                       <span>{formatInr(metrics.totalVendorOutflow)}</span>
                     </div>
@@ -557,7 +557,7 @@ function MoneyFlowCommandCenterPage() {
                         <span className="h-2 w-2 rounded-full bg-cyan-500" />
                         {t(
                           "moneyFlow.overview.installationAgencyDisbursements",
-                          "Installation Agency Disbursements",
+                          "Installation Team Disbursements",
                         )}
                       </span>
                       <span>{formatInr(metrics.totalAgencyOutflow)}</span>
@@ -638,7 +638,7 @@ function MoneyFlowCommandCenterPage() {
                       <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                     </div>
                     <h3 className="font-bold text-sm text-foreground">
-                      {t("moneyFlow.overview.vendorPaymentsRegister", "Vendor Payments Register")}
+                      {t("moneyFlow.overview.vendorPaymentsRegister", "Team Payments Register")}
                     </h3>
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       {t(
@@ -670,7 +670,10 @@ function MoneyFlowCommandCenterPage() {
                       <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                     </div>
                     <h3 className="font-bold text-sm text-foreground">
-                      {t("moneyFlow.overview.agencyDisbursementsTitle", "Agency Disbursements")}
+                      {t(
+                        "moneyFlow.overview.agencyDisbursementsTitle",
+                        "Installation Team Disbursements",
+                      )}
                     </h3>
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       {t(
@@ -702,7 +705,7 @@ function MoneyFlowCommandCenterPage() {
                       <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                     </div>
                     <h3 className="font-bold text-sm text-foreground">
-                      {t("moneyFlow.overview.customerVendorLedgers", "Customer & Vendor Ledgers")}
+                      {t("moneyFlow.overview.customerVendorLedgers", "Customer & Team Ledgers")}
                     </h3>
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       {t(
@@ -992,7 +995,7 @@ function VendorPaymentsSection({
           <Button asChild size="sm">
             <Link to="/vendor-payments/new">
               <Plus className="mr-1.5 h-3.5 w-3.5" />{" "}
-              {t("moneyFlow.recordVendorPayment", "Record Vendor Payment")}
+              {t("moneyFlow.recordVendorPayment", "Record Team Payment")}
             </Link>
           </Button>
         }
@@ -1000,11 +1003,11 @@ function VendorPaymentsSection({
 
       {filtered.length === 0 ? (
         <EmptyState
-          title={t("moneyFlow.vendorPayments.emptyTitle", "No vendor payments found")}
+          title={t("moneyFlow.vendorPayments.emptyTitle", "No team payments found")}
           message={
             q
               ? t("moneyFlow.adjustSearch", "Try adjusting your search query.")
-              : t("moneyFlow.vendorPayments.recordFirst", "Record your first vendor payment.")
+              : t("moneyFlow.vendorPayments.recordFirst", "Record your first team payment.")
           }
         />
       ) : (
@@ -1023,7 +1026,7 @@ function VendorPaymentsSection({
             <TableHeader>
               <TableRow>
                 <TableHead>{t("table.paymentNo", "Payment #")}</TableHead>
-                <TableHead>{t("table.vendor", "Vendor")}</TableHead>
+                <TableHead>{t("table.vendor", "Team Partner")}</TableHead>
                 <TableHead>{t("table.poReference", "PO Reference")}</TableHead>
                 <TableHead>{t("table.type", "Type")}</TableHead>
                 <TableHead>{t("table.date", "Date")}</TableHead>
@@ -1139,7 +1142,7 @@ function AgencyPaymentsSection({
           <Button asChild size="sm">
             <Link to="/agency-payments">
               <Plus className="mr-1.5 h-3.5 w-3.5" />{" "}
-              {t("moneyFlow.agencyPayments.recordButton", "Record Agency Payment")}
+              {t("moneyFlow.agencyPayments.recordButton", "Record Installation Team Payment")}
             </Link>
           </Button>
         }
@@ -1147,13 +1150,16 @@ function AgencyPaymentsSection({
 
       {paymentRows.length === 0 ? (
         <EmptyState
-          title={t("moneyFlow.agencyPayments.emptyTitle", "No agency disbursements found")}
+          title={t(
+            "moneyFlow.agencyPayments.emptyTitle",
+            "No installation team disbursements found",
+          )}
           message={
             q
               ? t("moneyFlow.adjustSearch", "Try adjusting your search query.")
               : t(
                   "moneyFlow.agencyPayments.recordFirst",
-                  "Record your first installation agency payment.",
+                  "Record your first installation team payment.",
                 )
           }
         />
@@ -1173,7 +1179,7 @@ function AgencyPaymentsSection({
             <TableHeader>
               <TableRow>
                 <TableHead>{t("table.date", "Date")}</TableHead>
-                <TableHead>{t("table.agency", "Agency")}</TableHead>
+                <TableHead>{t("table.agency", "Installation Team")}</TableHead>
                 <TableHead>{t("table.description", "Description")}</TableHead>
                 <TableHead>{t("table.referenceNo", "Reference #")}</TableHead>
                 <TableHead className="text-right">{t("table.amountPaid", "Amount Paid")}</TableHead>
@@ -1189,7 +1195,7 @@ function AgencyPaymentsSection({
                       {formatDate(p.entry_date)}
                     </TableCell>
                     <TableCell className="font-medium text-xs">
-                      {agency?.name || "Agency"}
+                      {agency?.name || "Installation Team"}
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">{p.description}</TableCell>
                     <TableCell className="text-xs font-mono text-muted-foreground">
@@ -1419,13 +1425,13 @@ function VendorLedgersSection({
         onSearchChange={setQ}
         searchPlaceholder={t(
           "moneyFlow.vendorLedgers.searchPlaceholder",
-          "Search stone vendors & suppliers...",
+          "Search team partners & suppliers...",
         )}
         action={
           <Button asChild size="sm">
             <Link to="/vendor-payments/new">
               <Plus className="mr-1.5 h-3.5 w-3.5" />{" "}
-              {t("moneyFlow.recordVendorPayment", "Record Vendor Payment")}
+              {t("moneyFlow.recordVendorPayment", "Record Team Payment")}
             </Link>
           </Button>
         }
@@ -1433,8 +1439,8 @@ function VendorLedgersSection({
 
       {rows.length === 0 ? (
         <EmptyState
-          title={t("moneyFlow.vendorLedgers.emptyTitle", "No vendor ledger accounts found")}
-          message={t("moneyFlow.vendorLedgers.emptyDesc", "No vendor transactions recorded.")}
+          title={t("moneyFlow.vendorLedgers.emptyTitle", "No team ledger accounts found")}
+          message={t("moneyFlow.vendorLedgers.emptyDesc", "No team transactions recorded.")}
         />
       ) : (
         <DataTableShell
@@ -1451,7 +1457,7 @@ function VendorLedgersSection({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t("table.vendorQuarry", "Vendor / Quarry")}</TableHead>
+                <TableHead>{t("table.vendorQuarry", "Team Partner / Quarry")}</TableHead>
                 <TableHead>{t("table.contact", "Contact")}</TableHead>
                 <TableHead className="text-right">
                   {t("table.totalInvoicedDr", "Total Invoiced (Dr)")}
@@ -1560,7 +1566,7 @@ function AgencyLedgersSection({
         onSearchChange={setQ}
         searchPlaceholder={t(
           "moneyFlow.agencyLedgers.searchPlaceholder",
-          "Search installation agencies...",
+          "Search installation teams...",
         )}
         action={
           <Button asChild size="sm">
@@ -1574,8 +1580,8 @@ function AgencyLedgersSection({
 
       {filtered.length === 0 ? (
         <EmptyState
-          title={t("moneyFlow.agencyLedgers.emptyTitle", "No installation agencies found")}
-          message={t("moneyFlow.agencyLedgers.emptyDesc", "No agency ledger activity recorded.")}
+          title={t("moneyFlow.agencyLedgers.emptyTitle", "No installation teams found")}
+          message={t("moneyFlow.agencyLedgers.emptyDesc", "No team ledger activity recorded.")}
         />
       ) : (
         <DataTableShell
@@ -1592,8 +1598,8 @@ function AgencyLedgersSection({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t("table.agencyName", "Agency Name")}</TableHead>
-                <TableHead>{t("table.agencyCode", "Agency Code")}</TableHead>
+                <TableHead>{t("table.agencyName", "Installation Team Name")}</TableHead>
+                <TableHead>{t("table.agencyCode", "Team Code")}</TableHead>
                 <TableHead className="text-right">
                   {t("table.totalChargedDr", "Total Charged (Dr)")}
                 </TableHead>

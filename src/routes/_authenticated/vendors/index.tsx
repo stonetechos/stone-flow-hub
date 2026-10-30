@@ -125,7 +125,7 @@ function VendorsPage() {
   const delMut = useMutation({
     mutationFn: (id: string) => deleteVendor(id),
     onSuccess: () => {
-      toast.success("Vendor deleted");
+      toast.success("Team partner deleted");
       invalidateVendor(qc);
       setToDelete(null);
     },
@@ -142,8 +142,11 @@ function VendorsPage() {
   return (
     <div>
       <PageHeader
-        title={t("vendors.title", "Vendors")}
-        subtitle={t("vendors.subtitle", "Suppliers you send RFQs to.")}
+        title={t("vendors.title", "Team")}
+        subtitle={t(
+          "vendors.subtitle",
+          "Our quarry, processing, fabrication, and material supply partners.",
+        )}
       />
 
       <DataToolbar
@@ -158,7 +161,8 @@ function VendorsPage() {
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
         action={
           <Button size="sm" className="h-8" onClick={openCreate}>
-            <Plus className="mr-1.5 h-3.5 w-3.5" /> {t("vendors.actions.newVendor", "New vendor")}
+            <Plus className="mr-1.5 h-3.5 w-3.5" />{" "}
+            {t("vendors.actions.newVendor", "Add team partner")}
           </Button>
         }
       />
@@ -170,11 +174,11 @@ function VendorsPage() {
       ) : rows.length === 0 ? (
         <EmptyState
           icon={<Factory className="h-6 w-6" />}
-          title={t("vendors.empty.title", "No vendors yet")}
-          message={t("vendors.empty.message", "Add your first vendor to start sending RFQs.")}
+          title={t("vendors.empty.title", "No team partners yet")}
+          message={t("vendors.empty.message", "Add your first team partner to start sending RFQs.")}
           action={
             <Button onClick={openCreate}>
-              <Plus className="mr-2 h-4 w-4" /> {t("vendors.actions.newVendor", "New vendor")}
+              <Plus className="mr-2 h-4 w-4" /> {t("vendors.actions.newVendor", "Add team partner")}
             </Button>
           }
         />
@@ -425,7 +429,7 @@ function VendorFormDialog({
     mutationFn: (input: VendorCreateInput) =>
       editing ? updateVendor(editing.id, input) : createVendor(input),
     onSuccess: (row) => {
-      toast.success(editing ? "Vendor updated" : `Vendor ${row.vendor_code} created`);
+      toast.success(editing ? "Team partner updated" : `Team partner ${row.vendor_code} created`);
       if (!editing) seedPickerCache(qc, "vendor", row);
       invalidateVendor(qc, row.id);
       onOpenChange(false);
@@ -452,11 +456,11 @@ function VendorFormDialog({
     >
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{editing ? `Edit ${editing.company_name}` : "New vendor"}</DialogTitle>
+          <DialogTitle>{editing ? `Edit ${editing.company_name}` : "Add team partner"}</DialogTitle>
         </DialogHeader>
         <QuickForm onSubmit={onSubmit} busy={mutation.isPending} dirty={dirty}>
           <QuickForm.QuickFill>
-            <Field label="Vendor company" required>
+            <Field label="Company / Workshop name" required>
               <Input
                 value={form.company_name}
                 onChange={(e) => set("company_name", e.target.value)}

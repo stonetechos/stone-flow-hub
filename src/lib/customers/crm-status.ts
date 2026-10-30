@@ -9,6 +9,8 @@ export type CustomerResponseStatus =
   | "active_responsive"
   | "payment_pending"
   | "order_placed"
+  | "installation_team_working"
+  | "artwork_team_working"
   | "order_completed"
   | "order_cancelled_delay"
   | "order_cancelled_change_of_plans"
@@ -77,6 +79,26 @@ export const CUSTOMER_RESPONSE_STATUS_CONFIG: Record<
     dotColor: "bg-purple-500",
     description:
       "Client has placed their order. Sales follow-up complete; moved to order fulfillment.",
+  },
+  installation_team_working: {
+    value: "installation_team_working",
+    label: "Installation Team Working",
+    shortLabel: "Installation Team",
+    tone: "bg-blue-50 text-blue-800 border-blue-200",
+    badgeTone: "bg-blue-100/90 text-blue-900 border-blue-300 font-semibold",
+    dotColor: "bg-blue-600",
+    description:
+      "Installation team is actively on site executing the fixing and installation work.",
+  },
+  artwork_team_working: {
+    value: "artwork_team_working",
+    label: "Artwork Team Working",
+    shortLabel: "Artwork Team",
+    tone: "bg-violet-50 text-violet-800 border-violet-200",
+    badgeTone: "bg-violet-100/90 text-violet-900 border-violet-300 font-semibold",
+    dotColor: "bg-violet-600",
+    description:
+      "Artwork and stone mural fabrication team is actively carving, detailing, and producing.",
   },
   order_completed: {
     value: "order_completed",
@@ -159,6 +181,8 @@ export const CALL_OUTCOMES = [
   { value: "positive_proceeding", label: "Positive · Ready to proceed" },
   { value: "payment_promised", label: "Payment Promised · Request for Payment" },
   { value: "order_placed", label: "Order Placed / Confirmed · Won" },
+  { value: "installation_team_working", label: "Installation Team Working · On Site" },
+  { value: "artwork_team_working", label: "Artwork Team Working · Production Active" },
   { value: "order_completed", label: "Order Completed · Delivered & Closed" },
   { value: "order_cancelled_delay", label: "Order Cancelled · Unexpected Delay" },
   { value: "order_cancelled_change_of_plans", label: "Order Cancelled · Change of Plans" },

@@ -17,6 +17,20 @@ describe("Customer CRM Status", () => {
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_placed.shortLabel).toBe("Order Placed");
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_placed.dotColor).toContain("purple");
 
+    expect(CUSTOMER_RESPONSE_STATUS_CONFIG.installation_team_working).toBeDefined();
+    expect(CUSTOMER_RESPONSE_STATUS_CONFIG.installation_team_working.label).toBe(
+      "Installation Team Working",
+    );
+    expect(CUSTOMER_RESPONSE_STATUS_CONFIG.installation_team_working.shortLabel).toBe(
+      "Installation Team",
+    );
+    expect(CUSTOMER_RESPONSE_STATUS_CONFIG.installation_team_working.dotColor).toContain("blue");
+
+    expect(CUSTOMER_RESPONSE_STATUS_CONFIG.artwork_team_working).toBeDefined();
+    expect(CUSTOMER_RESPONSE_STATUS_CONFIG.artwork_team_working.label).toBe("Artwork Team Working");
+    expect(CUSTOMER_RESPONSE_STATUS_CONFIG.artwork_team_working.shortLabel).toBe("Artwork Team");
+    expect(CUSTOMER_RESPONSE_STATUS_CONFIG.artwork_team_working.dotColor).toContain("violet");
+
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_completed).toBeDefined();
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_completed.label).toBe("Order Completed");
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_completed.shortLabel).toBe("Completed");
@@ -48,6 +62,8 @@ describe("Customer CRM Status", () => {
       "active_responsive",
       "payment_pending",
       "order_placed",
+      "installation_team_working",
+      "artwork_team_working",
       "order_completed",
       "order_cancelled_delay",
       "order_cancelled_change_of_plans",
@@ -107,6 +123,14 @@ describe("Customer CRM Status", () => {
     const foundPlaced = CALL_OUTCOMES.find((o) => o.value === "order_placed");
     expect(foundPlaced).toBeDefined();
     expect(foundPlaced?.label).toContain("Order Placed");
+
+    const foundInstall = CALL_OUTCOMES.find((o) => o.value === "installation_team_working");
+    expect(foundInstall).toBeDefined();
+    expect(foundInstall?.label).toContain("Installation Team Working");
+
+    const foundArtwork = CALL_OUTCOMES.find((o) => o.value === "artwork_team_working");
+    expect(foundArtwork).toBeDefined();
+    expect(foundArtwork?.label).toContain("Artwork Team Working");
 
     const foundCompleted = CALL_OUTCOMES.find((o) => o.value === "order_completed");
     expect(foundCompleted).toBeDefined();

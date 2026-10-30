@@ -486,6 +486,8 @@ export async function updateCustomerCrmStatus(
     input.response_status === "active_responsive" ||
     input.response_status === "payment_pending" ||
     input.response_status === "order_placed" ||
+    input.response_status === "installation_team_working" ||
+    input.response_status === "artwork_team_working" ||
     input.response_status === "order_completed" ||
     input.response_status === "regular_future_requirement" ||
     input.response_status === "followup_pending" ||
@@ -521,7 +523,12 @@ export async function updateCustomerCrmStatus(
   if (updateErr) throw new AppError(mapDbError(updateErr));
 
   // If customer gave their order or order completed, automatically resolve any open pending followups
-  if (input.response_status === "order_placed" || input.response_status === "order_completed") {
+  if (
+    input.response_status === "order_placed" ||
+    input.response_status === "installation_team_working" ||
+    input.response_status === "artwork_team_working" ||
+    input.response_status === "order_completed"
+  ) {
     await db
       .from("followups")
       .update({
@@ -532,7 +539,11 @@ export async function updateCustomerCrmStatus(
           input.call_outcome ||
           (input.response_status === "order_completed"
             ? "Order completed — sales follow-up closed"
-            : "Order placed — sales follow-up completed"),
+            : input.response_status === "installation_team_working"
+              ? "Installation team working — sales follow-up completed"
+              : input.response_status === "artwork_team_working"
+                ? "Artwork team working — sales follow-up completed"
+                : "Order placed — sales follow-up completed"),
       })
       .eq("entity_type", "customer")
       .eq("entity_id", input.customerId)

@@ -65,7 +65,7 @@ function UnifiedLedgersPage() {
           title={t("ledgers.title", "Ledgers")}
           subtitle={t(
             "ledgers.subtitle",
-            "Unified financial ledger statements and running balances across Customers, Vendors, and Agencies.",
+            "Unified financial ledger statements and running balances across Customers, Team Partners, and Installation Teams.",
           )}
         />
 
@@ -81,11 +81,11 @@ function UnifiedLedgersPage() {
             </TabsTrigger>
             <TabsTrigger value="purchase" className="gap-2">
               <Factory className="h-4 w-4" />
-              <span>{t("ledgers.tabs.purchase", "Purchase Ledger (Vendors)")}</span>
+              <span>{t("ledgers.tabs.purchase", "Team Ledger (Suppliers & Processing)")}</span>
             </TabsTrigger>
             <TabsTrigger value="agency" className="gap-2">
               <HandCoins className="h-4 w-4" />
-              <span>{t("ledgers.tabs.agency", "Agency Ledger (Agencies)")}</span>
+              <span>{t("ledgers.tabs.agency", "Installation Team Ledger")}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -314,7 +314,7 @@ function PurchaseLedgerView() {
         <Card className="shadow-xs">
           <CardContent className="p-4">
             <div className="text-xs font-medium text-muted-foreground">
-              {t("ledgers.purchase.totalBilled", "Total Vendor Bills")}
+              {t("ledgers.purchase.totalBilled", "Total Team Bills")}
             </div>
             <div className="text-xl font-bold">{formatInr(totalBilled)}</div>
           </CardContent>
@@ -322,7 +322,7 @@ function PurchaseLedgerView() {
         <Card className="shadow-xs">
           <CardContent className="p-4">
             <div className="text-xs font-medium text-muted-foreground">
-              {t("ledgers.purchase.totalPaid", "Total Paid to Vendors")}
+              {t("ledgers.purchase.totalPaid", "Total Paid to Team")}
             </div>
             <div className="text-xl font-bold text-emerald-600">{formatInr(totalPaid)}</div>
           </CardContent>
@@ -344,7 +344,10 @@ function PurchaseLedgerView() {
           setQ(v);
           setPage(1);
         }}
-        searchPlaceholder={t("ledgers.purchase.searchPlaceholder", "Search vendor, code, GST…")}
+        searchPlaceholder={t(
+          "ledgers.purchase.searchPlaceholder",
+          "Search team partner, code, GST…",
+        )}
       />
 
       {isLoading ? (
@@ -360,10 +363,10 @@ function PurchaseLedgerView() {
       ) : rows.length === 0 ? (
         <EmptyState
           icon={<Factory className="h-6 w-6" />}
-          title={t("ledgers.purchase.emptyTitle", "No vendor transactions yet")}
+          title={t("ledgers.purchase.emptyTitle", "No team transactions yet")}
           message={t(
             "ledgers.purchase.emptyMessage",
-            "Vendor ledger balances will appear here as purchase orders and payments are recorded.",
+            "Team ledger balances will appear here as purchase orders and payments are recorded.",
           )}
         />
       ) : (
@@ -371,7 +374,7 @@ function PurchaseLedgerView() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t("ledgers.purchase.columns.vendor", "Vendor")}</TableHead>
+                <TableHead>{t("ledgers.purchase.columns.vendor", "Team Partner")}</TableHead>
                 <TableHead>{t("ledgers.purchase.columns.gstCode", "GST / Code")}</TableHead>
                 <TableHead className="text-right">
                   {t("ledgers.purchase.columns.billed", "Billed")}
@@ -480,7 +483,7 @@ function AgencyLedgerView() {
         <Card className="shadow-xs">
           <CardContent className="p-4">
             <div className="text-xs font-medium text-muted-foreground">
-              {t("ledgers.agency.totalPaid", "Total Paid to Agencies")}
+              {t("ledgers.agency.totalPaid", "Total Paid to Installation Teams")}
             </div>
             <div className="text-xl font-bold text-emerald-600">{formatInr(totalPaid)}</div>
           </CardContent>
@@ -488,7 +491,7 @@ function AgencyLedgerView() {
         <Card className="shadow-xs">
           <CardContent className="p-4">
             <div className="text-xs font-medium text-muted-foreground">
-              {t("ledgers.agency.agencyBalanceDue", "Agency Balance Due")}
+              {t("ledgers.agency.agencyBalanceDue", "Team Balance Due")}
             </div>
             <div className="text-xl font-bold text-amber-600">{formatInr(totalBalance)}</div>
           </CardContent>
@@ -502,7 +505,7 @@ function AgencyLedgerView() {
           setQ(v);
           setPage(1);
         }}
-        searchPlaceholder={t("ledgers.agency.searchPlaceholder", "Search agency, code…")}
+        searchPlaceholder={t("ledgers.agency.searchPlaceholder", "Search installation team, code…")}
       />
 
       {query.isLoading ? (
@@ -512,10 +515,10 @@ function AgencyLedgerView() {
       ) : filteredRows.length === 0 ? (
         <EmptyState
           icon={<HandCoins className="h-6 w-6" />}
-          title={t("ledgers.agency.emptyTitle", "No agency ledger entries")}
+          title={t("ledgers.agency.emptyTitle", "No installation team ledger entries")}
           message={t(
             "ledgers.agency.emptyMessage",
-            "Installation and carting agency balances will appear here as jobs are completed and payments recorded.",
+            "Installation team balances will appear here as jobs are completed and payments recorded.",
           )}
         />
       ) : (
@@ -523,7 +526,7 @@ function AgencyLedgerView() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t("ledgers.agency.columns.agency", "Agency")}</TableHead>
+                <TableHead>{t("ledgers.agency.columns.agency", "Installation Team")}</TableHead>
                 <TableHead>{t("ledgers.agency.columns.code", "Code")}</TableHead>
                 <TableHead className="text-right">
                   {t("ledgers.agency.columns.charged", "Charged")}

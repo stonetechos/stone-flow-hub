@@ -56,8 +56,8 @@ function VendorPaymentsPage() {
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
-      { key: "no", label: t("table.paymentNo", "Payment / Vendor"), required: true },
-      { key: "vendor", label: t("table.vendor", "Vendor") },
+      { key: "no", label: t("table.paymentNo", "Payment / Team Partner"), required: true },
+      { key: "vendor", label: t("table.vendor", "Team Partner") },
       { key: "po", label: t("table.po", "PO") },
       { key: "type", label: t("table.type", "Type") },
       { key: "amount", label: t("table.amount", "Amount") },
@@ -88,7 +88,7 @@ function VendorPaymentsPage() {
   return (
     <div>
       <PageHeader
-        title={t("vendorPayments.title", "Vendor Payments")}
+        title={t("vendorPayments.title", "Team Payments")}
         subtitle={t(
           "vendorPayments.subtitle",
           "Advance, part, full, retention, credit / debit note and refund posts.",
@@ -106,7 +106,7 @@ function VendorPaymentsPage() {
           roles.canWrite ? (
             <Button size="sm" className="h-8" onClick={() => nav({ to: "/vendor-payments/new" })}>
               <Plus className="mr-1.5 h-3.5 w-3.5" />{" "}
-              {t("vendorPayments.recordPayment", "Record payment")}
+              {t("vendorPayments.recordPayment", "Record team payment")}
             </Button>
           ) : null
         }
@@ -119,16 +119,16 @@ function VendorPaymentsPage() {
       ) : rows.length === 0 ? (
         <EmptyState
           icon={<Banknote className="h-6 w-6" />}
-          title={t("vendorPayments.noPaymentsYet", "No vendor payments yet")}
+          title={t("vendorPayments.noPaymentsYet", "No team payments yet")}
           message={t(
             "vendorPayments.noPaymentsYetDesc",
-            "Record an advance, part or full payment to a vendor.",
+            "Record an advance, part or full payment to a team partner.",
           )}
           action={
             roles.canWrite ? (
               <Button onClick={() => nav({ to: "/vendor-payments/new" })}>
                 <Plus className="mr-2 h-4 w-4" />{" "}
-                {t("vendorPayments.recordPayment", "Record payment")}
+                {t("vendorPayments.recordPayment", "Record team payment")}
               </Button>
             ) : undefined
           }

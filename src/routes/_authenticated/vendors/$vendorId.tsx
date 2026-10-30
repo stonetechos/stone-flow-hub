@@ -57,7 +57,7 @@ function VendorHub() {
   });
   if (q.isLoading) return <LoadingBlock />;
   if (q.error) return <ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} />;
-  if (!q.data) return <ErrorBlock message="Vendor not found." />;
+  if (!q.data) return <ErrorBlock message="Team partner not found." />;
   const v = q.data;
 
   const phone = contact.data?.phone ?? v.mobile_number ?? getVendorPhone(v) ?? "";
@@ -76,7 +76,7 @@ function VendorHub() {
           to="/vendors"
           className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft className="h-3 w-3" /> Back to vendors
+          <ArrowLeft className="h-3 w-3" /> Back to team
         </Link>
       </div>
       <PageHeader

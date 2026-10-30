@@ -79,7 +79,7 @@ function NewVendorPaymentPage() {
     e.preventDefault();
     const errors: Record<string, string> = {};
     if (!form.vendor_id) {
-      errors.vendor_id = "Please select a vendor";
+      errors.vendor_id = "Please select a team partner";
     }
     if (!form.amount || form.amount <= 0) {
       errors.amount = "Please enter an amount greater than 0";
@@ -100,13 +100,10 @@ function NewVendorPaymentPage() {
 
   return (
     <div>
-      <PageHeader
-        title="Record vendor payment"
-        subtitle="Posts to the vendor ledger automatically."
-      />
+      <PageHeader title="Record team payment" subtitle="Posts to the team ledger automatically." />
       <QuickForm onSubmit={handleSubmit} busy={mut.isPending}>
         <QuickForm.QuickFill>
-          <Field label="Vendor" required error={formErrors.vendor_id}>
+          <Field label="Team Partner" required error={formErrors.vendor_id}>
             <EntityPicker
               type="vendor"
               value={form.vendor_id || null}

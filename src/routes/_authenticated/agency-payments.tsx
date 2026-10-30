@@ -366,13 +366,13 @@ function AgencyPaymentsPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title={t("agencyPayments.title", "Agency Payments")}
-        subtitle="Payment settlements, advances, and direct customer payments recorded for installation, polishing, and carting agencies."
+        title={t("agencyPayments.title", "Installation Team Payments")}
+        subtitle="Payment settlements, advances, and direct customer payments recorded for installation, polishing, and carting teams."
         actions={
           roles.canWrite ? (
             <Button size="sm" onClick={() => setOpenCreate(true)}>
               <Plus className="mr-2 h-4 w-4" />
-              {t("agencyPayments.recordPayment", "Record agency payment")}
+              {t("agencyPayments.recordPayment", "Record team payment")}
             </Button>
           ) : undefined
         }
@@ -384,7 +384,7 @@ function AgencyPaymentsPage() {
           count={paymentRows.length}
           search={q}
           onSearchChange={setQ}
-          searchPlaceholder="Search agency, category, ref #, customer…"
+          searchPlaceholder="Search team, category, ref #, customer…"
           extra={
             <div className="flex flex-wrap items-center gap-2">
               {/* Category Filter */}
@@ -442,14 +442,14 @@ function AgencyPaymentsPage() {
               ? "No payments match the applied filters or search."
               : t(
                   "agencyPayments.emptyMessage",
-                  "Record a payment to an installation, polishing, or transport agency to track settlements.",
+                  "Record a payment to an installation, polishing, or transport team to track settlements.",
                 )
           }
           action={
             roles.canWrite ? (
               <Button size="sm" onClick={() => setOpenCreate(true)}>
                 <Plus className="mr-2 h-4 w-4" />
-                {t("agencyPayments.recordPayment", "Record agency payment")}
+                {t("agencyPayments.recordPayment", "Record team payment")}
               </Button>
             ) : undefined
           }
@@ -471,7 +471,7 @@ function AgencyPaymentsPage() {
               <TableRow>
                 <TableHead className="w-28">{t("agencyPayments.columns.date", "Date")}</TableHead>
                 <TableHead className="min-w-[170px]">
-                  {t("agencyPayments.columns.agency", "Agency")}
+                  {t("agencyPayments.columns.agency", "Installation Team")}
                 </TableHead>
                 {/* User Request: Mention their category (polishing, carting, transport, etc.) instead of generic description */}
                 <TableHead className="min-w-[200px]">Category / Specialization</TableHead>

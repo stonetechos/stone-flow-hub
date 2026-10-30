@@ -1527,11 +1527,11 @@ function buildBrief(
       vendorPromptCount === 1
         ? t(
             "dashboard.briefVendorDeliverySingle",
-            "🚚 1 vendor delivery is round the corner (due within 5 days). Tap prompt below to nudge supplier.",
+            "🚚 1 team delivery is round the corner (due within 5 days). Tap prompt below to nudge partner.",
           )
         : t(
             "dashboard.briefVendorDeliveryMultiple",
-            "🚚 {{count}} vendor deliveries are round the corner (due within 5 days). Tap prompt below to nudge suppliers.",
+            "🚚 {{count}} team deliveries are round the corner (due within 5 days). Tap prompt below to nudge team partners.",
             { count: vendorPromptCount },
           ),
     );

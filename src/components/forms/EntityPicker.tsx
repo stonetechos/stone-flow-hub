@@ -192,7 +192,7 @@ function toRow(type: EntityType, r: EntitySourceRow): EntityRow {
 
 const LABEL: Record<EntityType, { singular: string; placeholder: string }> = {
   customer: { singular: "customer", placeholder: "Select customer" },
-  vendor: { singular: "vendor", placeholder: "Select vendor" },
+  vendor: { singular: "team partner", placeholder: "Select team partner" },
   project: { singular: "project", placeholder: "Select project" },
   purchase_order: { singular: "purchase order", placeholder: "Select purchase order" },
   product: { singular: "product", placeholder: "Select product" },

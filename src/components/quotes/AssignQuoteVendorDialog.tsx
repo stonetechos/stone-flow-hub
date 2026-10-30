@@ -188,7 +188,7 @@ export function AssignQuoteVendorDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (mode === "vendor" && !vendorId) {
-      toast.error("Please pick a vendor to assign to this order.");
+      toast.error("Please pick a team partner to assign to this order.");
       return;
     }
     mutation.mutate();
@@ -216,8 +216,8 @@ export function AssignQuoteVendorDialog({
           </DialogTitle>
           <DialogDescription>
             Choose how to fulfill quote{" "}
-            <span className="font-mono font-semibold text-foreground">{quoteNo}</span>. Vendor RFQ
-            is purely optional.
+            <span className="font-mono font-semibold text-foreground">{quoteNo}</span>. Team RFQ is
+            purely optional.
           </DialogDescription>
         </DialogHeader>
 
@@ -267,7 +267,7 @@ export function AssignQuoteVendorDialog({
             }`}
           >
             <Building2 className="h-4 w-4 text-slate-600 dark:text-slate-300 shrink-0" />
-            <span className="leading-tight text-[11px]">Outsource Vendor</span>
+            <span className="leading-tight text-[11px]">Team Partner</span>
           </button>
         </div>
 
@@ -283,7 +283,7 @@ export function AssignQuoteVendorDialog({
                   </p>
                   <p className="text-emerald-800 dark:text-emerald-300 text-[11px] leading-relaxed">
                     The material was already taken from inventory or yard stock. This order does not
-                    require vendor RFQ or purchase order.
+                    require team RFQ or purchase order.
                   </p>
                 </div>
               </div>
@@ -313,7 +313,7 @@ export function AssignQuoteVendorDialog({
                   </p>
                   <p className="text-blue-800 dark:text-blue-300 text-[11px] leading-relaxed">
                     Material will be cut and dispatched from in-house stock without issuing an
-                    external vendor PO.
+                    external team PO.
                   </p>
                 </div>
               </div>
@@ -333,18 +333,18 @@ export function AssignQuoteVendorDialog({
               </div>
             </div>
           ) : (
-            /* Third-Party Vendor Option */
+            /* Partner Workshop / Fabricator Option */
             <div className="space-y-3">
               <div className="rounded-md bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 p-2.5 text-xs text-slate-700 dark:text-slate-300">
                 <p className="text-[11px]">
-                  Assign an outside stone supplier / fabricator. You can optionally send an RFQ via
+                  Assign a partner workshop / fabricator team. You can optionally send an RFQ via
                   WhatsApp.
                 </p>
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                   <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span>Assigned Vendor / Fabricator *</span>
+                  <span>Assigned Team Partner / Fabricator *</span>
                 </label>
                 <EntityPicker
                   type="vendor"
@@ -355,7 +355,7 @@ export function AssignQuoteVendorDialog({
                       setVendorName(row.label);
                     }
                   }}
-                  placeholder="Search &amp; choose vendor…"
+                  placeholder="Search &amp; choose team partner…"
                 />
               </div>
             </div>

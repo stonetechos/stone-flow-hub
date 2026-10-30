@@ -291,6 +291,8 @@ function CustomersPage() {
     const crmStatus = getCustomerResponseStatus(c);
     return (
       crmStatus === "order_placed" ||
+      crmStatus === "installation_team_working" ||
+      crmStatus === "artwork_team_working" ||
       crmStatus === "order_completed" ||
       crmStatus === "order_cancelled_delay" ||
       crmStatus === "order_cancelled_change_of_plans"

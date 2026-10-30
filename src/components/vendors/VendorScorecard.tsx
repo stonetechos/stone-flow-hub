@@ -54,7 +54,7 @@ export function VendorScorecard({ vendorId }: { vendorId: string }) {
   return (
     <Card className="shadow-1">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-sm">Vendor Scorecard</CardTitle>
+        <CardTitle className="text-sm">Team Performance Scorecard</CardTitle>
         <div className="flex items-center gap-2">
           {p?.is_preferred && (
             <Badge className="gap-1 bg-primary/10 text-primary hover:bg-primary/10">

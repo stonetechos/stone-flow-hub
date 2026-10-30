@@ -423,6 +423,8 @@ const updateCustomerCrmStatusInput = z.object({
       "active_responsive",
       "payment_pending",
       "order_placed",
+      "installation_team_working",
+      "artwork_team_working",
       "order_completed",
       "order_cancelled_delay",
       "order_cancelled_change_of_plans",
@@ -541,6 +543,8 @@ export const updateCustomerCrmStatusServerFn = createServerFn({ method: "POST" }
       data.response_status === "active_responsive" ||
       data.response_status === "payment_pending" ||
       data.response_status === "order_placed" ||
+      data.response_status === "installation_team_working" ||
+      data.response_status === "artwork_team_working" ||
       data.response_status === "order_completed" ||
       data.response_status === "regular_future_requirement" ||
       data.response_status === "followup_pending" ||
@@ -577,7 +581,12 @@ export const updateCustomerCrmStatusServerFn = createServerFn({ method: "POST" }
     if (updateErr) throw new Error(updateErr.message);
 
     // If customer gave their order or order completed, automatically resolve any open pending followups
-    if (data.response_status === "order_placed" || data.response_status === "order_completed") {
+    if (
+      data.response_status === "order_placed" ||
+      data.response_status === "installation_team_working" ||
+      data.response_status === "artwork_team_working" ||
+      data.response_status === "order_completed"
+    ) {
       await supabaseAdmin
         .from("followups")
         .update({
@@ -588,7 +597,11 @@ export const updateCustomerCrmStatusServerFn = createServerFn({ method: "POST" }
             data.call_outcome ||
             (data.response_status === "order_completed"
               ? "Order completed — sales follow-up closed"
-              : "Order placed — sales follow-up completed"),
+              : data.response_status === "installation_team_working"
+                ? "Installation team working — sales follow-up completed"
+                : data.response_status === "artwork_team_working"
+                  ? "Artwork team working — sales follow-up completed"
+                  : "Order placed — sales follow-up completed"),
         })
         .eq("entity_type", "customer")
         .eq("entity_id", data.customerId)

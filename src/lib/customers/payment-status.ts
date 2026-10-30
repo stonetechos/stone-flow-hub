@@ -131,7 +131,10 @@ export function getCustomerDirectoryRank(
   // Tier 1: "the order is pending" (order placed status or active order count, unless cancelled)
   const hasActiveOrder =
     !isCancelled &&
-    (crmStatus === "order_placed" || (context?.orderInfo?.activeOrderCount ?? 0) > 0);
+    (crmStatus === "order_placed" ||
+      crmStatus === "installation_team_working" ||
+      crmStatus === "artwork_team_working" ||
+      (context?.orderInfo?.activeOrderCount ?? 0) > 0);
   if (hasActiveOrder) return 1;
 
   // Determine order completion and payment status

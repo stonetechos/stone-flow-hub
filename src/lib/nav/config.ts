@@ -273,7 +273,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   {
     id: "vendors",
     to: "/vendors",
-    label: "Vendors",
+    label: "Team",
     icon: Factory,
     group: "purchase",
     quickCreateTo: "/vendors?create=true",
@@ -304,7 +304,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   {
     id: "vendor-payments",
     to: "/vendor-payments",
-    label: "Vendor Payments",
+    label: "Team Payments",
     icon: Banknote,
     group: "purchase",
     allowedRoles: ["admin", "super_admin"],
@@ -312,7 +312,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   {
     id: "vendor-ledger",
     to: "/purchase-ledger",
-    label: "Vendor Ledgers",
+    label: "Team Ledgers",
     icon: BookOpen,
     group: "purchase",
     allowedRoles: ["admin", "super_admin"],
@@ -330,7 +330,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   {
     id: "agencies",
     to: "/installation-teams",
-    label: "Installation Agencies",
+    label: "Installation Teams",
     icon: Users,
     group: "executions",
     quickCreateTo: "/installation-teams",
@@ -339,7 +339,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   {
     id: "agency-payments",
     to: "/agency-payments",
-    label: "Agency Payments",
+    label: "Installation Team Payments",
     icon: HandCoins,
     group: "executions",
     allowedRoles: ["admin", "super_admin"],
@@ -347,7 +347,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   {
     id: "agency-ledger",
     to: "/installation-ledger",
-    label: "Agency Ledgers",
+    label: "Installation Team Ledgers",
     icon: Layers,
     group: "executions",
     allowedRoles: ["admin", "super_admin"],

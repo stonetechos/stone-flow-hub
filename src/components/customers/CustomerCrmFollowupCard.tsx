@@ -669,6 +669,14 @@ export function CustomerCrmFollowupCard({ customer }: CustomerCrmFollowupCardPro
                       if (!nextCallAgenda) {
                         setNextCallAgenda("Payment Follow-up: Request promised payment");
                       }
+                    } else if (val === "installation_team_working") {
+                      setResponseStatus("installation_team_working");
+                      setIsPaymentPromised(false);
+                      setScheduleNextCall(false);
+                    } else if (val === "artwork_team_working") {
+                      setResponseStatus("artwork_team_working");
+                      setIsPaymentPromised(false);
+                      setScheduleNextCall(false);
                     } else {
                       setIsPaymentPromised(false);
                     }
@@ -696,6 +704,8 @@ export function CustomerCrmFollowupCard({ customer }: CustomerCrmFollowupCardPro
                     setResponseStatus(nextVal);
                     if (
                       nextVal === "order_placed" ||
+                      nextVal === "installation_team_working" ||
+                      nextVal === "artwork_team_working" ||
                       nextVal === "order_completed" ||
                       nextVal === "do_not_contact" ||
                       nextVal === "order_cancelled_delay" ||
