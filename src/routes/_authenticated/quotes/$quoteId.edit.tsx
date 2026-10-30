@@ -337,6 +337,26 @@ function EditQuotePage() {
         saleMode={saleMode}
       />
 
+      <QuoteTermsManager
+        className="mb-4"
+        terms={form.terms ?? ""}
+        onChangeTerms={(t) => set("terms", t || null)}
+        dealScope={
+          form.category === "supply_and_installation" ? "supply_and_installation" : "supply_only"
+        }
+        onChangeDealScope={(s: DealScope) =>
+          set(
+            "category",
+            s === "supply_and_installation" ? "supply_and_installation" : "supply_only",
+          )
+        }
+        totalAmount={Number(query.data?.total) || 0}
+        clientProvidedSlab={
+          detectClientProvidedSlabFromItems(undefined, query.data?.wall_estimate) ||
+          hasClientBreakageDisclaimer(form.terms)
+        }
+      />
+
       <QuickForm
         scrollable={false}
         onSubmit={(e) => {
@@ -346,35 +366,14 @@ function EditQuotePage() {
         busy={mut.isPending}
       >
         <QuickForm.MoreDetails>
-          <Field label="Notes" className="md:col-span-2">
+          <Field label="Internal Notes" className="md:col-span-2">
             <Textarea
               rows={3}
+              placeholder="Internal notes (optional, not printed on PDF)..."
               value={form.notes ?? ""}
               onChange={(e) => set("notes", e.target.value || null)}
             />
           </Field>
-          <div className="md:col-span-2">
-            <QuoteTermsManager
-              terms={form.terms ?? ""}
-              onChangeTerms={(t) => set("terms", t || null)}
-              dealScope={
-                form.category === "supply_and_installation"
-                  ? "supply_and_installation"
-                  : "supply_only"
-              }
-              onChangeDealScope={(s: DealScope) =>
-                set(
-                  "category",
-                  s === "supply_and_installation" ? "supply_and_installation" : "supply_only",
-                )
-              }
-              totalAmount={Number(query.data?.total) || 0}
-              clientProvidedSlab={
-                detectClientProvidedSlabFromItems(undefined, query.data?.wall_estimate) ||
-                hasClientBreakageDisclaimer(form.terms)
-              }
-            />
-          </div>
         </QuickForm.MoreDetails>
         <QuickForm.Actions>
           <Button

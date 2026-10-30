@@ -172,4 +172,55 @@ describe("PDF Generator", () => {
     // 2-column terms layout to conserve vertical space and prevent unwanted page spill
     expect(html).toContain("display:grid;grid-template-columns:1fr 1fr;");
   });
+
+  it("omits Terms & Conditions section entirely when doc.terms is empty, undefined or blank", () => {
+    const quoteWithoutTerms: PdfDoc = {
+      ...sampleDoc,
+      terms: undefined,
+    };
+    const html = renderDocHtml(quoteWithoutTerms);
+    expect(html).not.toContain("Terms &amp; Conditions");
+    expect(html).not.toContain('class="terms');
+
+    const quoteWithBlankTerms: PdfDoc = {
+      ...sampleDoc,
+      terms: "   ",
+    };
+    const htmlBlank = renderDocHtml(quoteWithBlankTerms);
+    expect(htmlBlank).not.toContain("Terms &amp; Conditions");
+    expect(htmlBlank).not.toContain('class="terms');
+  });
+
+  it("never renders Terms & Conditions block on invoice PDFs even if doc.terms is set", () => {
+    const invoiceDoc: PdfDoc = {
+      ...sampleDoc,
+      kind: "invoice",
+      title: "Tax Invoice",
+      number: "INV-2026-0003",
+      terms: "Due on Receipt",
+    };
+    const html = renderDocHtml(invoiceDoc);
+    // Invoice metadata block displays "Due on Receipt" in the central terms column
+    expect(html).toContain('<div style="text-align:center;">Due on Receipt</div>');
+    // But never the multi-line quotation legal terms section
+    expect(html).not.toContain("Terms &amp; Conditions");
+    expect(html).not.toContain('class="terms');
+  });
+
+  it("renders line item photos preserving rectangular natural stone proportions", () => {
+    const quoteWithPhoto: PdfDoc = {
+      ...sampleDoc,
+      lines: [
+        {
+          ...sampleDoc.lines![0],
+          image: "https://example.com/mint-rockface.jpg",
+        },
+      ],
+    };
+    const html = renderDocHtml(quoteWithPhoto);
+    expect(html).toContain('alt="Limestone Slabs"');
+    expect(html).toContain(
+      "max-width:50px;max-height:36px;width:auto;height:auto;object-fit:contain",
+    );
+  });
 });

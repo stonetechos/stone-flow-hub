@@ -35,7 +35,7 @@ function BusinessHealthDashboard() {
     queryFn: getBusinessHealth,
     staleTime: 60_000,
   });
-  const { executiveBrief } = useExecutiveInsights();
+  const { executiveBrief } = useExecutiveInsights({ enabled: true });
   if (q.isLoading || !q.data)
     return (
       <>

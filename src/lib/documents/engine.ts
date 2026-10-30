@@ -277,14 +277,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
       ];
       const scope = detectDealScopeFromItems(items);
       const isClientSlab = detectClientProvidedSlabFromItems(items, q.wall_estimate);
-      const effectiveTerms =
-        q.terms && q.terms.trim()
-          ? q.terms.trim()
-          : generateQuoteTerms({
-              dealScope: scope,
-              totalAmount: Number(q.total) || 0,
-              clientProvidedSlab: isClientSlab,
-            });
+      const effectiveTerms = q.terms && q.terms.trim() ? q.terms.trim() : undefined;
       return {
         doc: {
           kind: "quotation",

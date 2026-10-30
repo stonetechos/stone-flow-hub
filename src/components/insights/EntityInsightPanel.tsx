@@ -32,7 +32,8 @@ export function EntityInsightPanel({
   entityType: string;
   entityId: string;
 }) {
-  const { processedInsights, loading } = useExecutiveInsights();
+  // Insights should not starve primary transactional data fetches on entity detail pages
+  const { processedInsights, loading } = useExecutiveInsights({ enabled: false });
 
   const scoped = processedInsights.filter(
     (insight) => insight.entity.type === entityType && insight.entity.id === entityId,

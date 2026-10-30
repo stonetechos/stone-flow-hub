@@ -100,7 +100,7 @@ function DashboardPage() {
   const { t, i18n } = useTranslation();
   const { user } = useAuthReady();
   const qc = useQueryClient();
-  const { processedInsights } = useExecutiveInsights();
+  const { processedInsights } = useExecutiveInsights({ enabled: true });
 
   const [activeTab, setActiveTab] = useState<DashboardViewTab>("operations");
   const [isRefreshing, setIsRefreshing] = useState(false);

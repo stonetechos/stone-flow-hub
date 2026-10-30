@@ -171,7 +171,7 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
             ? `<td style="padding:4px;text-align:center;vertical-align:middle;width:56px">
                 ${
                   l.image
-                    ? `<img src="${esc(l.image)}" alt="${esc(l.label)}" style="width:48px;height:36px;object-fit:contain;background:#f8fafc;border-radius:3px;border:1px solid ${border};display:block;margin:0 auto;" />`
+                    ? `<img src="${esc(l.image)}" alt="${esc(l.label)}" style="max-width:50px;max-height:36px;width:auto;height:auto;object-fit:contain;background:#f8fafc;border-radius:3px;border:1px solid ${border};display:block;margin:0 auto;" />`
                     : `<span style="color:${muted}">—</span>`
                 }
               </td>`
@@ -281,10 +281,10 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
       </div>
     </div>`;
 
-  // Terms & Conditions: Compact 2-column grid when multi-item
+  // Terms & Conditions: Compact 2-column grid when multi-item (quotes only, never invoices)
   const rawTerms = (doc.terms || "").trim();
   let termsHtml = "";
-  if (rawTerms) {
+  if (rawTerms && !isInvoice) {
     const termLines = rawTerms
       .split(/\n+/)
       .map((l) => l.trim())

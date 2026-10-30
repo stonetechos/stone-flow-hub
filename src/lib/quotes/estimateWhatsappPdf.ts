@@ -90,16 +90,7 @@ export function buildEstimateWhatsappMessage(
       : [`Transportation charges will be extra and on actuals.`]),
     deliveryLine,
     validityLine,
-    "",
-    "Terms & Conditions:",
-    input.terms && input.terms.trim()
-      ? input.terms.trim()
-      : generateQuoteTerms({
-          dealScope: hasInstallation ? "supply_and_installation" : "supply_only",
-          totalAmount: input.totalEstimate,
-          timelineDays: input.deliveryTimelineDays,
-          deliveryDate: input.deliveryTimelineDate || input.estimatedDeliveryDate,
-        }),
+    ...(input.terms && input.terms.trim() ? ["", "Terms & Conditions:", input.terms.trim()] : []),
     "",
     `Please confirm if you'd like to proceed or if any modifications are needed.`,
     `Warm regards,`,
@@ -351,17 +342,7 @@ export function buildMuralEstimateWhatsappMessage(
       : null,
     deliveryLine,
     validityLine,
-    "",
-    "Terms & Conditions:",
-    input.terms && input.terms.trim()
-      ? input.terms.trim()
-      : generateQuoteTerms({
-          dealScope: input.installationLabourAmount > 0 ? "supply_and_installation" : "supply_only",
-          totalAmount: input.totalEstimate,
-          timelineDays: input.deliveryTimelineDays,
-          deliveryDate: input.deliveryTimelineDate || input.estimatedDeliveryDate,
-          clientProvidedSlab: input.baseStoneSourcing === "client_provided",
-        }),
+    ...(input.terms && input.terms.trim() ? ["", "Terms & Conditions:", input.terms.trim()] : []),
     "",
     `Please confirm if you'd like to proceed or if any modifications are needed.`,
     `Warm regards,`,

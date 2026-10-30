@@ -2,9 +2,11 @@
  * Stone Tech OS (STOS) — Quotation Terms & Delivery Timeline Manager
  *
  * Allows users to:
- * 1. Select Delivery Timeline by Days (with quick chips) or "On or Before Date".
- * 2. View automatic payment terms according to the < ₹50,000 threshold and deal scope.
- * 3. Inspect, verify, and customize the polished Terms & Conditions prior to quote creation/saving.
+ * 1. Directly view and edit Quotation Terms & Conditions.
+ * 2. Optionally insert standard Supply Only or Supply + Installation terms.
+ * 3. Add or remove the client-supplied stone breakage liability waiver.
+ * 4. Configure delivery timeline (days / date).
+ * 5. Leave blank to omit terms from the Quotation PDF and WhatsApp message.
  */
 import { useState, useEffect } from "react";
 import { formatInr } from "@/lib/format";
@@ -12,7 +14,9 @@ import {
   type DealScope,
   type DeliveryTimelineMode,
   generateQuoteTerms,
+  buildClientProvidedSlabBreakageTerm,
   hasClientBreakageDisclaimer,
+  buildDeliveryTimelineTerm,
   ADVANCE_PAYMENT_THRESHOLD_INR,
 } from "@/lib/quotes/terms";
 import { Label } from "@/components/ui/label";
@@ -23,11 +27,12 @@ import { Badge } from "@/components/ui/badge";
 import {
   Calendar,
   Clock,
-  RefreshCw,
   ShieldCheck,
   AlertCircle,
   FileText,
   ShieldAlert,
+  Sparkles,
+  Trash2,
 } from "lucide-react";
 
 export interface QuoteTermsManagerProps {
@@ -72,91 +77,150 @@ export function QuoteTermsManager({
     clientProvidedSlab ?? hasClientBreakageDisclaimer(terms),
   );
 
-  // Sync external clientProvidedSlab prop changes
+  // Sync external clientProvidedSlab prop changes without wiping custom terms
   useEffect(() => {
     if (clientProvidedSlab !== undefined && clientProvidedSlab !== isClientProvided) {
       setIsClientProvided(clientProvidedSlab);
-      handleApplyStandardTerms(dealScope, timelineMode, days, date, clientProvidedSlab);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clientProvidedSlab]);
+  }, [clientProvidedSlab, isClientProvided]);
 
   const isUnderFiftyThousand = totalAmount > 0 && totalAmount < ADVANCE_PAYMENT_THRESHOLD_INR;
+  const hasTermsContent = Boolean(terms && terms.trim());
 
-  // Helper to recompute terms
-  const handleApplyStandardTerms = (
-    overrideScope?: DealScope,
-    overrideMode?: DeliveryTimelineMode,
-    overrideDays?: string,
-    overrideDate?: string,
-    overrideClientSlab?: boolean,
-  ) => {
-    const activeScope = overrideScope ?? dealScope;
-    const activeMode = overrideMode ?? timelineMode;
-    const activeDays = overrideDays ?? days;
-    const activeDate = overrideDate ?? date;
-    const activeClientSlab = overrideClientSlab ?? isClientProvided;
-
+  // Explicit user action to insert standard terms for selected scope
+  const handleApplyStandardTerms = (scopeToApply: DealScope = dealScope) => {
     const generated = generateQuoteTerms({
-      dealScope: activeScope,
+      dealScope: scopeToApply,
       totalAmount,
-      timelineMode: activeMode,
-      timelineDays: activeDays,
-      deliveryDate: activeDate,
-      clientProvidedSlab: activeClientSlab,
+      timelineMode,
+      timelineDays: days,
+      deliveryDate: date,
+      clientProvidedSlab: isClientProvided,
     });
 
     onChangeTerms(generated);
 
     if (onTimelineChange) {
       onTimelineChange({
-        mode: activeMode,
-        days: activeDays,
-        date: activeDate,
+        mode: timelineMode,
+        days,
+        date,
       });
     }
   };
 
   const handleModeChange = (newMode: DeliveryTimelineMode) => {
     setTimelineMode(newMode);
-    handleApplyStandardTerms(dealScope, newMode, days, date, isClientProvided);
+    if (onTimelineChange) {
+      onTimelineChange({
+        mode: newMode,
+        days,
+        date,
+      });
+    }
   };
 
   const handleDaysChange = (newDays: string) => {
     setDays(newDays);
-    handleApplyStandardTerms(dealScope, "days", newDays, date, isClientProvided);
+    if (onTimelineChange) {
+      onTimelineChange({
+        mode: "days",
+        days: newDays,
+        date,
+      });
+    }
   };
 
   const handleDateChange = (newDate: string) => {
     setDate(newDate);
-    handleApplyStandardTerms(dealScope, "date", days, newDate, isClientProvided);
+    if (onTimelineChange) {
+      onTimelineChange({
+        mode: "date",
+        days,
+        date: newDate,
+      });
+    }
   };
 
   const handleScopeChange = (newScope: DealScope) => {
     if (onChangeDealScope) {
       onChangeDealScope(newScope);
     }
-    handleApplyStandardTerms(newScope, timelineMode, days, date, isClientProvided);
   };
 
-  const handleToggleClientSlab = (enabled: boolean) => {
-    setIsClientProvided(enabled);
+  // Toggle disclaimer on existing terms without clearing custom edits
+  const handleToggleClientSlab = (enable: boolean) => {
+    setIsClientProvided(enable);
     if (onChangeClientProvidedSlab) {
-      onChangeClientProvidedSlab(enabled);
+      onChangeClientProvidedSlab(enable);
     }
-    handleApplyStandardTerms(dealScope, timelineMode, days, date, enabled);
+
+    if (!terms || !terms.trim()) return;
+
+    const disclaimerText = buildClientProvidedSlabBreakageTerm();
+    const currentLines = terms
+      .split("\n\n")
+      .map((l) => l.trim())
+      .filter(Boolean);
+
+    if (enable) {
+      // Prepend disclaimer if not present
+      if (!hasClientBreakageDisclaimer(terms)) {
+        const cleaned = currentLines.map((l) => l.replace(/^\d+[.)]\s*/, ""));
+        const newTerms = [disclaimerText, ...cleaned]
+          .map((t, idx) => `${idx + 1}. ${t}`)
+          .join("\n\n");
+        onChangeTerms(newTerms);
+      }
+    } else {
+      // Remove disclaimer if present
+      const filtered = currentLines.filter(
+        (l) =>
+          !l.toLowerCase().includes("client-supplied stone") &&
+          !l.toLowerCase().includes("client's own risk"),
+      );
+      const cleaned = filtered.map((l) => l.replace(/^\d+[.)]\s*/, ""));
+      const newTerms = cleaned.map((t, idx) => `${idx + 1}. ${t}`).join("\n\n");
+      onChangeTerms(newTerms);
+    }
   };
 
-  // If terms are empty on mount, initialize them with polished defaults
-  useEffect(() => {
+  // Update only timeline clause in existing terms
+  const handleUpdateTimelineInTerms = () => {
+    const timelineTerm = buildDeliveryTimelineTerm(timelineMode, {
+      timelineDays: days,
+      deliveryDate: date,
+    });
+    const deliveryClause = `Delivery Timeline: ${timelineTerm}`;
+
     if (!terms || !terms.trim()) {
       handleApplyStandardTerms();
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
-  const totalTermsCount =
-    dealScope === "supply_only" ? (isClientProvided ? 8 : 7) : isClientProvided ? 10 : 9;
+    const lines = terms
+      .split("\n\n")
+      .map((l) => l.trim())
+      .filter(Boolean);
+    let updated = false;
+    const remapped = lines.map((line) => {
+      if (
+        line.toLowerCase().includes("delivery timeline:") ||
+        line.toLowerCase().includes("time duration to deliver")
+      ) {
+        updated = true;
+        return deliveryClause;
+      }
+      return line.replace(/^\d+[.)]\s*/, "");
+    });
+
+    if (!updated) {
+      remapped.splice(isClientProvided ? 1 : 0, 0, deliveryClause);
+    }
+
+    const renumbered = remapped.map((t, idx) => `${idx + 1}. ${t}`).join("\n\n");
+    onChangeTerms(renumbered);
+  };
 
   return (
     <div className={`rounded-lg border border-border bg-card p-4 space-y-4 shadow-xs ${className}`}>
@@ -165,17 +229,33 @@ export function QuoteTermsManager({
         <div className="flex items-center gap-2">
           <ShieldCheck className="h-4 w-4 text-emerald-600" />
           <h4 className="text-sm font-semibold text-foreground">
-            Terms & Conditions & Delivery Timeline
+            Quotation Terms &amp; Conditions (Editable)
           </h4>
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
+          {hasTermsContent ? (
+            <Badge
+              variant="outline"
+              className="bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/30 dark:text-emerald-300 text-[11px] gap-1"
+            >
+              Affixed to Quote &amp; PDF
+            </Badge>
+          ) : (
+            <Badge
+              variant="outline"
+              className="bg-slate-50 text-slate-600 border-slate-300 text-[11px]"
+            >
+              No Terms (Minimal PDF)
+            </Badge>
+          )}
+
           {isUnderFiftyThousand ? (
             <Badge
               variant="outline"
               className="bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/30 dark:text-amber-300 text-[11px] gap-1"
             >
               <AlertCircle className="h-3 w-3" />
-              Order &lt; ₹50k: 100% Advance Payment
+              Order &lt; ₹50k: 100% Advance
             </Badge>
           ) : (
             <Badge
@@ -187,20 +267,16 @@ export function QuoteTermsManager({
                 : "Payment: 50% Adv + 30% Del + 20% Install"}
             </Badge>
           )}
+
           {isClientProvided && (
             <Badge
               variant="outline"
-              className="bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/30 dark:text-emerald-300 text-[11px] gap-1 font-semibold"
+              className="bg-purple-50 text-purple-800 border-purple-300 dark:bg-purple-950/30 dark:text-purple-300 text-[11px] gap-1 font-semibold"
             >
-              <ShieldAlert className="h-3 w-3 text-emerald-700" />
-              Priority Breakage Disclaimer Active
+              <ShieldAlert className="h-3 w-3 text-purple-700" />
+              Breakage Disclaimer Active
             </Badge>
           )}
-          <Badge variant="outline" className="text-[11px]">
-            {dealScope === "supply_only"
-              ? `Supply Only (${totalTermsCount} terms)`
-              : `Supply + Install (${totalTermsCount} terms)`}
-          </Badge>
         </div>
       </div>
 
@@ -219,7 +295,7 @@ export function QuoteTermsManager({
                   : "bg-muted/30 hover:bg-muted text-muted-foreground border-border"
               }`}
             >
-              Supply Only
+              Supply Only (80/20)
             </button>
             <button
               type="button"
@@ -230,13 +306,13 @@ export function QuoteTermsManager({
                   : "bg-muted/30 hover:bg-muted text-muted-foreground border-border"
               }`}
             >
-              Supply + Installation
+              Supply + Install (50/30/20)
             </button>
           </div>
           <p className="text-[10px] text-muted-foreground">
             {dealScope === "supply_and_installation"
-              ? "Includes scaffolding, surface inspection, and 50/30/20 payment terms."
-              : "Includes supply delivery, non-returnable policy, and 80/20 payment terms."}
+              ? "Installation includes scaffolding, workable wall surface inspection, and 50/30/20 payment terms."
+              : "Supply only includes product dispatch, natural variation, non-returnable policy, and 80/20 payment terms."}
           </p>
         </div>
 
@@ -284,6 +360,18 @@ export function QuoteTermsManager({
                   className="h-8 text-xs font-medium"
                 />
                 <span className="text-xs text-muted-foreground shrink-0">days</span>
+                {hasTermsContent && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleUpdateTimelineInTerms}
+                    className="h-8 text-[11px] shrink-0 cursor-pointer"
+                    title="Update only the delivery timeline line in the terms below"
+                  >
+                    Sync to Terms
+                  </Button>
+                )}
               </div>
               <div className="flex flex-wrap items-center gap-1.5">
                 <span className="text-[10px] text-muted-foreground mr-1">Quick chips:</span>
@@ -305,14 +393,28 @@ export function QuoteTermsManager({
             </div>
           ) : (
             <div className="space-y-1">
-              <Input
-                type="date"
-                value={date}
-                onChange={(e) => handleDateChange(e.target.value)}
-                className="h-8 text-xs font-medium"
-              />
+              <div className="flex items-center gap-2">
+                <Input
+                  type="date"
+                  value={date}
+                  onChange={(e) => handleDateChange(e.target.value)}
+                  className="h-8 text-xs font-medium"
+                />
+                {hasTermsContent && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleUpdateTimelineInTerms}
+                    className="h-8 text-[11px] shrink-0 cursor-pointer"
+                    title="Update only the delivery timeline date in the terms below"
+                  >
+                    Sync to Terms
+                  </Button>
+                )}
+              </div>
               <p className="text-[10px] text-muted-foreground">
-                Sets term 1 to &quot;Completed on or before [Date]&quot;.
+                Sets term to &quot;Completed on or before [Date]&quot;.
               </p>
             </div>
           )}
@@ -323,7 +425,7 @@ export function QuoteTermsManager({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-md border border-border/70 bg-muted/20 px-3 py-2 text-xs">
         <div className="flex items-center gap-2">
           <ShieldAlert
-            className={`h-4 w-4 shrink-0 ${isClientProvided ? "text-emerald-600" : "text-muted-foreground"}`}
+            className={`h-4 w-4 shrink-0 ${isClientProvided ? "text-purple-600" : "text-muted-foreground"}`}
           />
           <div>
             <span className="font-semibold text-foreground">
@@ -341,43 +443,75 @@ export function QuoteTermsManager({
             onClick={() => handleToggleClientSlab(!isClientProvided)}
             className={`text-xs px-2.5 py-1 rounded font-medium border transition-colors cursor-pointer flex items-center gap-1.5 ${
               isClientProvided
-                ? "bg-emerald-600 text-white border-emerald-600 shadow-2xs font-semibold"
+                ? "bg-purple-700 text-white border-purple-700 shadow-2xs font-semibold"
                 : "bg-background text-muted-foreground border-border hover:bg-muted"
             }`}
           >
-            {isClientProvided ? "Disclaimer Active (Term #1)" : "Enable Disclaimer"}
+            {isClientProvided ? "Disclaimer Active" : "Add Breakage Disclaimer"}
           </button>
         </div>
       </div>
 
-      {/* Row 2: Terms & Conditions Textarea with Quick Actions */}
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between">
-          <Label className="text-xs font-medium text-foreground flex items-center gap-1.5">
-            <FileText className="h-3.5 w-3.5 text-primary" />
-            Polished Terms & Conditions (Appears on Quotation PDF &amp; WhatsApp)
-          </Label>
+      {/* Action Toolbar to Insert / Clear Terms */}
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-border/60">
+        <Label className="text-xs font-medium text-foreground flex items-center gap-1.5">
+          <FileText className="h-3.5 w-3.5 text-primary" />
+          Editable Terms Text
+        </Label>
+        <div className="flex flex-wrap items-center gap-1.5">
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             size="sm"
-            onClick={() => handleApplyStandardTerms()}
-            className="h-6 text-[11px] gap-1 text-primary hover:text-primary hover:bg-primary/10 cursor-pointer"
-            title="Reapply standard polished terms based on current total, scope, and timeline"
+            onClick={() => handleApplyStandardTerms("supply_only")}
+            className="h-7 text-xs gap-1 cursor-pointer bg-muted/30 hover:bg-muted"
+            title="Populate standard Supply Only terms with 80/20 payment"
           >
-            <RefreshCw className="h-3 w-3" />
-            Regenerate Polished Terms
+            <Sparkles className="h-3 w-3 text-cyan-600" />
+            Insert Supply Terms (80/20)
           </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => handleApplyStandardTerms("supply_and_installation")}
+            className="h-7 text-xs gap-1 cursor-pointer bg-muted/30 hover:bg-muted"
+            title="Populate standard Supply + Installation terms with 50/30/20 payment"
+          >
+            <Sparkles className="h-3 w-3 text-emerald-600" />
+            Insert Supply + Install Terms (50/30/20)
+          </Button>
+          {hasTermsContent && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => onChangeTerms("")}
+              className="h-7 text-xs gap-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+              title="Clear all terms (leaves quote PDF clean and minimal)"
+            >
+              <Trash2 className="h-3 w-3" />
+              Clear Terms
+            </Button>
+          )}
         </div>
+      </div>
+
+      {/* Terms & Conditions Textarea */}
+      <div className="space-y-1.5">
         <Textarea
-          rows={7}
-          value={terms}
+          rows={8}
+          value={terms ?? ""}
           onChange={(e) => onChangeTerms(e.target.value)}
-          placeholder="Terms & Conditions will be formatted here..."
+          placeholder="Terms & Conditions are optional. Leave blank to omit terms from the quotation PDF & WhatsApp, or click one of the buttons above to insert standard polished terms..."
           className="text-xs font-mono leading-relaxed bg-muted/10 border-border focus:bg-background"
         />
         <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-          <span>You can freely edit or verify these terms above before saving the quotation.</span>
+          <span>
+            {hasTermsContent
+              ? "Directly editable — what is written above is exactly what prints on the quotation PDF and WhatsApp."
+              : "No terms affixed. Quotation PDF will be clean and minimal without legal bullet points."}
+          </span>
           <span>Order Value: {formatInr(totalAmount)}</span>
         </div>
       </div>

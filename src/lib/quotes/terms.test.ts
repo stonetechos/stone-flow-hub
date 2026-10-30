@@ -316,4 +316,85 @@ describe("Quote Terms & Conditions Engine", () => {
       ).toBe("supply_only");
     });
   });
+
+  describe("WhatsApp Message Terms formatting", () => {
+    it("omits Terms & Conditions header when terms is blank or omitted", async () => {
+      const { buildEstimateWhatsappMessage, buildMuralEstimateWhatsappMessage } =
+        await import("./estimateWhatsappPdf");
+      const wallMsg = buildEstimateWhatsappMessage(
+        {
+          greetingName: "Ramesh Patel",
+          wallSizeSummary: "100 sq ft",
+          materialSummary: "Mint Rockface",
+          materialToOrderSummary: "110 sq ft with 10% wastage",
+          materialAmount: 21000,
+          installationLabourAmount: 7000,
+          adhesivesAmount: 0,
+          sealerAmount: 0,
+          sealerApplicationAmount: 0,
+          cartingLocation: "Ahmedabad",
+          totalEstimate: 28000,
+          preparerName: "Stone Tech Atelier",
+          terms: "",
+        },
+        "Stone Tech",
+      );
+
+      expect(wallMsg).not.toContain("Terms & Conditions:");
+
+      const muralMsg = buildMuralEstimateWhatsappMessage(
+        {
+          greetingName: "Pooja Shah",
+          wallSizeSummary: "6ft x 4ft",
+          wallSqft: 24,
+          slabDetails: "Mint Sandstone 50mm",
+          slabsCount: 2,
+          totalSlabSqft: 24,
+          slabAmount: 12000,
+          slabPricePerSqft: 500,
+          cncWorkSummary: "Deep 3D Bas-Relief Carving",
+          cncAmount: 18000,
+          installationLabourAmount: 3000,
+          rubbingAmount: 0,
+          polishingAmount: 0,
+          adhesivesAmount: 0,
+          adhesivesSummary: "Standard",
+          touchUpAmount: 0,
+          cartingAmount: 0,
+          totalEstimate: 33000,
+          preparerName: "Stone Tech Atelier",
+          baseStoneSourcing: "stone_tech",
+          terms: undefined,
+        },
+        "Stone Tech",
+      );
+
+      expect(muralMsg).not.toContain("Terms & Conditions:");
+    });
+
+    it("includes custom Terms & Conditions text when explicitly provided", async () => {
+      const { buildEstimateWhatsappMessage } = await import("./estimateWhatsappPdf");
+      const wallMsg = buildEstimateWhatsappMessage(
+        {
+          greetingName: "Ramesh Patel",
+          wallSizeSummary: "100 sq ft",
+          materialSummary: "Mint Rockface",
+          materialToOrderSummary: "100 sq ft",
+          materialAmount: 21000,
+          installationLabourAmount: 0,
+          adhesivesAmount: 0,
+          sealerAmount: 0,
+          sealerApplicationAmount: 0,
+          totalEstimate: 21000,
+          preparerName: "Stone Tech Atelier",
+          terms: "1. 100% advance payment required.\n2. Delivery within 7 days.",
+        },
+        "Stone Tech",
+      );
+
+      expect(wallMsg).toContain("Terms & Conditions:");
+      expect(wallMsg).toContain("1. 100% advance payment required.");
+      expect(wallMsg).toContain("2. Delivery within 7 days.");
+    });
+  });
 });

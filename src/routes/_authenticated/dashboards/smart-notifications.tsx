@@ -113,7 +113,7 @@ function SmartNotifications() {
     queryFn: loadUpcomingNotices,
     staleTime: 60_000,
   });
-  const { processedInsights, loading: insightsLoading } = useExecutiveInsights();
+  const { processedInsights, loading: insightsLoading } = useExecutiveInsights({ enabled: true });
 
   if (q.isLoading || insightsLoading)
     return (

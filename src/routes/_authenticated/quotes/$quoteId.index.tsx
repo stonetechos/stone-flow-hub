@@ -131,6 +131,7 @@ function QuoteDetailPage() {
   const linkedSo = useQuery({
     queryKey: ["quotes", "linkedSalesOrder", quoteId],
     queryFn: () => getSalesOrderForQuote(quoteId),
+    enabled: Boolean(q.data),
   });
   const sourceEstimateId = q.data?.estimate_id ?? null;
   const sourceEstimate = useQuery({
@@ -145,6 +146,7 @@ function QuoteDetailPage() {
       const map = await getDispatchesForQuotes([quoteId]);
       return map[quoteId] ?? [];
     },
+    enabled: Boolean(q.data),
   });
   const quoteDispatches = linkedDispatches.data ?? [];
   const primaryDispatch = quoteDispatches[0] ?? null;
@@ -181,17 +183,8 @@ function QuoteDetailPage() {
   });
 
   const openTermsDialog = () => {
-    const isClientSlab = detectClientProvidedSlabFromItems(items.data, q.data?.wall_estimate);
     setEditingScope(detectedScope);
-    setEditingTerms(
-      q.data?.terms && q.data.terms.trim()
-        ? q.data.terms.trim()
-        : generateQuoteTerms({
-            dealScope: detectedScope,
-            totalAmount: Number(q.data?.total) || 0,
-            clientProvidedSlab: isClientSlab,
-          }),
-    );
+    setEditingTerms(q.data?.terms && q.data.terms.trim() ? q.data.terms.trim() : "");
     setTermsDialogOpen(true);
   };
 

@@ -101,7 +101,27 @@ export async function getQuote(id: string): Promise<QuoteListItem | null> {
     .eq("id", id)
     .maybeSingle();
   if (error) throw new AppError(mapDbError(error));
-  return data ? reconcileQuoteItem(data as QuoteListItem, true) : null;
+  if (!data) return null;
+
+  // Auto-heal historical oversized workflow_state (e.g. from uncompressed image uploads)
+  // to ensure fast client-side performance and prevent database write timeouts on edit
+  if (data.workflow_state && typeof data.workflow_state === "object") {
+    const rawLen = JSON.stringify(data.workflow_state).length;
+    if (rawLen > 250_000) {
+      const sanitized = pruneOversizedDataUrls(data.workflow_state, 120_000);
+      data.workflow_state = sanitized;
+      void getDb()
+        .from("quotes")
+        .update({ workflow_state: sanitized } as never)
+        .eq("id", id)
+        .then(
+          () => console.info(`[quotes] Auto-healed oversized workflow_state for quote ${id}`),
+          (err) => console.warn(`[quotes] Auto-heal workflow_state skipped:`, err),
+        );
+    }
+  }
+
+  return reconcileQuoteItem(data as QuoteListItem, true);
 }
 
 export async function getQuoteItems(quoteId: string): Promise<QuoteItemRow[]> {
@@ -567,6 +587,8 @@ export async function updateQuote(id: string, input: QuoteUpdateInput): Promise<
       : {}),
   };
 
+  const sanitizedWf = pruneOversizedDataUrls(nextWf, 150_000);
+
   const { data, error } = await getDb()
     .from("quotes")
     .update({
@@ -574,7 +596,7 @@ export async function updateQuote(id: string, input: QuoteUpdateInput): Promise<
       notes: parsed.notes ?? null,
       terms: parsed.terms ?? null,
       category: parsed.category ?? null,
-      workflow_state: nextWf,
+      workflow_state: sanitizedWf,
     } as never)
     .eq("id", id)
     .select("*")
@@ -758,7 +780,7 @@ export async function updateQuoteItemNote(
     delete currentNotes[itemId];
   }
 
-  const updatedWf = { ...wf, line_item_notes: currentNotes };
+  const updatedWf = pruneOversizedDataUrls({ ...wf, line_item_notes: currentNotes }, 150_000);
   const { error } = await getDb()
     .from("quotes")
     .update({ workflow_state: updatedWf } as never)
@@ -884,7 +906,7 @@ export async function updateQuoteItemImage(
     currentImages[key] = "__none__";
   }
 
-  const updatedWf = { ...wf, line_item_images: currentImages };
+  const updatedWf = pruneOversizedDataUrls({ ...wf, line_item_images: currentImages }, 150_000);
   const { error } = await getDb()
     .from("quotes")
     .update({ workflow_state: updatedWf } as never)

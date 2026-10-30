@@ -53,7 +53,7 @@ const KIND_META: Record<
 const TOP_N = 5;
 
 export function BusinessInsightsCard() {
-  const { processedInsights, loading } = useExecutiveInsights();
+  const { processedInsights, loading } = useExecutiveInsights({ enabled: true });
   const { active, setStatus } = useInsightLifecycle(processedInsights);
   const top = [...active]
     .sort((a, b) => b.normalizedPriority - a.normalizedPriority)

@@ -1189,15 +1189,7 @@ function CreateQuoteDialog({
               : null),
         valid_until: validUntil || null,
         notes: [notes, discountNote, sceneNote].filter(Boolean).join("\n\n") || null,
-        terms:
-          terms ||
-          generateQuoteTerms({
-            dealScope,
-            totalAmount: effectiveTotal,
-            timelineDays: deliveryDays,
-            deliveryDate,
-            clientProvidedSlab: isClientProvidedSlab,
-          }),
+        terms: terms ? terms.trim() : null,
         sale_mode: saleMode,
         hybrid_cash_amount:
           saleMode === "hybrid" && hybridCashAmount ? Number(hybridCashAmount) : undefined,
@@ -1260,15 +1252,7 @@ function CreateQuoteDialog({
       category: category || null,
       valid_until: validUntil || null,
       notes: notes || null,
-      terms:
-        terms ||
-        generateQuoteTerms({
-          dealScope,
-          totalAmount: effectiveTotal,
-          timelineDays: deliveryDays,
-          deliveryDate,
-          clientProvidedSlab: isClientProvidedSlab,
-        }),
+      terms: terms ? terms.trim() : null,
       sale_mode: saleMode,
       hybrid_cash_amount:
         saleMode === "hybrid" && hybridCashAmount ? Number(hybridCashAmount) : undefined,

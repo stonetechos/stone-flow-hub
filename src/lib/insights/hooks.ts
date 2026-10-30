@@ -41,7 +41,7 @@ export interface UseInsightsResult {
 
 /** Aggregate insights across every registered provider. */
 export function useInsights(options?: UseInsightsOptions): UseInsightsResult {
-  const isEnabled = options?.enabled ?? true;
+  const isEnabled = options?.enabled ?? false;
   const providers = useInsightRegistry();
   const [isDeferredReady, setIsDeferredReady] = useState(false);
 

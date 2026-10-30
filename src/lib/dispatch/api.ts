@@ -459,14 +459,23 @@ export async function getDispatchesForQuotes(
       new Set(quotesList.map((q) => q.customer_id).filter((c): c is string => Boolean(c))),
     );
 
-    // 2. Fetch document lineage
-    const { data: lineageRows } = await db
+    // 2. Fetch document lineage specifically for requested quotes
+    const lineageQuery = db
       .from("document_lineage")
-      .select("source_id, source_type, target_id, target_type")
-      .or(
-        `and(source_type.eq.quote,target_type.eq.dispatch),and(source_type.eq.dispatch,target_type.eq.quote)`,
-      )
-      .limit(300);
+      .select("source_id, source_type, target_id, target_type");
+
+    if (quoteIds.length <= 10) {
+      lineageQuery.or(
+        `and(source_type.eq.quote,source_id.in.(${quoteIds.join(",")})),and(target_type.eq.quote,target_id.in.(${quoteIds.join(",")}))`,
+      );
+    } else {
+      lineageQuery
+        .or(
+          `and(source_type.eq.quote,target_type.eq.dispatch),and(source_type.eq.dispatch,target_type.eq.quote)`,
+        )
+        .limit(300);
+    }
+    const { data: lineageRows } = await lineageQuery;
 
     const lineageLinks = (lineageRows ?? []).map((l) => ({
       source_id: l.source_id,
@@ -487,8 +496,13 @@ export async function getDispatchesForQuotes(
     }
     const soIds = Array.from(soToQuote.keys());
 
-    // 4. Fetch candidate dispatches
+    // 4. Fetch candidate dispatches with targeted indexing
     const promises: Array<PromiseLike<{ data: unknown; error: unknown }>> = [];
+
+    // Direct link by quote_id
+    promises.push(
+      db.from("dispatches").select(SELECT).in("quote_id", quoteIds).neq("status", "cancelled"),
+    );
 
     // By customer ID (crucial for Stallion Realities and customer challans)
     if (customerIds.length > 0) {
@@ -498,7 +512,8 @@ export async function getDispatchesForQuotes(
           .select(SELECT)
           .in("customer_id", customerIds)
           .neq("status", "cancelled")
-          .order("created_at", { ascending: false }),
+          .order("created_at", { ascending: false })
+          .limit(quoteIds.length <= 5 ? 20 : 100),
       );
     }
 
@@ -509,15 +524,17 @@ export async function getDispatchesForQuotes(
       );
     }
 
-    // Recent dispatches pool
-    promises.push(
-      db
-        .from("dispatches")
-        .select(SELECT)
-        .neq("status", "cancelled")
-        .order("created_at", { ascending: false })
-        .limit(200),
-    );
+    // Only query recent dispatches pool if resolving multiple quotes in bulk
+    if (quoteIds.length > 5) {
+      promises.push(
+        db
+          .from("dispatches")
+          .select(SELECT)
+          .neq("status", "cancelled")
+          .order("created_at", { ascending: false })
+          .limit(100),
+      );
+    }
 
     const results = await Promise.all(promises);
 
