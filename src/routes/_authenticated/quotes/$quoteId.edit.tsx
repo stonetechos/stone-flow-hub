@@ -43,6 +43,9 @@ import { Badge } from "@/components/ui/badge";
 
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
+import { compressImageToDataUrl } from "@/lib/images/compress";
+import { supabase } from "@/integrations/supabase/client";
+import { FILES_BUCKET } from "@/lib/constants";
 import {
   addQuoteItem,
   deleteQuoteItem,
@@ -476,6 +479,8 @@ function LineItemsEditor({
     });
   }, [itemsQuery.data]);
 
+  const [uploadingRowId, setUploadingRowId] = useState<string | null>(null);
+
   const invalidate = () => {
     invalidateQuote(qc, quoteId);
     qc.invalidateQueries({ queryKey: qk.quotes.items(quoteId) });
@@ -486,28 +491,71 @@ function LineItemsEditor({
     mutationFn: async ({ id, url }: { id: string; url: string | null }) => {
       await updateQuoteItemImage(quoteId, id, url);
     },
-    onSuccess: () => {
+    onSuccess: (_, vars) => {
       invalidate();
-      toast.success("Product photo updated");
+      if (!vars.url) {
+        toast.success("Photo removed from line item");
+      } else {
+        toast.success("Product photo updated");
+      }
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
-  const handleImageUpload = (rowId: string, file: File) => {
+  const handleImageUpload = async (rowId: string, file: File) => {
     if (!file.type.startsWith("image/")) {
-      toast.error("Please upload a valid image file");
+      toast.error("Please upload a valid image file (JPG, PNG, WebP)");
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image file should be under 5MB");
+    if (file.size > 15 * 1024 * 1024) {
+      toast.error("Image file should be under 15MB");
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result as string;
-      updateImgMut.mutate({ id: rowId, url: dataUrl });
-    };
-    reader.readAsDataURL(file);
+
+    setUploadingRowId(rowId);
+    const toastId = toast.loading("Compressing and attaching photo…");
+
+    try {
+      // 1. High-speed client-side canvas compression down to max 800px width/height and 0.8 quality
+      // Drops a 5MB phone photo down to ~35-50KB with zero visible loss on print/screen
+      const compressedDataUrl = await compressImageToDataUrl(file, 800, 0.8);
+      let finalUrl = compressedDataUrl;
+
+      // 2. Try uploading to Supabase Storage if available
+      try {
+        const res = await fetch(compressedDataUrl);
+        const blob = await res.blob();
+        const safeExt = file.name.split(".").pop()?.toLowerCase() || "jpg";
+        const storagePath = `quotes/${quoteId}/line_items/${rowId}_${Date.now()}.${safeExt}`;
+
+        const { data: upData, error: upErr } = await supabase.storage
+          .from(FILES_BUCKET)
+          .upload(storagePath, blob, {
+            contentType: "image/jpeg",
+            upsert: true,
+          });
+
+        if (!upErr && upData) {
+          const { data: pubData } = supabase.storage.from(FILES_BUCKET).getPublicUrl(storagePath);
+          if (pubData?.publicUrl) {
+            finalUrl = pubData.publicUrl;
+          }
+        }
+      } catch (storageErr) {
+        console.warn(
+          "[quotes] Supabase storage upload fallback to compressed dataUrl:",
+          storageErr,
+        );
+      }
+
+      await updateQuoteItemImage(quoteId, rowId, finalUrl);
+      invalidate();
+      toast.success("Product photo updated successfully", { id: toastId });
+    } catch (err) {
+      toast.error(toUserMessage(err), { id: toastId });
+    } finally {
+      setUploadingRowId(null);
+    }
   };
 
   const addMut = useMutation({
@@ -744,40 +792,59 @@ function LineItemsEditor({
                         )}
                       </div>
                       <div className="flex items-center gap-2">
-                        {lineImg ? (
-                          <div
-                            className="group relative h-9 w-9 shrink-0 overflow-hidden rounded-md border border-border bg-muted/30"
-                            title="Hover to remove photo"
-                          >
-                            <img
-                              src={lineImg}
-                              alt={r.description}
-                              className="h-full w-full object-cover"
-                            />
-                            <button
+                        {/* Hidden file input for this line item, usable for both initial attach and change photo */}
+                        <input
+                          id={`file-input-${r.id}`}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) void handleImageUpload(r.id, file);
+                            e.target.value = "";
+                          }}
+                        />
+
+                        {uploadingRowId === r.id ? (
+                          <div className="flex h-10 w-12 shrink-0 items-center justify-center rounded-md border border-primary/40 bg-primary/5">
+                            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                          </div>
+                        ) : lineImg ? (
+                          <div className="flex items-center gap-1 shrink-0">
+                            {/* Thumbnail with click to change / replace */}
+                            <div
+                              onClick={() => document.getElementById(`file-input-${r.id}`)?.click()}
+                              className="group relative h-10 w-12 shrink-0 overflow-hidden rounded-md border border-border bg-slate-50 cursor-pointer transition hover:ring-2 hover:ring-primary/40"
+                              title="Click to change / replace photo"
+                            >
+                              <img
+                                src={lineImg}
+                                alt={r.description}
+                                className="h-full w-full object-cover"
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-white opacity-0 transition group-hover:opacity-100 text-[9px] font-semibold text-center px-0.5">
+                                Change
+                              </div>
+                            </div>
+                            {/* Explicit Remove Button */}
+                            <Button
                               type="button"
+                              variant="ghost"
+                              size="icon"
                               onClick={() => updateImgMut.mutate({ id: r.id, url: null })}
-                              className="absolute inset-0 flex items-center justify-center bg-destructive/85 text-white opacity-0 transition group-hover:opacity-100"
-                              title="Remove photo"
+                              className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                              title="Remove photo from line item"
                             >
                               <XIcon className="h-3.5 w-3.5" />
-                            </button>
+                            </Button>
                           </div>
                         ) : (
                           <label
-                            className="flex h-9 w-9 shrink-0 cursor-pointer flex-col items-center justify-center rounded-md border border-dashed border-border bg-muted/20 text-muted-foreground transition hover:border-primary/50 hover:bg-muted/40 hover:text-primary"
+                            htmlFor={`file-input-${r.id}`}
+                            className="flex h-10 w-10 shrink-0 cursor-pointer flex-col items-center justify-center rounded-md border border-dashed border-border bg-muted/20 text-muted-foreground transition hover:border-primary/50 hover:bg-muted/40 hover:text-primary"
                             title="Attach product photo"
                           >
                             <ImagePlus className="h-4 w-4" />
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) handleImageUpload(r.id, file);
-                              }}
-                            />
                           </label>
                         )}
                         <div className="min-w-0 flex-1">

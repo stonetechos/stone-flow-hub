@@ -97,28 +97,30 @@ export async function resolveAllQuoteImages(
     try {
       const attachments = await listAttachments("quote", quote.id);
       const imageAttachments = attachments.filter((f) => f.mime_type?.startsWith("image/"));
-      for (const att of imageAttachments) {
-        let url: string | null = null;
-        try {
-          const { data: signed } = await supabase.storage
-            .from(att.bucket || FILES_BUCKET)
-            .createSignedUrl(att.object_path, 3600 * 24);
-          url = signed?.signedUrl ?? null;
-        } catch {
-          // Fallback to public URL
-          const { data } = supabase.storage
-            .from(att.bucket || FILES_BUCKET)
-            .getPublicUrl(att.object_path);
-          url = data?.publicUrl ?? null;
-        }
-
-        if (url) {
-          imageMap.set(`att_${att.id}`, url);
-          if (att.file_name) {
-            imageMap.set(`file_${att.file_name.toLowerCase()}`, url);
+      await Promise.all(
+        imageAttachments.map(async (att) => {
+          let url: string | null = null;
+          try {
+            const { data: signed } = await supabase.storage
+              .from(att.bucket || FILES_BUCKET)
+              .createSignedUrl(att.object_path, 3600 * 24);
+            url = signed?.signedUrl ?? null;
+          } catch {
+            // Fallback to public URL
+            const { data } = supabase.storage
+              .from(att.bucket || FILES_BUCKET)
+              .getPublicUrl(att.object_path);
+            url = data?.publicUrl ?? null;
           }
-        }
-      }
+
+          if (url) {
+            imageMap.set(`att_${att.id}`, url);
+            if (att.file_name) {
+              imageMap.set(`file_${att.file_name.toLowerCase()}`, url);
+            }
+          }
+        }),
+      );
     } catch {
       // Safe fallback if attachments query fails
     }
@@ -169,6 +171,8 @@ export function getQuoteGalleryImages(
   return gallery;
 }
 
+export const NO_IMAGE_SENTINEL = "__none__";
+
 /**
  * Resolves the best available image URL or dataUrl for a specific quote item
  */
@@ -176,24 +180,35 @@ export function getLineItemImage(
   item: ResolvableQuoteItem | QuoteItemRow,
   imageMap: Map<string, string>,
 ): string | null {
+  // If the item specifically has an image entry in imageMap:
   if (item.id) {
-    if (imageMap.has(item.id)) return imageMap.get(item.id)!;
-    if (imageMap.has(item.id.toLowerCase())) return imageMap.get(item.id.toLowerCase())!;
+    const direct = imageMap.get(item.id) ?? imageMap.get(item.id.toLowerCase());
+    if (direct) {
+      if (direct === NO_IMAGE_SENTINEL || direct === "none" || direct === "") return null;
+      return direct;
+    }
   }
 
+  // Check product_id
   if (item.product_id) {
-    if (imageMap.has(item.product_id)) return imageMap.get(item.product_id)!;
-    if (imageMap.has(item.product_id.toLowerCase()))
-      return imageMap.get(item.product_id.toLowerCase())!;
+    const prodImg = imageMap.get(item.product_id) ?? imageMap.get(item.product_id.toLowerCase());
+    if (prodImg) {
+      if (prodImg === NO_IMAGE_SENTINEL) return null;
+      return prodImg;
+    }
   }
 
+  // Check description
   if (item.description) {
     const descLower = item.description.trim().toLowerCase();
-    if (imageMap.has(descLower)) {
-      return imageMap.get(descLower)!;
+    const descImg = imageMap.get(descLower);
+    if (descImg) {
+      if (descImg === NO_IMAGE_SENTINEL) return null;
+      return descImg;
     }
-    // Partial search for product names in description (e.g. "Mint Sandstone" inside "Natural Stone Interlocking Panels — Mint Sandstone (Wall 1)")
+    // Partial search for product names in description
     for (const [key, url] of imageMap.entries()) {
+      if (url === NO_IMAGE_SENTINEL) continue;
       if (!key.startsWith("att_") && !key.startsWith("file_") && key.length > 3) {
         if (descLower.includes(key) || key.includes(descLower)) {
           return url;

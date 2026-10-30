@@ -541,6 +541,21 @@ export async function updateQuote(id: string, input: QuoteUpdateInput): Promise<
     .maybeSingle();
   const currentWf = (current?.workflow_state as Record<string, unknown> | null) ?? {};
 
+  // Sanitize any historical oversized base64 strings (> 200KB) from line_item_images to prevent statement timeout
+  if (currentWf.line_item_images && typeof currentWf.line_item_images === "object") {
+    const imgs = { ...(currentWf.line_item_images as Record<string, unknown>) };
+    let pruned = false;
+    for (const [k, v] of Object.entries(imgs)) {
+      if (typeof v === "string" && v.startsWith("data:") && v.length > 200_000) {
+        delete imgs[k];
+        pruned = true;
+      }
+    }
+    if (pruned) {
+      currentWf.line_item_images = imgs;
+    }
+  }
+
   const nextWf = {
     ...currentWf,
     ...(parsed.sale_mode ? { sale_mode: parsed.sale_mode } : {}),
@@ -854,11 +869,19 @@ export async function updateQuoteItemImage(
   const wf = (q.workflow_state as Record<string, unknown> | null) ?? {};
   const currentImages = { ...((wf.line_item_images as Record<string, string> | null) ?? {}) };
 
+  // Sanitize any historical oversized base64 strings (> 200KB) to prevent Postgres statement timeout
+  for (const [k, v] of Object.entries(currentImages)) {
+    if (typeof v === "string" && v.startsWith("data:") && v.length > 200_000) {
+      delete currentImages[k];
+    }
+  }
+
   const key = itemKeyOrDesc.trim().toLowerCase();
-  if (imageUrl) {
-    currentImages[key] = imageUrl;
+  if (imageUrl && imageUrl.trim()) {
+    currentImages[key] = imageUrl.trim();
   } else {
-    delete currentImages[key];
+    // Explicitly set suppression sentinel so getLineItemImage suppresses fallback catalog/wall_estimate images
+    currentImages[key] = "__none__";
   }
 
   const updatedWf = { ...wf, line_item_images: currentImages };

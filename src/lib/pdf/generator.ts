@@ -168,10 +168,10 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
         <td style="padding:6px 4px;color:${muted};text-align:center;vertical-align:top;width:32px">${i + 1}</td>
         ${
           showPhoto
-            ? `<td style="padding:4px;text-align:center;vertical-align:top;width:46px">
+            ? `<td style="padding:4px;text-align:center;vertical-align:middle;width:56px">
                 ${
                   l.image
-                    ? `<img src="${esc(l.image)}" alt="${esc(l.label)}" style="width:36px;height:36px;object-fit:cover;border-radius:3px;border:1px solid ${border};display:block;margin:0 auto;" />`
+                    ? `<img src="${esc(l.image)}" alt="${esc(l.label)}" style="width:48px;height:36px;object-fit:contain;background:#f8fafc;border-radius:3px;border:1px solid ${border};display:block;margin:0 auto;" />`
                     : `<span style="color:${muted}">—</span>`
                 }
               </td>`
@@ -458,7 +458,7 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
         ? `<table style="width:100%;border-collapse:collapse;margin-top:4px;font-size:9.5px;">
             <thead><tr>
               <th style="width:32px;text-align:center;vertical-align:middle;padding:7px 8px 8px;">#</th>
-              ${showPhoto ? `<th style="width:46px;text-align:center;vertical-align:middle;padding:7px 8px 8px;">Photo</th>` : ""}
+              ${showPhoto ? `<th style="width:56px;text-align:center;vertical-align:middle;padding:7px 4px 8px;">Photo</th>` : ""}
               <th style="text-align:left;vertical-align:middle;padding:7px 8px 8px;">Item &amp; Description</th>
               ${showHsn ? `<th style="width:68px;text-align:center;vertical-align:middle;padding:7px 8px 8px;">HSN/SAC</th>` : ""}
               <th style="width:58px;text-align:right;vertical-align:middle;padding:7px 8px 8px;">Qty</th>
