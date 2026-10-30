@@ -41,6 +41,10 @@ function ensureProvidersRegistered(): void {
 }
 ensureProvidersRegistered();
 
+export interface UseExecutiveInsightsOptions {
+  enabled?: boolean;
+}
+
 export interface UseExecutiveInsightsResult {
   /** Raw, unprocessed insights straight from every registered provider. */
   rawInsights: Insight[];
@@ -51,8 +55,10 @@ export interface UseExecutiveInsightsResult {
   error: boolean;
 }
 
-export function useExecutiveInsights(): UseExecutiveInsightsResult {
-  const { insights: rawInsights, isLoading, isError } = useInsights();
+export function useExecutiveInsights(
+  options?: UseExecutiveInsightsOptions,
+): UseExecutiveInsightsResult {
+  const { insights: rawInsights, isLoading, isError } = useInsights(options);
 
   return useMemo(() => {
     const result = processInsights(rawInsights);

@@ -22,6 +22,7 @@
  * clock time.
  */
 import { useEffect, useRef } from "react";
+import { useRouterState } from "@tanstack/react-router";
 import {
   computeGrowthAdvisory,
   formatGrowthAdvisoryBody,
@@ -32,12 +33,15 @@ import { postGrowthAdvisoryBroadcast } from "@/lib/executive/growthAdvisory.func
 
 export function GrowthAdvisoryBroadcaster() {
   const postedRef = useRef(false);
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isDashboard =
+    pathname === "/" || pathname === "/dashboard" || pathname.startsWith("/dashboards");
 
   useEffect(() => {
-    if (postedRef.current) return;
+    if (!isDashboard || postedRef.current) return;
     let cancelled = false;
 
-    // Defer check by 4s so initial page navigation and core data queries get full priority
+    // Defer check by 8s so initial page navigation and core data queries get full priority
     const timer = setTimeout(async () => {
       try {
         const already = await hasTodaysBroadcast("growth_advisory");
@@ -57,13 +61,13 @@ export function GrowthAdvisoryBroadcaster() {
       } catch {
         postedRef.current = false;
       }
-    }, 4000);
+    }, 8000);
 
     return () => {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, []);
+  }, [isDashboard]);
 
   return null;
 }

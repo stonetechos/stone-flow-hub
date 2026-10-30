@@ -17,7 +17,7 @@
  *  - Session + Database persistence so dismissed insights never reappear.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { AlertCircle, ArrowRight, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useExecutiveInsights } from "@/hooks/useExecutiveInsights";
@@ -322,7 +322,10 @@ function DangerNotificationCard({ insight, onDismiss, onAct }: DangerNotificatio
 }
 
 export function DangerNotifications() {
-  const { processedInsights } = useExecutiveInsights();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isDashboard =
+    pathname === "/" || pathname === "/dashboard" || pathname.startsWith("/dashboards");
+  const { processedInsights } = useExecutiveInsights({ enabled: isDashboard });
   const { withLifecycle, setStatus } = useInsightLifecycle(processedInsights);
   const [dismissedKeys, setDismissedKeys] = useState<Set<string>>(() => getDismissedSessionSet());
   const navigate = useNavigate();

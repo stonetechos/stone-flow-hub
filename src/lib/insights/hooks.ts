@@ -26,6 +26,10 @@ export function useInsightRegistry(): InsightProvider[] {
   return useSyncExternalStore(subscribeInsightRegistry, listInsightProviders, listInsightProviders);
 }
 
+export interface UseInsightsOptions {
+  enabled?: boolean;
+}
+
 export interface UseInsightsResult {
   insights: Insight[];
   isLoading: boolean;
@@ -36,22 +40,27 @@ export interface UseInsightsResult {
 }
 
 /** Aggregate insights across every registered provider. */
-export function useInsights(): UseInsightsResult {
+export function useInsights(options?: UseInsightsOptions): UseInsightsResult {
+  const isEnabled = options?.enabled ?? true;
   const providers = useInsightRegistry();
   const [isDeferredReady, setIsDeferredReady] = useState(false);
 
   useEffect(() => {
-    // Stagger background insight queries 1.5s after mount so primary page data loads without network contention
-    const t = setTimeout(() => setIsDeferredReady(true), 1500);
+    if (!isEnabled) {
+      setIsDeferredReady(false);
+      return;
+    }
+    // Stagger background insight queries 2s after mount so primary page data loads without network contention
+    const t = setTimeout(() => setIsDeferredReady(true), 2000);
     return () => clearTimeout(t);
-  }, []);
+  }, [isEnabled]);
 
   const results = useQueries({
     queries: providers.map((provider) => ({
       queryKey: qk.insights.provider(provider.id),
       queryFn: provider.fetch,
       staleTime: INSIGHTS_STALE_TIME_MS,
-      enabled: isDeferredReady,
+      enabled: isEnabled && isDeferredReady,
     })),
   });
 
@@ -67,9 +76,9 @@ export function useInsights(): UseInsightsResult {
     insights.sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
     return {
       insights,
-      isLoading: isDeferredReady && results.some((result) => result.isLoading),
+      isLoading: isEnabled && isDeferredReady && results.some((result) => result.isLoading),
       isError: results.some((result) => result.isError),
       failedProviderIds,
     };
-  }, [results, providers, isDeferredReady]);
+  }, [results, providers, isDeferredReady, isEnabled]);
 }

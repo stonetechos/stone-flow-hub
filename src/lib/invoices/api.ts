@@ -30,7 +30,7 @@ export async function listInvoices(query = ""): Promise<InvoiceListItem[]> {
     .from("invoices")
     .select(SELECT_WITH_JOINS)
     .order("created_at", { ascending: false })
-    .limit(200);
+    .limit(100);
   const s = sanitizeSearch(query);
   if (s) q = q.or(`invoice_no.ilike.%${s}%,notes.ilike.%${s}%`);
   const { data, error } = await q;

@@ -44,21 +44,23 @@ const SELECT_WITH_JOINS =
 const SELECT_LIST_FIELDS =
   "id,quote_no,customer_id,project_id,enquiry_id,status,category,valid_until,issue_date,created_at,subtotal,tax_amount,total,notes,workflow_state, customer:customers!quotes_customer_id_fkey(id,name,customer_code,workflow_state,external_ref), project:projects!quotes_project_id_fkey(id,name,project_code), invoices:invoices!invoices_quote_id_fkey(id,invoice_no,status,total)";
 
-function reconcileQuoteItem(quote: QuoteListItem): QuoteListItem {
+function reconcileQuoteItem(quote: QuoteListItem, persistHeal = false): QuoteListItem {
   if (quote.status === "converted") {
     const hasActiveInvoice =
       Array.isArray(quote.invoices) &&
       quote.invoices.some((inv) => inv && inv.status !== "cancelled");
     if (!hasActiveInvoice) {
-      // Background heal the database record so orphaned quotes can be re-invoiced
-      void getDb()
-        .from("quotes")
-        .update({ status: "accepted" })
-        .eq("id", quote.id)
-        .then(
-          () => {},
-          (err) => console.warn("[quotes] auto-heal quote status failed", err),
-        );
+      // Background heal the database record only when loading a single quote detail
+      if (persistHeal) {
+        void getDb()
+          .from("quotes")
+          .update({ status: "accepted" })
+          .eq("id", quote.id)
+          .then(
+            () => {},
+            (err) => console.warn("[quotes] auto-heal quote status failed", err),
+          );
+      }
 
       return {
         ...quote,
@@ -74,12 +76,12 @@ export async function listQuotes(query = ""): Promise<QuoteListItem[]> {
     .from("quotes")
     .select(SELECT_LIST_FIELDS)
     .order("created_at", { ascending: false })
-    .limit(200);
+    .limit(100);
   const s = sanitizeSearch(query);
   if (s) q = q.or(`quote_no.ilike.%${s}%,notes.ilike.%${s}%`);
   const { data, error } = await q;
   if (error) throw new AppError(mapDbError(error));
-  return ((data ?? []) as QuoteListItem[]).map(reconcileQuoteItem);
+  return ((data ?? []) as QuoteListItem[]).map((item) => reconcileQuoteItem(item, false));
 }
 
 export async function listQuotesForProject(projectId: string): Promise<QuoteListItem[]> {
@@ -89,7 +91,7 @@ export async function listQuotesForProject(projectId: string): Promise<QuoteList
     .eq("project_id", projectId)
     .order("created_at", { ascending: false });
   if (error) throw new AppError(mapDbError(error));
-  return ((data ?? []) as QuoteListItem[]).map(reconcileQuoteItem);
+  return ((data ?? []) as QuoteListItem[]).map((item) => reconcileQuoteItem(item, false));
 }
 
 export async function getQuote(id: string): Promise<QuoteListItem | null> {
@@ -99,7 +101,7 @@ export async function getQuote(id: string): Promise<QuoteListItem | null> {
     .eq("id", id)
     .maybeSingle();
   if (error) throw new AppError(mapDbError(error));
-  return data ? reconcileQuoteItem(data as QuoteListItem) : null;
+  return data ? reconcileQuoteItem(data as QuoteListItem, true) : null;
 }
 
 export async function getQuoteItems(quoteId: string): Promise<QuoteItemRow[]> {

@@ -238,7 +238,7 @@ export function Copilot() {
   }, [speech.error]);
   const path = useRouterState({ select: (s) => s.location.pathname });
   const ctx = deriveContext(path);
-  const { processedInsights } = useExecutiveInsights();
+  const { processedInsights } = useExecutiveInsights({ enabled: open });
   const scopedInsights = ctx.entityId
     ? processedInsights.filter(
         (i) =>
