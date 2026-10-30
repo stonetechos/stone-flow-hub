@@ -88,10 +88,10 @@ function VendorPaymentsPage() {
   return (
     <div>
       <PageHeader
-        title={t("vendorPayments.title", "Team Payments")}
+        title={t("vendorPayments.title", "Supplier Payments")}
         subtitle={t(
           "vendorPayments.subtitle",
-          "Advance, part, full, retention, credit / debit note and refund posts.",
+          "Advance, part, full, retention, credit / debit note and refund settlements across supplying partners.",
         )}
       />
 

@@ -27,17 +27,19 @@
       "quotes": "અવતરણ",
       "invoices": "વેચાણ ઇન્વૉઇસ",
       "dispatch": "ડિસ્પેચ",
-      "vendors": "ટીમ",
+      "vendors": "સપ્લાય પાર્ટનર્સ",
       "rfqs": "RFQ",
       "purchase-invoices": "ખરીદી ઇન્વૉઇસ",
       "inventory": "ઇન્વેન્ટરી",
       "money-flow": "પૈસાનો પ્રવાહ",
       "payments": "ગ્રાહક ચુકવણી",
-      "vendor-payments": "ટીમ ચુકવણી",
-      "agency-payments": "ઇન્સ્ટોલેશન ટીમ ચુકવણી",
+      "vendor-payments": "સપ્લાયર ચુકવણી",
+      "agencies": "એપ્લિકેશન પાર્ટનર્સ",
+      "agency-payments": "એપ્લિકેશન પાર્ટનર ચુકવણી",
+      "purchase-transport": "ટ્રાન્સપોર્ટ પાર્ટનર્સ",
       "ledger": "ગ્રાહક ખાતાવહી",
-      "vendor-ledger": "ટીમ ખાતાવહી",
-      "agency-ledger": "ઇન્સ્ટોલેશન ટીમ ખાતાવહી",
+      "vendor-ledger": "સપ્લાયર્સ લેજર",
+      "agency-ledger": "એપ્લિકેશન પાર્ટનર લેજર",
       "liabilities": "જવાબદારીઓ અને લોન",
       "business-expenses": "વ્યાપારી ખર્ચ",
       "wf-employees": "કર્મચારીઓ",
@@ -1191,19 +1193,27 @@
     }
   },
   "vendors": {
-    "title": "વેપારીઓ",
-    "subtitle": "સપ્લાયર્સ જેમને તમે RFQ મોકલો છો.",
+    "title": "સપ્લાય પાર્ટનર્સ",
+    "subtitle": "અમારા ખાણકામ, પ્રક્રિયા, ઉત્પાદન અને સામગ્રી સપ્લાય પાર્ટનર્સ.",
+    "directoryTitle": "કામ અને સપ્લાય ડિરેક્ટરી",
+    "directorySubtitle": "પથ્થર સપ્લાય, કલાકૃતિ, ઇન્સ્ટોલેશન, રસાયણ અને પરિવહન સાથે સંકળાયેલા સહયોગીઓની ડિરેક્ટરી.",
     "searchPlaceholder": "કંપની, કોડ, શહેર દ્વારા શોધો…",
     "actions": {
-      "newVendor": "નવા વેપારી"
+      "newVendor": "નવા સપ્લાયર પાર્ટનર ઉમેરો",
+      "newPartner": "પાર્ટનર ઉમેરો"
+    },
+    "views": {
+      "directory": "ડિરેક્ટરી કાર્ડ્સ",
+      "table": "સપ્લાયર્સ કોષ્ટક"
     },
     "empty": {
-      "title": "હજી સુધી કોઈ વિક્રેતા નથી",
-      "message": "RFQ મોકલવાનું શરૂ કરવા માટે તમારો પ્રથમ વિક્રેતા ઉમેરો."
+      "title": "હજી સુધી કોઈ પાર્ટનર નથી",
+      "message": "RFQ મોકલવાનું શરૂ કરવા માટે તમારો પ્રથમ પાર્ટનર ઉમેરો."
     },
     "columns": {
       "code": "કોડ",
-      "company": "કંપની",
+      "category": "પાર્ટનર ભૂમિકા",
+      "company": "કંપની / પાર્ટનર",
       "city": "શહેર",
       "gst": "જીએસટી",
       "terms": "ચુકવણીની શરતો"
@@ -1214,7 +1224,7 @@
   "RFQs": "RFQ (ભાવ વિનંતીઓ)",
   "RFQ": "RFQ",
   "Enquiries": "પૂછપરછ",
-  "Vendors": "વેપારીઓ",
+  "Vendors": "સપ્લાય પાર્ટનર્સ",
   "Sales Orders": "વેચાણ ઓર્ડર",
   "Purchase Orders": "ખરીદી ઓર્ડર",
   "Inventory": "ઇન્વેન્ટરી",
@@ -1224,12 +1234,12 @@
   "Settings": "સેટિંગ્સ",
   "Masters": "માસ્ટર્સ",
   "Customer Payments": "ગ્રાહક ચુકવણી",
-  "Vendor Payments": "વિક્રેતા ચુકવણી",
+  "Vendor Payments": "સપ્લાયર ચુકવણી",
   "Payments": "ચુકવણી",
   "Receipts": "પાવતીઓ (રસીદો)",
   "Customer Receipts": "ગ્રાહક રસીદો",
   "Customer Ledger": "ગ્રાહક ખાતાવહી",
-  "Vendor Ledger": "વિક્રેતા ખાતાવહી",
+  "Vendor Ledger": "સપ્લાયર્સ લેજર",
   "Money Flow": "પૈસાનો પ્રવાહ",
   "Business Expenses": "વ્યાપારી ખર્ચ",
   "Liabilities & Loans": "જવાબદારીઓ અને લોન",

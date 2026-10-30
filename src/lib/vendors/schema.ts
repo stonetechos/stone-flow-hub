@@ -2,10 +2,14 @@ import { z } from "zod";
 import { zRequired, zOptional, zMobile, zEmail } from "@/lib/zod";
 
 export const VENDOR_WORK_TYPES = [
-  { value: "handcrafter", label: "Handcrafter" },
+  { value: "supplying", label: "Stone Supply (Quarry/Slabs)" },
+  { value: "artwork", label: "Artwork & Murals" },
+  { value: "handcrafter", label: "Handcrafter & Carving" },
   { value: "cnc_works", label: "CNC Works" },
   { value: "polishing_work", label: "Polishing Work" },
-  { value: "artwork", label: "Artwork" },
+  { value: "installation", label: "Application & Installation" },
+  { value: "chemicals", label: "Adhesive & Sealers" },
+  { value: "carting", label: "Transport & Carting" },
 ] as const;
 
 export type VendorWorkType = (typeof VENDOR_WORK_TYPES)[number]["value"];
@@ -43,6 +47,11 @@ export const VENDOR_PRODUCT_OPTIONS = [
   { value: "pu_panels", label: "PU Panels" },
   { value: "stone_veneer_artwork", label: "Stone Veneer Artwork" },
   { value: "agate_slabs", label: "Agate Slabs" },
+  // Chemicals, Adhesives & Care
+  { value: "adhesives_and_chemicals", label: "Adhesives & Bonding Agents" },
+  { value: "sealers_and_impregnators", label: "Stone Sealers & Impregnators" },
+  { value: "epoxies_and_grouts", label: "Epoxy & Grouting Chemicals" },
+  { value: "stone_cleaners", label: "Stone Cleaners & Polishing Chemicals" },
 ] as const;
 
 export type VendorProductOption = (typeof VENDOR_PRODUCT_OPTIONS)[number]["value"];
@@ -62,6 +71,9 @@ export const vendorCreateSchema = z.object({
   company_name: zRequired("Vendor company"),
   contact_name: zRequired("Contact person"),
   mobile: zMobile,
+
+  // Partner Association
+  partner_category: z.string().optional(),
 
   // Products Dealt In & Capabilities
   products_dealt: z.array(z.string()).default([]),

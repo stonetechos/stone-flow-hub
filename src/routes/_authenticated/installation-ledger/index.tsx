@@ -44,10 +44,10 @@ function InstallationLedgerIndex() {
   return (
     <div>
       <PageHeader
-        title={t("installationLedger.title", "Installation Team Ledger")}
+        title={t("installationLedger.title", "Application Partner Ledgers")}
         subtitle={t(
           "installationLedger.subtitle",
-          "Charge and payment entries for installation teams — tracking balances and settlements.",
+          "Charge and payment entries for application and installation partners — tracking balances and settlements.",
         )}
       />
 

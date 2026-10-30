@@ -26,17 +26,19 @@
       "quotes": "उद्धरण",
       "invoices": "बिक्री चालान",
       "dispatch": "डिस्पैच",
-      "vendors": "टीम",
+      "vendors": "सप्लाई पार्टनर्स",
       "rfqs": "RFQ",
       "purchase-invoices": "खरीद चालान",
       "inventory": "इन्वेंटरी",
       "money-flow": "पैसे का प्रवाह",
       "payments": "ग्राहक भुगतान",
-      "vendor-payments": "टीम भुगतान",
-      "agency-payments": "स्थापना टीम भुगतान",
+      "vendor-payments": "सप्लायर भुगतान",
+      "agencies": "एप्लीकेशन पार्टनर्स",
+      "agency-payments": "एप्लीकेशन पार्टनर भुगतान",
+      "purchase-transport": "ट्रांसपोर्ट पार्टनर्स",
       "ledger": "ग्राहक खाताबही",
-      "vendor-ledger": "टीम खाताबही",
-      "agency-ledger": "स्थापना टीम खाताबही",
+      "vendor-ledger": "सप्लायर्स लेजर",
+      "agency-ledger": "एप्लीकेशन पार्टनर लेजर",
       "liabilities": "देनदारियां और ऋण",
       "business-expenses": "व्यापारिक खर्च",
       "wf-employees": "कर्मचारी",
@@ -1190,19 +1192,27 @@
     }
   },
   "vendors": {
-    "title": "विक्रेता",
-    "subtitle": "आपूर्तिकर्ता जिन्हें आप RFQ भेजते हैं।",
+    "title": "सप्लाई पार्टनर्स",
+    "subtitle": "हमारे खदान, प्रसंस्करण, निर्माण और सामग्री आपूर्ति सहयोगी।",
+    "directoryTitle": "कार्य एवं आपूर्ति निर्देशिका",
+    "directorySubtitle": "पत्थर आपूर्ति, कलाकृति, स्थापना, रसायन और परिवहन से जुड़े सभी सहयोगियों की एकीकृत निर्देशिका।",
     "searchPlaceholder": "कंपनी, कोड, शहर द्वारा खोजें…",
     "actions": {
-      "newVendor": "नया विक्रेता"
+      "newVendor": "नया सप्लायर पार्टनर जोड़ें",
+      "newPartner": "पार्टनर जोड़ें"
+    },
+    "views": {
+      "directory": "निर्देशिका कार्ड",
+      "table": "सप्लायर्स तालिका"
     },
     "empty": {
-      "title": "अभी तक कोई विक्रेता नहीं",
-      "message": "RFQ भेजना शुरू करने के लिए अपना पहला विक्रेता जोड़ें।"
+      "title": "अभी तक कोई पार्टनर नहीं",
+      "message": "RFQ भेजना शुरू करने के लिए अपना पहला पार्टनर जोड़ें।"
     },
     "columns": {
       "code": "कोड",
-      "company": "कंपनी",
+      "category": "पार्टनर भूमिका",
+      "company": "कंपनी / पार्टनर",
       "city": "शहर",
       "gst": "जीएसटी",
       "terms": "भुगतान शर्तें"
@@ -1213,7 +1223,7 @@
   "RFQs": "RFQ (कोटेशन अनुरोध)",
   "RFQ": "RFQ",
   "Enquiries": "पूछताछ",
-  "Vendors": "विक्रेता",
+  "Vendors": "सप्लाई पार्टनर्स",
   "Sales Orders": "बिक्री आदेश",
   "Purchase Orders": "खरीद आदेश",
   "Inventory": "इन्वेंटरी",
@@ -1223,12 +1233,12 @@
   "Settings": "सेटिंग्स",
   "Masters": "मास्टर्स",
   "Customer Payments": "ग्राहक भुगतान",
-  "Vendor Payments": "विक्रेता भुगतान",
+  "Vendor Payments": "सप्लायर भुगतान",
   "Payments": "भुगतान",
   "Receipts": "रसीदें",
   "Customer Receipts": "ग्राहक रसीदें",
   "Customer Ledger": "ग्राहक खाताबही",
-  "Vendor Ledger": "विक्रेता खाताबही",
+  "Vendor Ledger": "सप्लायर्स लेजर",
   "Money Flow": "पैसे का प्रवाह",
   "Business Expenses": "व्यापारिक खर्च",
   "Liabilities & Loans": "देनदारियां और ऋण",

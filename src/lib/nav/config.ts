@@ -273,10 +273,17 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   {
     id: "vendors",
     to: "/vendors",
-    label: "Team",
+    label: "Supplying Partners",
     icon: Factory,
     group: "purchase",
     quickCreateTo: "/vendors?create=true",
+  },
+  {
+    id: "partners-directory",
+    to: "/vendors?view=directory",
+    label: "Work & Supply Directory",
+    icon: Users,
+    group: "purchase",
   },
   {
     id: "rfqs",
@@ -304,7 +311,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   {
     id: "vendor-payments",
     to: "/vendor-payments",
-    label: "Team Payments",
+    label: "Supplier Payments",
     icon: Banknote,
     group: "purchase",
     allowedRoles: ["admin", "super_admin"],
@@ -312,7 +319,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   {
     id: "vendor-ledger",
     to: "/purchase-ledger",
-    label: "Team Ledgers",
+    label: "Suppliers Ledger",
     icon: BookOpen,
     group: "purchase",
     allowedRoles: ["admin", "super_admin"],
@@ -330,7 +337,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   {
     id: "agencies",
     to: "/installation-teams",
-    label: "Installation Teams",
+    label: "Application Partners",
     icon: Users,
     group: "executions",
     quickCreateTo: "/installation-teams",
@@ -339,7 +346,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   {
     id: "agency-payments",
     to: "/agency-payments",
-    label: "Installation Team Payments",
+    label: "Application Partner Payments",
     icon: HandCoins,
     group: "executions",
     allowedRoles: ["admin", "super_admin"],
@@ -347,7 +354,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   {
     id: "agency-ledger",
     to: "/installation-ledger",
-    label: "Installation Team Ledgers",
+    label: "Application Partner Ledgers",
     icon: Layers,
     group: "executions",
     allowedRoles: ["admin", "super_admin"],
@@ -355,7 +362,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   {
     id: "purchase-transport",
     to: "/purchase-transport",
-    label: "Carting & Transport",
+    label: "Transport Partners",
     icon: Truck,
     group: "executions",
     quickCreateTo: "/purchase-transport/new",

@@ -450,11 +450,11 @@ function MoneyFlowCommandCenterPage() {
               </TabsTrigger>
               <TabsTrigger value="vendor-payments" className="gap-1.5 text-xs">
                 <Banknote className="h-3.5 w-3.5 text-amber-600" />
-                <span>{t("moneyFlow.tabs.vendorPayments", "Team Payments")}</span>
+                <span>{t("moneyFlow.tabs.vendorPayments", "Supplier Payments")}</span>
               </TabsTrigger>
               <TabsTrigger value="agency-payments" className="gap-1.5 text-xs">
                 <HandCoins className="h-3.5 w-3.5 text-cyan-600" />
-                <span>{t("moneyFlow.tabs.agencyPayments", "Installation Team Payments")}</span>
+                <span>{t("moneyFlow.tabs.agencyPayments", "Application Partner Payments")}</span>
               </TabsTrigger>
               <TabsTrigger value="customer-ledgers" className="gap-1.5 text-xs">
                 <Users className="h-3.5 w-3.5" />
@@ -462,11 +462,11 @@ function MoneyFlowCommandCenterPage() {
               </TabsTrigger>
               <TabsTrigger value="vendor-ledgers" className="gap-1.5 text-xs">
                 <Factory className="h-3.5 w-3.5" />
-                <span>{t("moneyFlow.tabs.vendorLedgers", "Team Ledgers")}</span>
+                <span>{t("moneyFlow.tabs.vendorLedgers", "Suppliers Ledger")}</span>
               </TabsTrigger>
               <TabsTrigger value="agency-ledgers" className="gap-1.5 text-xs">
                 <Layers className="h-3.5 w-3.5" />
-                <span>{t("moneyFlow.tabs.agencyLedgers", "Installation Team Ledgers")}</span>
+                <span>{t("moneyFlow.tabs.agencyLedgers", "Application Partner Ledgers")}</span>
               </TabsTrigger>
               <TabsTrigger value="personal-transfers" className="gap-1.5 text-xs">
                 <ArrowLeftRight className="h-3.5 w-3.5 text-purple-600" />
@@ -638,7 +638,7 @@ function MoneyFlowCommandCenterPage() {
                       <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                     </div>
                     <h3 className="font-bold text-sm text-foreground">
-                      {t("moneyFlow.overview.vendorPaymentsRegister", "Team Payments Register")}
+                      {t("moneyFlow.overview.vendorPaymentsRegister", "Supplier Payments Register")}
                     </h3>
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       {t(
@@ -705,7 +705,7 @@ function MoneyFlowCommandCenterPage() {
                       <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                     </div>
                     <h3 className="font-bold text-sm text-foreground">
-                      {t("moneyFlow.overview.customerVendorLedgers", "Customer & Team Ledgers")}
+                      {t("moneyFlow.overview.customerVendorLedgers", "Customer & Supplier Ledgers")}
                     </h3>
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       {t(

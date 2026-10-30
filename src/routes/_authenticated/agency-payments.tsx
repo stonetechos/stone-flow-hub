@@ -366,13 +366,13 @@ function AgencyPaymentsPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title={t("agencyPayments.title", "Installation Team Payments")}
-        subtitle="Payment settlements, advances, and direct customer payments recorded for installation, polishing, and carting teams."
+        title={t("agencyPayments.title", "Application Partner Payments")}
+        subtitle="Payment settlements, advances, and direct customer payments recorded for application, artwork, and transport partners."
         actions={
           roles.canWrite ? (
             <Button size="sm" onClick={() => setOpenCreate(true)}>
               <Plus className="mr-2 h-4 w-4" />
-              {t("agencyPayments.recordPayment", "Record team payment")}
+              {t("agencyPayments.recordPayment", "Record partner payment")}
             </Button>
           ) : undefined
         }

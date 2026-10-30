@@ -93,8 +93,8 @@ function TeamsPage() {
   return (
     <div>
       <PageHeader
-        title="Installation teams"
-        subtitle="Supervisors, members, skills, vehicles, daily capacity."
+        title="Application Partners"
+        subtitle="Supervisors, application masters, skills, vehicles, and daily capacity."
       />
 
       <DataToolbar

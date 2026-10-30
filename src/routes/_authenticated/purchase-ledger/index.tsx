@@ -79,10 +79,10 @@ function PurchaseLedgerIndexPage() {
   return (
     <div>
       <PageHeader
-        title={t("purchaseLedger.title", "Team Ledgers")}
+        title={t("purchaseLedger.title", "Suppliers Ledger")}
         subtitle={t(
           "purchaseLedger.subtitle",
-          "Running balances and statements across our sourcing, fabrication, and quarry team partners.",
+          "Running balances, invoice statements, and payment history across supplying partners.",
         )}
       />
 

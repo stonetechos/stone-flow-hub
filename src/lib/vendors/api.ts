@@ -279,22 +279,27 @@ export async function getPrimaryContact(vendorId: string): Promise<VendorContact
 export function extractVendorMetadata(v: VendorRow | null | undefined): {
   products_dealt: string[];
   work_types: string[];
+  partner_category?: string;
 } {
   if (!v) return { products_dealt: [], work_types: [] };
   const ref = (v.external_ref as Record<string, unknown> | null) ?? {};
   return {
     products_dealt: Array.isArray(ref.products_dealt) ? (ref.products_dealt as string[]) : [],
     work_types: Array.isArray(ref.work_types) ? (ref.work_types as string[]) : [],
+    partner_category: typeof ref.partner_category === "string" ? ref.partner_category : undefined,
   };
 }
 
 export async function createVendor(input: VendorCreateInput): Promise<VendorRow> {
   const parsed = vendorCreateSchema.parse(input);
 
-  const external_ref = {
+  const external_ref: Record<string, unknown> = {
     products_dealt: parsed.products_dealt ?? [],
     work_types: parsed.work_types ?? [],
   };
+  if (parsed.partner_category) {
+    external_ref.partner_category = parsed.partner_category;
+  }
 
   const phone = normalizeMobile(parsed.mobile);
   const { data: vendor, error } = await getDb()
@@ -312,7 +317,7 @@ export async function createVendor(input: VendorCreateInput): Promise<VendorRow>
       gst_number: parsed.gst_number ?? null,
       payment_terms: parsed.payment_terms ?? null,
       notes: parsed.notes ?? null,
-      external_ref,
+      external_ref: external_ref as never,
     })
     .select("*")
     .single();
@@ -365,11 +370,14 @@ export async function updateVendor(id: string, input: VendorCreateInput): Promis
       ? (existing.external_ref as Record<string, unknown>)
       : {};
 
-  const external_ref = {
+  const external_ref: Record<string, unknown> = {
     ...existingRef,
     products_dealt: parsed.products_dealt ?? [],
     work_types: parsed.work_types ?? [],
   };
+  if (parsed.partner_category) {
+    external_ref.partner_category = parsed.partner_category;
+  }
 
   const phone = normalizeMobile(parsed.mobile);
   const { data: vendor, error } = await getDb()
@@ -386,7 +394,7 @@ export async function updateVendor(id: string, input: VendorCreateInput): Promis
       gst_number: parsed.gst_number ?? null,
       payment_terms: parsed.payment_terms ?? null,
       notes: parsed.notes ?? null,
-      external_ref,
+      external_ref: external_ref as never,
     })
     .eq("id", id)
     .select("*")
