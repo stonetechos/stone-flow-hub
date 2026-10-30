@@ -152,4 +152,24 @@ describe("PDF Generator", () => {
     expect(html).toContain('<div style="text-align:center;">Due Date</div>');
     expect(html).toContain("padding:7px 8px 8px;");
   });
+
+  it("enforces clean typography, normal letter-spacing, and page break avoidance for compact PDF printing", () => {
+    const multiTermDoc: PdfDoc = {
+      ...sampleDoc,
+      terms: `1. Delivery Timeline: 15 days from design confirmation.
+2. Payment Terms: 50% advance token, 30% on delivery, 20% on completion.
+3. Natural Variation: Natural stone product with inherent variations.
+4. Material Evolution: May show natural patina post-installation.
+5. Non-Returnable: Material once sold cannot be returned.`,
+    };
+    const html = renderDocHtml(multiTermDoc);
+    // Typography guarantees
+    expect(html).toContain("letter-spacing: normal !important");
+    expect(html).toContain("-apple-system, BlinkMacSystemFont");
+    // Break-avoidance classes
+    expect(html).toContain("avoid-break");
+    expect(html).toContain("bank-signatory-block");
+    // 2-column terms layout to conserve vertical space and prevent unwanted page spill
+    expect(html).toContain("display:grid;grid-template-columns:1fr 1fr;");
+  });
 });
