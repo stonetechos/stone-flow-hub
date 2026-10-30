@@ -367,6 +367,10 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
   .toolbar button { font-family: inherit; font-size:12px; font-weight:500; padding:5px 10px; border-radius:5px; border:1px solid ${border}; background:#fff; cursor:pointer; }
   header { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; padding-bottom:8px; }
   table { width:100%; border-collapse:collapse; margin-top:6px; font-size:10px; }
+  thead tr {
+    background:${deepTurquoise};
+    height:26px;
+  }
   thead th {
     background:${deepTurquoise};
     color:#fff;
@@ -374,9 +378,12 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
     text-transform:uppercase;
     letter-spacing:.04em;
     font-weight:700;
-    line-height:12px;
+    line-height:1;
     vertical-align:middle;
-    padding:7px 8px 8px;
+    padding:0;
+    margin:0;
+    border:none;
+    height:26px;
     box-sizing:border-box;
   }
   .notes { margin-top:6px; font-size:8px; color:#475569; }
@@ -440,7 +447,7 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
 
     ${
       isInvoice
-        ? `<div class="avoid-break" style="background:${deepTurquoise};color:#ffffff;border-radius:2px 2px 0 0;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;padding:5px 12px;box-sizing:border-box;font-size:8.5px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;line-height:12px;">
+        ? `<div class="avoid-break" style="background:${deepTurquoise};color:#ffffff;border-radius:2px 2px 0 0;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;min-height:26px;height:26px;padding:0 12px;box-sizing:border-box;font-size:8.5px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;line-height:1;">
             <div style="text-align:center;">Invoice Date</div>
             <div style="text-align:center;">Terms</div>
             <div style="text-align:center;">Due Date</div>
@@ -456,14 +463,36 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
     ${
       rows
         ? `<table style="width:100%;border-collapse:collapse;margin-top:4px;font-size:9.5px;">
-            <thead><tr>
-              <th style="width:32px;text-align:center;vertical-align:middle;padding:7px 8px 8px;">#</th>
-              ${showPhoto ? `<th style="width:56px;text-align:center;vertical-align:middle;padding:7px 4px 8px;">Photo</th>` : ""}
-              <th style="text-align:left;vertical-align:middle;padding:7px 8px 8px;">Item &amp; Description</th>
-              ${showHsn ? `<th style="width:68px;text-align:center;vertical-align:middle;padding:7px 8px 8px;">HSN/SAC</th>` : ""}
-              <th style="width:58px;text-align:right;vertical-align:middle;padding:7px 8px 8px;">Qty</th>
-              <th style="width:72px;text-align:right;vertical-align:middle;padding:7px 8px 8px;">Rate</th>
-              <th style="width:85px;text-align:right;vertical-align:middle;padding:7px 8px 8px;">Amount</th>
+            <thead><tr style="background:${deepTurquoise};height:26px;">
+              <th style="width:32px;padding:0;background:${deepTurquoise};vertical-align:middle;border:none;">
+                <div style="height:26px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0 4px;font-size:9px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#fff;line-height:1;">#</div>
+              </th>
+              ${
+                showPhoto
+                  ? `<th style="width:56px;padding:0;background:${deepTurquoise};vertical-align:middle;border:none;">
+                <div style="height:26px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0 4px;font-size:9px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#fff;line-height:1;">Photo</div>
+              </th>`
+                  : ""
+              }
+              <th style="padding:0;background:${deepTurquoise};vertical-align:middle;border:none;">
+                <div style="height:26px;display:flex;align-items:center;justify-content:flex-start;box-sizing:border-box;padding:0 8px;font-size:9px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#fff;line-height:1;">Item &amp; Description</div>
+              </th>
+              ${
+                showHsn
+                  ? `<th style="width:68px;padding:0;background:${deepTurquoise};vertical-align:middle;border:none;">
+                <div style="height:26px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0 6px;font-size:9px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#fff;line-height:1;">HSN/SAC</div>
+              </th>`
+                  : ""
+              }
+              <th style="width:58px;padding:0;background:${deepTurquoise};vertical-align:middle;border:none;">
+                <div style="height:26px;display:flex;align-items:center;justify-content:flex-end;box-sizing:border-box;padding:0 8px;font-size:9px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#fff;line-height:1;">Qty</div>
+              </th>
+              <th style="width:72px;padding:0;background:${deepTurquoise};vertical-align:middle;border:none;">
+                <div style="height:26px;display:flex;align-items:center;justify-content:flex-end;box-sizing:border-box;padding:0 8px;font-size:9px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#fff;line-height:1;">Rate</div>
+              </th>
+              <th style="width:85px;padding:0;background:${deepTurquoise};vertical-align:middle;border:none;">
+                <div style="height:26px;display:flex;align-items:center;justify-content:flex-end;box-sizing:border-box;padding:0 8px;font-size:9px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#fff;line-height:1;">Amount</div>
+              </th>
             </tr></thead>
             <tbody>${rows}</tbody>
           </table>`
@@ -784,18 +813,18 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
   const textY = y + headerHeight / 2;
 
   pdf.text("#", 18, textY, { align: "center", baseline: "middle" });
-  pdf.text("Item & Description", 24, textY, { baseline: "middle" });
+  pdf.text("ITEM & DESCRIPTION", 24, textY, { baseline: "middle" });
   if (hasHsnInLines) {
     pdf.text("HSN/SAC", 110, textY, { align: "center", baseline: "middle" });
-    pdf.text("Qty", 130, textY, { align: "right", baseline: "middle" });
-    pdf.text("Unit", 142, textY, { align: "center", baseline: "middle" });
-    pdf.text("Rate", 166, textY, { align: "right", baseline: "middle" });
-    pdf.text("Amount", 192, textY, { align: "right", baseline: "middle" });
+    pdf.text("QTY", 130, textY, { align: "right", baseline: "middle" });
+    pdf.text("UNIT", 142, textY, { align: "center", baseline: "middle" });
+    pdf.text("RATE", 166, textY, { align: "right", baseline: "middle" });
+    pdf.text("AMOUNT", 192, textY, { align: "right", baseline: "middle" });
   } else {
-    pdf.text("Qty", 125, textY, { align: "right", baseline: "middle" });
-    pdf.text("Unit", 138, textY, { align: "center", baseline: "middle" });
-    pdf.text("Rate", 166, textY, { align: "right", baseline: "middle" });
-    pdf.text("Amount", 192, textY, { align: "right", baseline: "middle" });
+    pdf.text("QTY", 125, textY, { align: "right", baseline: "middle" });
+    pdf.text("UNIT", 138, textY, { align: "center", baseline: "middle" });
+    pdf.text("RATE", 166, textY, { align: "right", baseline: "middle" });
+    pdf.text("AMOUNT", 192, textY, { align: "right", baseline: "middle" });
   }
 
   y += headerHeight;

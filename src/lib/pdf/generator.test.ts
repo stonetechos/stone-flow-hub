@@ -150,7 +150,8 @@ describe("PDF Generator", () => {
     expect(html).toContain('<div style="text-align:center;">Invoice Date</div>');
     expect(html).toContain('<div style="text-align:center;">Terms</div>');
     expect(html).toContain('<div style="text-align:center;">Due Date</div>');
-    expect(html).toContain("padding:7px 8px 8px;");
+    expect(html).toContain("height:26px;");
+    expect(html).toContain("Item &amp; Description");
   });
 
   it("enforces clean typography, normal letter-spacing, and page break avoidance for compact PDF printing", () => {
