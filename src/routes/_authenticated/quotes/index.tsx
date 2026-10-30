@@ -143,7 +143,7 @@ function QuotesPage() {
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
-      { key: "no", label: "Quote / Customer", required: true },
+      { key: "no", label: "Quote #", required: true },
       { key: "saleMode", label: "Deal Type" },
       { key: "date", label: "Quote Date" },
       { key: "project", label: "Project" },
@@ -521,7 +521,7 @@ function QuotesPage() {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-8" />
-                {!isHidden("no") && <TableHead>Quote / Customer</TableHead>}
+                {!isHidden("no") && <TableHead className="w-36">Quote #</TableHead>}
                 {!isHidden("saleMode") && <TableHead className="w-36">Deal Type</TableHead>}
                 {!isHidden("date") && <TableHead className="w-28">Quote Date</TableHead>}
                 {!isHidden("project") && <TableHead>Project</TableHead>}
@@ -552,29 +552,13 @@ function QuotesPage() {
                     </TableCell>
                     {!isHidden("no") && (
                       <TableCell className="text-xs">
-                        <div className="flex flex-col gap-1 min-w-0">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
-                              {r.customer?.name ?? "—"}
-                            </span>
-                            {r.customer?.id && (
-                              <CustomerAssigneeSelect
-                                customerId={r.customer.id}
-                                customerName={r.customer.name}
-                                workflowState={r.customer.workflow_state}
-                                externalRef={r.customer.external_ref}
-                                size="sm"
-                              />
-                            )}
-                          </div>
-                          <Link
-                            to="/quotes/$quoteId"
-                            params={{ quoteId: r.id }}
-                            className="font-mono text-[11px] text-primary hover:underline truncate"
-                          >
-                            {r.quote_no}
-                          </Link>
-                        </div>
+                        <Link
+                          to="/quotes/$quoteId"
+                          params={{ quoteId: r.id }}
+                          className="font-mono text-xs font-semibold text-primary hover:underline truncate block"
+                        >
+                          {r.quote_no}
+                        </Link>
                       </TableCell>
                     )}
                     {!isHidden("saleMode") && (

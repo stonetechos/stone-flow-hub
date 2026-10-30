@@ -11,14 +11,14 @@
  * resolves to an empty list today — this only proves the plumbing works
  * end-to-end for later phases to build on.
  */
-import { useMemo, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useQueries } from "@tanstack/react-query";
 import { qk } from "@/lib/query-keys";
 import type { Insight, InsightProvider } from "./types";
 import { listInsightProviders, subscribeInsightRegistry } from "./registry";
 
-/** Per Phase G.1 spec: producers are polled at a 60s cadence. */
-export const INSIGHTS_STALE_TIME_MS = 60_000;
+/** Per Phase G.1 spec / performance tuning: producers are polled at a 5-minute cadence. */
+export const INSIGHTS_STALE_TIME_MS = 300_000;
 
 /** Live list of currently-registered providers — updates whenever a
  *  provider is registered/unregistered anywhere in the app. */
@@ -38,12 +38,20 @@ export interface UseInsightsResult {
 /** Aggregate insights across every registered provider. */
 export function useInsights(): UseInsightsResult {
   const providers = useInsightRegistry();
+  const [isDeferredReady, setIsDeferredReady] = useState(false);
+
+  useEffect(() => {
+    // Stagger background insight queries 1.5s after mount so primary page data loads without network contention
+    const t = setTimeout(() => setIsDeferredReady(true), 1500);
+    return () => clearTimeout(t);
+  }, []);
 
   const results = useQueries({
     queries: providers.map((provider) => ({
       queryKey: qk.insights.provider(provider.id),
       queryFn: provider.fetch,
       staleTime: INSIGHTS_STALE_TIME_MS,
+      enabled: isDeferredReady,
     })),
   });
 
@@ -59,9 +67,9 @@ export function useInsights(): UseInsightsResult {
     insights.sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
     return {
       insights,
-      isLoading: results.some((result) => result.isLoading),
+      isLoading: isDeferredReady && results.some((result) => result.isLoading),
       isError: results.some((result) => result.isError),
       failedProviderIds,
     };
-  }, [results, providers]);
+  }, [results, providers, isDeferredReady]);
 }

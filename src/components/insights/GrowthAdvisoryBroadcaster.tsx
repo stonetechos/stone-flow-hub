@@ -22,7 +22,6 @@
  * clock time.
  */
 import { useEffect, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
 import {
   computeGrowthAdvisory,
   formatGrowthAdvisoryBody,
@@ -32,21 +31,22 @@ import { hasTodaysBroadcast } from "@/lib/notifications/centre";
 import { postGrowthAdvisoryBroadcast } from "@/lib/executive/growthAdvisory.functions";
 
 export function GrowthAdvisoryBroadcaster() {
-  const advisory = useQuery({
-    queryKey: ["executive", "growthAdvisory"],
-    queryFn: computeGrowthAdvisory,
-    staleTime: 30 * 60_000,
-  });
   const postedRef = useRef(false);
 
   useEffect(() => {
-    if (!advisory.data || postedRef.current) return;
-    const data = advisory.data;
+    if (postedRef.current) return;
     let cancelled = false;
-    (async () => {
+
+    // Defer check by 4s so initial page navigation and core data queries get full priority
+    const timer = setTimeout(async () => {
       try {
         const already = await hasTodaysBroadcast("growth_advisory");
         if (already || cancelled || postedRef.current) return;
+
+        // Only compute the advisory if today's broadcast hasn't been posted yet
+        const data = await computeGrowthAdvisory();
+        if (!data || cancelled || postedRef.current) return;
+
         postedRef.current = true;
         await postGrowthAdvisoryBroadcast({
           data: {
@@ -55,17 +55,15 @@ export function GrowthAdvisoryBroadcaster() {
           },
         });
       } catch {
-        // Never let a secondary broadcast attempt surface an error to the
-        // user — same "don't break the primary action" principle
-        // notify()/notifyBroadcast() already follow. The advisory still
-        // renders on dashboards regardless of whether this post succeeds.
         postedRef.current = false;
       }
-    })();
+    }, 4000);
+
     return () => {
       cancelled = true;
+      clearTimeout(timer);
     };
-  }, [advisory.data]);
+  }, []);
 
   return null;
 }
