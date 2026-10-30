@@ -435,6 +435,10 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
       const invMeta: PdfMeta[] = [
         { label: "Project", value: i.project?.name ?? "—" },
         { label: "Due date", value: i.due_date ?? "—" },
+        ...(i.eway_bill_no ? [{ label: "E-Way Bill No", value: i.eway_bill_no }] : []),
+        ...(i.vehicle_no ? [{ label: "Vehicle No", value: i.vehicle_no }] : []),
+        ...(i.transporter ? [{ label: "Transporter", value: i.transporter }] : []),
+        ...(i.lr_no ? [{ label: "LR / Bilty No", value: i.lr_no }] : []),
         ...(invAny.place_of_supply
           ? [{ label: "Place of supply", value: invAny.place_of_supply }]
           : []),

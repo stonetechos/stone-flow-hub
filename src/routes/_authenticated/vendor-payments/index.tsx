@@ -119,7 +119,7 @@ function VendorPaymentsPage() {
       ) : rows.length === 0 ? (
         <EmptyState
           icon={<Banknote className="h-6 w-6" />}
-          title={t("vendorPayments.noPaymentsYet", "No team payments yet")}
+          title={t("vendorPayments.noPaymentsYet", "No supplier payments yet")}
           message={t(
             "vendorPayments.noPaymentsYetDesc",
             "Record an advance, part or full payment to a team partner.",

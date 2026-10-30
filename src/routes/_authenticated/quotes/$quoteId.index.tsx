@@ -422,7 +422,7 @@ function QuoteDetailPage() {
                   ) : (
                     <>
                       <Boxes className="mr-1.5 h-4 w-4 text-emerald-600" />
-                      Assign Live Stock / Vendor
+                      Assign Live Stock / Partner
                     </>
                   )}
                 </Button>
@@ -431,7 +431,7 @@ function QuoteDetailPage() {
                   size="sm"
                   className="hidden lg:inline-flex bg-emerald-600 hover:bg-emerald-700 text-white font-medium shadow-xs"
                   onClick={() => setRfqOpen(true)}
-                  title="Send WhatsApp RFQ to category vendors with product images & assign order"
+                  title="Send WhatsApp RFQ to category partners with product images & assign order"
                 >
                   <MessageCircle className="mr-1.5 h-4 w-4" />
                   WhatsApp RFQ
@@ -513,13 +513,13 @@ function QuoteDetailPage() {
                 : []),
               {
                 label: assignment.isAssigned
-                  ? `Vendor: ${assignment.vendorName}`
-                  : "Assign Live Stock / Vendor",
+                  ? `Partner: ${assignment.vendorName}`
+                  : "Assign Live Stock / Partner",
                 icon: <Boxes className="h-4 w-4 text-emerald-600" />,
                 onSelect: () => setAssignVendorOpen(true),
               },
               {
-                label: "WhatsApp RFQ to Vendors",
+                label: "WhatsApp RFQ to Partners",
                 icon: <MessageCircle className="h-4 w-4 text-emerald-600" />,
                 onSelect: () => setRfqOpen(true),
               },

@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Receipt, RefreshCw, Truck } from "lucide-react";
+import { FileText, Plus, Receipt, RefreshCw, Truck } from "lucide-react";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -40,6 +40,7 @@ import { getDispatchesForInvoices } from "@/lib/dispatch/api";
 import { formatInr } from "@/lib/format";
 import { invalidateInvoice } from "@/lib/query-invalidation";
 import { useRoles } from "@/hooks/use-roles";
+import { EWayBillDialog } from "@/components/invoices/EWayBillDialog";
 
 export const Route = createFileRoute("/_authenticated/invoices/")({
   ssr: false,
@@ -60,6 +61,7 @@ function InvoicesPage() {
   const [q, setQ] = useState(search.q ?? "");
   const dq = useDebouncedValue(q, 250);
   const [toDelete, setToDelete] = useState<InvoiceListItem | null>(null);
+  const [ewbInvoice, setEwbInvoice] = useState<InvoiceListItem | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const query = useQuery({ queryKey: qk.invoices.list(dq), queryFn: () => listInvoices(dq) });
@@ -82,6 +84,7 @@ function InvoicesPage() {
     () => [
       { key: "no", label: "Invoice / Customer", required: true },
       { key: "challan", label: "Delivery Challan" },
+      { key: "eway", label: "E-Way Bill" },
       { key: "customer", label: "Customer" },
       { key: "project", label: "Project" },
       { key: "date", label: "Date" },
@@ -200,6 +203,7 @@ function InvoicesPage() {
               <TableRow>
                 {!isHidden("no") && <TableHead>Invoice / Customer</TableHead>}
                 {!isHidden("challan") && <TableHead>Delivery Challan</TableHead>}
+                {!isHidden("eway") && <TableHead>E-Way Bill</TableHead>}
                 {!isHidden("customer") && <TableHead>Customer</TableHead>}
                 {!isHidden("project") && <TableHead>Project</TableHead>}
                 {!isHidden("date") && <TableHead>Date</TableHead>}
@@ -260,6 +264,41 @@ function InvoicesPage() {
                       })()}
                     </TableCell>
                   )}
+                  {!isHidden("eway") && (
+                    <TableCell className="text-xs">
+                      {r.eway_bill_no ? (
+                        <button
+                          type="button"
+                          onClick={() => setEwbInvoice(r)}
+                          className="font-mono text-emerald-700 dark:text-emerald-300 font-semibold hover:underline inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300/60 dark:border-emerald-700/50 rounded px-1.5 py-0.5 text-[11px]"
+                          title="View / Print E-Way Bill Slip"
+                        >
+                          <FileText className="h-3 w-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          {r.eway_bill_no}
+                        </button>
+                      ) : Number(r.total || 0) > 50000 ? (
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => setEwbInvoice(r)}
+                          className="h-6 px-1.5 text-[11px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/60 border border-amber-300/70"
+                          title="Mandatory for consignments > ₹50,000"
+                        >
+                          <Plus className="mr-1 h-3 w-3" /> EWB Req.
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => setEwbInvoice(r)}
+                          className="h-6 px-1.5 text-[11px] text-muted-foreground hover:text-foreground"
+                          title="Create E-Way Bill"
+                        >
+                          <Plus className="mr-1 h-3 w-3" /> E-Way Bill
+                        </Button>
+                      )}
+                    </TableCell>
+                  )}
                   {!isHidden("customer") && <TableCell>{r.customer?.name ?? "—"}</TableCell>}
                   {!isHidden("project") && <TableCell>{r.project?.name ?? "—"}</TableCell>}
                   {!isHidden("date") && (
@@ -309,14 +348,20 @@ function InvoicesPage() {
                       )}
                       <RowActions
                         extra={
-                          r.status === "void" || r.status === "cancelled" ? (
-                            <DropdownMenuItem asChild>
-                              <Link to="/invoices/new" search={{ reuseInvoiceId: r.id }}>
-                                <RefreshCw className="mr-2 h-4 w-4 text-amber-600" /> Reuse Invoice
-                                Number
-                              </Link>
+                          <>
+                            <DropdownMenuItem onClick={() => setEwbInvoice(r)}>
+                              <Truck className="mr-2 h-4 w-4 text-primary" />
+                              {r.eway_bill_no ? "View / Print E-Way Bill" : "Create E-Way Bill"}
                             </DropdownMenuItem>
-                          ) : undefined
+                            {(r.status === "void" || r.status === "cancelled") && (
+                              <DropdownMenuItem asChild>
+                                <Link to="/invoices/new" search={{ reuseInvoiceId: r.id }}>
+                                  <RefreshCw className="mr-2 h-4 w-4 text-amber-600" /> Reuse
+                                  Invoice Number
+                                </Link>
+                              </DropdownMenuItem>
+                            )}
+                          </>
                         }
                         onEdit={() =>
                           nav({ to: "/invoices/$invoiceId/edit", params: { invoiceId: r.id } })
@@ -330,6 +375,14 @@ function InvoicesPage() {
             </TableBody>
           </Table>
         </DataTableShell>
+      )}
+
+      {ewbInvoice && (
+        <EWayBillDialog
+          open={!!ewbInvoice}
+          onOpenChange={(o) => !o && setEwbInvoice(null)}
+          invoice={ewbInvoice}
+        />
       )}
 
       <SafeDeleteDialog

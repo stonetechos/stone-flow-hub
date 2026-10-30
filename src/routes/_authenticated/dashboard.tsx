@@ -1720,13 +1720,16 @@ function localizeInsightAction(label: string, t: TFunction): string {
   if (label.startsWith("Collect ")) {
     return label.replace(/^Collect /, `${t("insights.actionCollect", "Collect")} `);
   }
-  if (label.startsWith("Assign vendor · ")) {
-    const name = label.replace(/^Assign vendor · /, "");
-    return `${t("insights.actionAssignVendor", "Assign vendor")} · ${name}`;
+  if (label.startsWith("Assign vendor · ") || label.startsWith("Assign partner · ")) {
+    const name = label.replace(/^Assign (vendor|partner) · /, "");
+    return `${t("insights.actionAssignPartner", "Assign partner")} · ${name}`;
   }
-  if (label.startsWith("Assign Live Stock / Vendor · ")) {
-    const name = label.replace(/^Assign Live Stock \/ Vendor · /, "");
-    return `Assign Live Stock / Vendor · ${name}`;
+  if (
+    label.startsWith("Assign Live Stock / Partner · ") ||
+    label.startsWith("Assign Live Stock / Vendor · ")
+  ) {
+    const name = label.replace(/^Assign Live Stock \/ (Partner|Vendor) · /, "");
+    return `Assign Live Stock / Partner · ${name}`;
   }
   return label;
 }

@@ -340,7 +340,7 @@ function MoneyFlowCommandCenterPage() {
                 {formatInr(metrics.totalAgencyOutflow)}
               </div>
               <div className="text-[10px] text-muted-foreground flex items-center justify-between">
-                <span>{t("moneyFlow.siteInstallers", "Installation Teams")}</span>
+                <span>{t("moneyFlow.siteInstallers", "Application Partners")}</span>
                 <Badge
                   variant="secondary"
                   className="text-[9px] px-1.5 py-0 bg-cyan-100 dark:bg-cyan-950/50 text-cyan-800 dark:text-cyan-300"
@@ -1003,7 +1003,7 @@ function VendorPaymentsSection({
 
       {filtered.length === 0 ? (
         <EmptyState
-          title={t("moneyFlow.vendorPayments.emptyTitle", "No team payments found")}
+          title={t("moneyFlow.vendorPayments.emptyTitle", "No supplier payments found")}
           message={
             q
               ? t("moneyFlow.adjustSearch", "Try adjusting your search query.")

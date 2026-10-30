@@ -31,7 +31,9 @@ import { RecordWriteOffDialog } from "@/components/write-offs/RecordWriteOffDial
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
 import { DocumentToolbar } from "@/components/documents/DocumentToolbar";
+import { EWayBillDialog } from "@/components/invoices/EWayBillDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -84,6 +86,7 @@ function InvoiceDetailPage() {
   const [payOpen, setPayOpen] = useState(false);
   const [writeOffOpen, setWriteOffOpen] = useState(false);
   const [confirmDel, setConfirmDel] = useState(false);
+  const [ewbOpen, setEwbOpen] = useState(false);
 
   const inv = useQuery({
     queryKey: qk.invoices.byId(invoiceId),
@@ -226,6 +229,15 @@ function InvoiceDetailPage() {
                   disabled={balance <= 0}
                 >
                   <ShieldAlert className="mr-1.5 h-4 w-4" /> Write-off
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5 font-medium border-slate-300 dark:border-slate-700"
+                  onClick={() => setEwbOpen(true)}
+                >
+                  <Truck className="h-4 w-4 text-primary" />
+                  {invoice.eway_bill_no ? "E-Way Bill" : "Generate E-Way Bill"}
                 </Button>
                 <DocumentToolbar entity="invoice" entityId={invoiceId} />
                 <Button
@@ -694,6 +706,82 @@ function InvoiceDetailPage() {
               </CardContent>
             </Card>
           )}
+
+          {/* GST E-Way Bill Card */}
+          <Card className="shadow-1">
+            <CardHeader className="p-4 pb-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Truck className="h-4 w-4 text-primary" />
+                  <CardTitle className="text-sm font-semibold">GST E-Way Bill</CardTitle>
+                </div>
+                {invoice.eway_bill_no ? (
+                  <Badge className="bg-emerald-600 text-white text-[10px] gap-1">
+                    <CheckCircle2 className="h-3 w-3" /> ATTACHED
+                  </Badge>
+                ) : (
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "text-[10px]",
+                      Number(invoice.total || 0) > 50000
+                        ? "border-amber-300 text-amber-700 bg-amber-50 dark:bg-amber-950/30"
+                        : "text-muted-foreground",
+                    )}
+                  >
+                    {Number(invoice.total || 0) > 50000
+                      ? "Mandatory (> ₹50k)"
+                      : "Optional (< ₹50k)"}
+                  </Badge>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="p-4 pt-1 space-y-2 text-xs">
+              {invoice.eway_bill_no ? (
+                <div className="space-y-2">
+                  <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-2.5 dark:border-emerald-900/50 dark:bg-emerald-950/20">
+                    <div className="text-[10px] text-muted-foreground font-medium">
+                      E-Way Bill Number
+                    </div>
+                    <div className="font-mono text-sm font-black text-emerald-800 dark:text-emerald-300">
+                      {invoice.eway_bill_no}
+                    </div>
+                    {invoice.vehicle_no && (
+                      <div className="text-[11px] text-muted-foreground mt-0.5">
+                        Vehicle:{" "}
+                        <span className="font-mono font-medium text-foreground">
+                          {invoice.vehicle_no}
+                        </span>
+                        {invoice.transporter && ` • ${invoice.transporter}`}
+                      </div>
+                    )}
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full h-8 text-xs gap-1.5 font-semibold"
+                    onClick={() => setEwbOpen(true)}
+                  >
+                    View &amp; Print EWB Slip
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-muted-foreground text-xs leading-relaxed">
+                    Generate an official E-Way Bill or download the NIC upload JSON for transport
+                    and tax compliance.
+                  </p>
+                  <Button
+                    size="sm"
+                    className="w-full h-8 text-xs gap-1.5 font-semibold"
+                    onClick={() => setEwbOpen(true)}
+                  >
+                    <Truck className="h-3.5 w-3.5" /> Create E-Way Bill
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         <Card className="shadow-1 md:col-span-2">
@@ -818,6 +906,13 @@ function InvoiceDetailPage() {
         description={`${invoice.invoice_no} will be removed.`}
         busy={delMut.isPending}
         onConfirm={() => delMut.mutate()}
+      />
+
+      <EWayBillDialog
+        open={ewbOpen}
+        onOpenChange={setEwbOpen}
+        invoice={invoice}
+        items={items.data ?? []}
       />
     </div>
   );

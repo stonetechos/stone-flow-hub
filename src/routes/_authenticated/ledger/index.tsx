@@ -65,7 +65,7 @@ function UnifiedLedgersPage() {
           title={t("ledgers.title", "Ledgers")}
           subtitle={t(
             "ledgers.subtitle",
-            "Unified financial ledger statements and running balances across Customers, Team Partners, and Installation Teams.",
+            "Unified financial ledger statements and running balances across Customers, Supplying Partners, and Application Partners.",
           )}
         />
 
@@ -483,7 +483,7 @@ function AgencyLedgerView() {
         <Card className="shadow-xs">
           <CardContent className="p-4">
             <div className="text-xs font-medium text-muted-foreground">
-              {t("ledgers.agency.totalPaid", "Total Paid to Installation Teams")}
+              {t("ledgers.agency.totalPaid", "Total Paid to Application Partners")}
             </div>
             <div className="text-xl font-bold text-emerald-600">{formatInr(totalPaid)}</div>
           </CardContent>

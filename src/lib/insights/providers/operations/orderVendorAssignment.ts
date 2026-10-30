@@ -187,8 +187,8 @@ export const OrderVendorAssignmentProvider: InsightProvider = {
         priority = 82;
         tone = "warning";
         kind = "warning";
-        title = `Assign Fulfilment (Live Stock / Vendor) for ${customerName} (Order ${orderNo}) — Delivery deadline not set`;
-        why = `Confirmed order ${orderNo} for ${customerName} has not been assigned to Live Stock or a vendor, and no delivery deadline is set. Please designate fulfilment source.`;
+        title = `Assign Fulfilment (Live Stock / Partner) for ${customerName} (Order ${orderNo}) — Delivery deadline not set`;
+        why = `Confirmed order ${orderNo} for ${customerName} has not been assigned to Live Stock or a supplying partner, and no delivery deadline is set. Please designate fulfilment source.`;
       } else {
         const dDate = new Date(deliveryDate);
         const deadline = new Date(dDate.getFullYear(), dDate.getMonth(), dDate.getDate());
@@ -199,23 +199,23 @@ export const OrderVendorAssignmentProvider: InsightProvider = {
           kind = "risk";
           if (diffDays < 0) {
             priority = 98;
-            title = `🚩 Red Flag: Assign Fulfilment (Live Stock / Vendor) for ${customerName} (Order ${orderNo}) — Delivery deadline overdue by ${Math.abs(diffDays)}d`;
-            why = `CRITICAL: Order ${orderNo} delivery deadline was ${deliveryDate} (${Math.abs(diffDays)} days overdue), but fulfilment (Live Stock or Vendor) is pending.`;
+            title = `🚩 Red Flag: Assign Fulfilment (Live Stock / Partner) for ${customerName} (Order ${orderNo}) — Delivery deadline overdue by ${Math.abs(diffDays)}d`;
+            why = `CRITICAL: Order ${orderNo} delivery deadline was ${deliveryDate} (${Math.abs(diffDays)} days overdue), but fulfilment (Live Stock or Supplying Partner) is pending.`;
           } else if (diffDays === 0) {
             priority = 97;
-            title = `🚩 Red Flag: Assign Fulfilment (Live Stock / Vendor) for ${customerName} (Order ${orderNo}) — Delivery deadline is TODAY`;
-            why = `CRITICAL: Order ${orderNo} is promised for delivery TODAY (${deliveryDate}), but fulfilment (Live Stock or Vendor) is pending.`;
+            title = `🚩 Red Flag: Assign Fulfilment (Live Stock / Partner) for ${customerName} (Order ${orderNo}) — Delivery deadline is TODAY`;
+            why = `CRITICAL: Order ${orderNo} is promised for delivery TODAY (${deliveryDate}), but fulfilment (Live Stock or Supplying Partner) is pending.`;
           } else {
             priority = 95;
-            title = `🚩 Red Flag: Assign Fulfilment (Live Stock / Vendor) for ${customerName} (Order ${orderNo}) — Delivery deadline in ${diffDays} day${diffDays === 1 ? "" : "s"}`;
+            title = `🚩 Red Flag: Assign Fulfilment (Live Stock / Partner) for ${customerName} (Order ${orderNo}) — Delivery deadline in ${diffDays} day${diffDays === 1 ? "" : "s"}`;
             why = `RED FLAG: Order ${orderNo} delivery deadline is in ${diffDays} day${diffDays === 1 ? "" : "s"} (${deliveryDate}), but fulfilment is pending.`;
           }
         } else {
           priority = 76;
           tone = "info";
           kind = "warning";
-          title = `Assign Fulfilment (Live Stock / Vendor) for ${customerName} (Order ${orderNo}) — Due in ${diffDays} days`;
-          why = `Order ${orderNo} for ${customerName} has delivery deadline on ${deliveryDate} (${diffDays} days remaining). Assign Live Stock or Vendor to start production.`;
+          title = `Assign Fulfilment (Live Stock / Partner) for ${customerName} (Order ${orderNo}) — Due in ${diffDays} days`;
+          why = `Order ${orderNo} for ${customerName} has delivery deadline on ${deliveryDate} (${diffDays} days remaining). Assign Live Stock or Supplying Partner to start production.`;
         }
       }
 
@@ -229,7 +229,7 @@ export const OrderVendorAssignmentProvider: InsightProvider = {
         title,
         why,
         action: {
-          label: `Assign Live Stock / Vendor · ${customerName}`,
+          label: `Assign Live Stock / Partner · ${customerName}`,
           href: `/sales-orders/${so.id}`,
         },
         entity: {
@@ -287,8 +287,8 @@ export const OrderVendorAssignmentProvider: InsightProvider = {
         priority = 81;
         tone = "warning";
         kind = "warning";
-        title = `Assign Fulfilment (Live Stock / Vendor) for ${customerName} (Quote ${orderNo}) — Delivery deadline not set`;
-        why = `Accepted quote ${orderNo} for ${customerName} has no fulfilment source (Live Stock or Vendor) assigned and no promised delivery deadline set.`;
+        title = `Assign Fulfilment (Live Stock / Partner) for ${customerName} (Quote ${orderNo}) — Delivery deadline not set`;
+        why = `Accepted quote ${orderNo} for ${customerName} has no fulfilment source (Live Stock or Supplying Partner) assigned and no promised delivery deadline set.`;
       } else {
         const dDate = new Date(deliveryDate);
         const deadline = new Date(dDate.getFullYear(), dDate.getMonth(), dDate.getDate());
@@ -299,22 +299,22 @@ export const OrderVendorAssignmentProvider: InsightProvider = {
           kind = "risk";
           if (diffDays < 0) {
             priority = 98;
-            title = `🚩 Red Flag: Assign Fulfilment (Live Stock / Vendor) for ${customerName} (Quote ${orderNo}) — Delivery deadline overdue by ${Math.abs(diffDays)}d`;
+            title = `🚩 Red Flag: Assign Fulfilment (Live Stock / Partner) for ${customerName} (Quote ${orderNo}) — Delivery deadline overdue by ${Math.abs(diffDays)}d`;
             why = `CRITICAL: Accepted order ${orderNo} delivery deadline was ${deliveryDate} (${Math.abs(diffDays)} days overdue), but fulfilment is pending.`;
           } else if (diffDays === 0) {
             priority = 97;
-            title = `🚩 Red Flag: Assign Fulfilment (Live Stock / Vendor) for ${customerName} (Quote ${orderNo}) — Delivery deadline is TODAY`;
+            title = `🚩 Red Flag: Assign Fulfilment (Live Stock / Partner) for ${customerName} (Quote ${orderNo}) — Delivery deadline is TODAY`;
             why = `CRITICAL: Accepted order ${orderNo} is promised for delivery TODAY (${deliveryDate}), but fulfilment is pending.`;
           } else {
             priority = 95;
-            title = `🚩 Red Flag: Assign Fulfilment (Live Stock / Vendor) for ${customerName} (Quote ${orderNo}) — Delivery deadline in ${diffDays} day${diffDays === 1 ? "" : "s"}`;
+            title = `🚩 Red Flag: Assign Fulfilment (Live Stock / Partner) for ${customerName} (Quote ${orderNo}) — Delivery deadline in ${diffDays} day${diffDays === 1 ? "" : "s"}`;
             why = `RED FLAG: Accepted order ${orderNo} delivery deadline is in ${diffDays} day${diffDays === 1 ? "" : "s"} (${deliveryDate}), but fulfilment is pending.`;
           }
         } else {
           priority = 75;
           tone = "info";
           kind = "warning";
-          title = `Assign Fulfilment (Live Stock / Vendor) for ${customerName} (Quote ${orderNo}) — Due in ${diffDays} days`;
+          title = `Assign Fulfilment (Live Stock / Partner) for ${customerName} (Quote ${orderNo}) — Due in ${diffDays} days`;
           why = `Accepted order ${orderNo} has delivery deadline on ${deliveryDate} (${diffDays} days left). Fulfilment assignment is pending.`;
         }
       }
@@ -329,7 +329,7 @@ export const OrderVendorAssignmentProvider: InsightProvider = {
         title,
         why,
         action: {
-          label: `Assign Live Stock / Vendor · ${customerName}`,
+          label: `Assign Live Stock / Partner · ${customerName}`,
           href: `/quotes/${q.id}`,
         },
         entity: {

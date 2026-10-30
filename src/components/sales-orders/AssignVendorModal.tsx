@@ -242,11 +242,11 @@ export function AssignVendorModal({ open, onOpenChange, item, salesOrderId }: Pr
             </span>
             <div>
               <DialogTitle className="text-base font-black font-display text-engraved-title">
-                Assign Fulfilment: Live Stock vs Vendor
+                Assign Fulfilment: Live Stock vs Supplying Partner
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">
                 Designate whether this material comes from Live Stock on-hand in the stone yard or
-                is outsourced to an external vendor.
+                is manufactured / supplied by an associated partner.
               </DialogDescription>
             </div>
           </div>
@@ -308,7 +308,7 @@ export function AssignVendorModal({ open, onOpenChange, item, salesOrderId }: Pr
             )}
           >
             <Factory className="h-4 w-4 text-cyan-600 shrink-0" />
-            <span className="text-[11px] leading-tight">Outsource Vendor</span>
+            <span className="text-[11px] leading-tight">Supplying Partner</span>
           </button>
         </div>
 
@@ -373,12 +373,14 @@ export function AssignVendorModal({ open, onOpenChange, item, salesOrderId }: Pr
 
           {mode === "vendor" && (
             <div className="space-y-3">
-              {/* Vendor Selector */}
+              {/* Partner Selector */}
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">Select Manufacturer / Vendor *</Label>
+                <Label className="text-xs font-semibold">
+                  Select Supplying Partner / Workshop *
+                </Label>
                 <Select value={selectedVendorId} onValueChange={setSelectedVendorId}>
                   <SelectTrigger className="h-9 text-xs">
-                    <SelectValue placeholder="Choose stone manufacturer or quarry vendor..." />
+                    <SelectValue placeholder="Choose stone supplying partner or workshop..." />
                   </SelectTrigger>
                   <SelectContent className="max-h-60 text-xs">
                     {vendors.map((v) => (
@@ -394,7 +396,7 @@ export function AssignVendorModal({ open, onOpenChange, item, salesOrderId }: Pr
                     <div className="flex items-center gap-1.5 text-[11px] text-cyan-700 font-medium">
                       <Phone className="h-3 w-3" />
                       <span>
-                        Vendor Contact:{" "}
+                        Partner Contact:{" "}
                         {selectedVendor.mobile_number || selectedVendor.whatsapp_number}
                       </span>
                     </div>
@@ -436,9 +438,9 @@ export function AssignVendorModal({ open, onOpenChange, item, salesOrderId }: Pr
                 <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-2.5 text-[11px] text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300">
                   <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
                   <div>
-                    <strong>Delivery Delay Warning:</strong> Vendor has not been paid the required
-                    advance of ₹{Number(advanceRequired).toLocaleString("en-IN")}. Stone fabrication
-                    cannot start until advance is transferred.
+                    <strong>Delivery Delay Warning:</strong> Supplying partner has not been paid the
+                    required advance of ₹{Number(advanceRequired).toLocaleString("en-IN")}. Stone
+                    fabrication cannot start until advance is transferred.
                   </div>
                 </div>
               )}
@@ -510,7 +512,7 @@ export function AssignVendorModal({ open, onOpenChange, item, salesOrderId }: Pr
                 ? "Live Stock"
                 : mode === "stock_lifted"
                   ? "Lifted from Stock"
-                  : "Selected Vendor"}
+                  : "Supplying Partner"}
               ) to all items in this sales order
             </label>
           </div>
@@ -559,7 +561,7 @@ export function AssignVendorModal({ open, onOpenChange, item, salesOrderId }: Pr
                 ? "Save as Live Stock"
                 : mode === "stock_lifted"
                   ? "Save as Lifted from Stock"
-                  : "Save Vendor Assignment"}
+                  : "Save Partner Assignment"}
           </Button>
         </DialogFooter>
       </DialogContent>
