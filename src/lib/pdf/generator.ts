@@ -526,6 +526,22 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
       </div>
     </div>
 
+    <!-- 100% Advance Payment 5% Discount Disclaimer Callout (Quotes Only) -->
+    ${
+      !isInvoice
+        ? `<div class="avoid-break" style="margin-top:6px;margin-bottom:4px;padding:5px 9px;background:#f0fdf4;border:1px dashed #16a34a;border-radius:4px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-size:11px;line-height:1;">✨</span>
+              <span style="font-size:8px;color:#15803d;line-height:1.35;font-weight:600;">
+                <strong style="font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:0.03em;">Payment Incentive:</strong>
+                Premake 100% payment to avail 5% discount.
+              </span>
+            </div>
+            <span style="font-size:7.5px;font-weight:700;color:#15803d;background:#dcfce7;border:1px solid #bbf7d0;padding:1.5px 5px;border-radius:3px;text-transform:uppercase;letter-spacing:0.04em;white-space:nowrap;">5% OFF ADVANCE</span>
+          </div>`
+        : ""
+    }
+
     <!-- Terms & Conditions Section -->
     ${termsHtml}
 

@@ -10,7 +10,7 @@
  * pinning its behavior here protects all of them at once.
  */
 import { describe, expect, test } from "bun:test";
-import { resolveByName } from "./resolve";
+import { resolveByName, stripIndianHonorifics } from "./resolve";
 
 type Row = { id: string; name: string };
 
@@ -18,6 +18,7 @@ const darshan: Row = { id: "cus-darshan", name: "Darshan Shah" };
 const shiv: Row = { id: "cus-shiv-1", name: "Shiv Solanki" };
 const sunny: Row = { id: "cus-sunny", name: "Sunny Gandhi" };
 const shivNader: Row = { id: "cus-shiv-2", name: "Shiv Nader" };
+const mehul: Row = { id: "cus-mehul", name: "Mehul Panchal" };
 
 describe("resolveByName", () => {
   test("an exact match is never substituted for another row in the same set", () => {
@@ -65,5 +66,16 @@ describe("resolveByName", () => {
     // them, so `npx tsc --noEmit` never saw this file before).
     const resolution = resolveByName<Row>([], "Darshan Shah", (r) => r.name);
     expect(resolution.kind).toBe("none");
+  });
+
+  test("resolves customer when searching with Indian honorifics (e.g. Mehulbhai -> Mehul Panchal)", () => {
+    const rawNeedle = "Mehulbhai";
+    const cleanNeedle = stripIndianHonorifics(rawNeedle);
+    expect(cleanNeedle).toBe("Mehul");
+
+    // Single candidate matching the stemmed name
+    const resolution = resolveByName([mehul], cleanNeedle, (r) => r.name);
+    expect(resolution.kind).toBe("one");
+    expect(resolution.kind === "one" && resolution.row.id).toBe("cus-mehul");
   });
 });

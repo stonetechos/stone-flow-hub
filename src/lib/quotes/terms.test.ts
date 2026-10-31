@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import {
   ADVANCE_PAYMENT_THRESHOLD_INR,
+  EARLY_PAYMENT_DISCOUNT_DISCLAIMER,
   buildClientProvidedSlabBreakageTerm,
   buildDeliveryTimelineTerm,
   buildPaymentTermsTerm,
@@ -10,6 +11,7 @@ import {
   generateQuoteTerms,
   getQuoteTermsList,
   hasClientBreakageDisclaimer,
+  hasEarlyPaymentDiscountDisclaimer,
 } from "./terms";
 
 describe("Quote Terms & Conditions Engine", () => {
@@ -83,7 +85,22 @@ describe("Quote Terms & Conditions Engine", () => {
       expect(term).toContain(
         "remaining 20% balance payment to be provided upon completion of installation",
       );
-      expect(term).not.toContain("100% advance");
+      expect(term).not.toContain("100% advance payment required");
+    });
+
+    it("includes the 100% advance payment 5% discount disclaimer in all payment term modes", () => {
+      expect(EARLY_PAYMENT_DISCOUNT_DISCLAIMER).toBe("Premake 100% payment to avail 5% discount.");
+      const under50k = buildPaymentTermsTerm("supply_only", 30000);
+      expect(under50k).toContain("Premake 100% payment to avail 5% discount.");
+      expect(hasEarlyPaymentDiscountDisclaimer(under50k)).toBe(true);
+
+      const supplyOnly = buildPaymentTermsTerm("supply_only", 80000);
+      expect(supplyOnly).toContain("Premake 100% payment to avail 5% discount.");
+      expect(hasEarlyPaymentDiscountDisclaimer(supplyOnly)).toBe(true);
+
+      const supplyInstall = buildPaymentTermsTerm("supply_and_installation", 150000);
+      expect(supplyInstall).toContain("Premake 100% payment to avail 5% discount.");
+      expect(hasEarlyPaymentDiscountDisclaimer(supplyInstall)).toBe(true);
     });
   });
 

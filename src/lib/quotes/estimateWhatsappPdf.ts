@@ -84,6 +84,7 @@ export function buildEstimateWhatsappMessage(
       : []),
     `Total Estimate: ${formatInr(input.totalEstimate)}`,
     `Notes:`,
+    `Special Offer: Premake 100% payment to avail 5% discount.`,
     ...(hasInstallation ? [`Scaffolding, if required, will be provided by the customer.`] : []),
     ...(input.cartingAmount && input.cartingAmount > 0
       ? []

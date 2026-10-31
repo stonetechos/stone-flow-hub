@@ -92,6 +92,16 @@ function nameMatches(name: string | null | undefined, needle: string | undefined
   return name.toLowerCase().includes(needle.toLowerCase());
 }
 
+/** Stems common Indian / Gujarati honorific suffixes like "bhai", "ben", "ji", etc. */
+export function stripIndianHonorifics(name: string): string {
+  if (!name) return "";
+  return name
+    .trim()
+    .replace(/\s+(bhai|ben|ji|kumar|sheth|seth|sir|sahab|saheb|garu)$/i, "")
+    .replace(/(bhai|ben|ji|kumar|sheth|seth|sir|sahab|saheb|garu)$/i, "")
+    .trim();
+}
+
 function fromInsight(i: Insight, entityType: NlEntityType): NlResultItem {
   return {
     id: i.entity.id,
@@ -229,9 +239,24 @@ async function resolveCustomer(
   // about Shiv" now asks which Shiv (or resolves confidently to one) no
   // matter how the classifier categorized the question, and the lookup
   // is a real server-side name search instead of a capped unfiltered scan.
-  if (filters?.customerName) {
-    const rows = await listCustomers(filters.customerName);
-    const resolution = resolveByName(rows, filters.customerName, (r) => r.name);
+  const queryName =
+    filters?.customerName ||
+    (searchText && !/customers?/i.test(searchText) ? searchText : undefined);
+  if (queryName) {
+    let rows = await listCustomers(queryName);
+    if (rows.length === 0) {
+      const cleanName = stripIndianHonorifics(queryName);
+      if (cleanName && cleanName !== queryName) {
+        rows = await listCustomers(cleanName);
+      }
+    }
+    let resolution = resolveByName(rows, queryName, (r) => r.name);
+    if (resolution.kind === "none") {
+      const cleanName = stripIndianHonorifics(queryName);
+      if (cleanName && cleanName !== queryName) {
+        resolution = resolveByName(rows, cleanName, (r) => r.name);
+      }
+    }
     if (resolution.kind === "ambiguous") {
       return ambiguousMatchResults(resolution.rows, "customer", (r) => ({
         id: r.id,
@@ -277,8 +302,14 @@ async function resolveInvoice(
   searchText: string | undefined,
   filters: NlFilters | undefined,
 ): Promise<NlResultItem[]> {
-  const rows = await listInvoices(searchText ?? "");
+  const isDocNo = Boolean(searchText && /^INV-/i.test(searchText));
+  const rows = await listInvoices(isDocNo ? searchText : "");
   const window = dateRangeWindow(filters?.dateRange);
+  const targetCustomer =
+    filters?.customerName ||
+    (!isDocNo && searchText && !/invoices?|bills?/i.test(searchText) ? searchText : undefined);
+  const cleanCustomer = targetCustomer ? stripIndianHonorifics(targetCustomer) : undefined;
+
   return rows
     .filter((inv) => {
       if (
@@ -294,7 +325,12 @@ async function resolveInvoice(
         if (!overdue) return false;
       }
       if (window && !inRange(inv.due_date, window[0], window[1])) return false;
-      if (!nameMatches(inv.customer?.name, filters?.customerName)) return false;
+      if (targetCustomer) {
+        const cName = (inv.customer?.name || "").toLowerCase();
+        const matchesDirect = nameMatches(inv.customer?.name, targetCustomer);
+        const matchesClean = cleanCustomer ? cName.includes(cleanCustomer.toLowerCase()) : false;
+        if (!matchesDirect && !matchesClean) return false;
+      }
       return true;
     })
     .map((inv) => ({
@@ -474,9 +510,28 @@ async function resolveGeneric(
   // instead of guessing, exactly one confident match narrows the list
   // below, and no match returns nothing rather than an unrelated list.
   let customerFilter: { id: string } | null = null;
-  if (filters?.customerName && CUSTOMER_SCOPED_ENTITY_TYPES.has(entityType)) {
-    const customers = await listCustomers(filters.customerName);
-    const resolution = resolveByName(customers, filters.customerName, (r) => r.name);
+  const targetCustomer =
+    filters?.customerName ||
+    (searchText &&
+    !/^(quotes?|quotations?|enquir|orders?|receipts?|rfqs?|invoices?)/i.test(searchText.trim())
+      ? searchText.trim()
+      : undefined);
+
+  if (targetCustomer && CUSTOMER_SCOPED_ENTITY_TYPES.has(entityType)) {
+    let customers = await listCustomers(targetCustomer);
+    if (customers.length === 0) {
+      const cleanName = stripIndianHonorifics(targetCustomer);
+      if (cleanName && cleanName !== targetCustomer) {
+        customers = await listCustomers(cleanName);
+      }
+    }
+    let resolution = resolveByName(customers, targetCustomer, (r) => r.name);
+    if (resolution.kind === "none") {
+      const cleanName = stripIndianHonorifics(targetCustomer);
+      if (cleanName && cleanName !== targetCustomer) {
+        resolution = resolveByName(customers, cleanName, (r) => r.name);
+      }
+    }
     if (resolution.kind === "ambiguous") {
       return ambiguousMatchResults(resolution.rows, "customer", (r) => ({
         id: r.id,
@@ -485,51 +540,100 @@ async function resolveGeneric(
         href: `/customers/${r.id}`,
       }));
     }
-    if (resolution.kind === "none") return [];
-    customerFilter = { id: resolution.row.id };
+    if (resolution.kind === "one") {
+      customerFilter = { id: resolution.row.id };
+    }
   }
 
   switch (entityType) {
     case "enquiry": {
-      const rows = await listEnquiries(q);
+      const rows = await listEnquiries(customerFilter ? "" : q);
       const filtered = customerFilter
         ? rows.filter((r) => r.customer?.id === customerFilter!.id)
-        : rows;
+        : rows.filter((r) => {
+            if (!q) return true;
+            const lq = q.toLowerCase();
+            const cleanQ = stripIndianHonorifics(lq);
+            return (
+              r.enquiry_no.toLowerCase().includes(lq) ||
+              (r.customer?.name &&
+                (r.customer.name.toLowerCase().includes(lq) ||
+                  (cleanQ && r.customer.name.toLowerCase().includes(cleanQ))))
+            );
+          });
       return filtered.map((r) => ({
         id: r.id,
         entityType,
         title: r.enquiry_no,
-        subtitle: r.customer?.name ?? null,
+        subtitle: [r.customer?.name, r.stage ? r.stage.toUpperCase() : null]
+          .filter(Boolean)
+          .join(" · "),
         href: `/enquiries/${r.id}`,
         rank: 0,
         updatedAt: r.updated_at,
       }));
     }
     case "quote": {
-      const rows = await listQuotes(q);
+      const isDocNo = Boolean(q && /^QUO-/i.test(q));
+      const rows = await listQuotes(customerFilter || !isDocNo ? "" : q);
       const filtered = customerFilter
         ? rows.filter((r) => r.customer?.id === customerFilter!.id)
-        : rows;
+        : rows.filter((r) => {
+            if (!q || isDocNo) return true;
+            const lq = q.toLowerCase();
+            const cleanQ = stripIndianHonorifics(lq);
+            return (
+              r.quote_no.toLowerCase().includes(lq) ||
+              (r.customer?.name &&
+                (r.customer.name.toLowerCase().includes(lq) ||
+                  (cleanQ && r.customer.name.toLowerCase().includes(cleanQ)))) ||
+              (r.notes || "").toLowerCase().includes(lq)
+            );
+          });
       return filtered.map((r) => ({
         id: r.id,
         entityType,
         title: r.quote_no,
-        subtitle: r.customer?.name ?? null,
+        subtitle: [
+          r.customer?.name,
+          r.total ? `₹${Number(r.total).toLocaleString("en-IN")}` : null,
+          r.status ? r.status.toUpperCase() : null,
+        ]
+          .filter(Boolean)
+          .join(" · "),
         href: `/quotes/${r.id}`,
         rank: 0,
-        updatedAt: r.updated_at,
+        updatedAt: r.created_at || r.updated_at,
       }));
     }
     case "sales_order": {
-      const rows = await listSalesOrders(q);
+      const isDocNo = Boolean(q && /^SO-/i.test(q));
+      const rows = await listSalesOrders(customerFilter || !isDocNo ? "" : q);
       const filtered = customerFilter
         ? rows.filter((r) => r.customer?.id === customerFilter!.id)
-        : rows;
+        : rows.filter((r) => {
+            if (!q || isDocNo) return true;
+            const lq = q.toLowerCase();
+            const cleanQ = stripIndianHonorifics(lq);
+            return (
+              r.so_no.toLowerCase().includes(lq) ||
+              (r.customer?.name &&
+                (r.customer.name.toLowerCase().includes(lq) ||
+                  (cleanQ && r.customer.name.toLowerCase().includes(cleanQ)))) ||
+              (r.notes || "").toLowerCase().includes(lq)
+            );
+          });
       return filtered.map((r) => ({
         id: r.id,
         entityType,
         title: r.so_no,
-        subtitle: r.customer?.name ?? null,
+        subtitle: [
+          r.customer?.name,
+          r.total ? `₹${Number(r.total).toLocaleString("en-IN")}` : null,
+          r.status ? r.status.toUpperCase() : null,
+        ]
+          .filter(Boolean)
+          .join(" · "),
         href: `/sales-orders/${r.id}`,
         rank: 0,
         updatedAt: r.updated_at,

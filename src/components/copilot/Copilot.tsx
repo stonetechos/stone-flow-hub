@@ -7,7 +7,7 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Sparkles,
   Send,
@@ -22,15 +22,30 @@ import {
   MicOff,
   Maximize2,
   Minimize2,
+  Key,
+  Eye,
+  EyeOff,
+  CheckCircle2,
+  ShieldAlert,
 } from "lucide-react";
 import { toast } from "sonner";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { askCopilot } from "@/lib/ai/copilot.functions";
+import { askCopilot, getAiStatus, saveAiApiKey } from "@/lib/ai/copilot.functions";
 import { nlSearch } from "@/lib/ai/nl-search.functions";
 import type { NlResultItem } from "@/lib/ai/nl-search/types";
 import { understandAndStage, confirmVieAction, completeDraftAction } from "@/lib/vie/vie.functions";
@@ -207,11 +222,32 @@ function deriveContext(path: string) {
 }
 
 export function Copilot() {
+  const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [isWideScreen, setIsWideScreen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [bookmarks, setBookmarks] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState("");
+  const [keyDialogOpen, setKeyDialogOpen] = useState(false);
+  const [apiKeyInput, setApiKeyInput] = useState("");
+  const [showKeyText, setShowKeyText] = useState(false);
+
+  const aiStatusQ = useQuery({
+    queryKey: ["ai", "status"],
+    queryFn: () => getAiStatus(),
+    staleTime: 60_000,
+  });
+
+  const saveKeyMut = useMutation({
+    mutationFn: (key: string) => saveAiApiKey({ data: { key } }),
+    onSuccess: () => {
+      toast.success("AI Key configured! Stoneman is now active with live generative AI.");
+      qc.invalidateQueries({ queryKey: ["ai", "status"] });
+      setKeyDialogOpen(false);
+      setApiKeyInput("");
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
   // Explicit mode toggle rather than an auto-router: "Ask" is
   // the existing nl-search/askCopilot path, completely unchanged below;
   // "Do" sends the message to understandAndStage() instead. Keeping the
@@ -496,9 +532,18 @@ export function Copilot() {
                       <span className="font-display text-sm font-bold tracking-tight text-white">
                         Stoneman AI
                       </span>
-                      <span className="text-[10px] font-semibold text-teal-400 uppercase tracking-wide">
-                        • LIVE
-                      </span>
+                      {aiStatusQ.data?.isConfigured ? (
+                        <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wide flex items-center gap-1">
+                          • LIVE AI
+                        </span>
+                      ) : (
+                        <span
+                          className="text-[10px] font-semibold text-cyan-400 uppercase tracking-wide flex items-center gap-1"
+                          title="Direct Database Search mode active"
+                        >
+                          • DB SEARCH
+                        </span>
+                      )}
                     </div>
                     <span className="text-[10px] text-slate-400">
                       {isNocturnal ? (
@@ -518,6 +563,17 @@ export function Copilot() {
                   >
                     {ctx.entity}
                   </Badge>
+
+                  {/* AI Settings / Key button */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-slate-400 hover:text-white hover:bg-slate-800"
+                    onClick={() => setKeyDialogOpen(true)}
+                    title="Configure AI API Key"
+                  >
+                    <Key className="h-3.5 w-3.5 text-teal-400" />
+                  </Button>
 
                   {/* Expand / Minimize toggle button */}
                   <Button
@@ -673,7 +729,12 @@ export function Copilot() {
                         }
                       />
                     ) : (
-                      <Bubble key={i} role={m.role} content={m.content} />
+                      <Bubble
+                        key={i}
+                        role={m.role}
+                        content={m.content}
+                        onConfigureKey={() => setKeyDialogOpen(true)}
+                      />
                     ),
                   )}
                   {isPending && (
@@ -789,11 +850,106 @@ export function Copilot() {
           </DialogPrimitive.Content>
         </DialogPrimitive.Portal>
       </DialogPrimitive.Root>
+
+      {/* AI Key Configuration Dialog */}
+      <Dialog open={keyDialogOpen} onOpenChange={setKeyDialogOpen}>
+        <DialogContent className="max-w-md bg-slate-950 border-slate-800 text-slate-100">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base text-white">
+              <Key className="h-4 w-4 text-teal-400" />
+              Stoneman AI Settings &amp; API Key
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-400 leading-relaxed">
+              Stoneman AI automatically queries your live database for finding records (e.g. quotes,
+              invoices, customers, dispatches). To enable generative how-to advice and full natural
+              AI chat, configure your OpenRouter or Google Gemini API Key.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs text-slate-300">
+                API Key (OpenRouter or Google Gemini)
+              </Label>
+              <div className="relative">
+                <Input
+                  type={showKeyText ? "text" : "password"}
+                  value={apiKeyInput}
+                  onChange={(e) => setApiKeyInput(e.target.value)}
+                  placeholder="sk-or-... or AIzaSy..."
+                  className="bg-slate-900 border-slate-800 text-xs pr-8 font-mono text-white placeholder:text-slate-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowKeyText(!showKeyText)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer"
+                >
+                  {showKeyText ? (
+                    <EyeOff className="h-3.5 w-3.5" />
+                  ) : (
+                    <Eye className="h-3.5 w-3.5" />
+                  )}
+                </button>
+              </div>
+              <p className="text-[11px] text-slate-400 leading-normal">
+                Accepts OpenRouter (<code className="text-teal-400">sk-or-...</code>) or Google
+                Gemini (<code className="text-teal-400">AIza...</code>). Stored directly in your
+                database settings.
+              </p>
+            </div>
+
+            <div className="rounded-md border border-slate-800/80 bg-slate-900/60 p-2.5 text-xs text-slate-300 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-400">Current AI Engine:</span>
+                {aiStatusQ.data?.isConfigured ? (
+                  <Badge
+                    variant="outline"
+                    className="bg-emerald-950/60 border-emerald-500/50 text-emerald-300 text-[10px]"
+                  >
+                    ✓ Live AI ({aiStatusQ.data.provider || "Active"})
+                  </Badge>
+                ) : (
+                  <Badge
+                    variant="outline"
+                    className="bg-cyan-950/60 border-cyan-500/50 text-cyan-300 text-[10px]"
+                  >
+                    Offline Database Search
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setKeyDialogOpen(false)}
+              className="bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800 hover:text-white text-xs cursor-pointer"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => saveKeyMut.mutate(apiKeyInput.trim())}
+              disabled={!apiKeyInput.trim() || saveKeyMut.isPending}
+              className="bg-teal-600 hover:bg-teal-500 text-white text-xs gap-1.5 cursor-pointer"
+            >
+              {saveKeyMut.isPending ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <CheckCircle2 className="h-3.5 w-3.5" />
+              )}
+              Save AI Key
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
 
-function Bubble({ role, content }: ChatMsg) {
+function Bubble({ role, content, onConfigureKey }: ChatMsg & { onConfigureKey?: () => void }) {
   if (role === "user") {
     return (
       <div className="flex justify-end">
@@ -803,6 +959,12 @@ function Bubble({ role, content }: ChatMsg) {
       </div>
     );
   }
+
+  const showKeyPrompt =
+    content.includes("To enable conversational AI") ||
+    content.includes("OPENROUTER_API_KEY") ||
+    content.includes("configure an OpenRouter or Gemini");
+
   return (
     <div className="flex items-start gap-2.5 max-w-[90%]">
       <img
@@ -812,6 +974,20 @@ function Bubble({ role, content }: ChatMsg) {
       />
       <div className="min-w-0 whitespace-pre-wrap rounded-2xl rounded-tl-xs bg-slate-900 border border-slate-800 px-3.5 py-2 text-sm text-slate-100 shadow-sm leading-relaxed">
         {content}
+        {showKeyPrompt && onConfigureKey && (
+          <div className="mt-3 pt-2.5 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
+            <span className="text-[11px] text-slate-400">Database Search is active</span>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onConfigureKey}
+              className="h-6 text-[11px] bg-slate-950 border-teal-500/40 text-teal-300 hover:text-white hover:bg-slate-800 gap-1.5 cursor-pointer"
+            >
+              <Key className="h-3 w-3" />
+              Configure AI Key
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

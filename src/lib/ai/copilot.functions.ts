@@ -61,6 +61,39 @@ export const askCopilot = createServerFn({ method: "POST" })
     return { reply };
   });
 
+export const getAiStatus = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await requireStaff(context);
+    const { getEffectiveAiConfig } = await import("./gateway.server");
+    const config = await getEffectiveAiConfig();
+    return {
+      isConfigured: Boolean(config),
+      provider: config?.provider ?? null,
+    };
+  });
+
+export const saveAiApiKey = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        key: z.string().trim(),
+        provider: z.enum(["openrouter", "gemini"]).optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await requireStaff(context);
+    const keyName =
+      data.provider === "gemini" || data.key.startsWith("AIza")
+        ? "gemini_api_key"
+        : "openrouter_api_key";
+    const { upsertSiteSetting } = await import("@/lib/site-settings/api");
+    await upsertSiteSetting(keyName, data.key);
+    return { success: true, keyName };
+  });
+
 const hsnInput = z.object({
   product_name: z.string().min(1),
   family: z.string().optional(),

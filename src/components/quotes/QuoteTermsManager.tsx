@@ -17,6 +17,8 @@ import {
   buildClientProvidedSlabBreakageTerm,
   hasClientBreakageDisclaimer,
   buildDeliveryTimelineTerm,
+  hasEarlyPaymentDiscountDisclaimer,
+  EARLY_PAYMENT_DISCOUNT_DISCLAIMER,
   ADVANCE_PAYMENT_THRESHOLD_INR,
 } from "@/lib/quotes/terms";
 import { Label } from "@/components/ui/label";
@@ -248,6 +250,14 @@ export function QuoteTermsManager({
               No Terms (Minimal PDF)
             </Badge>
           )}
+
+          <Badge
+            variant="outline"
+            className="bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/30 dark:text-emerald-300 text-[11px] gap-1 font-medium"
+          >
+            <Sparkles className="h-3 w-3 text-emerald-600" />
+            100% Payment: 5% Discount
+          </Badge>
 
           {isUnderFiftyThousand ? (
             <Badge

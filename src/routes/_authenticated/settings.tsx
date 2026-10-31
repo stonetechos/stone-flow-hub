@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useGuidedEnabled } from "@/hooks/use-guided-enabled";
 import { NavigationPreferences } from "@/components/settings/NavigationPreferences";
+import { AiSettingsCard } from "@/components/settings/AiSettingsCard";
 import { CompanyProfileTab } from "@/components/settings/CompanyProfileTab";
 import { deriveInitials, updateProfileFields } from "@/lib/admin/users";
 import { toUserMessage } from "@/lib/errors";
@@ -261,6 +262,7 @@ function SettingsPage() {
 
         <TabsContent value="preferences" className="mt-4 space-y-4">
           <NavigationPreferences isAdmin={isAdmin} />
+          <AiSettingsCard isAdmin={isAdmin} />
 
           <Card className="shadow-1">
             <CardHeader>

@@ -922,6 +922,13 @@ function QuoteDetailPage() {
                 <CardTitle className="text-sm">Terms &amp; Conditions</CardTitle>
               </div>
               <div className="flex flex-wrap items-center gap-2">
+                <Badge
+                  variant="outline"
+                  className="bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/30 dark:text-emerald-300 text-[10px] font-semibold gap-1"
+                >
+                  <Sparkles className="h-3 w-3 text-emerald-600" />
+                  100% Advance: 5% Discount
+                </Badge>
                 {Number(quote.total) > 0 && Number(quote.total) < ADVANCE_PAYMENT_THRESHOLD_INR && (
                   <Badge
                     variant="outline"
@@ -946,6 +953,19 @@ function QuoteDetailPage() {
               </div>
             </CardHeader>
             <CardContent className="p-4 pt-1">
+              <div className="mb-3 flex items-center justify-between rounded-md border border-dashed border-emerald-500/70 bg-emerald-50/60 dark:bg-emerald-950/20 px-3 py-2 text-xs text-emerald-900 dark:text-emerald-200">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">✨</span>
+                  <div>
+                    <span className="font-semibold">Special Payment Incentive: </span>
+                    <span>Premake 100% payment to avail 5% discount.</span>
+                  </div>
+                </div>
+                <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] uppercase shrink-0">
+                  5% Off
+                </Badge>
+              </div>
+
               {quote.terms && quote.terms.trim() ? (
                 <div className="rounded-md border border-border/70 bg-muted/20 p-3 text-xs font-mono leading-relaxed whitespace-pre-line text-slate-800 dark:text-slate-200">
                   {quote.terms}

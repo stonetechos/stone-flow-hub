@@ -14,7 +14,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import type { NlSearchResponse, NlStructuredIntent } from "./nl-search/types";
+import type {
+  NlFilters,
+  NlSearchResponse,
+  NlStructuredIntent,
+  NlEntityType,
+} from "./nl-search/types";
+import { stripIndianHonorifics } from "./nl-search/resolve";
 
 const nlSearchInput = z.object({
   query: z.string().min(1).max(500),
@@ -93,6 +99,188 @@ function buildInterpretation(intent: NlStructuredIntent): string {
   return parts.length > 0 ? parts.join(" · ") : "results";
 }
 
+/**
+ * Fast deterministic intent classifier — runs without external LLM.
+ * Classifies queries like:
+ * - "Can you tell me the quotation of Mehulbhai" -> { intent: "filter", entityType: "quote", filters: { customerName: "Mehul" }, searchText: "Mehulbhai" }
+ * - "Invoices for Dinesh" -> { intent: "filter", entityType: "invoice", filters: { customerName: "Dinesh" }, searchText: "Dinesh" }
+ * - "Pending dispatches this week" -> { intent: "filter", entityType: "dispatch", filters: { status: "pending", dateRange: "this_week" } }
+ * - "QUO-000025" -> { intent: "open_record", entityType: "quote", identifier: "QUO-000025" }
+ */
+export function extractDeterministicIntent(
+  rawQuery: string,
+  _context?: { entity?: string; entityId?: string },
+): NlStructuredIntent | null {
+  const query = rawQuery.trim();
+  if (!query) return null;
+
+  // 1. Check for specific document IDs
+  const quoMatch = query.match(/\b(QUO-\d+)\b/i);
+  if (quoMatch) {
+    return { intent: "open_record", entityType: "quote", identifier: quoMatch[1].toUpperCase() };
+  }
+  const invMatch = query.match(/\b(INV-\d+)\b/i);
+  if (invMatch) {
+    return { intent: "open_record", entityType: "invoice", identifier: invMatch[1].toUpperCase() };
+  }
+  const soMatch = query.match(/\b(SO-\d+)\b/i);
+  if (soMatch) {
+    return {
+      intent: "open_record",
+      entityType: "sales_order",
+      identifier: soMatch[1].toUpperCase(),
+    };
+  }
+  const poMatch = query.match(/\b(PO-\d+)\b/i);
+  if (poMatch) {
+    return {
+      intent: "open_record",
+      entityType: "purchase_order",
+      identifier: poMatch[1].toUpperCase(),
+    };
+  }
+  const rfqMatch = query.match(/\b(RFQ-\d+)\b/i);
+  if (rfqMatch) {
+    return { intent: "open_record", entityType: "rfq", identifier: rfqMatch[1].toUpperCase() };
+  }
+  const enqMatch = query.match(/\b(ENQ-\d+)\b/i);
+  if (enqMatch) {
+    return { intent: "open_record", entityType: "enquiry", identifier: enqMatch[1].toUpperCase() };
+  }
+  const dispMatch = query.match(/\b(DISP(?:ATCH)?-\d+)\b/i);
+  if (dispMatch) {
+    return {
+      intent: "open_record",
+      entityType: "dispatch",
+      identifier: dispMatch[1].toUpperCase(),
+    };
+  }
+  const recMatch = query.match(/\b(REC-\d+)\b/i);
+  if (recMatch) {
+    return { intent: "open_record", entityType: "receipt", identifier: recMatch[1].toUpperCase() };
+  }
+
+  const lower = query.toLowerCase();
+
+  // 2. Pure general conversation / how-to check
+  const isHowTo = /^(how\s+(?:do|to|can|should)|what\s+does|explain\b|who\s+are\s+we)/i.test(lower);
+  if (isHowTo && !/\b(quotations?|quotes?|invoices?|orders?|enquir|customers?)\b/i.test(lower)) {
+    return { intent: "chat" };
+  }
+
+  // 3. Status filters
+  let status: string | undefined;
+  if (/\bunpaid\b/i.test(lower)) status = "unpaid";
+  else if (/\boverdue\b/i.test(lower)) status = "overdue";
+  else if (/\bpending\b/i.test(lower)) status = "pending";
+  else if (/\bactive\b/i.test(lower)) status = "active";
+  else if (/\blate\b/i.test(lower)) status = "late";
+  else if (/\blow[\s_]stock\b/i.test(lower)) status = "low_stock";
+  else if (/\bapproved\b/i.test(lower)) status = "approved";
+
+  // 4. Date range filters
+  let dateRange: NlFilters["dateRange"] | undefined;
+  if (/\btoday\b/i.test(lower)) dateRange = "today";
+  else if (/\bthis\s*week\b/i.test(lower)) dateRange = "this_week";
+  else if (/\bnext\s*week\b/i.test(lower)) dateRange = "next_week";
+  else if (/\bthis\s*month\b/i.test(lower)) dateRange = "this_month";
+  else if (/\bnext\s*month\b/i.test(lower)) dateRange = "next_month";
+
+  // 5. Detect Entity Type
+  let entityType: NlEntityType | undefined;
+  if (/\b(quotations?|quotes?|estimates?)\b/i.test(lower)) entityType = "quote";
+  else if (/\b(invoices?|bills?|challans?)\b/i.test(lower)) entityType = "invoice";
+  else if (/\b(sales\s*orders?|so\b|orders?)\b/i.test(lower)) entityType = "sales_order";
+  else if (/\b(enquir(?:y|ies)|inquir(?:y|ies)|leads?)\b/i.test(lower)) entityType = "enquiry";
+  else if (/\b(dispatch(?:es)?|deliver(?:y|ies)|shipments?)\b/i.test(lower))
+    entityType = "dispatch";
+  else if (/\b(installations?|fittings?)\b/i.test(lower)) entityType = "installation";
+  else if (/\b(purchase\s*orders?|pos?)\b/i.test(lower)) entityType = "purchase_order";
+  else if (/\b(vendors?|suppliers?|supplying\s*partners?|partners?)\b/i.test(lower))
+    entityType = "vendor";
+  else if (/\b(customers?|clients?|parties|party)\b/i.test(lower)) entityType = "customer";
+  else if (/\b(rfqs?)\b/i.test(lower)) entityType = "rfq";
+  else if (/\b(tasks?|todos?|to-dos?)\b/i.test(lower)) entityType = "task";
+  else if (/\b(follow-?ups?)\b/i.test(lower)) entityType = "followup";
+  else if (/\b(projects?|sites?)\b/i.test(lower)) entityType = "project";
+
+  // 6. Extract target name
+  let customerName: string | undefined;
+  let searchText: string | undefined;
+
+  // Pattern A: "(entity) of/for/to (Name)" (e.g. "quotation of Mehulbhai", "invoices for Dinesh")
+  const ofMatch = lower.match(
+    /(?:quotations?|quotes?|estimates?|invoices?|bills?|orders?|enquir(?:y|ies)|status|details|update|balance)\s+(?:of|for|to|from)\s+([a-z0-9\s]+?)(?:\s+(?:status|details|pending|today|please|now)|\?|$)/i,
+  );
+  if (ofMatch && ofMatch[1].trim()) {
+    const raw = ofMatch[1].trim();
+    customerName = stripIndianHonorifics(raw);
+    searchText = raw;
+  }
+
+  // Pattern B: "(Name)'s (entity)"
+  if (!customerName) {
+    const possessiveMatch = lower.match(
+      /([a-z0-9\s]+?)'s\s+(?:quotations?|quotes?|estimates?|invoices?|bills?|orders?|enquir(?:y|ies)|status|details)/i,
+    );
+    if (possessiveMatch && possessiveMatch[1].trim()) {
+      const raw = possessiveMatch[1].trim();
+      customerName = stripIndianHonorifics(raw);
+      searchText = raw;
+    }
+  }
+
+  // Pattern C: "(Name) (entity)" (e.g. "Mehulbhai quotation", "Dinesh invoice")
+  if (!customerName) {
+    const prefixMatch = lower.match(
+      /\b([a-z]+(?:bhai|ben|ji|kumar|sheth|seth)?)\s+(?:quotations?|quotes?|invoices?|bills?|orders?|enquir)/i,
+    );
+    if (prefixMatch && prefixMatch[1].trim()) {
+      const raw = prefixMatch[1].trim();
+      customerName = stripIndianHonorifics(raw);
+      searchText = raw;
+    }
+  }
+
+  // Pattern D: "customer (Name)"
+  if (!customerName && entityType === "customer") {
+    const cusMatch = lower.match(
+      /(?:customer|client|party)\s+([a-z0-9\s]+?)(?:\s+(?:details|profile|history|please)|\?|$)/i,
+    );
+    if (cusMatch && cusMatch[1].trim()) {
+      const raw = cusMatch[1].trim();
+      customerName = stripIndianHonorifics(raw);
+      searchText = raw;
+    }
+  }
+
+  if (entityType || customerName || status || dateRange) {
+    return {
+      intent: "filter",
+      entityType: entityType ?? (customerName ? "quote" : undefined),
+      searchText: searchText ?? (customerName || undefined),
+      filters: {
+        status,
+        dateRange,
+        customerName: customerName || undefined,
+      },
+    };
+  }
+
+  const cleanSearch = query
+    .replace(
+      /^(can\s+you\s+(?:please\s+)?tell\s+me|tell\s+me|show\s+me|find|search|lookup|where\s+is|give\s+me|what\s+is)\s+/i,
+      "",
+    )
+    .replace(/[?.]+$/g, "")
+    .trim();
+
+  return {
+    intent: "search",
+    searchText: cleanSearch || query,
+  };
+}
+
 export const nlSearch = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => nlSearchInput.parse(d))
@@ -111,17 +299,38 @@ export const nlSearch = createServerFn({ method: "POST" })
     const { withAuthenticatedClient } = await import("@/integrations/supabase/server-context");
 
     return withAuthenticatedClient(context.supabase, async () => {
-      const { chatJson } = await import("./gateway.server");
       const { resolveIntent } = await import("./nl-search/resolve");
       const { rankResults } = await import("./nl-search/rank");
 
-      const intent = await chatJson<NlStructuredIntent>(
-        [
-          { role: "system", content: INTENT_SYSTEM_PROMPT },
-          { role: "user", content: data.query },
-        ],
-        { temperature: 0 },
-      );
+      let intent: NlStructuredIntent | null = null;
+
+      // Try LLM classification if configured
+      try {
+        const { getEffectiveAiConfig, chatJson } = await import("./gateway.server");
+        const aiConfig = await getEffectiveAiConfig();
+        if (aiConfig) {
+          intent = await chatJson<NlStructuredIntent>(
+            [
+              { role: "system", content: INTENT_SYSTEM_PROMPT },
+              { role: "user", content: data.query },
+            ],
+            { temperature: 0 },
+          );
+        }
+      } catch (err) {
+        console.warn(
+          "[nlSearch] LLM classification unavailable, using deterministic classifier:",
+          err,
+        );
+      }
+
+      // Fast, deterministic intent extraction fallback
+      if (!intent) {
+        intent = extractDeterministicIntent(data.query, data.context) ?? {
+          intent: "search",
+          searchText: data.query.trim(),
+        };
+      }
 
       if (intent.intent === "chat") {
         return { intent, interpretation: "general question", results: [], resultCount: 0 };
