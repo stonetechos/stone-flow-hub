@@ -354,7 +354,7 @@
   --elev-focus: 0 0 0 2px var(--surface-base), 0 0 0 4px var(--intent-focus-ring);
 
   --material-basalt-fill: #083b43;
-  --material-sapphire-fill: #083b43;
+  --material-sapphire-fill: var(--sidebar, #083b43);
   --material-granite-fill: linear-gradient(
     160deg,
     var(--stone-granite-700),
@@ -926,17 +926,17 @@
 @utility material-sapphire {
   position: relative;
   isolation: isolate;
-  background: #083b43;
-  color: #ffffff;
-  box-shadow: 2px 0 16px rgba(8, 59, 67, 0.25);
+  background: var(--sidebar, #083b43);
+  color: var(--sidebar-foreground, #ffffff);
+  box-shadow: 2px 0 16px rgba(0, 0, 0, 0.25);
 }
 
-/* Mobile nav drawer — guaranteed dark turquoise background.
+/* Mobile nav drawer — guaranteed theme-responsive background.
    Uses !important to beat Tailwind utility classes (e.g. SheetContent's
    bg-[var(--surface-elevated)]) regardless of CSS cascade order. */
 [data-nav-drawer="true"] {
-  background: #083b43 !important;
-  color: #ffffff;
+  background: var(--sidebar, #083b43) !important;
+  color: var(--sidebar-foreground, #ffffff);
 }
 [data-nav-drawer="true"] * {
   --tw-text-opacity: 1;
@@ -1258,86 +1258,136 @@ body[data-scroll-locked] {
 /* ==============================================================
  * OVERRIDE THEMES (Monochrome, Batman, Pink, Pop)
  * ============================================================== */
-.theme-monochrome {
+/* ==============================================================
+ * STOS Themes — ST OG, ST BW, ST POP, ST Pastel
+ * ============================================================== */
+
+/* ST OG (Original Signature Stone Tech Atelier Theme) */
+.theme-st-og {
   color-scheme: light;
-  --surface-base: #fafafa;
-  --surface-panel: #f4f4f5;
+  --surface-base: var(--stone-limestone-50);
+  --surface-panel: #f8fafc;
   --surface-card: #ffffff;
-  --surface-card-hover: #f4f4f5;
   --surface-header: #ffffff;
-  --surface-nav: #f4f4f5;
-  --surface-nav-hover: #e4e4e7;
-  --surface-nav-active: #d4d4d8;
-  --text-primary: #18181b;
-  --text-secondary: #3f3f46;
-  --text-muted: #71717a;
-  --border-default: #e4e4e7;
-  --border-subtle: #f4f4f5;
-  --border-strong: #d4d4d8;
-  --intent-primary: #18181b;
-  --intent-primary-hover: #27272a;
+  --sidebar: #083b43;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #22d3ee;
+  --sidebar-primary-foreground: #083344;
+  --sidebar-accent: rgba(255, 255, 255, 0.15);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.12);
+  --sidebar-ring: #0891b2;
+  --intent-primary: #0891b2;
+  --intent-primary-hover: #0e7490;
 }
 
+/* ST BW (Black & White — Elegant Monochrome Architectural Luxury) */
+.theme-st-bw,
+.theme-monochrome,
 .theme-batman {
-  color-scheme: dark;
-  --surface-base: #000000;
-  --surface-panel: #09090b;
-  --surface-card: #18181b;
-  --surface-card-hover: #27272a;
-  --surface-header: #09090b;
-  --surface-nav: #09090b;
-  --surface-nav-hover: #27272a;
-  --surface-nav-active: #3f3f46;
-  --text-primary: #f4f4f5;
-  --text-secondary: #a1a1aa;
-  --text-muted: #71717a;
-  --border-default: #27272a;
-  --border-subtle: #18181b;
-  --border-strong: #3f3f46;
-  --intent-primary: #fde047;
-  --intent-primary-hover: #fef08a;
-  --text-on-material: #000000;
-}
-
-.theme-pink {
   color-scheme: light;
-  --surface-base: #fdf2f8;
-  --surface-panel: #fbcfe8;
-  --surface-card: #fce7f3;
-  --surface-card-hover: #fbcfe8;
-  --surface-header: #fce7f3;
-  --surface-nav: #fbcfe8;
-  --surface-nav-hover: #f9a8d4;
-  --surface-nav-active: #f472b6;
-  --text-primary: #831843;
-  --text-secondary: #9d174d;
-  --text-muted: #be185d;
-  --border-default: #f9a8d4;
-  --border-subtle: #fbcfe8;
-  --border-strong: #f472b6;
-  --intent-primary: #ec4899;
-  --intent-primary-hover: #db2777;
+  --surface-base: #f9fafb;
+  --surface-panel: #f3f4f6;
+  --surface-card: #ffffff;
+  --surface-card-hover: #f3f4f6;
+  --surface-header: #ffffff;
+  --surface-nav: #000000;
+  --surface-nav-hover: #1f2937;
+  --surface-nav-active: #111827;
+  --text-primary: #000000;
+  --text-secondary: #374151;
+  --text-muted: #6b7280;
+  --border-default: #e5e7eb;
+  --border-subtle: #f3f4f6;
+  --border-strong: #111827;
+  --intent-primary: #000000;
+  --intent-primary-hover: #1f2937;
+  --intent-primary-fg: #ffffff;
+  --intent-focus-ring: #000000;
+  --sidebar: #000000;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #ffffff;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: rgba(255, 255, 255, 0.16);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.15);
+  --sidebar-ring: #ffffff;
 }
 
+/* ST POP (Multicolors — Vibrant Pop Accents & Electric Palette) */
+.theme-st-pop,
 .theme-pop {
   color-scheme: light;
-  --surface-base: #e0e7ff;
-  --surface-panel: #fef08a;
+  --surface-base: #f8fafc;
+  --surface-panel: #f1f5f9;
   --surface-card: #ffffff;
-  --surface-card-hover: #fef08a;
+  --surface-card-hover: #fdf2f8;
   --surface-header: #ffffff;
-  --surface-nav: #3b82f6;
-  --surface-nav-hover: #2563eb;
-  --surface-nav-active: #1d4ed8;
-  --text-primary: #1e3a8a;
-  --text-secondary: #1e40af;
-  --text-muted: #3b82f6;
-  --border-default: #fcd34d;
-  --border-subtle: #fef08a;
-  --border-strong: #f59e0b;
-  --intent-primary: #ef4444;
-  --intent-primary-hover: #dc2626;
-  --text-on-material: #ffffff;
+  --surface-nav: #1e1b4b;
+  --surface-nav-hover: #312e81;
+  --surface-nav-active: #4338ca;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --border-default: #e2e8f0;
+  --border-subtle: #f1f5f9;
+  --border-strong: #d946ef;
+  --intent-primary: #ec4899;
+  --intent-primary-hover: #db2777;
+  --intent-primary-fg: #ffffff;
+  --intent-focus-ring: #d946ef;
+  --sidebar: #1e1b4b;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #f43f5e;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(236, 72, 153, 0.28);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(236, 72, 153, 0.2);
+  --sidebar-ring: #06b6d4;
+  --chart-1: #ec4899;
+  --chart-2: #8b5cf6;
+  --chart-3: #06b6d4;
+  --chart-4: #facc15;
+  --chart-5: #10b981;
+  --chart-6: #f97316;
+}
+
+/* ST Pastel (Soft Calming Pastel Palette — Eucalyptus Sage, Blush Rose & Cream) */
+.theme-st-pastel,
+.theme-pink {
+  color-scheme: light;
+  --surface-base: #faf8f5;
+  --surface-panel: #f4efe9;
+  --surface-card: #ffffff;
+  --surface-card-hover: #fdf4f7;
+  --surface-header: #fbf9f6;
+  --surface-nav: #283e39;
+  --surface-nav-hover: #334e48;
+  --surface-nav-active: #446860;
+  --text-primary: #292524;
+  --text-secondary: #57534e;
+  --text-muted: #78716c;
+  --border-default: #e7e2d9;
+  --border-subtle: #f2ece4;
+  --border-strong: #99f6e4;
+  --intent-primary: #2d6a5f;
+  --intent-primary-hover: #225148;
+  --intent-primary-fg: #ffffff;
+  --intent-focus-ring: #5eead4;
+  --sidebar: #283e39;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #99f6e4;
+  --sidebar-primary-foreground: #134e4a;
+  --sidebar-accent: rgba(153, 246, 228, 0.22);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.14);
+  --sidebar-ring: #99f6e4;
+  --chart-1: #5eead4;
+  --chart-2: #fbcfe8;
+  --chart-3: #fed7aa;
+  --chart-4: #ddd6fe;
+  --chart-5: #bbf7d0;
+  --chart-6: #bae6fd;
 }
 
 /* ==============================================================

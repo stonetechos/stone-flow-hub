@@ -13,6 +13,7 @@ import {
   EyeOff,
   GripVertical,
   RefreshCw,
+  Sliders,
   Star,
   Upload,
 } from "lucide-react";
@@ -34,6 +35,7 @@ import {
   useNavPreferences,
   type NavPreferences,
 } from "@/lib/nav/preferences";
+import { CustomizeNavigationDialog } from "@/components/navigation/CustomizeNavigationDialog";
 
 interface DragPayload {
   itemId: string;
@@ -44,6 +46,7 @@ export function NavigationPreferences({ isAdmin }: { isAdmin: boolean }) {
   const { t } = useTranslation();
   const { prefs, update, replace, reset } = useNavPreferences();
   const [drag, setDrag] = useState<DragPayload | null>(null);
+  const [customizeOpen, setCustomizeOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   const resolved = useMemo(() => resolveNav(prefs, isAdmin), [prefs, isAdmin]);
@@ -245,6 +248,15 @@ export function NavigationPreferences({ isAdmin }: { isAdmin: boolean }) {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button
+            size="sm"
+            variant="default"
+            onClick={() => setCustomizeOpen(true)}
+            className="bg-primary text-primary-foreground shadow-xs font-semibold"
+          >
+            <Sliders className="mr-1.5 h-3.5 w-3.5" />
+            Rename Tabs &amp; Adjust Width
+          </Button>
           <Button size="sm" variant="outline" onClick={onExport}>
             <Download className="mr-1.5 h-3.5 w-3.5" /> {t("common.export", "Export")}
           </Button>
@@ -410,6 +422,7 @@ export function NavigationPreferences({ isAdmin }: { isAdmin: boolean }) {
           </p>
         )}
       </CardContent>
+      <CustomizeNavigationDialog open={customizeOpen} onOpenChange={setCustomizeOpen} />
     </Card>
   );
 }

@@ -18,6 +18,7 @@ import {
   Truck,
   Languages,
   FlaskConical,
+  Sliders,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -74,6 +75,14 @@ import {
   type NavItemDef,
 } from "@/lib/nav/config";
 import { useRoles, type AppRole } from "@/hooks/use-roles";
+import {
+  useCustomNavRenames,
+  useSidebarWidth,
+  MIN_SIDEBAR_WIDTH,
+  MAX_SIDEBAR_WIDTH,
+} from "@/lib/nav/custom-renames";
+import { ThemeSwitcher, useActiveTheme, THEMES } from "@/components/global/ThemeSwitcher";
+import { CustomizeNavigationDialog } from "@/components/navigation/CustomizeNavigationDialog";
 
 /* --------------------------------------------------------------------- */
 /* Sidebar collapsed state (per user, persisted in localStorage)          */
@@ -198,6 +207,7 @@ function NavGroupRow({
   collapsed,
   onNavigate,
   checkActive,
+  getLabel,
 }: {
   group: ResolvedNavGroup;
   isOpen: boolean;
@@ -207,11 +217,12 @@ function NavGroupRow({
   collapsed?: boolean;
   onNavigate?: () => void;
   checkActive: (item: NavItemDef) => boolean;
+  getLabel: (id: string, fallback: string) => string;
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const GroupIcon = group.icon;
-  const groupLabel = t(`nav.groups.${group.id}`, group.label);
+  const groupLabel = getLabel(group.id, t(`nav.groups.${group.id}`, group.label));
 
   if (collapsed) {
     return (
@@ -266,7 +277,9 @@ function NavGroupRow({
                     )}
                   >
                     <item.icon className="h-3 w-3 shrink-0 opacity-80" />
-                    <span className="truncate">{t(`nav.items.${item.id}`, item.label)}</span>
+                    <span className="truncate">
+                      {getLabel(item.id, t(`nav.items.${item.id}`, item.label))}
+                    </span>
                   </Link>
                 );
               })}
@@ -347,7 +360,7 @@ function NavGroupRow({
             <NavLinkRow
               key={item.id}
               to={item.to}
-              label={t(`nav.items.${item.id}`, item.label)}
+              label={getLabel(item.id, t(`nav.items.${item.id}`, item.label))}
               Icon={item.icon}
               active={checkActive(item)}
               collapsed={collapsed}
@@ -382,6 +395,7 @@ function NavList({
   scrollable?: boolean;
 }) {
   const { t } = useTranslation();
+  const { getLabel } = useCustomNavRenames();
   const { prefs } = useNavPreferences();
   const userEmail = useCurrentUserEmail();
   const resolved = useMemo(
@@ -454,6 +468,7 @@ function NavList({
             collapsed={collapsed}
             onNavigate={onNavigate}
             checkActive={checkActive}
+            getLabel={getLabel}
           />
         );
       })}
@@ -467,11 +482,13 @@ function NavList({
 function UserMenu({
   onSignOut,
   onOpenShortcuts,
+  onOpenCustomizeNav,
   isAdmin,
   isSuperAdmin,
 }: {
   onSignOut: () => void;
   onOpenShortcuts: () => void;
+  onOpenCustomizeNav?: () => void;
   isAdmin: boolean;
   isSuperAdmin?: boolean;
 }) {
@@ -584,6 +601,12 @@ function UserMenu({
             <SettingsIcon className="mr-2 h-4 w-4" aria-hidden />
             {t("user.preferences", "Preferences")}
           </DropdownMenuItem>
+          {onOpenCustomizeNav && (
+            <DropdownMenuItem onClick={onOpenCustomizeNav}>
+              <Sliders className="mr-2 h-4 w-4" aria-hidden />
+              {t("user.customizeNav", "Customize Tabs & Width")}
+            </DropdownMenuItem>
+          )}
           {isAdmin && (
             <DropdownMenuItem onSelect={() => void setMode(!isDemo)}>
               <FlaskConical
@@ -670,6 +693,45 @@ export function AppShell({ children }: { children: ReactNode }) {
   const roles = useRoles();
   const isAdmin = roles.isAdmin || roles.roles.length === 0;
   const [collapsed, setCollapsed] = useSidebarCollapsed(uid);
+  const activeThemeId = useActiveTheme();
+  const currentTheme = THEMES.find((t) => t.id === activeThemeId) ?? THEMES[0];
+  const { width: sidebarWidthPx, updateWidth: setSidebarWidth, resetWidth } = useSidebarWidth();
+  const [customizeNavOpen, setCustomizeNavOpen] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (collapsed) return;
+      e.preventDefault();
+      setIsResizing(true);
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+
+      const startX = e.clientX;
+      const startWidth = sidebarWidthPx;
+
+      const onMouseMove = (moveEvent: MouseEvent) => {
+        const delta = moveEvent.clientX - startX;
+        const newWidth = Math.max(
+          MIN_SIDEBAR_WIDTH,
+          Math.min(MAX_SIDEBAR_WIDTH, Math.round(startWidth + delta)),
+        );
+        setSidebarWidth(newWidth);
+      };
+
+      const onMouseUp = () => {
+        setIsResizing(false);
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
+        window.removeEventListener("mousemove", onMouseMove);
+        window.removeEventListener("mouseup", onMouseUp);
+      };
+
+      window.addEventListener("mousemove", onMouseMove);
+      window.addEventListener("mouseup", onMouseUp);
+    },
+    [collapsed, sidebarWidthPx, setSidebarWidth],
+  );
 
   useEffect(() => {
     trackNavVisit(path);
@@ -729,7 +791,6 @@ export function AppShell({ children }: { children: ReactNode }) {
     }
   }
 
-  const sidebarWidth = collapsed ? "w-[56px]" : "w-[232px]";
   const showBreadcrumbs = path !== "/" && path !== "/dashboard";
 
   return (
@@ -768,17 +829,32 @@ export function AppShell({ children }: { children: ReactNode }) {
           for backdrop-filter on the header below and in FormActions.
         */}
 
-        {/* Desktop sidebar — Solid Dark Turquoise */}
+        {/* Desktop sidebar — Solid Dark Turquoise with live resizable width */}
         <aside
           className={cn(
-            "material-sapphire",
+            "material-sapphire relative",
             "hidden shrink-0 flex-col border-r border-teal-950/60 text-white md:flex",
             "pt-[env(safe-area-inset-top)]",
-            "transition-[width] duration-200 ease-out",
-            sidebarWidth,
+            isResizing ? "transition-none select-none" : "transition-[width] duration-200 ease-out",
           )}
+          style={{ width: collapsed ? 56 : sidebarWidthPx }}
           data-collapsed={collapsed}
         >
+          {/* Draggable right-edge resizer handle */}
+          {!collapsed && (
+            <div
+              onMouseDown={handleMouseDown}
+              onDoubleClick={resetWidth}
+              title="Drag to resize sidebar width · Double-click to reset (270px)"
+              className="group absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-cyan-400/50 active:bg-cyan-400 transition-colors z-30"
+              aria-label="Resize sidebar"
+              role="separator"
+              aria-orientation="vertical"
+            >
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 h-8 w-1 rounded-l-full bg-cyan-300/30 group-hover:bg-cyan-300 transition-colors" />
+            </div>
+          )}
+
           <div
             className={cn(
               "relative z-10 flex h-14 shrink-0 items-center gap-2.5 border-b border-white/12",
@@ -818,9 +894,32 @@ export function AppShell({ children }: { children: ReactNode }) {
             )}
           >
             {!collapsed && (
-              <span className="pl-2 font-mono text-[10px] uppercase tracking-wider text-cyan-200/70 font-semibold">
-                v1 · {t("theme.quarry", "Quarry")}
-              </span>
+              <div className="flex items-center gap-1.5 pl-1.5">
+                <TooltipProvider delayDuration={200}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={() => setCustomizeNavOpen(true)}
+                        className="flex items-center gap-1 px-1.5 py-1 rounded text-[10.5px] font-medium text-cyan-200/90 hover:bg-white/12 hover:text-white transition-colors"
+                        aria-label="Customize tabs & sidebar width"
+                      >
+                        <Sliders className="h-3.5 w-3.5" />
+                        <span>Customize</span>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent
+                      side="top"
+                      className="border-cyan-800 bg-cyan-950 text-xs text-white shadow-lg"
+                    >
+                      Rename tabs &amp; adjust sidebar width
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <span className="font-mono text-[10px] uppercase tracking-wider text-cyan-200/60 font-semibold">
+                  {currentTheme.label} · {sidebarWidthPx}px
+                </span>
+              </div>
             )}
             <TooltipProvider delayDuration={200}>
               <Tooltip>
@@ -1016,6 +1115,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <SyncStatusIndicator />
               </div>
               <div className="inline-flex items-center">
+                <ThemeSwitcher />
+              </div>
+              <div className="inline-flex items-center">
                 <LanguageToggle />
               </div>
               <NotificationsBell />
@@ -1023,6 +1125,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <UserMenu
                   onSignOut={onSignOut}
                   onOpenShortcuts={openShortcuts}
+                  onOpenCustomizeNav={() => setCustomizeNavOpen(true)}
                   isAdmin={isAdmin}
                   isSuperAdmin={roles.isSuperAdmin}
                 />
@@ -1123,6 +1226,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
 
         <GlobalSearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
+        <CustomizeNavigationDialog open={customizeNavOpen} onOpenChange={setCustomizeNavOpen} />
         <Copilot />
         <DangerNotifications />
         <GrowthAdvisoryBroadcaster />

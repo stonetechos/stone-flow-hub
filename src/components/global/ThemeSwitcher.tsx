@@ -20,9 +20,9 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
-type ThemeId = "monochrome" | "batman" | "pink" | "pop";
+export type ThemeId = "st-og" | "st-bw" | "st-pop" | "st-pastel";
 
-const THEMES: ReadonlyArray<{
+export const THEMES: ReadonlyArray<{
   id: ThemeId;
   label: string;
   description: string;
@@ -30,82 +30,118 @@ const THEMES: ReadonlyArray<{
   dark: boolean;
 }> = [
   {
-    id: "monochrome",
-    label: "Monochrome",
-    description: "White, grey, and black",
-    swatch: "linear-gradient(135deg, #ffffff 0%, #a3a3a3 55%, #171717 100%)",
+    id: "st-og",
+    label: "ST OG",
+    description: "Original Stone Tech Atelier (Quarry Deep Teal)",
+    swatch: "linear-gradient(135deg, #083b43 0%, #0d9488 50%, #22d3ee 100%)",
     dark: false,
   },
   {
-    id: "batman",
-    label: "Batman",
-    description: "Dark knight theme",
-    swatch: "linear-gradient(135deg, #09090b 0%, #27272a 55%, #fde047 100%)",
-    dark: true,
-  },
-  {
-    id: "pink",
-    label: "Soft Pink",
-    description: "Girly soft pink surfaces",
-    swatch: "linear-gradient(135deg, #fdf2f8 0%, #fbcfe8 55%, #ec4899 100%)",
+    id: "st-bw",
+    label: "ST BW",
+    description: "Black & White (Architectural Monochrome Luxury)",
+    swatch: "linear-gradient(135deg, #000000 0%, #333333 50%, #ffffff 100%)",
     dark: false,
   },
   {
-    id: "pop",
-    label: "Pop Colored",
-    description: "Vibrant and punchy",
-    swatch: "linear-gradient(135deg, #fcd34d 0%, #3b82f6 55%, #ef4444 100%)",
+    id: "st-pop",
+    label: "ST POP",
+    description: "Multicolors (Electric Pop & Vibrant Colors)",
+    swatch: "linear-gradient(135deg, #ec4899 0%, #8b5cf6 33%, #06b6d4 66%, #facc15 100%)",
+    dark: false,
+  },
+  {
+    id: "st-pastel",
+    label: "ST Pastel",
+    description: "Pastel Colored (Soft Eucalyptus Sage, Blush & Cream)",
+    swatch: "linear-gradient(135deg, #283e39 0%, #99f6e4 33%, #fbcfe8 66%, #fed7aa 100%)",
     dark: false,
   },
 ];
 
 const STORAGE_KEY = "st.stdl.theme";
-const THEME_CLASSES = THEMES.map((t) => `theme-${t.id}` as const);
+const ALL_THEME_CLASSES = [
+  "theme-st-og",
+  "theme-st-bw",
+  "theme-st-pop",
+  "theme-st-pastel",
+  "theme-monochrome",
+  "theme-batman",
+  "theme-pink",
+  "theme-pop",
+  "dark",
+];
 
-function applyTheme(id: ThemeId): void {
+export function applyTheme(id: ThemeId): void {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
-  THEME_CLASSES.forEach((cls) => root.classList.remove(cls));
-  root.classList.remove("dark");
+  ALL_THEME_CLASSES.forEach((cls) => root.classList.remove(cls));
   root.classList.add(`theme-${id}`);
   const dark = THEMES.find((t) => t.id === id)?.dark ?? false;
   if (dark) root.classList.add("dark");
 }
 
-function readInitialTheme(): ThemeId {
-  if (typeof window === "undefined") return "monochrome";
+export function readInitialTheme(): ThemeId {
+  if (typeof window === "undefined") return "st-og";
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (raw && THEMES.some((t) => t.id === raw)) return raw as ThemeId;
+    if (raw) {
+      if (raw === "monochrome" || raw === "batman") return "st-bw";
+      if (raw === "pop") return "st-pop";
+      if (raw === "pink") return "st-pastel";
+      if (THEMES.some((t) => t.id === raw)) return raw as ThemeId;
+    }
   } catch {
     /* ignore */
   }
-  return "monochrome";
+  return "st-og";
 }
 
-export function ThemeSwitcher() {
-  const { t } = useTranslation();
-  const [theme, setTheme] = useState<ThemeId>("monochrome");
+export function useActiveTheme(): ThemeId {
+  const [theme, setTheme] = useState<ThemeId>(readInitialTheme);
 
-  // Hydrate from storage and apply, avoiding SSR mismatch.
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const customEvent = e as CustomEvent<ThemeId>;
+      if (customEvent.detail && THEMES.some((t) => t.id === customEvent.detail)) {
+        setTheme(customEvent.detail);
+      } else {
+        setTheme(readInitialTheme());
+      }
+    };
+    window.addEventListener("st:theme-changed", handler);
+    window.addEventListener("storage", handler);
+    return () => {
+      window.removeEventListener("st:theme-changed", handler);
+      window.removeEventListener("storage", handler);
+    };
+  }, []);
+
+  return theme;
+}
+
+export function ThemeSwitcher({ className }: { className?: string }) {
+  const { t } = useTranslation();
+  const theme = useActiveTheme();
+
+  // Hydrate from storage and apply on mount
   useEffect(() => {
     const initial = readInitialTheme();
-    setTheme(initial);
     applyTheme(initial);
   }, []);
 
   const select = (id: ThemeId): void => {
-    setTheme(id);
     applyTheme(id);
     try {
       window.localStorage.setItem(STORAGE_KEY, id);
+      window.dispatchEvent(new CustomEvent("st:theme-changed", { detail: id }));
     } catch {
       /* ignore */
     }
   };
 
   const current = THEMES.find((t) => t.id === theme) ?? THEMES[0];
-  const currentLabel = t(`theme.items.${current.id}.label`, current.label);
+  const currentLabel = current.label;
 
   return (
     <DropdownMenu>
@@ -116,27 +152,27 @@ export function ThemeSwitcher() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8"
-                aria-label={`${t("theme.themeLabel", "Theme")}: ${currentLabel}. ${t("theme.changeTheme", "Change theme")}`}
+                className={cn("h-8 w-8 rounded-md transition-colors", className)}
+                aria-label={`Theme: ${currentLabel}. Click to switch theme.`}
               >
                 <span
                   aria-hidden
-                  className="h-4 w-4 rounded-full border border-border-default shadow-e1"
+                  className="h-4 w-4 rounded-full border border-border-default shadow-xs ring-1 ring-border/50"
                   style={{ background: current.swatch }}
                 />
               </Button>
             </DropdownMenuTrigger>
           </TooltipTrigger>
           <TooltipContent side="bottom" className="text-xs">
-            {t("theme.themeLabel", "Theme")} · {currentLabel}
+            Theme · {currentLabel}
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
 
-      <DropdownMenuContent align="end" className="w-64 p-1">
-        <DropdownMenuLabel className="flex items-center gap-2 px-2 py-1.5 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
-          <Palette className="h-3 w-3" aria-hidden />
-          {t("theme.stoneTheme", "Stone theme")}
+      <DropdownMenuContent align="end" className="w-64 p-1 shadow-xl border-border">
+        <DropdownMenuLabel className="flex items-center gap-2 px-2 py-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
+          <Palette className="h-3 w-3 text-primary" aria-hidden />
+          Select Theme
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {THEMES.map((themeItem) => {

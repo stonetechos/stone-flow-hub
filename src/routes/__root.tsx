@@ -27,6 +27,7 @@ import { ConfigurationRequiredScreen } from "@/components/global/ConfigurationRe
 import { consumeManagedSignOut } from "@/lib/auth/managed-sign-out";
 import "@/lib/i18n";
 import { isChunkLoadError, recoverFromChunkError } from "@/lib/router/chunk-recovery";
+import { applyTheme, readInitialTheme } from "@/components/global/ThemeSwitcher";
 
 // Installs the Capacitor server-fn fetch patch (no-op outside the
 // Capacitor build — see that file for why this exists). Called at
@@ -222,10 +223,9 @@ function RootComponent() {
     void installToastDiagnostics();
     registerServiceWorker();
 
-    // Ensure the original STOS Quarry theme is active: clear any legacy theme classes or overrides
+    // Apply active theme (ST OG, ST BW, ST POP, ST Pastel)
     try {
-      localStorage.removeItem("st.stdl.theme");
-      document.documentElement.classList.remove("dark", "theme-batman", "theme-pink", "theme-pop");
+      applyTheme(readInitialTheme());
     } catch {
       /* ignore */
     }
