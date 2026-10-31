@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Gift, Check, ShieldCheck, Eye, Flame, ArrowRight } from "lucide-react";
+import { Gift, Check, ShieldCheck, Eye, Flame, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ShreeYantraDialog } from "./ShreeYantraDialog";
 
@@ -34,28 +34,13 @@ export function ShreeYantraHeroShowcase({
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-emerald-400/15 to-transparent rounded-full blur-2xl pointer-events-none" />
 
         <div className="relative z-10 space-y-4">
-          {/* 1. Header Badges */}
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <div className="flex items-center gap-2 flex-wrap">
-              <Badge className="bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 font-black uppercase text-[10px] sm:text-[11px] tracking-wider px-2.5 py-0.5 shadow-xs border border-amber-400/60">
-                <Sparkles className="h-3 w-3 mr-1 fill-stone-950 inline" />
-                Auspicious Architectural Blessing
-              </Badge>
-              <Badge
-                variant="outline"
-                className="border-emerald-500/50 text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 font-bold text-[10px] sm:text-[11px] px-2 py-0.5"
-              >
-                <Gift className="h-3 w-3 mr-1 text-emerald-600 dark:text-emerald-400 inline" />
-                Complimentary Gift Worth ₹14,999
-              </Badge>
-            </div>
-
-            {isClaimed && (
+          {isClaimed && (
+            <div className="flex justify-end">
               <Badge className="bg-emerald-600 text-white font-extrabold text-[10px] sm:text-[11px] px-2.5 py-0.5 tracking-wider animate-in fade-in shadow-xs">
                 ✓ PRIVILEGE UNLOCKED
               </Badge>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* 2. Headline & Subtitle */}
           <div className="space-y-1.5 text-left">
@@ -94,13 +79,6 @@ export function ShreeYantraHeroShowcase({
                   className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-500"
                   loading="eager"
                 />
-
-                {/* Top Corner Floating Badge */}
-                <div className="absolute top-2 right-2">
-                  <Badge className="bg-amber-500 text-stone-950 font-black text-[9px] sm:text-[10px] px-2 py-0.5 shadow-md border border-amber-300">
-                    MRP ₹14,999 · FREE GIFT
-                  </Badge>
-                </div>
 
                 {/* Bottom Inspection Plaque */}
                 <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-stone-950/95 via-stone-950/80 to-transparent flex items-center justify-between text-[10px] text-amber-200">
