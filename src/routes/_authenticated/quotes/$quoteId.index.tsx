@@ -958,7 +958,10 @@ function QuoteDetailPage() {
                   <span className="text-sm">✨</span>
                   <div>
                     <span className="font-semibold">Special Payment Incentive: </span>
-                    <span>Premake 100% payment to avail 5% discount.</span>
+                    <span>
+                      Premake 100% payment to avail 5% discount + free certified Shree Yantra worth
+                      ₹14,999 on stone product orders &gt; ₹1 Lakh*.
+                    </span>
                   </div>
                 </div>
                 <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] uppercase shrink-0">

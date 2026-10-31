@@ -61,6 +61,8 @@ import { StoneGalleryFeed } from "@/components/landing/StoneGalleryFeed";
 import { LuxuryProductShowcase } from "@/components/landing/LuxuryProductShowcase";
 import { ContactCenter } from "@/components/landing/ContactCenter";
 import { JobOpeningsDialog } from "@/components/landing/JobOpeningsDialog";
+import { ShreeYantraPrepaymentCard } from "@/components/landing/ShreeYantraPrepaymentCard";
+import { ShreeYantraShowcaseSection } from "@/components/landing/ShreeYantraShowcaseSection";
 import { supabase } from "@/integrations/supabase/client";
 import {
   submitPublicEnquiryServerFn,
@@ -575,7 +577,7 @@ function HomePage() {
   const fallbackWhatsappUrl = useMemo(() => {
     const prods = selectedProducts.length > 0 ? selectedProducts.join(", ") : "Architectural Stone";
     const discountLine = prepaymentDiscountSelected
-      ? `*Prepayment Offer:* 100% Advance Payment (5% Discount Applied)\n`
+      ? `*Prepayment Privilege:* 100% Advance Payment (5% Discount + Free Certified Shree Yantra worth ₹14,999 on stone product orders > ₹1L*)\n`
       : "";
     const text = encodeURIComponent(
       `Hello Stone Tech Team! I would like to request an estimate for:\n\n` +
@@ -713,7 +715,7 @@ function HomePage() {
     try {
       const selectedRoleObj = CUSTOMER_ROLES.find((r) => r.value === customerRole);
       const finalPlanDescription = prepaymentDiscountSelected
-        ? `${planDescription.trim()}\n[Prepayment Privilege: 100% advance payment selected to avail 5% discount]`.trim()
+        ? `${planDescription.trim()}\n[Prepayment Privilege: 100% advance payment for 5% discount + Certified Shree Yantra worth ₹14,999 on stone product orders > ₹1L*]`.trim()
         : planDescription.trim();
 
       const result = await submitPublicEnquiryServerFn({
@@ -784,15 +786,15 @@ function HomePage() {
 
               {/* 5% Prepayment Privilege Locked Badge */}
               {prepaymentDiscountSelected && (
-                <div className="rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 p-3.5 flex items-center justify-between gap-2">
+                <div className="rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50/80 dark:bg-amber-950/40 p-3.5 flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                    <span className="text-xs font-bold text-emerald-950 dark:text-emerald-200">
-                      100% Prepayment Privilege Registered
+                    <Sparkles className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                    <span className="text-xs font-bold text-amber-950 dark:text-amber-200">
+                      Prepayment Privilege Locked: 5% OFF + Free Shree Yantra (Orders &gt; ₹1L)*
                     </span>
                   </div>
                   <Badge className="bg-emerald-600 text-white font-bold text-[10px]">
-                    5% OFF LOCKED
+                    PRIVILEGE LOCKED
                   </Badge>
                 </div>
               )}
@@ -1031,85 +1033,23 @@ function HomePage() {
                 </div>
               </div>
 
-              {/* Interactive 5% Prepayment Privilege Offer Card (Exclusive Single Placement) */}
-              <div
-                className={cn(
-                  "relative rounded-2xl border transition-all duration-300 p-4 sm:p-5 shadow-sm overflow-hidden",
-                  prepaymentDiscountSelected
-                    ? "border-emerald-500 bg-gradient-to-br from-emerald-950/20 via-emerald-50/40 to-teal-950/20 dark:from-emerald-950/50 dark:via-stone-900/90 dark:to-teal-950/50 ring-2 ring-emerald-500/40 shadow-md"
-                    : "border-emerald-500/30 bg-gradient-to-br from-emerald-950/10 via-white to-teal-950/10 dark:from-emerald-950/30 dark:via-stone-900/90 dark:to-teal-950/30 hover:border-emerald-500/60 ring-1 ring-emerald-500/20",
-                )}
-              >
-                <div className="absolute top-0 right-0 w-36 h-36 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 relative z-10">
-                  <div className="space-y-1.5 flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Badge className="bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 border border-amber-400/40 shadow-2xs">
-                        <Sparkles className="h-3 w-3 mr-1 fill-stone-950" />
-                        {texts.prepaymentOffer.badge}
-                      </Badge>
-                      <span className="font-cursive text-emerald-600 dark:text-emerald-400 font-bold text-sm sm:text-base">
-                        100% Prepay = Flat 5% Off
-                      </span>
-                      {prepaymentDiscountSelected && (
-                        <Badge className="bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0 animate-in fade-in duration-200">
-                          ✓ APPLIED
-                        </Badge>
-                      )}
-                    </div>
-                    <h3 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
-                      {texts.prepaymentOffer.tagline}
-                    </h3>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      Instant 5% net deduction on your entire custom stone order upon quotation
-                      confirmation with 100% advance payment.
-                    </p>
-                    {prepaymentDiscountSelected && (
-                      <p className="font-cursive text-emerald-700 dark:text-emerald-300 text-sm font-bold pt-0.5 animate-in fade-in duration-200">
-                        ✨ 5% Advance Prepayment Discount is active and will be included in your
-                        quotation!
-                      </p>
-                    )}
-                  </div>
-                  <div className="shrink-0 w-full sm:w-auto pt-1 sm:pt-0">
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={() => {
-                        const next = !prepaymentDiscountSelected;
-                        setPrepaymentDiscountSelected(next);
-                        if (next) {
-                          toast.success(texts.prepaymentOffer.appliedToast);
-                          const formEl = document.getElementById("lead-form");
-                          if (formEl) {
-                            formEl.scrollIntoView({ behavior: "smooth", block: "start" });
-                          }
-                        } else {
-                          toast.info("Prepayment discount unselected.");
-                        }
-                      }}
-                      className={cn(
-                        "w-full sm:w-auto text-xs font-bold h-9 px-4 gap-1.5 shadow-xs cursor-pointer transition-all",
-                        prepaymentDiscountSelected
-                          ? "bg-emerald-700 hover:bg-emerald-800 text-white"
-                          : "bg-emerald-600 hover:bg-emerald-700 text-white hover:scale-[1.02]",
-                      )}
-                    >
-                      {prepaymentDiscountSelected ? (
-                        <>
-                          <Check className="h-3.5 w-3.5 stroke-[3]" />
-                          <span>5% Discount Claimed</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>{texts.prepaymentOffer.claimDiscount}</span>
-                          <ArrowRight className="h-3.5 w-3.5" />
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </div>
+              {/* Interactive Prepayment & Certified Shree Yantra Privilege Card */}
+              <ShreeYantraPrepaymentCard
+                isClaimed={prepaymentDiscountSelected}
+                onToggleClaim={() => {
+                  const next = !prepaymentDiscountSelected;
+                  setPrepaymentDiscountSelected(next);
+                  if (next) {
+                    toast.success(texts.prepaymentOffer.appliedToast);
+                    const formEl = document.getElementById("lead-form");
+                    if (formEl) {
+                      formEl.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
+                  } else {
+                    toast.info("Prepayment privilege unselected.");
+                  }
+                }}
+              />
 
               {/* Supporting Copy */}
               <div className="space-y-4 pt-1">
@@ -1826,6 +1766,16 @@ function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* 2a. SACRED SHREE YANTRA & PREPAYMENT CELEBRATION SHOWCASE */}
+      <ShreeYantraShowcaseSection
+        isClaimed={prepaymentDiscountSelected}
+        onClaimOffer={() => {
+          setPrepaymentDiscountSelected(true);
+          toast.success(texts.prepaymentOffer.appliedToast);
+          scrollToForm(undefined, true);
+        }}
+      />
 
       {/* 2b. LIVE INSTALLATIONS & EXECUTED WORKS (GALLERY FEED & CURATED SHOWCASE) */}
       <section className="py-12 sm:py-16 border-b border-border/60 bg-gradient-to-b from-stone-50/50 via-background to-stone-50/30 dark:from-stone-950/40 dark:via-background dark:to-stone-950/20">

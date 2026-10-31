@@ -89,17 +89,22 @@ describe("Quote Terms & Conditions Engine", () => {
     });
 
     it("includes the 100% advance payment 5% discount disclaimer in all payment term modes", () => {
-      expect(EARLY_PAYMENT_DISCOUNT_DISCLAIMER).toBe("Premake 100% payment to avail 5% discount.");
+      expect(EARLY_PAYMENT_DISCOUNT_DISCLAIMER).toBe(
+        "Premake 100% payment to avail 5% discount, plus a complimentary certified Shree Yantra worth ₹14,999 on stone product purchase value > ₹1 Lakh (excludes installation & chemicals).*",
+      );
       const under50k = buildPaymentTermsTerm("supply_only", 30000);
-      expect(under50k).toContain("Premake 100% payment to avail 5% discount.");
+      expect(under50k).toContain("Premake 100% payment to avail 5% discount");
+      expect(under50k).toContain("Shree Yantra worth ₹14,999");
       expect(hasEarlyPaymentDiscountDisclaimer(under50k)).toBe(true);
 
       const supplyOnly = buildPaymentTermsTerm("supply_only", 80000);
-      expect(supplyOnly).toContain("Premake 100% payment to avail 5% discount.");
+      expect(supplyOnly).toContain("Premake 100% payment to avail 5% discount");
+      expect(supplyOnly).toContain("Shree Yantra worth ₹14,999");
       expect(hasEarlyPaymentDiscountDisclaimer(supplyOnly)).toBe(true);
 
       const supplyInstall = buildPaymentTermsTerm("supply_and_installation", 150000);
-      expect(supplyInstall).toContain("Premake 100% payment to avail 5% discount.");
+      expect(supplyInstall).toContain("Premake 100% payment to avail 5% discount");
+      expect(supplyInstall).toContain("Shree Yantra worth ₹14,999");
       expect(hasEarlyPaymentDiscountDisclaimer(supplyInstall)).toBe(true);
     });
   });

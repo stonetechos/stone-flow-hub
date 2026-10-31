@@ -84,7 +84,7 @@ export function buildEstimateWhatsappMessage(
       : []),
     `Total Estimate: ${formatInr(input.totalEstimate)}`,
     `Notes:`,
-    `Special Offer: Premake 100% payment to avail 5% discount.`,
+    `Special Offer: Premake 100% payment to avail 5% discount + free certified Shree Yantra worth ₹14,999 on stone product orders > ₹1 Lakh (excludes installation & chemicals).*`,
     ...(hasInstallation ? [`Scaffolding, if required, will be provided by the customer.`] : []),
     ...(input.cartingAmount && input.cartingAmount > 0
       ? []

@@ -22,7 +22,8 @@ export type DealScope = "supply_only" | "supply_and_installation";
 export type DeliveryTimelineMode = "days" | "date";
 
 export const ADVANCE_PAYMENT_THRESHOLD_INR = 50000;
-export const EARLY_PAYMENT_DISCOUNT_DISCLAIMER = "Premake 100% payment to avail 5% discount.";
+export const EARLY_PAYMENT_DISCOUNT_DISCLAIMER =
+  "Premake 100% payment to avail 5% discount, plus a complimentary certified Shree Yantra worth ₹14,999 on stone product purchase value > ₹1 Lakh (excludes installation & chemicals).*";
 
 export interface QuoteTermsOptions {
   dealScope?: DealScope;

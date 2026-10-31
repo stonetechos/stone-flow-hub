@@ -534,7 +534,7 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
               <span style="font-size:11px;line-height:1;">✨</span>
               <span style="font-size:8px;color:#15803d;line-height:1.35;font-weight:600;">
                 <strong style="font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:0.03em;">Payment Incentive:</strong>
-                Premake 100% payment to avail 5% discount.
+                Premake 100% payment to avail 5% discount + complimentary certified Shree Yantra worth ₹14,999 on stone product purchase value > ₹1 Lakh (excludes installation & chemicals).*
               </span>
             </div>
             <span style="font-size:7.5px;font-weight:700;color:#15803d;background:#dcfce7;border:1px solid #bbf7d0;padding:1.5px 5px;border-radius:3px;text-transform:uppercase;letter-spacing:0.04em;white-space:nowrap;">5% OFF ADVANCE</span>
