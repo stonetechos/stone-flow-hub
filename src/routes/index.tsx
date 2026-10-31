@@ -61,8 +61,7 @@ import { StoneGalleryFeed } from "@/components/landing/StoneGalleryFeed";
 import { LuxuryProductShowcase } from "@/components/landing/LuxuryProductShowcase";
 import { ContactCenter } from "@/components/landing/ContactCenter";
 import { JobOpeningsDialog } from "@/components/landing/JobOpeningsDialog";
-import { ShreeYantraPrepaymentCard } from "@/components/landing/ShreeYantraPrepaymentCard";
-import { ShreeYantraShowcaseSection } from "@/components/landing/ShreeYantraShowcaseSection";
+import { ShreeYantraHeroShowcase } from "@/components/landing/ShreeYantraHeroShowcase";
 import { supabase } from "@/integrations/supabase/client";
 import {
   submitPublicEnquiryServerFn,
@@ -1033,8 +1032,8 @@ function HomePage() {
                 </div>
               </div>
 
-              {/* Interactive Prepayment & Certified Shree Yantra Privilege Card */}
-              <ShreeYantraPrepaymentCard
+              {/* Scaled Sacred Shree Yantra & Prepayment Privilege Showcase (Single Exclusive Ad) */}
+              <ShreeYantraHeroShowcase
                 isClaimed={prepaymentDiscountSelected}
                 onToggleClaim={() => {
                   const next = !prepaymentDiscountSelected;
@@ -1766,16 +1765,6 @@ function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* 2a. SACRED SHREE YANTRA & PREPAYMENT CELEBRATION SHOWCASE */}
-      <ShreeYantraShowcaseSection
-        isClaimed={prepaymentDiscountSelected}
-        onClaimOffer={() => {
-          setPrepaymentDiscountSelected(true);
-          toast.success(texts.prepaymentOffer.appliedToast);
-          scrollToForm(undefined, true);
-        }}
-      />
 
       {/* 2b. LIVE INSTALLATIONS & EXECUTED WORKS (GALLERY FEED & CURATED SHOWCASE) */}
       <section className="py-12 sm:py-16 border-b border-border/60 bg-gradient-to-b from-stone-50/50 via-background to-stone-50/30 dark:from-stone-950/40 dark:via-background dark:to-stone-950/20">
