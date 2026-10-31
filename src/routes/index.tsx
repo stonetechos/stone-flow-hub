@@ -62,6 +62,7 @@ import { LuxuryProductShowcase } from "@/components/landing/LuxuryProductShowcas
 import { ContactCenter } from "@/components/landing/ContactCenter";
 import { JobOpeningsDialog } from "@/components/landing/JobOpeningsDialog";
 import { ShreeYantraHeroShowcase } from "@/components/landing/ShreeYantraHeroShowcase";
+import { DiwaliCelebrationEffects } from "@/components/landing/DiwaliCelebrationEffects";
 import { supabase } from "@/integrations/supabase/client";
 import {
   submitPublicEnquiryServerFn,
@@ -879,6 +880,9 @@ function HomePage() {
   // -------------------------------------------------------------
   return (
     <div className="min-h-screen paper-texture dark:bg-slate-950 text-foreground antialiased pb-20 sm:pb-12 w-full max-w-full overflow-x-hidden">
+      {/* DIWALI CELEBRATION: Animated Moving Diyas & Ambient Firecracker Sparkles */}
+      <DiwaliCelebrationEffects />
+
       {/* 1. STOS ENTERPRISE NAVBAR (TURQUOISE & PAPER WHITE) */}
       <header className="sticky top-0 z-40 border-b border-border/80 bg-background/95 backdrop-blur-md shadow-2xs pt-[max(env(safe-area-inset-top),0px)]">
         <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
