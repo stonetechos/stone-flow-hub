@@ -376,10 +376,12 @@ export async function listOrderPipeline(): Promise<OrderPipelineItem[]> {
         (vendorId && vendorName && vendorName !== "Unassigned Yet"),
       );
 
-      const customerDeadline =
-        (wf.promised_delivery_date as string | undefined) || quote.valid_until || null;
+      const customerDeadline = (wf.promised_delivery_date as string | undefined) || null;
+      const isFulfilled = fulfilmentType === "stock_lifted" || isCustomerOrderCompleted;
 
-      const { bufferDays, health } = calculateDeadlineHealth(null, customerDeadline, "accepted");
+      const { bufferDays, health } = isFulfilled
+        ? { bufferDays: null, health: "completed" as const }
+        : calculateDeadlineHealth(null, customerDeadline, "accepted");
 
       pipeline.push({
         id: `quote-${quote.id}`,
@@ -408,7 +410,9 @@ export async function listOrderPipeline(): Promise<OrderPipelineItem[]> {
         bufferDays,
         health,
 
-        status: "Accepted · Awaiting Fulfilment",
+        status: isFulfilled
+          ? "Fulfilled · Material Lifted from Stock"
+          : "Accepted · Awaiting Fulfilment",
         notes: quote.notes,
         projectCode: quote.project?.project_code ?? null,
         projectName: quote.project?.name ?? null,

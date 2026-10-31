@@ -36,4 +36,10 @@ describe("calculateDeadlineHealth", () => {
     expect(result.health).toBe("completed");
     expect(result.bufferDays).toBe(null);
   });
+
+  it("returns on_track without false overdue when customer deadline is not set", () => {
+    const result = calculateDeadlineHealth(null, null, "accepted", refDate);
+    expect(result.health).toBe("on_track");
+    expect(result.bufferDays).toBe(null);
+  });
 });
