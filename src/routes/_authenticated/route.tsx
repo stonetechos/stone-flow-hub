@@ -13,6 +13,7 @@ import { ErrorBlock, LoadingBlock } from "@/components/layout/States";
 import { classifyFailure } from "@/lib/errors";
 import { getSupabaseConfigStatus } from "@/lib/env/config-status";
 import { beginManagedSignOut } from "@/lib/auth/managed-sign-out";
+import { getStoredAuthSessionSync, isStoredSessionValid } from "@/lib/auth/stored-session";
 import { useAuthReady } from "@/hooks/use-auth-ready";
 import { isChunkLoadError, recoverFromChunkError } from "@/lib/router/chunk-recovery";
 import { toast } from "sonner";
@@ -29,33 +30,9 @@ export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   pendingMinMs: 0,
   beforeLoad: async () => {
-    // When Supabase isn't configured, the root route
-    // (`__root.tsx`) renders the global configuration screen instead of
-    // this route's `<Outlet/>` regardless of what beforeLoad returns here —
-    // so the only requirement in this branch is "don't throw". Touching
-    // `supabase` while misconfigured would throw before this function even
-    // reaches its first `await`, which previously surfaced as a generic
-    // router error instead of the configuration screen.
     if (!getSupabaseConfigStatus().ok) return { user: null };
 
-    // Verify session locally first (instant, non-blocking from storage, guarded with 2s safety timeout)
-    const sessionPromise = supabase.auth.getSession().catch(() => ({ data: { session: null } }));
-    const sessionTimeout = new Promise<{ data: { session: null } }>((resolve) =>
-      setTimeout(() => resolve({ data: { session: null } }), 2000),
-    );
-    const { data: sessionData } = await Promise.race([sessionPromise, sessionTimeout]);
-    const session = sessionData?.session;
-
-    if (!session?.user) {
-      cachedUserAuth = null;
-      throw redirect({ to: "/auth", search: { flow: "signin" } });
-    }
-
-    const now = Math.floor(Date.now() / 1000);
-    const expiresAt = session.expires_at ?? 0;
-    const isExpired = expiresAt > 0 && expiresAt <= now;
-
-    // Fast-path: check in-memory cache or sessionStorage
+    // Fast-path helper: check in-memory cache or sessionStorage
     const isSessionVerified = (uid: string) => {
       if (
         cachedUserAuth &&
@@ -81,8 +58,33 @@ export const Route = createFileRoute("/_authenticated")({
       return false;
     };
 
-    if (!isExpired && isSessionVerified(session.user.id)) {
-      return { user: session.user };
+    // 1. FAST PATH (0ms): Check synchronous localStorage session and verification cache.
+    // If the user has a valid local session token and was verified in this session, return immediately in 0ms!
+    const stored = getStoredAuthSessionSync();
+    if (!stored?.user?.id) {
+      cachedUserAuth = null;
+      throw redirect({ to: "/auth", search: { flow: "signin" } });
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    const expiresAt = stored.expires_at ?? 0;
+    const isExpired = expiresAt > 0 && expiresAt <= now;
+
+    if (!isExpired && isSessionVerified(stored.user.id)) {
+      return { user: stored.user as never };
+    }
+
+    // 2. COLD / VERIFY PATH: Run when session is new or expired
+    const sessionPromise = supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+    const sessionTimeout = new Promise<{ data: { session: null } }>((resolve) =>
+      setTimeout(() => resolve({ data: { session: null } }), 2000),
+    );
+    const { data: sessionData } = await Promise.race([sessionPromise, sessionTimeout]);
+    const session = sessionData?.session;
+
+    if (!session?.user) {
+      cachedUserAuth = null;
+      throw redirect({ to: "/auth", search: { flow: "signin" } });
     }
 
     let activeUser = session.user;

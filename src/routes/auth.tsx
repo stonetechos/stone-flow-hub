@@ -35,6 +35,7 @@ import { Label } from "@/components/ui/label";
 import { toUserMessage } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 import { getSupabaseConfigStatus } from "@/lib/env/config-status";
+import { getStoredAuthSessionSync, isStoredSessionValid } from "@/lib/auth/stored-session";
 import { POWERED_BY_LINE } from "@/lib/platform/application";
 import { LoadingBlock } from "@/components/layout/States";
 
@@ -91,33 +92,19 @@ export const Route = createFileRoute("/auth")({
   validateSearch: (search) => flowSchema.parse(search),
   beforeLoad: async ({ search }) => {
     if (typeof window === "undefined") return;
-    // See the matching comment in
-    // `_authenticated/route.tsx` — the root route already replaces the
-    // entire app with the configuration screen when misconfigured, so this
-    // only needs to avoid throwing.
+    // See the matching comment in `_authenticated/route.tsx`
     if (!getSupabaseConfigStatus().ok) return;
     // When an invitation token or recovery token is present in the URL,
     // let AuthPage mount so it can execute verifyOtp without auto-redirecting.
     if (search.token_hash || search.token) return;
     // Only bounce authenticated users away from the sign-in surface.
     if (search.flow && search.flow !== "signin") return;
-    // supabase-js serialises every auth call behind a `navigator.locks`
-    // lock and `getSession()` can trigger a token refresh against the
-    // Supabase host. If that host is unreachable — offline, DNS-blocked,
-    // blocked by an extension — the promise never settles, and since this
-    // route is `ssr: false` the result is a permanently blank sign-in page.
-    // Losing the redirect-if-already-signed-in convenience is a far better
-    // outcome than losing the page, so the check gives up after 4 seconds
-    // and falls through to rendering the form.
-    const session = await Promise.race([
-      supabase.auth
-        .getSession()
-        .then(({ data }) => data.session)
-        .catch(() => null),
-      new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000)),
-    ]);
-    const now = Math.floor(Date.now() / 1000);
-    if (session?.user && (!session.expires_at || session.expires_at > now)) {
+
+    // Fast synchronous check against localStorage (0ms):
+    // Avoids waiting on `supabase.auth.getSession()` which acquires navigator.locks
+    // and causes Safari/WebKit to hang on a blank screen for multiple seconds.
+    const stored = getStoredAuthSessionSync();
+    if (stored && isStoredSessionValid(stored)) {
       throw redirect({ to: "/dashboard" });
     }
   },

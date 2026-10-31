@@ -487,8 +487,8 @@ function LineItemsEditor({
   };
 
   const updateImgMut = useMutation({
-    mutationFn: async ({ id, url }: { id: string; url: string | null }) => {
-      await updateQuoteItemImage(quoteId, id, url);
+    mutationFn: async ({ id, url, desc }: { id: string; url: string | null; desc?: string }) => {
+      await updateQuoteItemImage(quoteId, id, url, desc);
     },
     onSuccess: (_, vars) => {
       invalidate();
@@ -515,30 +515,41 @@ function LineItemsEditor({
     const toastId = toast.loading("Compressing and attaching photo…");
 
     try {
-      // 1. High-speed client-side canvas compression down to max 800px width/height and 0.8 quality
-      // Drops a 5MB phone photo down to ~35-50KB with zero visible loss on print/screen
-      const compressedDataUrl = await compressImageToDataUrl(file, 800, 0.8);
+      // 1. High-speed client-side canvas compression down to max 640px width/height and 0.7 quality
+      // Drops a 5MB phone photo down to ~20-30KB with zero visible loss on print/screen
+      const compressedDataUrl = await compressImageToDataUrl(file, 640, 0.7);
       let finalUrl = compressedDataUrl;
 
-      // 2. Try uploading to Supabase Storage if available
+      // 2. Try uploading to Supabase Storage with 4s timeout
       try {
-        const res = await fetch(compressedDataUrl);
-        const blob = await res.blob();
-        const safeExt = file.name.split(".").pop()?.toLowerCase() || "jpg";
-        const storagePath = `quotes/${quoteId}/line_items/${rowId}_${Date.now()}.${safeExt}`;
+        const uploadPromise = (async () => {
+          const res = await fetch(compressedDataUrl);
+          const blob = await res.blob();
+          const safeExt = file.name.split(".").pop()?.toLowerCase() || "jpg";
+          const storagePath = `quotes/${quoteId}/line_items/${rowId}_${Date.now()}.${safeExt}`;
 
-        const { data: upData, error: upErr } = await supabase.storage
-          .from(FILES_BUCKET)
-          .upload(storagePath, blob, {
-            contentType: "image/jpeg",
-            upsert: true,
-          });
+          const { data: upData, error: upErr } = await supabase.storage
+            .from(FILES_BUCKET)
+            .upload(storagePath, blob, {
+              contentType: "image/jpeg",
+              upsert: true,
+            });
 
-        if (!upErr && upData) {
-          const { data: pubData } = supabase.storage.from(FILES_BUCKET).getPublicUrl(storagePath);
-          if (pubData?.publicUrl) {
-            finalUrl = pubData.publicUrl;
+          if (!upErr && upData) {
+            const { data: pubData } = supabase.storage.from(FILES_BUCKET).getPublicUrl(storagePath);
+            if (pubData?.publicUrl) {
+              return pubData.publicUrl;
+            }
           }
+          return null;
+        })();
+
+        const timeoutPromise = new Promise<null>((resolve) =>
+          setTimeout(() => resolve(null), 4000),
+        );
+        const uploadedUrl = await Promise.race([uploadPromise, timeoutPromise]);
+        if (uploadedUrl) {
+          finalUrl = uploadedUrl;
         }
       } catch (storageErr) {
         console.warn(
@@ -547,7 +558,8 @@ function LineItemsEditor({
         );
       }
 
-      await updateQuoteItemImage(quoteId, rowId, finalUrl);
+      const currentRow = rows.find((r) => r.id === rowId);
+      await updateQuoteItemImage(quoteId, rowId, finalUrl, currentRow?.description);
       invalidate();
       toast.success("Product photo updated successfully", { id: toastId });
     } catch (err) {
@@ -830,7 +842,13 @@ function LineItemsEditor({
                               type="button"
                               variant="ghost"
                               size="icon"
-                              onClick={() => updateImgMut.mutate({ id: r.id, url: null })}
+                              onClick={() =>
+                                updateImgMut.mutate({
+                                  id: r.id,
+                                  desc: r.description,
+                                  url: null,
+                                })
+                              }
                               className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
                               title="Remove photo from line item"
                             >

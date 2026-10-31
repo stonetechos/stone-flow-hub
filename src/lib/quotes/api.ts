@@ -880,6 +880,7 @@ export async function updateQuoteItemImage(
   quoteId: string,
   itemKeyOrDesc: string,
   imageUrl: string | null,
+  descriptionHint?: string | null,
 ): Promise<void> {
   const { data: q, error: fetchErr } = await getDb()
     .from("quotes")
@@ -891,22 +892,30 @@ export async function updateQuoteItemImage(
   const wf = (q.workflow_state as Record<string, unknown> | null) ?? {};
   const currentImages = { ...((wf.line_item_images as Record<string, string> | null) ?? {}) };
 
-  // Sanitize any historical oversized base64 strings (> 200KB) to prevent Postgres statement timeout
+  // Sanitize any historical oversized base64 strings (> 60KB) to prevent Postgres statement timeout
   for (const [k, v] of Object.entries(currentImages)) {
-    if (typeof v === "string" && v.startsWith("data:") && v.length > 200_000) {
+    if (typeof v === "string" && v.startsWith("data:") && v.length > 60_000) {
       delete currentImages[k];
     }
   }
 
-  const key = itemKeyOrDesc.trim().toLowerCase();
+  const keysToUpdate = new Set<string>();
+  if (itemKeyOrDesc?.trim()) keysToUpdate.add(itemKeyOrDesc.trim().toLowerCase());
+  if (descriptionHint?.trim()) keysToUpdate.add(descriptionHint.trim().toLowerCase());
+
   if (imageUrl && imageUrl.trim()) {
-    currentImages[key] = imageUrl.trim();
+    const cleanUrl = imageUrl.trim();
+    for (const k of keysToUpdate) {
+      currentImages[k] = cleanUrl;
+    }
   } else {
     // Explicitly set suppression sentinel so getLineItemImage suppresses fallback catalog/wall_estimate images
-    currentImages[key] = "__none__";
+    for (const k of keysToUpdate) {
+      currentImages[k] = "__none__";
+    }
   }
 
-  const updatedWf = pruneOversizedDataUrls({ ...wf, line_item_images: currentImages }, 150_000);
+  const updatedWf = pruneOversizedDataUrls({ ...wf, line_item_images: currentImages }, 80_000);
   const { error } = await getDb()
     .from("quotes")
     .update({ workflow_state: updatedWf } as never)

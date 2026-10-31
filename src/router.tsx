@@ -54,7 +54,7 @@ export const getRouter = () => {
     // handle a failure that reaches this far. Adding a default here would
     // catch those errors per-match instead and quietly replace that
     // full-page report with a fragment nested inside a half-built screen.
-    defaultPendingMs: 1000,
+    defaultPendingMs: 200,
     defaultPendingComponent: () => <LoadingBlock />,
   });
 
