@@ -46,6 +46,8 @@ import {
   Truck,
   Search,
   Briefcase,
+  Calculator,
+  Tag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,6 +62,9 @@ import { StoneGalleryFeed } from "@/components/landing/StoneGalleryFeed";
 import { LuxuryProductShowcase } from "@/components/landing/LuxuryProductShowcase";
 import { ContactCenter } from "@/components/landing/ContactCenter";
 import { JobOpeningsDialog } from "@/components/landing/JobOpeningsDialog";
+import { PrepaymentOfferBanner } from "@/components/landing/PrepaymentOfferBanner";
+import { PrepaymentSavingsDialog } from "@/components/landing/PrepaymentSavingsDialog";
+import { PrepaymentOfferCard } from "@/components/landing/PrepaymentOfferCard";
 import { supabase } from "@/integrations/supabase/client";
 import {
   submitPublicEnquiryServerFn,
@@ -395,6 +400,10 @@ function HomePage() {
   // StoneMan AI Mascot Dialog state
   const [stonemanOpen, setStonemanOpen] = useState(false);
 
+  // 100% Prepayment Privilege Offer state
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
+  const [prepaymentDiscountSelected, setPrepaymentDiscountSelected] = useState(false);
+
   // Clear specific error on field change
   const clearError = (field: string) => {
     if (formErrors[field]) {
@@ -525,10 +534,15 @@ function HomePage() {
     );
   };
 
-  const scrollToForm = (productNameToSelect?: string) => {
+  const scrollToForm = (productNameToSelect?: string, withDiscount = false) => {
     // Crucial: ALWAYS bring the user to Step 1 so the product selection is in view!
     setFormStep(1);
     clearError("selectedProducts");
+
+    if (withDiscount) {
+      setPrepaymentDiscountSelected(true);
+      toast.success(texts.prepaymentOffer.appliedToast);
+    }
 
     if (productNameToSelect) {
       const matched = matchMasterProduct(productNameToSelect);
@@ -544,9 +558,9 @@ function HomePage() {
     const formEl = document.getElementById("lead-form");
     if (formEl) {
       formEl.scrollIntoView({ behavior: "smooth", block: "start" });
-      formEl.classList.add("ring-4", "ring-primary/60", "transition-all", "duration-500");
+      formEl.classList.add("ring-4", "ring-emerald-500/60", "transition-all", "duration-500");
       setTimeout(() => {
-        formEl.classList.remove("ring-4", "ring-primary/60");
+        formEl.classList.remove("ring-4", "ring-emerald-500/60");
       }, 2000);
     }
   };
@@ -565,6 +579,9 @@ function HomePage() {
   // Pre-calculated WhatsApp fallback URL in case of network timeout
   const fallbackWhatsappUrl = useMemo(() => {
     const prods = selectedProducts.length > 0 ? selectedProducts.join(", ") : "Architectural Stone";
+    const discountLine = prepaymentDiscountSelected
+      ? `*Prepayment Offer:* 100% Advance Payment (5% Discount Applied)\n`
+      : "";
     const text = encodeURIComponent(
       `Hello Stone Tech Team! I would like to request an estimate for:\n\n` +
         `*Name:* ${name || "Client"}\n` +
@@ -573,10 +590,20 @@ function HomePage() {
         `*Space:* ${spaceType}\n` +
         `*City:* ${city || "Not specified"}\n` +
         `*Required by:* ${requiredDate}\n` +
+        discountLine +
         (planDescription ? `*Details:* ${planDescription}\n` : ""),
     );
     return `https://api.whatsapp.com/send?phone=917742090866&text=${text}`;
-  }, [name, whatsapp, selectedProducts, spaceType, city, requiredDate, planDescription]);
+  }, [
+    name,
+    whatsapp,
+    selectedProducts,
+    spaceType,
+    city,
+    requiredDate,
+    planDescription,
+    prepaymentDiscountSelected,
+  ]);
 
   const handlePhotoUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -690,6 +717,10 @@ function HomePage() {
 
     try {
       const selectedRoleObj = CUSTOMER_ROLES.find((r) => r.value === customerRole);
+      const finalPlanDescription = prepaymentDiscountSelected
+        ? `${planDescription.trim()}\n[Prepayment Privilege: 100% advance payment selected to avail 5% discount]`.trim()
+        : planDescription.trim();
+
       const result = await submitPublicEnquiryServerFn({
         data: {
           name: name.trim(),
@@ -702,7 +733,7 @@ function HomePage() {
           space_type: spaceType,
           required_date: requiredDate,
           selected_products: selectedProducts,
-          plan_description: planDescription.trim(),
+          plan_description: finalPlanDescription,
           photos: photos.map((p) => ({
             name: p.name,
             dataUrl: p.dataUrl,
@@ -755,6 +786,21 @@ function HomePage() {
                 </div>
                 <p className="text-xs text-muted-foreground">{texts.success.refNote}</p>
               </div>
+
+              {/* 5% Prepayment Privilege Locked Badge */}
+              {prepaymentDiscountSelected && (
+                <div className="rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 p-3.5 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span className="text-xs font-bold text-emerald-950 dark:text-emerald-200">
+                      100% Prepayment Privilege Registered
+                    </span>
+                  </div>
+                  <Badge className="bg-emerald-600 text-white font-bold text-[10px]">
+                    5% OFF LOCKED
+                  </Badge>
+                </div>
+              )}
 
               {/* WhatsApp instant response card */}
               <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-5 dark:border-emerald-900 dark:bg-emerald-950/30 space-y-3">
@@ -837,6 +883,19 @@ function HomePage() {
   // -------------------------------------------------------------
   return (
     <div className="min-h-screen paper-texture dark:bg-slate-950 text-foreground antialiased pb-20 sm:pb-12 w-full max-w-full overflow-x-hidden">
+      {/* 0. INTERACTIVE 5% PREPAYMENT PRIVILEGE OFFER BANNER */}
+      <PrepaymentOfferBanner
+        onOpenCalculator={() => setCalculatorOpen(true)}
+        onClaimDiscount={() => scrollToForm(undefined, true)}
+      />
+
+      {/* Savings Calculator Modal Dialog */}
+      <PrepaymentSavingsDialog
+        open={calculatorOpen}
+        onOpenChange={setCalculatorOpen}
+        onApplyDiscount={() => scrollToForm(undefined, true)}
+      />
+
       {/* 1. STOS ENTERPRISE NAVBAR (TURQUOISE & PAPER WHITE) */}
       <header className="sticky top-0 z-40 border-b border-border/80 bg-background/95 backdrop-blur-md shadow-2xs pt-[max(env(safe-area-inset-top),0px)]">
         <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
@@ -868,6 +927,13 @@ function HomePage() {
               className="hover:text-primary transition-colors whitespace-nowrap py-1"
             >
               {texts.nav.ourWork}
+            </a>
+            <a
+              href="#prepayment-savings"
+              className="hover:text-primary transition-colors whitespace-nowrap py-1 inline-flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300 font-bold"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
+              <span>5% Offer</span>
             </a>
             <a
               href="#why-us"
@@ -986,6 +1052,52 @@ function HomePage() {
                   </div>
                   <div className="text-[11px] sm:text-xs text-[#5F6368] dark:text-stone-400 font-medium mt-1">
                     {texts.hero.googleRating}
+                  </div>
+                </div>
+              </div>
+
+              {/* Interactive 5% Prepayment Privilege Teaser Card */}
+              <div className="relative rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-950/15 via-white to-teal-950/15 dark:from-emerald-950/40 dark:via-stone-900/90 dark:to-teal-950/40 p-4 sm:p-5 shadow-sm hover:shadow-md transition-all duration-300 ring-1 ring-emerald-500/20 overflow-hidden group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-500" />
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 relative z-10">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge className="bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 border border-amber-400/40 shadow-2xs">
+                        <Sparkles className="h-3 w-3 mr-1 fill-stone-950" />
+                        {texts.prepaymentOffer.badge}
+                      </Badge>
+                      <span className="font-cursive text-emerald-600 dark:text-emerald-400 font-bold text-sm sm:text-base">
+                        100% Prepay = Flat 5% Off
+                      </span>
+                    </div>
+                    <h3 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
+                      {texts.prepaymentOffer.tagline}
+                    </h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Instant 5% net deduction on your entire order with priority quarry cutting &
+                      crating.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto pt-1 sm:pt-0">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setCalculatorOpen(true)}
+                      className="flex-1 sm:flex-none text-xs font-semibold h-8 border-emerald-500/40 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-700 dark:hover:text-emerald-300 gap-1.5 cursor-pointer"
+                    >
+                      <Calculator className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <span>{texts.prepaymentOffer.calculateSavings}</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => scrollToForm(undefined, true)}
+                      className="flex-1 sm:flex-none text-xs font-bold h-8 bg-emerald-600 hover:bg-emerald-700 text-white gap-1 shadow-xs cursor-pointer"
+                    >
+                      <span>{texts.prepaymentOffer.claimDiscount}</span>
+                      <ArrowRight className="h-3 w-3" />
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -1370,6 +1482,56 @@ function HomePage() {
                           )}
                         </div>
 
+                        {/* 100% Prepayment Privilege Toggle (Step 1) */}
+                        <div
+                          onClick={() => {
+                            const next = !prepaymentDiscountSelected;
+                            setPrepaymentDiscountSelected(next);
+                            if (next) {
+                              toast.success(texts.prepaymentOffer.appliedToast);
+                            }
+                          }}
+                          className={cn(
+                            "p-3 rounded-xl border transition-all cursor-pointer select-none",
+                            prepaymentDiscountSelected
+                              ? "border-emerald-600 dark:border-emerald-400 bg-emerald-500/10 dark:bg-emerald-950/40 ring-1 ring-emerald-500/30 shadow-xs"
+                              : "border-border/80 bg-background hover:bg-muted/60",
+                          )}
+                        >
+                          <div className="flex items-start gap-2.5">
+                            <div
+                              className={cn(
+                                "h-5 w-5 rounded-md border flex items-center justify-center shrink-0 mt-0.5 transition-colors",
+                                prepaymentDiscountSelected
+                                  ? "bg-emerald-600 border-emerald-600 text-white"
+                                  : "border-stone-300 dark:border-stone-600 bg-background",
+                              )}
+                            >
+                              {prepaymentDiscountSelected && (
+                                <Check className="h-3.5 w-3.5 stroke-[3]" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="text-xs font-bold text-foreground">
+                                  {texts.prepaymentOffer.formCheckboxTitle}
+                                </span>
+                                <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white text-[10px] font-black px-1.5 py-0">
+                                  {texts.prepaymentOffer.formCheckboxBadge}
+                                </Badge>
+                              </div>
+                              <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
+                                {texts.prepaymentOffer.formCheckboxDesc}
+                              </p>
+                              {prepaymentDiscountSelected && (
+                                <p className="font-cursive text-emerald-700 dark:text-emerald-300 text-sm font-bold mt-1">
+                                  {texts.prepaymentOffer.formCheckboxActiveNote}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
                         {/* CONTINUE TO PART 2/2 BUTTON */}
                         <div className="pt-2">
                           <Button
@@ -1404,24 +1566,37 @@ function HomePage() {
                     {formStep === 2 && (
                       <div className="space-y-5 animate-in fade-in-50 duration-200">
                         {/* Quick Selection Summary */}
-                        <div className="rounded-xl border border-border/80 bg-background/90 p-3 flex items-center justify-between text-xs">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className="font-semibold text-muted-foreground shrink-0">
-                              {texts.form.selectedLabel}
-                            </span>
-                            <span className="font-bold text-foreground truncate">
-                              {selectedProducts
-                                .map((p) => getProductNameInLang(p, currentLang))
-                                .join(", ") || texts.form.noneSelected}
-                            </span>
+                        <div className="rounded-xl border border-border/80 bg-background/90 p-3 space-y-2 text-xs">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="font-semibold text-muted-foreground shrink-0">
+                                {texts.form.selectedLabel}
+                              </span>
+                              <span className="font-bold text-foreground truncate">
+                                {selectedProducts
+                                  .map((p) => getProductNameInLang(p, currentLang))
+                                  .join(", ") || texts.form.noneSelected}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setFormStep(1)}
+                              className="text-[11px] font-bold text-primary hover:underline shrink-0 cursor-pointer"
+                            >
+                              {texts.form.editStep1}
+                            </button>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => setFormStep(1)}
-                            className="text-[11px] font-bold text-primary hover:underline shrink-0 cursor-pointer"
-                          >
-                            {texts.form.editStep1}
-                          </button>
+                          {prepaymentDiscountSelected && (
+                            <div className="flex items-center justify-between pt-2 border-t border-border/60">
+                              <span className="font-cursive text-emerald-700 dark:text-emerald-300 font-bold text-sm flex items-center gap-1">
+                                <Sparkles className="h-3 w-3 fill-current" />
+                                5% Prepayment Discount Applied
+                              </span>
+                              <Badge className="bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0">
+                                100% UPFRONT
+                              </Badge>
+                            </div>
+                          )}
                         </div>
 
                         {/* STEP 4: CONTACT & LIVE CALENDAR PICKER */}
@@ -1660,6 +1835,44 @@ function HomePage() {
                           </div>
                         )}
 
+                        {/* 100% Prepayment Privilege Toggle (Step 2 Confirmation) */}
+                        <div
+                          onClick={() => {
+                            const next = !prepaymentDiscountSelected;
+                            setPrepaymentDiscountSelected(next);
+                            if (next) {
+                              toast.success(texts.prepaymentOffer.appliedToast);
+                            }
+                          }}
+                          className={cn(
+                            "p-2.5 rounded-xl border transition-all cursor-pointer select-none",
+                            prepaymentDiscountSelected
+                              ? "border-emerald-600 dark:border-emerald-400 bg-emerald-500/10 dark:bg-emerald-950/40 ring-1 ring-emerald-500/30"
+                              : "border-border/80 bg-background hover:bg-muted/60",
+                          )}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div
+                              className={cn(
+                                "h-4 w-4 rounded border flex items-center justify-center shrink-0 transition-colors",
+                                prepaymentDiscountSelected
+                                  ? "bg-emerald-600 border-emerald-600 text-white"
+                                  : "border-stone-300 dark:border-stone-600 bg-background",
+                              )}
+                            >
+                              {prepaymentDiscountSelected && (
+                                <Check className="h-3 w-3 stroke-[3]" />
+                              )}
+                            </div>
+                            <span className="text-xs font-semibold text-foreground flex-1">
+                              {texts.prepaymentOffer.formCheckboxTitle}
+                            </span>
+                            <Badge className="bg-emerald-600 text-white text-[9px] font-bold px-1.5 py-0">
+                              -5%
+                            </Badge>
+                          </div>
+                        </div>
+
                         {/* SUBMIT / BACK BUTTONS */}
                         <div className="pt-2 flex items-center gap-2 sm:gap-2.5">
                           <Button
@@ -1703,6 +1916,40 @@ function HomePage() {
               </Card>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* 2a. INTERACTIVE 100% PREPAYMENT OFFER & SAVINGS CALCULATOR SECTION */}
+      <section
+        id="prepayment-savings"
+        className="py-12 sm:py-16 border-b border-border/60 bg-gradient-to-b from-emerald-950/10 via-background to-teal-950/10 scroll-mt-20"
+      >
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 space-y-6">
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <div className="flex items-center justify-center gap-2">
+              <Badge className="bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 text-xs font-black uppercase tracking-wider px-3 py-1 shadow-sm border border-amber-400/40">
+                <Sparkles className="h-3.5 w-3.5 mr-1 fill-stone-950" />
+                {texts.prepaymentOffer.badge}
+              </Badge>
+            </div>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold tracking-tight text-foreground">
+              Premake 100% Payment to Avail{" "}
+              <span className="text-emerald-600 dark:text-emerald-400 underline decoration-amber-400/60 underline-offset-4">
+                5% Instant Discount
+              </span>
+            </h2>
+            <p className="font-cursive text-lg sm:text-xl text-emerald-700 dark:text-emerald-300 font-bold">
+              ✨ {texts.prepaymentOffer.cursiveTag}
+            </p>
+            <p className="text-xs sm:text-sm text-muted-foreground max-w-xl mx-auto">
+              {texts.prepaymentOffer.calculatorSubtitle}
+            </p>
+          </div>
+
+          <PrepaymentOfferCard
+            onApplyDiscount={() => scrollToForm(undefined, true)}
+            className="shadow-2xl"
+          />
         </div>
       </section>
 

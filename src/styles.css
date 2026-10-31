@@ -47,6 +47,7 @@
   --font-display: "Plus Jakarta Sans", "Outfit", "Inter", system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", "Söhne Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
+  --font-cursive: "Caveat", cursive, "Brush Script MT", sans-serif;
 
   /* ---------- Legacy shadcn colour surface (kept) ---------- */
   --color-background: var(--background);
@@ -1246,6 +1247,10 @@
     inset 0 2px 5px rgba(8, 59, 67, 0.12),
     inset 0 0 14px rgba(14, 116, 144, 0.1),
     0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+@utility font-cursive {
+  font-family: var(--font-cursive);
 }
 
 /* When any Radix overlay is open, Radix already locks body scroll.

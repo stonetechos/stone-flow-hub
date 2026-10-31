@@ -226,6 +226,30 @@ export const LANDING_UI_TRANSLATIONS = {
       inquirySuccessToast:
         "Inquiry received successfully! Our stone specialist will connect with you on WhatsApp.",
     },
+    prepaymentOffer: {
+      badge: "Privilege Offer",
+      tagline: "Premake 100% payment to avail 5% discount",
+      bannerText:
+        "✨ Special Privilege Offer: Premake 100% payment to avail an instant 5% discount on all custom stone fabrication & wall cladding orders!",
+      calculateSavings: "Calculate Savings",
+      claimDiscount: "Claim 5% Discount",
+      calculatorTitle: "Interactive 100% Prepayment Savings Calculator",
+      calculatorSubtitle:
+        "Slide or enter your stone project estimate to see your instant 5% advance payment savings.",
+      cursiveTag: "Special Privilege Offer · 100% Prepayment = Flat 5% Off",
+      orderValue: "Estimated Project Value",
+      instantDiscount: "Instant 5% Advance Discount",
+      netPayable: "Net Payable Amount",
+      youSaveText: "✨ You save {{amount}} instantly by completing 100% advance payment upfront!",
+      applyToInquiryBtn: "Claim 5% Discount in Estimate",
+      appliedToast: "5% Prepayment Discount added to your estimate request!",
+      formCheckboxTitle: "Premake 100% payment to avail 5% discount",
+      formCheckboxBadge: "SAVE 5%",
+      formCheckboxDesc:
+        "Pay 100% advance upon quotation approval to lock in an instant 5% discount.",
+      formCheckboxActiveNote:
+        "✨ 5% Advance Prepayment Discount will be included in your official quotation!",
+    },
   },
   hi: {
     brandSubtitle: "आर्किटेक्चरल स्टोन एटलियर",
@@ -408,6 +432,29 @@ export const LANDING_UI_TRANSLATIONS = {
       inquirySuccessToast:
         "पूछताछ सफलतापूर्वक प्राप्त हुई! हमारे पत्थर विशेषज्ञ जल्द ही व्हाट्सएप पर आपसे संपर्क करेंगे।",
     },
+    prepaymentOffer: {
+      badge: "विशेषाधिकार ऑफर",
+      tagline: "5% छूट प्राप्त करने के लिए 100% अग्रिम भुगतान करें",
+      bannerText:
+        "✨ विशेष ऑफर: सभी कस्टम स्टोन फैब्रिकेशन व क्लैडिंग ऑर्डर्स पर 5% तत्काल छूट पाने हेतु 100% अग्रिम भुगतान करें!",
+      calculateSavings: "बचत कैलकुलेट करें",
+      claimDiscount: "5% छूट पाएं",
+      calculatorTitle: "इंटरैक्टिव 100% अग्रिम भुगतान बचत कैलकुलेटर",
+      calculatorSubtitle:
+        "अपनी तत्काल 5% अग्रिम बचत देखने के लिए प्रोजेक्ट बजट स्लाइड करें या दर्ज करें।",
+      cursiveTag: "विशेषाधिकार ऑफर · 100% अग्रिम भुगतान = फ्लैट 5% छूट",
+      orderValue: "अनुमानित प्रोजेक्ट मूल्य",
+      instantDiscount: "तत्काल 5% अग्रिम छूट",
+      netPayable: "शुद्ध देय राशि",
+      youSaveText: "✨ 100% अग्रिम भुगतान करके आप तत्काल {{amount}} बचाते हैं!",
+      applyToInquiryBtn: "एस्टीमेट में 5% छूट जोड़ें",
+      appliedToast: "आपकी पूछताछ में 5% अग्रिम छूट लागू कर दी गई है!",
+      formCheckboxTitle: "5% छूट पाने हेतु 100% अग्रिम भुगतान करें",
+      formCheckboxBadge: "5% बचत",
+      formCheckboxDesc:
+        "कोटेशन पुष्टि पर 100% अग्रिम भुगतान करके फ्लैट 5% तत्काल छूट सुरक्षित करें।",
+      formCheckboxActiveNote: "✨ आपके आधिकारिक कोटेशन में 5% अग्रिम छूट शामिल की जाएगी!",
+    },
   },
   gu: {
     brandSubtitle: "આર્કિટેક્ચરલ સ્ટોન એટલિયર",
@@ -589,6 +636,29 @@ export const LANDING_UI_TRANSLATIONS = {
       invalidFileType: "{{filename}} ફોટો અથવા પીડીએફ ફાઇલ નથી.",
       inquirySuccessToast:
         "પૂછપરછ સફળતાપૂર્વક પ્રાપ્ત થઈ! અમારા પથ્થર નિષ્ણાત ટૂંક સમયમાં વોટ્સએપ પર તમારો સંપર્ક કરશે.",
+    },
+    prepaymentOffer: {
+      badge: "વિશેષાધિકાર ઑફર",
+      tagline: "5% ડિસ્કાઉન્ટ મેળવવા માટે 100% એડવાન્સ ચુકવણી કરો",
+      bannerText:
+        "✨ વિશેષ ઑફર: તમામ કસ્ટમ સ્ટોન ફેબ્રિકેશન અને ક્લેડીંગ ઓર્ડર પર તાત્કાલિક 5% ડિસ્કાઉન્ટ મેળવવા 100% એડવાન્સ ચુકવણી કરો!",
+      calculateSavings: "બચત ગણો",
+      claimDiscount: "5% ડિસ્કાઉન્ટ મેળવો",
+      calculatorTitle: "ઇન્ટરેક્ટિવ 100% એડવાન્સ પેમેન્ટ બચત કેલ્ક્યુલેટર",
+      calculatorSubtitle:
+        "તમારી તાત્કાલિક 5% એડવાન્સ બચત જોવા માટે પ્રોજેક્ટ અંદાજ સ્લાઇડ કરો અથવા દાખલ કરો.",
+      cursiveTag: "વિશેષાધિકાર ઑફર · 100% એડવાન્સ પેમેન્ટ = ફ્લેટ 5% ડિસ્કાઉન્ટ",
+      orderValue: "અંદાજિત પ્રોજેક્ટ મૂલ્ય",
+      instantDiscount: "તાત્કાલિક 5% એડવાન્સ ડિસ્કાઉન્ટ",
+      netPayable: "ચુકવવાપાત્ર ચોખ્ખી રકમ",
+      youSaveText: "✨ 100% એડવાન્સ પેમેન્ટ કરીને તમે તાત્કાલિક {{amount}} બચાવો છો!",
+      applyToInquiryBtn: "અંદાજમાં 5% ડિસ્કાઉન્ટ ઉમેરો",
+      appliedToast: "તમારી પૂછપરછમાં 5% એડવાન્સ ડિસ્કાઉન્ટ લાગુ કરવામાં આવ્યું છે!",
+      formCheckboxTitle: "5% ડિસ્કાઉન્ટ મેળવવા માટે 100% એડવાન્સ ચુકવણી કરો",
+      formCheckboxBadge: "5% બચત",
+      formCheckboxDesc:
+        "કોટેશન મંજૂર થતાં જ 100% એડવાન્સ પેમેન્ટ કરીને ફ્લેટ 5% તાત્કાલિક ડિસ્કાઉન્ટ મેળવો.",
+      formCheckboxActiveNote: "✨ તમારા સત્તાવાર કોટેશનમાં 5% એડવાન્સ ડિસ્કાઉન્ટ ઉમેરવામાં આવશે!",
     },
   },
 } as const;
