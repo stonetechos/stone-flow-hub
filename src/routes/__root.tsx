@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { StoneGrainFilter } from "@/components/stone/StoneGrainFilter";
+import { DiwaliCelebrationEffects } from "@/components/landing/DiwaliCelebrationEffects";
 import { ViewportDebugPanel } from "@/components/debug/ViewportDebugPanel";
 import { getSupabaseConfigStatus } from "@/lib/env/config-status";
 import { ConfigurationRequiredScreen } from "@/components/global/ConfigurationRequiredScreen";
@@ -301,6 +302,8 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider delayDuration={200}>
         <StoneGrainFilter />
+        {/* Diwali Celebration: Animated Moving Diyas & Live Firecrackers (Chakri, Anaar, Phuljhadi, Rockets) */}
+        <DiwaliCelebrationEffects />
         <Outlet />
         {/* closeButton: lets a toast be dismissed immediately (an X
           appears on hover) instead of waiting out its auto-dismiss timer
