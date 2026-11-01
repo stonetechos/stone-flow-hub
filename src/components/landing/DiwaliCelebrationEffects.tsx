@@ -446,6 +446,7 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
       height = canvas.height = window.innerHeight;
     };
     window.addEventListener("resize", handleResize);
+    window.addEventListener("orientationchange", handleResize);
 
     const particles: Particle[] = [];
     const rockets: SkyRocket[] = [];
@@ -487,9 +488,9 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
     // Spawn high-velocity golden spark from the Anaar flowerpot located at bottom-right
     const spawnAnaarFountain = () => {
       if (particles.length >= maxParticles - 10) return;
-      // Anaar position: approx 150px from right, 45px from bottom
-      const anaarX = width > 640 ? width - 150 : width - 110;
-      const anaarY = height - 42;
+      const isMobile = width < 640;
+      const anaarX = isMobile ? width - 24 : width > 768 ? width - 150 : width - 120;
+      const anaarY = isMobile ? height - 90 : height - 42;
 
       for (let i = 0; i < 2; i++) {
         const spreadAngle = -Math.PI / 2 + (Math.random() - 0.5) * 0.45;
@@ -782,6 +783,7 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
     return () => {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("orientationchange", handleResize);
       window.removeEventListener("mousemove", handlePointerMove);
       window.removeEventListener("touchmove", handlePointerMove);
       window.removeEventListener("click", handleClick);
@@ -801,55 +803,64 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
         />
       )}
 
-      {/* 2. Visual Animated Moving Diyas & Firecrackers Layer */}
+      {/* 2. Visual Animated Moving Diyas & Firecrackers Layer — Fully Responsive Across All Mobile & Desktop Screens */}
       {isEnabled && (
-        <div className="fixed inset-0 pointer-events-none z-25 overflow-hidden" aria-hidden="true">
-          {/* Diya 1: Left Margin Gentle Wave Drifter */}
-          <div className="absolute top-[28%] -left-1 sm:left-4 animate-diya-drift-left opacity-90 drop-shadow-[0_4px_16px_rgba(245,158,11,0.6)]">
-            <DiyaSvg className="w-8 h-8 sm:w-10 sm:h-10 transform -rotate-6" glowIntensity={1.2} />
+        <div
+          className="fixed inset-0 pointer-events-none z-25 overflow-hidden w-full h-full max-w-[100vw]"
+          aria-hidden="true"
+        >
+          {/* Diya 1: Left Margin Gentle Wave Drifter (Kept inside screen bounds) */}
+          <div className="absolute top-[22%] sm:top-[26%] left-1.5 sm:left-4 animate-diya-drift-left opacity-90 drop-shadow-[0_4px_16px_rgba(245,158,11,0.6)]">
+            <DiyaSvg
+              className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 transform -rotate-6"
+              glowIntensity={1.1}
+            />
           </div>
 
-          {/* Diya 2: Right Margin Gentle Wave Drifter */}
-          <div className="absolute top-[48%] -right-1 sm:right-4 animate-diya-drift-right opacity-90 drop-shadow-[0_4px_16px_rgba(245,158,11,0.6)]">
-            <DiyaSvg className="w-8 h-8 sm:w-10 sm:h-10 transform rotate-6" glowIntensity={1.2} />
+          {/* Diya 2: Right Margin Gentle Wave Drifter (Kept inside screen bounds) */}
+          <div className="absolute top-[44%] sm:top-[48%] right-1.5 sm:right-4 animate-diya-drift-right opacity-90 drop-shadow-[0_4px_16px_rgba(245,158,11,0.6)]">
+            <DiyaSvg
+              className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 transform rotate-6"
+              glowIntensity={1.1}
+            />
           </div>
 
-          {/* Diya 3: Ambient Corner Diya at Bottom Left */}
-          <div className="absolute bottom-4 left-3 sm:left-6 animate-diya-subtle-sway opacity-95 drop-shadow-[0_4px_20px_rgba(245,158,11,0.7)]">
-            <DiyaSvg className="w-9 h-9 sm:w-11 sm:h-11" glowIntensity={1.3} />
+          {/* Diya 3: Ambient Corner Diya at Bottom Left (Lifted safely above mobile bottom bar) */}
+          <div className="absolute bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] sm:bottom-4 left-2 sm:left-6 animate-diya-subtle-sway opacity-95 drop-shadow-[0_4px_20px_rgba(245,158,11,0.7)]">
+            <DiyaSvg className="w-7 h-7 sm:w-9 sm:h-9 md:w-11 md:h-11" glowIntensity={1.2} />
           </div>
 
           {/* Firecracker 1: Animated Spinning Chakri (Ground Spinner) at Bottom Left */}
-          <div className="absolute bottom-4 left-16 sm:left-24 animate-chakri-bob opacity-95 drop-shadow-[0_0_16px_rgba(245,158,11,0.75)]">
-            <ChakriFirecracker className="w-10 h-10 sm:w-12 sm:h-12" />
+          <div className="absolute bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] sm:bottom-4 left-10 sm:left-20 md:left-24 animate-chakri-bob opacity-95 drop-shadow-[0_0_16px_rgba(245,158,11,0.75)]">
+            <ChakriFirecracker className="w-7 h-7 sm:w-10 sm:h-10 md:w-12 md:h-12" />
           </div>
 
           {/* Firecracker 2: Animated Anaar (Flowerpot Fountain) at Bottom Right */}
-          <div className="absolute bottom-3 right-28 sm:right-36 animate-anaar-pulse opacity-95 drop-shadow-[0_0_18px_rgba(245,158,11,0.75)]">
-            <AnaarFirecracker className="w-10 h-11 sm:w-12 sm:h-14" />
+          <div className="absolute bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] sm:bottom-3 right-2 sm:right-28 md:right-36 animate-anaar-pulse opacity-95 drop-shadow-[0_0_18px_rgba(245,158,11,0.75)]">
+            <AnaarFirecracker className="w-8 h-9 sm:w-10 sm:h-12 md:w-12 md:h-14" />
           </div>
 
           {/* Firecracker 3: Animated Phuljhadi (Handheld Sparkler) at Left Side */}
-          <div className="absolute top-[65%] -left-1 sm:left-4 animate-phuljhadi-float opacity-90 drop-shadow-[0_0_14px_rgba(251,191,36,0.85)]">
-            <PhuljhadiSparkler className="w-7 h-16 sm:w-9 sm:h-20 transform rotate-12" />
+          <div className="absolute top-[68%] left-1.5 sm:left-4 animate-phuljhadi-float opacity-90 drop-shadow-[0_0_14px_rgba(251,191,36,0.85)]">
+            <PhuljhadiSparkler className="w-5 h-12 sm:w-8 sm:h-18 md:w-9 md:h-20 transform rotate-12" />
           </div>
         </div>
       )}
 
-      {/* 3. Subtle Floating Toggle Button to Enable / Disable Celebration */}
-      <div className="fixed bottom-4 right-20 sm:right-24 z-40 select-none pointer-events-auto">
+      {/* 3. Subtle Floating Toggle Button to Enable / Disable Celebration — Mobile-Safe Positioning */}
+      <div className="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] right-12 sm:bottom-4 sm:right-20 md:right-24 z-40 select-none pointer-events-auto">
         <button
           type="button"
           onClick={toggleEnabled}
           className={cn(
-            "p-2 sm:px-3 sm:py-1.5 rounded-full border backdrop-blur-md text-[11px] font-bold shadow-md transition-all cursor-pointer flex items-center gap-1.5",
+            "h-7 sm:h-8 px-2 sm:px-3 rounded-full border backdrop-blur-md text-[10px] sm:text-[11px] font-bold shadow-md transition-all cursor-pointer flex items-center gap-1.5",
             isEnabled
               ? "bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-200 border-amber-400/50"
               : "bg-stone-500/15 hover:bg-stone-500/25 text-stone-600 dark:text-stone-400 border-stone-300 dark:border-stone-700",
           )}
           title={isEnabled ? "Disable Diwali Celebration Glow" : "Enable Diwali Celebration Glow"}
         >
-          <span className="text-sm">🪔</span>
+          <span className="text-xs sm:text-sm">🪔</span>
           <span className="hidden sm:inline">
             {isEnabled ? "Diwali Celebration" : "Diwali Off"}
           </span>
