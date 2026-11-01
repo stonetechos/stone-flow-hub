@@ -1782,7 +1782,39 @@ function HomePage() {
         </div>
       </section>
 
-      {/* 2b. LIVE INSTALLATIONS & EXECUTED WORKS (GALLERY FEED & CURATED SHOWCASE) */}
+      {/* 2b. NATURAL STONE WALL CLADDING & MOSAICS CATALOGUE — 150 Patterns */}
+      <section
+        id="wall-cladding-catalogue"
+        className="py-14 sm:py-20 border-b border-border/60 bg-gradient-to-b from-emerald-50/30 via-background to-stone-50/20 dark:from-emerald-950/10 dark:via-background dark:to-stone-950/20"
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          {/* Section Header */}
+          <div className="text-center mb-10 space-y-3">
+            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100 dark:bg-emerald-900/40 px-4 py-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-widest border border-emerald-200/60 dark:border-emerald-700/40">
+              <Sparkles className="h-3.5 w-3.5" />
+              2026 Collection · Natural Stone Atelier
+            </div>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-foreground">
+              Wall Cladding &amp; Mosaic Catalogue
+            </h2>
+            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
+              150 handpicked natural stone patterns — marble, quartzite, sandstone, granite &amp;
+              slate — with pricing attached directly on each tile. Click any pattern to request a
+              quote instantly.
+            </p>
+          </div>
+          <WallCladdingCatalog
+            onSelectPattern={(pattern, price) => {
+              scrollToForm(
+                `${pattern.name} (${pattern.id}) - ${pattern.stoneType} @ ${price.currency}${price.price}/${price.unit}`,
+              );
+            }}
+            showAdminBanner={true}
+          />
+        </div>
+      </section>
+
+      {/* 2c. LIVE INSTALLATIONS & EXECUTED WORKS (GALLERY FEED & CURATED SHOWCASE) */}
       <section className="py-12 sm:py-16 border-b border-border/60 bg-gradient-to-b from-stone-50/50 via-background to-stone-50/30 dark:from-stone-950/40 dark:via-background dark:to-stone-950/20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
           {/* Embedded Stone Gallery Feed in rounded container */}
@@ -1794,20 +1826,6 @@ function HomePage() {
           <LuxuryProductShowcase
             onSelectProduct={scrollToForm}
             selectedProducts={selectedProducts}
-          />
-        </div>
-      </section>
-
-      {/* 2c. 140 NATURAL STONE WALL CLADDING & MOSAICS CATALOGUE */}
-      <section className="py-14 sm:py-20 border-b border-border/60 bg-muted/20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <WallCladdingCatalog
-            onSelectPattern={(pattern, price) => {
-              scrollToForm(
-                `${pattern.name} (${pattern.id}) - ${pattern.stoneType} @ ${price.currency}${price.price}/${price.unit}`,
-              );
-            }}
-            showAdminBanner={true}
           />
         </div>
       </section>
