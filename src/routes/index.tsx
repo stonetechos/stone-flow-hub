@@ -59,6 +59,7 @@ import { CountryCodeSelect } from "@/components/forms/inputs/CountryCodeSelect";
 import { CustomerInquiryLookupDialog } from "@/components/enquiry/CustomerInquiryLookupDialog";
 import { StoneGalleryFeed } from "@/components/landing/StoneGalleryFeed";
 import { LuxuryProductShowcase } from "@/components/landing/LuxuryProductShowcase";
+import { WallCladdingCatalog } from "@/components/catalog/WallCladdingCatalog";
 import { ContactCenter } from "@/components/landing/ContactCenter";
 import { JobOpeningsDialog } from "@/components/landing/JobOpeningsDialog";
 import { ShreeYantraHeroShowcase } from "@/components/landing/ShreeYantraHeroShowcase";
@@ -906,6 +907,13 @@ function HomePage() {
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-6 xl:gap-8 text-sm font-semibold text-foreground/80">
             <a
+              href="#wall-cladding-catalogue"
+              className="hover:text-primary transition-colors whitespace-nowrap py-1 flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>150 Cladding Patterns</span>
+            </a>
+            <a
               href="#gallery-feed"
               className="hover:text-primary transition-colors whitespace-nowrap py-1"
             >
@@ -1077,7 +1085,7 @@ function HomePage() {
                 </div>
 
                 {/* CTA */}
-                <div className="pt-2">
+                <div className="pt-2 flex flex-wrap items-center gap-4">
                   <a
                     href="#gallery-feed"
                     className="group inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-[#0D7A7B] dark:text-[#2dd4bf] transition-colors relative cursor-pointer"
@@ -1087,6 +1095,14 @@ function HomePage() {
                       <span className="absolute bottom-0 left-0 w-0 h-[1.5px] bg-[#0D7A7B] dark:bg-[#2dd4bf] transition-all duration-300 ease-out group-hover:w-full" />
                     </span>
                     <ArrowDown className="h-3.5 w-3.5 transition-transform duration-250 ease-out group-hover:translate-y-1" />
+                  </a>
+
+                  <a
+                    href="#wall-cladding-catalogue"
+                    className="group inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 transition-colors"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    <span>150 Wall Cladding Patterns &amp; Attached Pricing</span>
                   </a>
                 </div>
               </div>
@@ -1778,6 +1794,20 @@ function HomePage() {
           <LuxuryProductShowcase
             onSelectProduct={scrollToForm}
             selectedProducts={selectedProducts}
+          />
+        </div>
+      </section>
+
+      {/* 2c. 140 NATURAL STONE WALL CLADDING & MOSAICS CATALOGUE */}
+      <section className="py-14 sm:py-20 border-b border-border/60 bg-muted/20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <WallCladdingCatalog
+            onSelectPattern={(pattern, price) => {
+              scrollToForm(
+                `${pattern.name} (${pattern.id}) - ${pattern.stoneType} @ ${price.currency}${price.price}/${price.unit}`,
+              );
+            }}
+            showAdminBanner={true}
           />
         </div>
       </section>

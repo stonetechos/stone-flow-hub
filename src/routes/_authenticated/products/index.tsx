@@ -57,6 +57,8 @@ import {
   productCreateSchema,
   type ProductCreateInput,
 } from "@/lib/products/schema";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { WallCladdingCatalog } from "@/components/catalog/WallCladdingCatalog";
 import { DEFAULT_NATURAL_STONE_PRODUCTS } from "@/lib/products/default-catalog";
 
 export const Route = createFileRoute("/_authenticated/products/")({
@@ -81,6 +83,7 @@ function ProductsPage() {
   const [editing, setEditing] = useState<ProductRow | null>(null);
   const [toDelete, setToDelete] = useState<ProductRow | null>(null);
   const { prefs, setDensity, toggleColumn, isHidden } = list;
+  const [activeTab, setActiveTab] = useState<"cladding" | "inventory">("cladding");
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
@@ -167,156 +170,197 @@ function ProductsPage() {
         subtitle={t("products.subtitle", "Your natural-stone catalogue.")}
       />
 
-      <DataToolbar
-        count={rows.length}
-        search={list.query}
-        onSearchChange={list.setQuery}
-        searchPlaceholder={t("products.searchPlaceholder", "Search by name or code…")}
-        columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
-        density={<DensityMenu density={prefs.density} onChange={setDensity} />}
-        extra={
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs text-cyan-900 border-cyan-300 hover:bg-cyan-50"
-              onClick={() => seedMut.mutate()}
-              disabled={seedMut.isPending}
-              title={`Ensure all ${DEFAULT_NATURAL_STONE_PRODUCTS.length} standard natural stone products are loaded`}
+      <Tabs
+        value={activeTab}
+        onValueChange={(v) => setActiveTab(v as "cladding" | "inventory")}
+        className="w-full space-y-4"
+      >
+        <div className="flex items-center justify-between pb-1 border-b">
+          <TabsList className="bg-muted/70 p-1 border">
+            <TabsTrigger
+              value="cladding"
+              className="text-xs gap-1.5 data-[state=active]:bg-cyan-600 data-[state=active]:text-white font-semibold"
             >
-              {seedMut.isPending ? (
-                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Sparkles className="mr-1.5 h-3.5 w-3.5 text-amber-500" />
-              )}
-              Sync Default Stones ({DEFAULT_NATURAL_STONE_PRODUCTS.length})
-            </Button>
-            <Button asChild variant="outline" size="sm" className="h-8">
-              <Link to="/products/configure">{t("common.configure", "Configure")}</Link>
-            </Button>
-          </div>
-        }
-        action={
-          <Button size="sm" className="h-8" onClick={openCreate}>
-            <Plus className="mr-1.5 h-3.5 w-3.5" /> {t("products.newProduct", "New product")}
-          </Button>
-        }
-      />
+              <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+              <span>Wall Cladding &amp; Mosaic Atelier (150 Patterns)</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="inventory"
+              className="text-xs gap-1.5 data-[state=active]:bg-cyan-600 data-[state=active]:text-white font-semibold"
+            >
+              <PackageSearch className="h-3.5 w-3.5" />
+              <span>Master Stone Inventory ({rows.length})</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
-      {query.isLoading ? (
-        <SkeletonTable rows={6} columns={6} />
-      ) : query.error ? (
-        <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
-      ) : rows.length === 0 ? (
-        <EmptyState
-          icon={<PackageSearch className="h-6 w-6" />}
-          title={t("products.noProductsYet", "No products yet")}
-          message={t(
-            "products.emptyMessage",
-            "Add stones you deal with to reuse them in enquiries and RFQs.",
-          )}
-          action={
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              <Button
-                onClick={() => seedMut.mutate()}
-                disabled={seedMut.isPending}
-                className="bg-cyan-800 hover:bg-cyan-900 text-white"
-              >
-                {seedMut.isPending ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Sparkles className="mr-2 h-4 w-4 text-amber-300" />
-                )}
-                Load Default Stone Products (29)
+        <TabsContent value="cladding" className="pt-2">
+          <WallCladdingCatalog showAdminBanner={true} />
+        </TabsContent>
+
+        <TabsContent value="inventory" className="space-y-4 pt-1">
+          <DataToolbar
+            count={rows.length}
+            search={list.query}
+            onSearchChange={list.setQuery}
+            searchPlaceholder={t("products.searchPlaceholder", "Search by name or code…")}
+            columns={
+              <ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />
+            }
+            density={<DensityMenu density={prefs.density} onChange={setDensity} />}
+            extra={
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs text-cyan-900 border-cyan-300 hover:bg-cyan-50"
+                  onClick={() => seedMut.mutate()}
+                  disabled={seedMut.isPending}
+                  title={`Ensure all ${DEFAULT_NATURAL_STONE_PRODUCTS.length} standard natural stone products are loaded`}
+                >
+                  {seedMut.isPending ? (
+                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Sparkles className="mr-1.5 h-3.5 w-3.5 text-amber-500" />
+                  )}
+                  Sync Default Stones ({DEFAULT_NATURAL_STONE_PRODUCTS.length})
+                </Button>
+                <Button asChild variant="outline" size="sm" className="h-8">
+                  <Link to="/products/configure">{t("common.configure", "Configure")}</Link>
+                </Button>
+              </div>
+            }
+            action={
+              <Button size="sm" className="h-8" onClick={openCreate}>
+                <Plus className="mr-1.5 h-3.5 w-3.5" /> {t("products.newProduct", "New product")}
               </Button>
-              <Button variant="outline" onClick={openCreate}>
-                <Plus className="mr-2 h-4 w-4" /> {t("products.newProduct", "New product")}
-              </Button>
-            </div>
-          }
-        />
-      ) : (
-        <DataTableShell
-          density={prefs.density}
-          footer={<TablePagination {...list.paginationProps(rows.length)} />}
-        >
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {!isHidden("code") && <TableHead>{t("products.fields.code", "Code")}</TableHead>}
-                {!isHidden("name") && <TableHead>{t("products.fields.name", "Name")}</TableHead>}
-                {!isHidden("stone") && <TableHead>{t("products.fields.stone", "Stone")}</TableHead>}
-                {!isHidden("finish") && (
-                  <TableHead>{t("products.fields.finish", "Finish")}</TableHead>
-                )}
-                {!isHidden("unit") && <TableHead>{t("products.fields.unit", "Unit")}</TableHead>}
-                {!isHidden("thickness") && (
-                  <TableHead>{t("products.fields.thickness", "Thickness (mm)")}</TableHead>
-                )}
-                <TableHead className="w-12" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {pageRows.map((p) => (
-                <TableRow key={p.id}>
-                  {!isHidden("code") && (
-                    <TableCell className="font-mono text-xs">
-                      <Link
-                        to="/products/$productId"
-                        params={{ productId: p.id }}
-                        className="hover:underline"
-                      >
-                        {p.product_code}
-                      </Link>
-                    </TableCell>
-                  )}
-                  {!isHidden("name") && (
-                    <TableCell className="font-medium">
-                      <Link
-                        to="/products/$productId"
-                        params={{ productId: p.id }}
-                        className="hover:underline"
-                      >
-                        {p.name}
-                      </Link>
-                    </TableCell>
-                  )}
-                  {!isHidden("stone") && (
-                    <TableCell>
-                      <Badge variant="secondary" className="capitalize">
-                        {p.stone_type ?? "—"}
-                      </Badge>
-                    </TableCell>
-                  )}
-                  {!isHidden("finish") && (
-                    <TableCell className="capitalize">
-                      {p.finish?.replace("_", " ") ?? "—"}
-                    </TableCell>
-                  )}
-                  {!isHidden("unit") && <TableCell>{p.default_unit}</TableCell>}
-                  {!isHidden("thickness") && <TableCell>{p.thickness_mm ?? "—"}</TableCell>}
-                  <TableCell>
-                    <RowActions
-                      extra={
-                        <DropdownMenuItem asChild>
-                          <Link to="/products/$productId" params={{ productId: p.id }}>
-                            <ExternalLink className="mr-2 h-4 w-4" /> {t("common.open", "Open")}
+            }
+          />
+
+          {query.isLoading ? (
+            <SkeletonTable rows={6} columns={6} />
+          ) : query.error ? (
+            <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
+          ) : rows.length === 0 ? (
+            <EmptyState
+              icon={<PackageSearch className="h-6 w-6" />}
+              title={t("products.noProductsYet", "No products yet")}
+              message={t(
+                "products.emptyMessage",
+                "Add stones you deal with to reuse them in enquiries and RFQs.",
+              )}
+              action={
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <Button
+                    onClick={() => seedMut.mutate()}
+                    disabled={seedMut.isPending}
+                    className="bg-cyan-800 hover:bg-cyan-900 text-white"
+                  >
+                    {seedMut.isPending ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="mr-2 h-4 w-4 text-amber-300" />
+                    )}
+                    Load Default Stone Products (29)
+                  </Button>
+                  <Button variant="outline" onClick={openCreate}>
+                    <Plus className="mr-2 h-4 w-4" /> {t("products.newProduct", "New product")}
+                  </Button>
+                </div>
+              }
+            />
+          ) : (
+            <DataTableShell
+              density={prefs.density}
+              footer={<TablePagination {...list.paginationProps(rows.length)} />}
+            >
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    {!isHidden("code") && (
+                      <TableHead>{t("products.fields.code", "Code")}</TableHead>
+                    )}
+                    {!isHidden("name") && (
+                      <TableHead>{t("products.fields.name", "Name")}</TableHead>
+                    )}
+                    {!isHidden("stone") && (
+                      <TableHead>{t("products.fields.stone", "Stone")}</TableHead>
+                    )}
+                    {!isHidden("finish") && (
+                      <TableHead>{t("products.fields.finish", "Finish")}</TableHead>
+                    )}
+                    {!isHidden("unit") && (
+                      <TableHead>{t("products.fields.unit", "Unit")}</TableHead>
+                    )}
+                    {!isHidden("thickness") && (
+                      <TableHead>{t("products.fields.thickness", "Thickness (mm)")}</TableHead>
+                    )}
+                    <TableHead className="w-12" />
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {pageRows.map((p) => (
+                    <TableRow key={p.id}>
+                      {!isHidden("code") && (
+                        <TableCell className="font-mono text-xs">
+                          <Link
+                            to="/products/$productId"
+                            params={{ productId: p.id }}
+                            className="hover:underline"
+                          >
+                            {p.product_code}
                           </Link>
-                        </DropdownMenuItem>
-                      }
-                      onEdit={() => {
-                        setEditing(p);
-                        setFormOpen(true);
-                      }}
-                      onDelete={() => setToDelete(p)}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </DataTableShell>
-      )}
+                        </TableCell>
+                      )}
+                      {!isHidden("name") && (
+                        <TableCell className="font-medium">
+                          <Link
+                            to="/products/$productId"
+                            params={{ productId: p.id }}
+                            className="hover:underline"
+                          >
+                            {p.name}
+                          </Link>
+                        </TableCell>
+                      )}
+                      {!isHidden("stone") && (
+                        <TableCell>
+                          <Badge variant="secondary" className="capitalize">
+                            {p.stone_type ?? "—"}
+                          </Badge>
+                        </TableCell>
+                      )}
+                      {!isHidden("finish") && (
+                        <TableCell className="capitalize">
+                          {p.finish?.replace("_", " ") ?? "—"}
+                        </TableCell>
+                      )}
+                      {!isHidden("unit") && <TableCell>{p.default_unit}</TableCell>}
+                      {!isHidden("thickness") && <TableCell>{p.thickness_mm ?? "—"}</TableCell>}
+                      <TableCell>
+                        <RowActions
+                          extra={
+                            <DropdownMenuItem asChild>
+                              <Link to="/products/$productId" params={{ productId: p.id }}>
+                                <ExternalLink className="mr-2 h-4 w-4" /> {t("common.open", "Open")}
+                              </Link>
+                            </DropdownMenuItem>
+                          }
+                          onEdit={() => {
+                            setEditing(p);
+                            setFormOpen(true);
+                          }}
+                          onDelete={() => setToDelete(p)}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </DataTableShell>
+          )}
+        </TabsContent>
+      </Tabs>
 
       <ProductFormDialog open={formOpen} onOpenChange={setFormOpen} editing={editing} />
       <SafeDeleteDialog

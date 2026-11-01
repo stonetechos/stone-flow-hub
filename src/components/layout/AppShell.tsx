@@ -19,6 +19,10 @@ import {
   Languages,
   FlaskConical,
   Sliders,
+  Pencil,
+  RotateCcw,
+  Copy,
+  ExternalLink,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -83,6 +87,17 @@ import {
 } from "@/lib/nav/custom-renames";
 import { ThemeSwitcher, useActiveTheme, THEMES } from "@/components/global/ThemeSwitcher";
 import { CustomizeNavigationDialog } from "@/components/navigation/CustomizeNavigationDialog";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import {
+  QuickRenameTabDialog,
+  type RenameTarget,
+} from "@/components/navigation/QuickRenameTabDialog";
 
 /* --------------------------------------------------------------------- */
 /* Sidebar collapsed state (per user, persisted in localStorage)          */
@@ -116,22 +131,34 @@ function useSidebarCollapsed(uid: string | null): [boolean, (v: boolean) => void
 /* Nav row                                                                */
 /* --------------------------------------------------------------------- */
 function NavLinkRow({
+  id,
   to,
   label,
+  defaultLabel,
   Icon,
   active,
   collapsed,
   onNavigate,
   isChild = false,
+  onStartRename,
+  onResetRename,
+  onOpenCustomizeNav,
 }: {
+  id?: string;
   to: string;
   label: string;
+  defaultLabel?: string;
   Icon?: React.ComponentType<{ className?: string }>;
   active: boolean;
   collapsed?: boolean;
   onNavigate?: () => void;
   isChild?: boolean;
+  onStartRename?: (target: RenameTarget) => void;
+  onResetRename?: (id: string) => void;
+  onOpenCustomizeNav?: () => void;
 }) {
+  const isCustomized = defaultLabel ? label !== defaultLabel : false;
+
   const link = (
     <Link
       to={to}
@@ -174,7 +201,7 @@ function NavLinkRow({
     </Link>
   );
 
-  return (
+  const content = (
     <div className="group relative flex items-center">
       {collapsed ? (
         <TooltipProvider delayDuration={200}>
@@ -193,6 +220,81 @@ function NavLinkRow({
       )}
     </div>
   );
+
+  if (!id) return content;
+
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger asChild>{content}</ContextMenuTrigger>
+      <ContextMenuContent className="w-56 border-slate-700 bg-slate-900 text-slate-100 shadow-xl">
+        <div className="px-2 py-1.5 text-xs font-semibold text-cyan-300 border-b border-slate-800 flex items-center justify-between">
+          <span className="truncate">{label}</span>
+          {isCustomized && (
+            <span className="text-[10px] text-amber-400 font-normal ml-1 shrink-0">Customized</span>
+          )}
+        </div>
+        {onStartRename && (
+          <ContextMenuItem
+            onClick={() =>
+              onStartRename({
+                id,
+                currentLabel: label,
+                defaultLabel: defaultLabel || label,
+                isGroup: false,
+              })
+            }
+            className="cursor-pointer text-xs flex items-center gap-2 hover:bg-slate-800 focus:bg-slate-800 text-slate-100 py-1.5"
+          >
+            <Pencil className="h-3.5 w-3.5 text-cyan-400" />
+            <span>Rename Tab...</span>
+          </ContextMenuItem>
+        )}
+        {isCustomized && onResetRename && (
+          <ContextMenuItem
+            onClick={() => onResetRename(id)}
+            className="cursor-pointer text-xs flex items-center gap-2 hover:bg-slate-800 focus:bg-slate-800 text-amber-300 py-1.5"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            <span>Reset to &quot;{defaultLabel}&quot;</span>
+          </ContextMenuItem>
+        )}
+        {onOpenCustomizeNav && (
+          <>
+            <ContextMenuSeparator className="bg-slate-800" />
+            <ContextMenuItem
+              onClick={onOpenCustomizeNav}
+              className="cursor-pointer text-xs flex items-center gap-2 hover:bg-slate-800 focus:bg-slate-800 text-slate-300 py-1.5"
+            >
+              <Sliders className="h-3.5 w-3.5 text-slate-400" />
+              <span>Customize All Tabs...</span>
+            </ContextMenuItem>
+          </>
+        )}
+        {to && (
+          <>
+            <ContextMenuSeparator className="bg-slate-800" />
+            <ContextMenuItem
+              onClick={() => window.open(to, "_blank")}
+              className="cursor-pointer text-xs flex items-center gap-2 hover:bg-slate-800 focus:bg-slate-800 text-slate-300 py-1.5"
+            >
+              <ExternalLink className="h-3.5 w-3.5 text-slate-400" />
+              <span>Open in New Tab</span>
+            </ContextMenuItem>
+            <ContextMenuItem
+              onClick={() => {
+                void navigator.clipboard.writeText(window.location.origin + to);
+                toast.success("Page link copied to clipboard");
+              }}
+              className="cursor-pointer text-xs flex items-center gap-2 hover:bg-slate-800 focus:bg-slate-800 text-slate-300 py-1.5"
+            >
+              <Copy className="h-3.5 w-3.5 text-slate-400" />
+              <span>Copy Page Link</span>
+            </ContextMenuItem>
+          </>
+        )}
+      </ContextMenuContent>
+    </ContextMenu>
+  );
 }
 
 /* --------------------------------------------------------------------- */
@@ -208,6 +310,9 @@ function NavGroupRow({
   onNavigate,
   checkActive,
   getLabel,
+  onStartRename,
+  onResetRename,
+  onOpenCustomizeNav,
 }: {
   group: ResolvedNavGroup;
   isOpen: boolean;
@@ -218,75 +323,135 @@ function NavGroupRow({
   onNavigate?: () => void;
   checkActive: (item: NavItemDef) => boolean;
   getLabel: (id: string, fallback: string) => string;
+  onStartRename?: (target: RenameTarget) => void;
+  onResetRename?: (id: string) => void;
+  onOpenCustomizeNav?: () => void;
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const GroupIcon = group.icon;
-  const groupLabel = getLabel(group.id, t(`nav.groups.${group.id}`, group.label));
+  const defaultGroupLabel = t(`nav.groups.${group.id}`, group.label);
+  const groupLabel = getLabel(group.id, defaultGroupLabel);
+  const isGroupCustomized = groupLabel !== defaultGroupLabel;
 
   if (collapsed) {
+    const collapsedBtn = (
+      <button
+        type="button"
+        onClick={() => {
+          if (group.to) {
+            void navigate({ to: group.to });
+            onNavigate?.();
+          } else if (group.items[0]) {
+            void navigate({ to: group.items[0].to });
+            onNavigate?.();
+          }
+        }}
+        aria-label={groupLabel}
+        className={cn(
+          "relative flex h-9 w-9 items-center justify-center rounded-lg transition-all mx-auto",
+          hasActiveChild || isDirectActive
+            ? "bg-white/20 text-white border border-white/25 shadow-xs"
+            : "text-cyan-100/80 hover:bg-white/12 hover:text-white",
+        )}
+      >
+        <GroupIcon className="h-4 w-4" aria-hidden />
+        {hasActiveChild && (
+          <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_4px_rgba(103,232,249,0.9)]" />
+        )}
+      </button>
+    );
+
     return (
-      <TooltipProvider delayDuration={150}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              onClick={() => {
-                if (group.to) {
-                  void navigate({ to: group.to });
-                  onNavigate?.();
-                } else if (group.items[0]) {
-                  void navigate({ to: group.items[0].to });
-                  onNavigate?.();
-                }
-              }}
-              aria-label={groupLabel}
-              className={cn(
-                "relative flex h-9 w-9 items-center justify-center rounded-lg transition-all mx-auto",
-                hasActiveChild || isDirectActive
-                  ? "bg-white/20 text-white border border-white/25 shadow-xs"
-                  : "text-cyan-100/80 hover:bg-white/12 hover:text-white",
-              )}
+      <ContextMenu>
+        <ContextMenuTrigger asChild>
+          <div>
+            <TooltipProvider delayDuration={150}>
+              <Tooltip>
+                <TooltipTrigger asChild>{collapsedBtn}</TooltipTrigger>
+                <TooltipContent
+                  side="right"
+                  className="border-cyan-800 bg-cyan-950 p-2 text-xs text-white shadow-xl min-w-[170px]"
+                >
+                  <div className="font-semibold text-cyan-200 border-b border-cyan-800/80 pb-1 mb-1.5 flex items-center justify-between">
+                    <span>{groupLabel}</span>
+                  </div>
+                  <div className="space-y-0.5">
+                    {group.items.map((item) => {
+                      const active = checkActive(item);
+                      return (
+                        <Link
+                          key={item.id}
+                          to={item.to}
+                          onClick={onNavigate}
+                          className={cn(
+                            "flex items-center gap-2 rounded px-2 py-1 text-[11.5px] transition-colors",
+                            active
+                              ? "bg-white/20 text-white font-semibold shadow-xs"
+                              : "text-cyan-100/80 hover:bg-white/10 hover:text-white",
+                          )}
+                        >
+                          <item.icon className="h-3 w-3 shrink-0 opacity-80" />
+                          <span className="truncate">
+                            {getLabel(item.id, t(`nav.items.${item.id}`, item.label))}
+                          </span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        </ContextMenuTrigger>
+        <ContextMenuContent className="w-56 border-slate-700 bg-slate-900 text-slate-100 shadow-xl">
+          <div className="px-2 py-1.5 text-xs font-semibold text-cyan-300 border-b border-slate-800 flex items-center justify-between">
+            <span className="truncate">{groupLabel}</span>
+            {isGroupCustomized && (
+              <span className="text-[10px] text-amber-400 font-normal ml-1 shrink-0">
+                Customized
+              </span>
+            )}
+          </div>
+          {onStartRename && (
+            <ContextMenuItem
+              onClick={() =>
+                onStartRename({
+                  id: group.id,
+                  currentLabel: groupLabel,
+                  defaultLabel: defaultGroupLabel,
+                  isGroup: true,
+                })
+              }
+              className="cursor-pointer text-xs flex items-center gap-2 hover:bg-slate-800 focus:bg-slate-800 text-slate-100 py-1.5"
             >
-              <GroupIcon className="h-4 w-4" aria-hidden />
-              {hasActiveChild && (
-                <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_4px_rgba(103,232,249,0.9)]" />
-              )}
-            </button>
-          </TooltipTrigger>
-          <TooltipContent
-            side="right"
-            className="border-cyan-800 bg-cyan-950 p-2 text-xs text-white shadow-xl min-w-[170px]"
-          >
-            <div className="font-semibold text-cyan-200 border-b border-cyan-800/80 pb-1 mb-1.5 flex items-center justify-between">
-              <span>{groupLabel}</span>
-            </div>
-            <div className="space-y-0.5">
-              {group.items.map((item) => {
-                const active = checkActive(item);
-                return (
-                  <Link
-                    key={item.id}
-                    to={item.to}
-                    onClick={onNavigate}
-                    className={cn(
-                      "flex items-center gap-2 rounded px-2 py-1 text-[11.5px] transition-colors",
-                      active
-                        ? "bg-white/20 text-white font-semibold shadow-xs"
-                        : "text-cyan-100/80 hover:bg-white/10 hover:text-white",
-                    )}
-                  >
-                    <item.icon className="h-3 w-3 shrink-0 opacity-80" />
-                    <span className="truncate">
-                      {getLabel(item.id, t(`nav.items.${item.id}`, item.label))}
-                    </span>
-                  </Link>
-                );
-              })}
-            </div>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+              <Pencil className="h-3.5 w-3.5 text-cyan-400" />
+              <span>Rename Section...</span>
+            </ContextMenuItem>
+          )}
+          {isGroupCustomized && onResetRename && (
+            <ContextMenuItem
+              onClick={() => onResetRename(group.id)}
+              className="cursor-pointer text-xs flex items-center gap-2 hover:bg-slate-800 focus:bg-slate-800 text-amber-300 py-1.5"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              <span>Reset to &quot;{defaultGroupLabel}&quot;</span>
+            </ContextMenuItem>
+          )}
+          {onOpenCustomizeNav && (
+            <>
+              <ContextMenuSeparator className="bg-slate-800" />
+              <ContextMenuItem
+                onClick={onOpenCustomizeNav}
+                className="cursor-pointer text-xs flex items-center gap-2 hover:bg-slate-800 focus:bg-slate-800 text-slate-300 py-1.5"
+              >
+                <Sliders className="h-3.5 w-3.5 text-slate-400" />
+                <span>Customize All Tabs...</span>
+              </ContextMenuItem>
+            </>
+          )}
+        </ContextMenuContent>
+      </ContextMenu>
     );
   }
 
@@ -301,73 +466,157 @@ function NavGroupRow({
 
   const isStandaloneActive = isDirectActive && !hasActiveChild;
 
+  const groupHeader = (
+    <div
+      className={cn(
+        "group relative flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-[13px] font-semibold transition-all duration-150 cursor-pointer select-none",
+        isStandaloneActive
+          ? "text-white bg-cyan-600 shadow-xs"
+          : hasActiveChild
+            ? "text-white bg-white/15 shadow-xs border border-white/20 backdrop-blur-xs"
+            : "text-cyan-100/85 hover:bg-white/10 hover:text-white",
+      )}
+      onClick={handleGroupClick}
+      role={group.items.length > 0 ? "button" : undefined}
+      aria-expanded={group.items.length > 0 ? isOpen : undefined}
+    >
+      {/* Luminous left accent indicator for active group */}
+      {(hasActiveChild || isDirectActive) && (
+        <span
+          aria-hidden
+          className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-cyan-300 shadow-[0_0_8px_rgba(103,232,249,0.9)]"
+        />
+      )}
+
+      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+        <GroupIcon
+          className={cn(
+            "h-4 w-4 shrink-0 transition-colors",
+            isStandaloneActive || hasActiveChild
+              ? "text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.6)]"
+              : "text-cyan-200/80 group-hover:text-white",
+          )}
+          aria-hidden
+        />
+        <span className="truncate">{groupLabel}</span>
+      </div>
+
+      <div className="flex items-center justify-center shrink-0 ml-1">
+        {group.items.length > 0 &&
+          (isOpen ? (
+            <Minus
+              className="h-3.5 w-3.5 text-cyan-200/80 group-hover:text-white transition-colors"
+              aria-hidden
+            />
+          ) : (
+            <Plus
+              className="h-3.5 w-3.5 text-cyan-200/80 group-hover:text-white transition-colors"
+              aria-hidden
+            />
+          ))}
+      </div>
+    </div>
+  );
+
   return (
     <div className="space-y-0.5">
-      <div
-        className={cn(
-          "group relative flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-[13px] font-semibold transition-all duration-150 cursor-pointer select-none",
-          isStandaloneActive
-            ? "text-white bg-cyan-600 shadow-xs"
-            : hasActiveChild
-              ? "text-white bg-white/15 shadow-xs border border-white/20 backdrop-blur-xs"
-              : "text-cyan-100/85 hover:bg-white/10 hover:text-white",
-        )}
-        onClick={handleGroupClick}
-        role={group.items.length > 0 ? "button" : undefined}
-        aria-expanded={group.items.length > 0 ? isOpen : undefined}
-      >
-        {/* Luminous left accent indicator for active group */}
-        {(hasActiveChild || isDirectActive) && (
-          <span
-            aria-hidden
-            className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-cyan-300 shadow-[0_0_8px_rgba(103,232,249,0.9)]"
-          />
-        )}
-
-        <div className="flex items-center gap-2.5 min-w-0 flex-1">
-          <GroupIcon
-            className={cn(
-              "h-4 w-4 shrink-0 transition-colors",
-              isStandaloneActive || hasActiveChild
-                ? "text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.6)]"
-                : "text-cyan-200/80 group-hover:text-white",
+      <ContextMenu>
+        <ContextMenuTrigger asChild>{groupHeader}</ContextMenuTrigger>
+        <ContextMenuContent className="w-56 border-slate-700 bg-slate-900 text-slate-100 shadow-xl">
+          <div className="px-2 py-1.5 text-xs font-semibold text-cyan-300 border-b border-slate-800 flex items-center justify-between">
+            <span className="truncate">{groupLabel}</span>
+            {isGroupCustomized && (
+              <span className="text-[10px] text-amber-400 font-normal ml-1 shrink-0">
+                Customized
+              </span>
             )}
-            aria-hidden
-          />
-          <span className="truncate">{groupLabel}</span>
-        </div>
-
-        <div className="flex items-center justify-center shrink-0 ml-1">
-          {group.items.length > 0 &&
-            (isOpen ? (
-              <Minus
-                className="h-3.5 w-3.5 text-cyan-200/80 group-hover:text-white transition-colors"
-                aria-hidden
-              />
-            ) : (
-              <Plus
-                className="h-3.5 w-3.5 text-cyan-200/80 group-hover:text-white transition-colors"
-                aria-hidden
-              />
-            ))}
-        </div>
-      </div>
+          </div>
+          {onStartRename && (
+            <ContextMenuItem
+              onClick={() =>
+                onStartRename({
+                  id: group.id,
+                  currentLabel: groupLabel,
+                  defaultLabel: defaultGroupLabel,
+                  isGroup: true,
+                })
+              }
+              className="cursor-pointer text-xs flex items-center gap-2 hover:bg-slate-800 focus:bg-slate-800 text-slate-100 py-1.5"
+            >
+              <Pencil className="h-3.5 w-3.5 text-cyan-400" />
+              <span>Rename Section...</span>
+            </ContextMenuItem>
+          )}
+          {isGroupCustomized && onResetRename && (
+            <ContextMenuItem
+              onClick={() => onResetRename(group.id)}
+              className="cursor-pointer text-xs flex items-center gap-2 hover:bg-slate-800 focus:bg-slate-800 text-amber-300 py-1.5"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              <span>Reset to &quot;{defaultGroupLabel}&quot;</span>
+            </ContextMenuItem>
+          )}
+          {onOpenCustomizeNav && (
+            <>
+              <ContextMenuSeparator className="bg-slate-800" />
+              <ContextMenuItem
+                onClick={onOpenCustomizeNav}
+                className="cursor-pointer text-xs flex items-center gap-2 hover:bg-slate-800 focus:bg-slate-800 text-slate-300 py-1.5"
+              >
+                <Sliders className="h-3.5 w-3.5 text-slate-400" />
+                <span>Customize All Tabs...</span>
+              </ContextMenuItem>
+            </>
+          )}
+          {group.to && (
+            <>
+              <ContextMenuSeparator className="bg-slate-800" />
+              <ContextMenuItem
+                onClick={() => window.open(group.to, "_blank")}
+                className="cursor-pointer text-xs flex items-center gap-2 hover:bg-slate-800 focus:bg-slate-800 text-slate-300 py-1.5"
+              >
+                <ExternalLink className="h-3.5 w-3.5 text-slate-400" />
+                <span>Open in New Tab</span>
+              </ContextMenuItem>
+              <ContextMenuItem
+                onClick={() => {
+                  void navigator.clipboard.writeText(window.location.origin + group.to);
+                  toast.success("Page link copied to clipboard");
+                }}
+                className="cursor-pointer text-xs flex items-center gap-2 hover:bg-slate-800 focus:bg-slate-800 text-slate-300 py-1.5"
+              >
+                <Copy className="h-3.5 w-3.5 text-slate-400" />
+                <span>Copy Page Link</span>
+              </ContextMenuItem>
+            </>
+          )}
+        </ContextMenuContent>
+      </ContextMenu>
 
       {/* Accordion Child items */}
       {isOpen && group.items.length > 0 && (
         <div className="ml-3.5 border-l border-white/15 pl-1.5 space-y-0.5 py-0.5 my-0.5">
-          {group.items.map((item) => (
-            <NavLinkRow
-              key={item.id}
-              to={item.to}
-              label={getLabel(item.id, t(`nav.items.${item.id}`, item.label))}
-              Icon={item.icon}
-              active={checkActive(item)}
-              collapsed={collapsed}
-              onNavigate={onNavigate}
-              isChild
-            />
-          ))}
+          {group.items.map((item) => {
+            const defaultItemLabel = t(`nav.items.${item.id}`, item.label);
+            const itemLabel = getLabel(item.id, defaultItemLabel);
+            return (
+              <NavLinkRow
+                key={item.id}
+                id={item.id}
+                to={item.to}
+                label={itemLabel}
+                defaultLabel={defaultItemLabel}
+                Icon={item.icon}
+                active={checkActive(item)}
+                collapsed={collapsed}
+                onNavigate={onNavigate}
+                isChild
+                onStartRename={onStartRename}
+                onResetRename={onResetRename}
+                onOpenCustomizeNav={onOpenCustomizeNav}
+              />
+            );
+          })}
         </div>
       )}
     </div>
@@ -385,6 +634,9 @@ function NavList({
   userRoles = [],
   collapsed,
   scrollable = true,
+  onStartRename,
+  onResetRename,
+  onOpenCustomizeNav,
 }: {
   path: string;
   onNavigate?: () => void;
@@ -393,6 +645,9 @@ function NavList({
   userRoles?: readonly AppRole[];
   collapsed?: boolean;
   scrollable?: boolean;
+  onStartRename?: (target: RenameTarget) => void;
+  onResetRename?: (id: string) => void;
+  onOpenCustomizeNav?: () => void;
 }) {
   const { t } = useTranslation();
   const { getLabel } = useCustomNavRenames();
@@ -469,6 +724,9 @@ function NavList({
             onNavigate={onNavigate}
             checkActive={checkActive}
             getLabel={getLabel}
+            onStartRename={onStartRename}
+            onResetRename={onResetRename}
+            onOpenCustomizeNav={onOpenCustomizeNav}
           />
         );
       })}
@@ -697,6 +955,11 @@ export function AppShell({ children }: { children: ReactNode }) {
   const currentTheme = THEMES.find((t) => t.id === activeThemeId) ?? THEMES[0];
   const { width: sidebarWidthPx, updateWidth: setSidebarWidth, resetWidth } = useSidebarWidth();
   const [customizeNavOpen, setCustomizeNavOpen] = useState(false);
+  const { rename } = useCustomNavRenames();
+  const [renameTarget, setRenameTarget] = useState<RenameTarget | null>(null);
+  const handleStartRename = useCallback((target: RenameTarget) => setRenameTarget(target), []);
+  const handleResetRename = useCallback((id: string) => rename(id, null), [rename]);
+  const handleOpenCustomizeNav = useCallback(() => setCustomizeNavOpen(true), []);
   const [isResizing, setIsResizing] = useState(false);
 
   const handleMouseDown = useCallback(
@@ -884,6 +1147,9 @@ export function AppShell({ children }: { children: ReactNode }) {
               isSuperAdmin={roles.isSuperAdmin}
               userRoles={roles.roles}
               collapsed={collapsed}
+              onStartRename={handleStartRename}
+              onResetRename={handleResetRename}
+              onOpenCustomizeNav={handleOpenCustomizeNav}
             />
           </div>
 
@@ -1018,6 +1284,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                       userRoles={roles.roles}
                       onNavigate={() => setMobileNavOpen(false)}
                       scrollable={false}
+                      onStartRename={handleStartRename}
+                      onResetRename={handleResetRename}
+                      onOpenCustomizeNav={handleOpenCustomizeNav}
                     />
                   </div>
 
@@ -1227,6 +1496,20 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <GlobalSearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
         <CustomizeNavigationDialog open={customizeNavOpen} onOpenChange={setCustomizeNavOpen} />
+        <QuickRenameTabDialog
+          target={renameTarget}
+          onOpenChange={(open) => {
+            if (!open) setRenameTarget(null);
+          }}
+          onSave={(id, newLabel) => {
+            rename(id, newLabel);
+            setRenameTarget(null);
+          }}
+          onReset={(id) => {
+            rename(id, null);
+            setRenameTarget(null);
+          }}
+        />
         <Copilot />
         <DangerNotifications />
         <GrowthAdvisoryBroadcaster />
