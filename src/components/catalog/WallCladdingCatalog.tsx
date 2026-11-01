@@ -28,6 +28,7 @@ import {
   ArrowUpDown,
   FileDown,
   X,
+  Maximize2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -102,6 +103,7 @@ export function WallCladdingCatalog({
   // Dialog targets
   const [priceEditTarget, setPriceEditTarget] = useState<PatternPriceTarget | null>(null);
   const [lightboxTarget, setLightboxTarget] = useState<WallCladdingItem | null>(null);
+  const [isFullScreenZoom, setIsFullScreenZoom] = useState<boolean>(false);
 
   // Categories & Stone Types extraction
   const categories = useMemo(() => {
@@ -567,13 +569,18 @@ export function WallCladdingCatalog({
         }}
       />
 
-      {/* Architectural Lightbox Dialog — EXACT SAME 2-Column Modal Layout as StoneGalleryFeed */}
+      {/* Architectural Lightbox Dialog — Wide 2-Column Modal Layout with Uncropped Full Image */}
       <Dialog
         open={Boolean(lightboxTarget)}
-        onOpenChange={(open) => !open && setLightboxTarget(null)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setLightboxTarget(null);
+            setIsFullScreenZoom(false);
+          }
+        }}
       >
         {lightboxTarget && (
-          <DialogContent className="sm:max-w-2xl p-0 overflow-hidden rounded-3xl border-border">
+          <DialogContent className="sm:max-w-3xl md:max-w-4xl lg:max-w-5xl p-0 overflow-hidden rounded-3xl border-border max-h-[92vh]">
             {(() => {
               const price = getPrice(
                 lightboxTarget.id,
@@ -582,26 +589,43 @@ export function WallCladdingCatalog({
                 lightboxTarget.index,
               );
               return (
-                <div className="grid grid-cols-1 md:grid-cols-2">
-                  {/* Left side: Media preview */}
-                  <div className="aspect-square md:aspect-auto bg-black flex items-center justify-center select-none overflow-hidden group relative max-h-[440px]">
+                <div className="grid grid-cols-1 md:grid-cols-2 md:max-h-[90vh] overflow-hidden">
+                  {/* Left side: High-Res Full Image with object-contain (NO CROPPING) */}
+                  <div
+                    onClick={() => setIsFullScreenZoom(true)}
+                    className="bg-stone-950 dark:bg-black flex items-center justify-center select-none overflow-hidden group relative p-4 sm:p-6 md:p-8 min-h-[340px] sm:min-h-[440px] md:min-h-[500px] cursor-zoom-in"
+                    title="Click to view full screen high-resolution image"
+                  >
                     <img
                       src={lightboxTarget.image}
                       alt={lightboxTarget.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="max-h-[72vh] w-auto h-auto max-w-full object-contain rounded-xl shadow-2xl transition-transform duration-300 group-hover:scale-[1.02]"
                     />
                     {price.badge && (
-                      <Badge className="absolute top-3 left-3 bg-amber-500 text-amber-950 font-bold text-xs uppercase shadow-md">
+                      <Badge className="absolute top-3 left-3 bg-amber-500 text-amber-950 font-bold text-xs uppercase shadow-md pointer-events-none">
                         {price.badge}
                       </Badge>
                     )}
-                    <div className="absolute bottom-3 left-3 bg-black/75 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/15 text-[10.5px] font-mono text-cyan-300 font-bold">
+                    <div className="absolute bottom-3 left-3 bg-black/75 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/15 text-[10.5px] font-mono text-cyan-300 font-bold pointer-events-none">
                       {lightboxTarget.id}
                     </div>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsFullScreenZoom(true);
+                      }}
+                      className="absolute top-3 right-3 bg-black/60 hover:bg-black/85 backdrop-blur-xs text-white px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1.5 shadow-md border border-white/10 transition-all cursor-pointer"
+                      title="View full-resolution uncropped image"
+                    >
+                      <Maximize2 className="h-3.5 w-3.5" />
+                      <span className="text-[11px] hidden sm:inline">Full Image</span>
+                    </button>
                   </div>
 
                   {/* Right side: Details, Specs & Inquire */}
-                  <div className="p-6 flex flex-col justify-between space-y-4 bg-background">
+                  <div className="p-6 flex flex-col justify-between space-y-4 bg-background overflow-y-auto max-h-[90vh]">
                     <div className="space-y-3">
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
                         <Badge variant="secondary" className="text-[11px] font-medium">
@@ -715,6 +739,38 @@ export function WallCladdingCatalog({
           </DialogContent>
         )}
       </Dialog>
+
+      {/* Full-Screen Zoom Lightbox Overlay */}
+      {isFullScreenZoom && lightboxTarget && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 cursor-zoom-out animate-in fade-in duration-200"
+          onClick={() => setIsFullScreenZoom(false)}
+        >
+          <button
+            type="button"
+            onClick={() => setIsFullScreenZoom(false)}
+            className="absolute top-4 right-4 bg-white/10 hover:bg-white/25 text-white p-2.5 rounded-full backdrop-blur-md transition-colors z-[101]"
+            aria-label="Close full view"
+          >
+            <X className="h-6 w-6" />
+          </button>
+          <div className="relative max-w-7xl max-h-[94vh] flex flex-col items-center justify-center">
+            <img
+              src={lightboxTarget.image}
+              alt={lightboxTarget.name}
+              className="max-h-[86vh] max-w-full w-auto h-auto object-contain rounded-xl shadow-2xl"
+            />
+            <div className="mt-3 text-center text-white/90">
+              <div className="text-sm font-bold">
+                {lightboxTarget.name} ({lightboxTarget.id})
+              </div>
+              <div className="text-xs text-white/60">
+                {lightboxTarget.category} · {lightboxTarget.stoneType} · {lightboxTarget.thickness}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
