@@ -356,45 +356,20 @@ export function WebsiteProductsBackend() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Top Banner */}
-      <Card className="border-cyan-800/40 bg-gradient-to-r from-slate-900 via-cyan-950 to-slate-900 text-white shadow-md">
-        <CardHeader className="pb-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
-                <ShieldCheck className="h-5 w-5" />
-              </div>
-              <div>
-                <CardTitle className="text-base font-bold text-white flex items-center gap-2">
-                  <span>Website Product Catalogue &amp; Central Price Synchronizer</span>
-                  <Badge className="bg-cyan-500/30 text-cyan-200 border-cyan-400/40 text-[10px]">
-                    Software-Wide Live Sync
-                  </Badge>
-                </CardTitle>
-                <CardDescription className="text-xs text-cyan-100/70">
-                  Manage all products displayed on stonetech.in. When you edit a product name,
-                  price, or specs here, the change automatically propagates to Quotes, Estimates,
-                  Sales Orders, and Stock Inventory!
-                </CardDescription>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              {isSuperAdmin && (
-                <Button
-                  onClick={handleOpenCreate}
-                  size="sm"
-                  className="h-8 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold"
-                >
-                  <PackagePlus className="mr-1.5 h-3.5 w-3.5" />
-                  Upload New Product
-                </Button>
-              )}
-            </div>
-          </div>
-        </CardHeader>
-      </Card>
+    <div className="space-y-4">
+      {/* Top Action Bar */}
+      <div className="flex items-center justify-end">
+        {isSuperAdmin && (
+          <Button
+            onClick={handleOpenCreate}
+            size="sm"
+            className="h-9 px-4 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-xs"
+          >
+            <PackagePlus className="mr-1.5 h-4 w-4" />
+            Upload New Product
+          </Button>
+        )}
+      </div>
 
       {/* Filter and Search Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-muted/40 p-3 rounded-xl border border-border">
