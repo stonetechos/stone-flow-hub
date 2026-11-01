@@ -16,7 +16,9 @@ export type AppSettingKey =
   // { amount: number; label?: string }. Edited from the Liabilities page
   // (admin-only — this table's RLS only allows admin writes). Read by
   // growthAdvisory.ts (Task #46) to size the required revenue/price move.
-  | "finance.annual_net_margin_goal";
+  | "finance.annual_net_margin_goal"
+  // Website Landing Page Matter & CMS Content
+  | "website.landing_content";
 
 export async function getAppSetting<T = Record<string, unknown>>(
   key: AppSettingKey,

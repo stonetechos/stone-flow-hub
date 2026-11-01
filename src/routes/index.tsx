@@ -70,6 +70,7 @@ import {
   type PublicInquiryResult,
 } from "@/lib/enquiries/public-inquiry.functions";
 import { useSiteSettingsValue } from "@/lib/site-settings/use-site-settings";
+import { useWebsiteContent } from "@/lib/cms/landing-content-store";
 import { StonemanMascot } from "@/components/mascot/StonemanMascot";
 import { StonemanCustomerDialog } from "@/components/mascot/StonemanCustomerDialog";
 import { LanguageToggle } from "@/components/global/LanguageToggle";
@@ -340,6 +341,7 @@ async function compressImage(file: File, maxDimension = 1600, quality = 0.8): Pr
 function HomePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const siteSettings = useSiteSettingsValue();
+  const { content: cmsContent } = useWebsiteContent();
   const { i18n } = useTranslation();
   const currentLang = i18n.language?.substring(0, 2) || "en";
   const texts = getLandingTexts(currentLang);
@@ -882,6 +884,23 @@ function HomePage() {
   // -------------------------------------------------------------
   return (
     <div className="min-h-screen paper-texture dark:bg-slate-950 text-foreground antialiased pb-20 sm:pb-12 w-full max-w-full overflow-x-hidden">
+      {/* 0. ANNOUNCEMENT BANNER (MANAGED VIA WEBSITE CMS) */}
+      {cmsContent.announcementEnabled && cmsContent.announcementText && (
+        <div className="bg-gradient-to-r from-emerald-800 via-teal-900 to-emerald-950 text-white text-center py-2 px-4 text-xs font-medium flex items-center justify-center gap-2 border-b border-emerald-700/40 relative z-50">
+          <Sparkles className="h-3.5 w-3.5 text-amber-300 shrink-0" />
+          <span>{cmsContent.announcementText}</span>
+          {cmsContent.announcementLinkText && (
+            <a
+              href={cmsContent.announcementLinkUrl || "#lead-form"}
+              className="underline font-bold text-amber-300 hover:text-amber-200 ml-1 inline-flex items-center gap-1"
+            >
+              <span>{cmsContent.announcementLinkText}</span>
+              <ArrowRight className="h-3 w-3" />
+            </a>
+          )}
+        </div>
+      )}
+
       {/* 1. STOS ENTERPRISE NAVBAR (TURQUOISE & PAPER WHITE) */}
       <header className="sticky top-0 z-40 border-b border-border/80 bg-background/95 backdrop-blur-md shadow-2xs pt-[max(env(safe-area-inset-top),0px)]">
         <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
@@ -998,9 +1017,9 @@ function HomePage() {
             <div className="lg:col-span-6 space-y-6 sm:space-y-7 pt-1 lg:pt-2 animate-in fade-in-50 duration-300">
               {/* Main Heading */}
               <h1 className="font-serif text-3xl sm:text-4xl lg:text-[44px] xl:text-[48px] font-normal sm:font-medium tracking-tight text-[#111111] dark:text-stone-100 leading-[1.18] sm:leading-[1.14]">
-                {texts.hero.titlePart1}
+                {cmsContent.heroTitlePart1 || texts.hero.titlePart1}
                 <span className="text-[#0D7A7B] dark:text-[#2dd4bf] font-semibold italic sm:not-italic">
-                  {texts.hero.titleHighlight}
+                  {cmsContent.heroTitleHighlight || texts.hero.titleHighlight}
                 </span>
               </h1>
 
@@ -1008,7 +1027,7 @@ function HomePage() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-1">
                 <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-[#E9E6E1] dark:border-stone-800 bg-white dark:bg-stone-900/90 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-sm cursor-default">
                   <div className="text-xl sm:text-2xl font-bold tracking-tight text-[#111111] dark:text-stone-100">
-                    1500+
+                    {cmsContent.heroCustomersServed || "1500+"}
                   </div>
                   <div className="text-[11px] sm:text-xs text-[#5F6368] dark:text-stone-400 font-medium mt-1">
                     {texts.hero.customersServed}
@@ -1017,7 +1036,7 @@ function HomePage() {
 
                 <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-[#E9E6E1] dark:border-stone-800 bg-white dark:bg-stone-900/90 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-sm cursor-default">
                   <div className="text-xl sm:text-2xl font-bold tracking-tight text-[#111111] dark:text-stone-100">
-                    {texts.hero.yearsWarranty}
+                    {cmsContent.heroWarranty || texts.hero.yearsWarranty}
                   </div>
                   <div className="text-[11px] sm:text-xs text-[#5F6368] dark:text-stone-400 font-medium mt-1">
                     {texts.hero.installationWarranty}
@@ -1026,7 +1045,7 @@ function HomePage() {
 
                 <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-[#E9E6E1] dark:border-stone-800 bg-white dark:bg-stone-900/90 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-sm cursor-default">
                   <div className="text-xl sm:text-2xl font-bold tracking-tight text-[#111111] dark:text-stone-100">
-                    {texts.hero.direct}
+                    {cmsContent.heroPricingBadge || texts.hero.direct}
                   </div>
                   <div className="text-[11px] sm:text-xs text-[#5F6368] dark:text-stone-400 font-medium mt-1">
                     {texts.hero.quarryPricing}
@@ -1035,7 +1054,7 @@ function HomePage() {
 
                 <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-[#E9E6E1] dark:border-stone-800 bg-white dark:bg-stone-900/90 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-sm cursor-default">
                   <div className="text-xl sm:text-2xl font-bold tracking-tight text-[#111111] dark:text-stone-100 flex items-center gap-1">
-                    <span>4.6</span>
+                    <span>{cmsContent.heroGoogleRating || "4.9"}</span>
                     <span className="text-[#0D7A7B] text-base sm:text-lg">★</span>
                   </div>
                   <div className="text-[11px] sm:text-xs text-[#5F6368] dark:text-stone-400 font-medium mt-1">
@@ -1065,26 +1084,26 @@ function HomePage() {
               {/* Supporting Copy */}
               <div className="space-y-4 pt-1">
                 <p className="text-sm sm:text-[15px] text-[#5F6368] dark:text-stone-300 leading-relaxed max-w-xl font-normal">
-                  {texts.hero.description}
+                  {cmsContent.heroDescription || texts.hero.description}
                 </p>
 
                 {/* Benefits Checklist */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
                   <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-[#111111] dark:text-stone-200">
                     <Check className="h-4 w-4 text-[#0D7A7B] shrink-0 stroke-[2.25]" />
-                    <span>{texts.hero.benefits.quarry}</span>
+                    <span>{cmsContent.heroBenefit1 || texts.hero.benefits.quarry}</span>
                   </div>
                   <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-[#111111] dark:text-stone-200">
                     <Check className="h-4 w-4 text-[#0D7A7B] shrink-0 stroke-[2.25]" />
-                    <span>{texts.hero.benefits.cnc}</span>
+                    <span>{cmsContent.heroBenefit2 || texts.hero.benefits.cnc}</span>
                   </div>
                   <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-[#111111] dark:text-stone-200">
                     <Check className="h-4 w-4 text-[#0D7A7B] shrink-0 stroke-[2.25]" />
-                    <span>{texts.hero.benefits.panIndia}</span>
+                    <span>{cmsContent.heroBenefit3 || texts.hero.benefits.panIndia}</span>
                   </div>
                   <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-[#111111] dark:text-stone-200">
                     <Check className="h-4 w-4 text-[#0D7A7B] shrink-0 stroke-[2.25]" />
-                    <span>{texts.hero.benefits.support}</span>
+                    <span>{cmsContent.heroBenefit4 || texts.hero.benefits.support}</span>
                   </div>
                 </div>
 
@@ -1799,11 +1818,11 @@ function HomePage() {
               2026 Collection · Natural Stone Atelier
             </div>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-foreground">
-              Architectural Products &amp; Live Executed Works
+              {cmsContent.showcaseSectionTitle || "Architectural Products & Live Executed Works"}
             </h2>
             <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-              Explore our verified stone catalogue with transparent factory rates attached, or view
-              live Instagram installation feeds from our luxury villa, hotel &amp; mandir projects.
+              {cmsContent.showcaseSectionSubtitle ||
+                "Explore our verified stone catalogue with transparent factory rates attached, or view live Instagram installation feeds from our luxury villa, hotel & mandir projects."}
             </p>
           </div>
 
@@ -1821,7 +1840,7 @@ function HomePage() {
                 )}
               >
                 <Sparkles className="h-4 w-4" />
-                <span>Natural Stone Products &amp; Catalogue</span>
+                <span>{cmsContent.productsTabTitle || "Natural Stone Products & Catalogue"}</span>
               </button>
 
               <button
@@ -1835,7 +1854,10 @@ function HomePage() {
                 )}
               >
                 <Camera className="h-4 w-4" />
-                <span>Live Installations &amp; Executed Works (Instagram)</span>
+                <span>
+                  {cmsContent.installationsTabTitle ||
+                    "Live Installations & Executed Works (Instagram)"}
+                </span>
               </button>
             </div>
           </div>
@@ -1872,7 +1894,7 @@ function HomePage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
           <div className="text-center max-w-3xl mx-auto space-y-3">
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
-              {texts.whyUs.title}
+              {cmsContent.whyUsSectionTitle || texts.whyUs.title}
             </h2>
           </div>
 
@@ -1881,32 +1903,48 @@ function HomePage() {
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <Gem className="h-5 w-5" />
               </div>
-              <h3 className="text-base font-bold">{texts.whyUs.p1Title}</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">{texts.whyUs.p1Desc}</p>
+              <h3 className="text-base font-bold">
+                {cmsContent.pillar1Title || texts.whyUs.p1Title}
+              </h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {cmsContent.pillar1Desc || texts.whyUs.p1Desc}
+              </p>
             </div>
 
             <div className="p-5 rounded-xl border border-border bg-card space-y-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600">
                 <Compass className="h-5 w-5" />
               </div>
-              <h3 className="text-base font-bold">{texts.whyUs.p2Title}</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">{texts.whyUs.p2Desc}</p>
+              <h3 className="text-base font-bold">
+                {cmsContent.pillar2Title || texts.whyUs.p2Title}
+              </h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {cmsContent.pillar2Desc || texts.whyUs.p2Desc}
+              </p>
             </div>
 
             <div className="p-5 rounded-xl border border-border bg-card space-y-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600">
                 <Phone className="h-5 w-5" />
               </div>
-              <h3 className="text-base font-bold">{texts.whyUs.p3Title}</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">{texts.whyUs.p3Desc}</p>
+              <h3 className="text-base font-bold">
+                {cmsContent.pillar3Title || texts.whyUs.p3Title}
+              </h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {cmsContent.pillar3Desc || texts.whyUs.p3Desc}
+              </p>
             </div>
 
             <div className="p-5 rounded-xl border border-border bg-card space-y-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10 text-purple-600">
                 <Truck className="h-5 w-5" />
               </div>
-              <h3 className="text-base font-bold">{texts.whyUs.p4Title}</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">{texts.whyUs.p4Desc}</p>
+              <h3 className="text-base font-bold">
+                {cmsContent.pillar4Title || texts.whyUs.p4Title}
+              </h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {cmsContent.pillar4Desc || texts.whyUs.p4Desc}
+              </p>
             </div>
           </div>
         </div>

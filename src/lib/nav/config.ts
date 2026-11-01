@@ -182,6 +182,14 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
 
   // 2. Items & Inventory
   {
+    id: "website-backend",
+    to: "/admin/website",
+    label: "Website Backend & CMS",
+    icon: Globe,
+    group: "items",
+    allowedRoles: ["admin", "super_admin"],
+  },
+  {
     id: "products",
     to: "/products",
     label: "Products & Materials",
@@ -525,6 +533,14 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     icon: ShieldCheck,
     group: "settings",
     adminOnly: true,
+  },
+  {
+    id: "website-admin",
+    to: "/admin/website",
+    label: "Website Backend & CMS",
+    icon: Globe,
+    group: "settings",
+    allowedRoles: ["admin", "super_admin"],
   },
   {
     id: "settings",

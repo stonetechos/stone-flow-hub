@@ -158,6 +158,7 @@ import { Route as AuthenticatedDashboardsBusinessIntelligenceRouteImport } from 
 import { Route as AuthenticatedDashboardsBusinessHealthRouteImport } from './routes/_authenticated/dashboards/business-health'
 import { Route as AuthenticatedDashboardsAnalyticsRouteImport } from './routes/_authenticated/dashboards/analytics'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers/$customerId'
+import { Route as AuthenticatedAdminWebsiteRouteImport } from './routes/_authenticated/admin/website'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedWorkforceIntelligenceRolesIndexRouteImport } from './routes/_authenticated/workforce-intelligence/roles/index'
 import { Route as AuthenticatedWorkforceIntelligencePerformanceIndexRouteImport } from './routes/_authenticated/workforce-intelligence/performance/index'
@@ -1050,6 +1051,12 @@ const AuthenticatedCustomersCustomerIdRoute =
     path: '/customers/$customerId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminWebsiteRoute =
+  AuthenticatedAdminWebsiteRouteImport.update({
+    id: '/admin/website',
+    path: '/admin/website',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   id: '/admin/users',
   path: '/admin/users',
@@ -1313,6 +1320,7 @@ export interface FileRoutesByFullPath {
   '/backend/': typeof BackendIndexRoute
   '/track/': typeof TrackIndexRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/admin/website': typeof AuthenticatedAdminWebsiteRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/dashboards/analytics': typeof AuthenticatedDashboardsAnalyticsRoute
   '/dashboards/business-health': typeof AuthenticatedDashboardsBusinessHealthRoute
@@ -1501,6 +1509,7 @@ export interface FileRoutesByTo {
   '/backend': typeof BackendIndexRoute
   '/track': typeof TrackIndexRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/admin/website': typeof AuthenticatedAdminWebsiteRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/dashboards/analytics': typeof AuthenticatedDashboardsAnalyticsRoute
   '/dashboards/business-health': typeof AuthenticatedDashboardsBusinessHealthRoute
@@ -1692,6 +1701,7 @@ export interface FileRoutesById {
   '/backend/': typeof BackendIndexRoute
   '/track/': typeof TrackIndexRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/_authenticated/admin/website': typeof AuthenticatedAdminWebsiteRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/_authenticated/dashboards/analytics': typeof AuthenticatedDashboardsAnalyticsRoute
   '/_authenticated/dashboards/business-health': typeof AuthenticatedDashboardsBusinessHealthRoute
@@ -1883,6 +1893,7 @@ export interface FileRouteTypes {
     | '/backend/'
     | '/track/'
     | '/admin/users'
+    | '/admin/website'
     | '/customers/$customerId'
     | '/dashboards/analytics'
     | '/dashboards/business-health'
@@ -2071,6 +2082,7 @@ export interface FileRouteTypes {
     | '/backend'
     | '/track'
     | '/admin/users'
+    | '/admin/website'
     | '/customers/$customerId'
     | '/dashboards/analytics'
     | '/dashboards/business-health'
@@ -2261,6 +2273,7 @@ export interface FileRouteTypes {
     | '/backend/'
     | '/track/'
     | '/_authenticated/admin/users'
+    | '/_authenticated/admin/website'
     | '/_authenticated/customers/$customerId'
     | '/_authenticated/dashboards/analytics'
     | '/_authenticated/dashboards/business-health'
@@ -3489,6 +3502,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCustomersCustomerIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/website': {
+      id: '/_authenticated/admin/website'
+      path: '/admin/website'
+      fullPath: '/admin/website'
+      preLoaderRoute: typeof AuthenticatedAdminWebsiteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/users': {
       id: '/_authenticated/admin/users'
       path: '/admin/users'
@@ -3904,6 +3924,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
+  AuthenticatedAdminWebsiteRoute: typeof AuthenticatedAdminWebsiteRoute
   AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   AuthenticatedDashboardsAnalyticsRoute: typeof AuthenticatedDashboardsAnalyticsRoute
   AuthenticatedDashboardsBusinessHealthRoute: typeof AuthenticatedDashboardsBusinessHealthRoute
@@ -4059,6 +4080,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
+  AuthenticatedAdminWebsiteRoute: AuthenticatedAdminWebsiteRoute,
   AuthenticatedCustomersCustomerIdRoute:
     AuthenticatedCustomersCustomerIdRouteWithChildren,
   AuthenticatedDashboardsAnalyticsRoute: AuthenticatedDashboardsAnalyticsRoute,
