@@ -41,8 +41,12 @@ import {
 import { toast } from "sonner";
 import { useWebsiteCatalog, type CatalogProduct } from "@/lib/catalog/catalog-store";
 import { STONE_TYPES, PRODUCT_UNITS } from "@/lib/products/schema";
+import { useRoles } from "@/hooks/use-roles";
 
 export function WebsiteProductsBackend() {
+  const roles = useRoles();
+  const isSuperAdmin = roles.isSuperAdmin;
+
   const {
     products,
     categories,
@@ -268,14 +272,16 @@ export function WebsiteProductsBackend() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Button
-                onClick={handleOpenCreate}
-                size="sm"
-                className="h-8 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold"
-              >
-                <PackagePlus className="mr-1.5 h-3.5 w-3.5" />
-                Upload New Product
-              </Button>
+              {isSuperAdmin && (
+                <Button
+                  onClick={handleOpenCreate}
+                  size="sm"
+                  className="h-8 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold"
+                >
+                  <PackagePlus className="mr-1.5 h-3.5 w-3.5" />
+                  Upload New Product
+                </Button>
+              )}
             </div>
           </div>
         </CardHeader>
@@ -419,33 +425,41 @@ export function WebsiteProductsBackend() {
                       </td>
                       <td className="py-2 px-3 text-right">
                         <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleOpenEdit(p)}
-                            className="h-7 px-2 text-xs text-cyan-600 hover:bg-cyan-50"
-                          >
-                            <Edit2 className="h-3.5 w-3.5 mr-1" />
-                            Edit
-                          </Button>
-                          {p.isCustomUploaded && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                if (
-                                  window.confirm(
-                                    `Remove "${p.name}" from the live website catalogue?`,
-                                  )
-                                ) {
-                                  deleteProduct(p.id);
-                                  toast.success(`Removed "${p.name}" from catalogue`);
-                                }
-                              }}
-                              className="h-7 px-2 text-xs text-rose-500 hover:bg-rose-50"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
+                          {isSuperAdmin ? (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleOpenEdit(p)}
+                                className="h-7 px-2 text-xs text-cyan-600 hover:bg-cyan-50"
+                              >
+                                <Edit2 className="h-3.5 w-3.5 mr-1" />
+                                Edit
+                              </Button>
+                              {p.isCustomUploaded && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    if (
+                                      window.confirm(
+                                        `Remove "${p.name}" from the live website catalogue?`,
+                                      )
+                                    ) {
+                                      deleteProduct(p.id);
+                                      toast.success(`Removed "${p.name}" from catalogue`);
+                                    }
+                                  }}
+                                  className="h-7 px-2 text-xs text-rose-500 hover:bg-rose-50"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              )}
+                            </>
+                          ) : (
+                            <span className="text-[11px] text-muted-foreground italic px-2">
+                              View only
+                            </span>
                           )}
                         </div>
                       </td>

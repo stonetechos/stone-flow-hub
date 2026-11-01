@@ -35,8 +35,10 @@ import {
   X,
   Truck,
   FileText,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useWebsiteCatalog } from "@/lib/catalog/catalog-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -145,6 +147,7 @@ export function EstimateStudioCalculator({
     { id: rid(), name: "Wall 1", height: "", length: "" },
   ]);
   const [products, setProducts] = useState<ProductForm[]>([]);
+  const { products: websiteProducts, getProductPrice } = useWebsiteCatalog();
   const [includeInstallation, setIncludeInstallation] = useState<boolean>(() => {
     return category !== "supply_only";
   });
@@ -927,11 +930,40 @@ export function EstimateStudioCalculator({
                     </Select>
                   </LineField>
                   <LineField label="Specific product" className="col-span-12 md:col-span-4">
-                    <Input
-                      placeholder='e.g. Mint Sandstone RF-SB 2"/1"'
-                      value={p.productName}
-                      onChange={(e) => updateProduct(p.id, { productName: e.target.value })}
-                    />
+                    <div className="relative">
+                      <Input
+                        list={`website-prod-suggestions-${p.id}`}
+                        placeholder="e.g. White Mint Sandstone 3D Origami Relief"
+                        value={p.productName}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const matched = websiteProducts.find(
+                            (wp) => wp.name.toLowerCase() === val.trim().toLowerCase(),
+                          );
+                          if (matched) {
+                            const pr = getProductPrice(matched);
+                            updateProduct(p.id, {
+                              productName: matched.name,
+                              pricePerUnit: String(pr.price),
+                              priceUnit: (pr.unit as "sqft" | "unit") || "sqft",
+                              imageDataUrl: matched.image || p.imageDataUrl,
+                            });
+                          } else {
+                            updateProduct(p.id, { productName: val });
+                          }
+                        }}
+                      />
+                      <datalist id={`website-prod-suggestions-${p.id}`}>
+                        {websiteProducts
+                          .filter((wp) => wp.isActive !== false)
+                          .map((wp) => (
+                            <option key={wp.id} value={wp.name}>
+                              {wp.id} — ₹{getProductPrice(wp).price}/
+                              {getProductPrice(wp).unit || "sq.ft"} ({wp.category})
+                            </option>
+                          ))}
+                      </datalist>
+                    </div>
                   </LineField>
                   <div className="col-span-12 md:col-span-3 flex items-end justify-end gap-1">
                     <label className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-sm border border-border px-3 text-xs text-muted-foreground hover:bg-muted/50">

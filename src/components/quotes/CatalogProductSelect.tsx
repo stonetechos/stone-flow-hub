@@ -1,5 +1,5 @@
-import { memo, useState } from "react";
-import { Check, ChevronsUpDown, Sparkles } from "lucide-react";
+import { memo, useState, useMemo } from "react";
+import { Check, ChevronsUpDown, Sparkles, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +20,7 @@ import {
   CARTING_CATALOG,
   type CatalogItem,
 } from "@/lib/quotes/catalog";
+import { useWebsiteCatalog } from "@/lib/catalog/catalog-store";
 
 interface CatalogProductSelectProps {
   value: string;
@@ -40,6 +41,25 @@ export const CatalogProductSelect = memo(function CatalogProductSelect({
 }: CatalogProductSelectProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const { products: websiteProducts, getProductPrice } = useWebsiteCatalog();
+
+  const websiteCatalogItems = useMemo<CatalogItem[]>(() => {
+    return websiteProducts
+      .filter((p) => p.isActive !== false)
+      .map((p) => {
+        const pr = getProductPrice(p);
+        return {
+          id: p.id,
+          name: p.name,
+          category: "stone_product" as const,
+          defaultUnit: pr.unit || p.unit || "sqft",
+          defaultPrice: pr.price ?? p.price,
+          hsnCode: "68022190",
+          defaultTaxPct: 18,
+          description: `${p.name} — ${p.stoneType} (${p.thickness || "20-30mm"})`,
+        };
+      });
+  }, [websiteProducts, getProductPrice]);
 
   const handleSelect = (item: CatalogItem) => {
     onChange(item.name);
@@ -103,7 +123,34 @@ export const CatalogProductSelect = memo(function CatalogProductSelect({
                 </div>
               </CommandEmpty>
 
-              <CommandGroup heading="Stone Products & Claddings">
+              <CommandGroup heading="Website Natural Stone Products & Claddings">
+                {websiteCatalogItems.map((item) => (
+                  <CommandItem
+                    key={item.id}
+                    value={`${item.name} ${item.id}`}
+                    onSelect={() => handleSelect(item)}
+                    className="text-xs flex items-center justify-between cursor-pointer"
+                  >
+                    <div className="flex items-center gap-1.5 truncate">
+                      <Globe className="h-3 w-3 text-cyan-600 shrink-0" />
+                      <span className="font-medium truncate">{item.name}</span>
+                      {item.defaultPrice && (
+                        <span className="text-[11px] font-semibold text-emerald-700 shrink-0">
+                          (₹{item.defaultPrice}/{item.defaultUnit})
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground shrink-0 ml-2">
+                      <span className="rounded bg-cyan-50 text-cyan-800 border border-cyan-200 px-1 py-0.2 font-mono">
+                        {item.id}
+                      </span>
+                      {value === item.name && <Check className="h-3.5 w-3.5 text-primary" />}
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+
+              <CommandGroup heading="Standard Stone Products">
                 {STONE_PRODUCTS_CATALOG.map((item) => (
                   <CommandItem
                     key={item.id}

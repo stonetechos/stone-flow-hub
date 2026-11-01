@@ -43,7 +43,7 @@ export interface CatalogProduct {
 }
 
 const ITEMS_STORAGE_KEY = "st.catalog.customItems";
-const ITEMS_EVENT_NAME = "st:catalog-items-changed";
+export const ITEMS_EVENT_NAME = "st:catalog-items-changed";
 
 export function readCustomCatalogItems(): CatalogProduct[] {
   if (typeof window === "undefined" || !window.localStorage) return [];
@@ -338,4 +338,37 @@ export function useWebsiteCatalog() {
     addProduct,
     deleteProduct,
   };
+}
+
+/**
+ * Returns all active website products merged with live custom overrides and pricing.
+ * Can be called synchronously anywhere across quotes, calculators, and line items.
+ */
+export function getActiveWebsiteProducts(): (CatalogProduct & {
+  activePrice: AttachedProductPrice;
+})[] {
+  const customItems = readCustomCatalogItems();
+  const customPrices = readCustomPrices();
+  const defaultList = rawCatalogData as CatalogProduct[];
+  const map = new Map<string, CatalogProduct>();
+
+  for (const item of defaultList) {
+    map.set(item.id, { ...item, isActive: true });
+  }
+
+  for (const custom of customItems) {
+    map.set(custom.id, { ...(map.get(custom.id) || {}), ...custom });
+  }
+
+  return Array.from(map.values())
+    .filter((p) => p.isActive !== false)
+    .sort((a, b) => (a.index || 999) - (b.index || 999))
+    .map((prod) => {
+      const activePrice =
+        customPrices[prod.id] || getBenchmarkPrice(prod.category, prod.stoneType, prod.index || 1);
+      return {
+        ...prod,
+        activePrice,
+      };
+    });
 }

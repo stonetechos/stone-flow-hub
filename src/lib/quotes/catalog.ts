@@ -1,3 +1,5 @@
+import { getActiveWebsiteProducts } from "@/lib/catalog/catalog-store";
+
 /**
  * Unified Stone Tech Master Catalog: Stone Products, Adhesives & Sealers.
  *
@@ -407,9 +409,45 @@ export const MASTER_PRODUCT_CATALOG: CatalogItem[] = [
   ...CARTING_CATALOG,
 ];
 
+/**
+ * Returns dynamic live catalog items including all website catalog products,
+ * their updated names, specs, and prices, alongside adhesives, sealers, and services.
+ */
+export function getLiveMasterProductCatalog(): CatalogItem[] {
+  let websiteItems: CatalogItem[] = [];
+  try {
+    const activeProds = getActiveWebsiteProducts();
+    websiteItems = activeProds.map((p) => ({
+      id: p.id,
+      name: p.name,
+      category: "stone_product" as const,
+      defaultUnit: p.activePrice?.unit || p.unit || "sqft",
+      defaultPrice: p.activePrice?.price ?? p.price,
+      hsnCode: "68022190",
+      defaultTaxPct: 18,
+      description: `${p.name} — ${p.stoneType} (${p.thickness || "20-30mm"})`,
+    }));
+  } catch {
+    /* fallback to base catalog */
+  }
+
+  // Deduplicate by name (website product overrides static item if matching)
+  const map = new Map<string, CatalogItem>();
+  for (const item of MASTER_PRODUCT_CATALOG) {
+    map.set(item.name.toLowerCase(), item);
+  }
+  for (const item of websiteItems) {
+    map.set(item.name.toLowerCase(), item);
+  }
+
+  return Array.from(map.values());
+}
+
 export function findCatalogItemByName(name: string): CatalogItem | undefined {
   const clean = name.trim().toLowerCase();
-  return MASTER_PRODUCT_CATALOG.find(
-    (item) => item.name.toLowerCase() === clean || item.name.toLowerCase().includes(clean),
+  const live = getLiveMasterProductCatalog();
+  return (
+    live.find((item) => item.name.toLowerCase() === clean) ||
+    live.find((item) => item.name.toLowerCase().includes(clean))
   );
 }

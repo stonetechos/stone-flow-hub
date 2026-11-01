@@ -62,7 +62,8 @@ import { WallCladdingCatalog } from "@/components/catalog/WallCladdingCatalog";
 import { WebsiteProductsBackend } from "@/components/admin/WebsiteProductsBackend";
 import { SidebarTabsBackend } from "@/components/admin/SidebarTabsBackend";
 import { DEFAULT_NATURAL_STONE_PRODUCTS } from "@/lib/products/default-catalog";
-import { Sliders, Globe, PanelLeft } from "lucide-react";
+import { Sliders, Globe, PanelLeft, ShieldAlert } from "lucide-react";
+import { useRoles } from "@/hooks/use-roles";
 
 export const Route = createFileRoute("/_authenticated/products/")({
   ssr: false,
@@ -78,6 +79,9 @@ function ProductsPage() {
   const qc = useQueryClient();
   const nav = useNavigate();
   const { edit, create } = Route.useSearch();
+  const roles = useRoles();
+  const isSuperAdmin = roles.isSuperAdmin;
+
   // Search/debounce/pagination/table-prefs via the
   // shared list-page hook (same 250ms debounce and "products" prefs key).
   const list = useListPageState("products");
@@ -89,6 +93,15 @@ function ProductsPage() {
   const [activeTab, setActiveTab] = useState<
     "website-catalog" | "cladding" | "sidebar-tabs" | "inventory"
   >("website-catalog");
+
+  // If a non-super-admin employee loads or is on a restricted tab, switch to inventory
+  useEffect(() => {
+    if (roles.isReady && !isSuperAdmin) {
+      if (activeTab === "website-catalog" || activeTab === "sidebar-tabs") {
+        setActiveTab("inventory");
+      }
+    }
+  }, [roles.isReady, isSuperAdmin, activeTab]);
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
@@ -184,13 +197,15 @@ function ProductsPage() {
       >
         <div className="flex items-center justify-between pb-1 border-b overflow-x-auto scrollbar-thin">
           <TabsList className="bg-muted/70 p-1 border">
-            <TabsTrigger
-              value="website-catalog"
-              className="text-xs gap-1.5 data-[state=active]:bg-cyan-600 data-[state=active]:text-white font-semibold"
-            >
-              <Globe className="h-3.5 w-3.5" />
-              <span>Website Product Backend &amp; Upload</span>
-            </TabsTrigger>
+            {isSuperAdmin && (
+              <TabsTrigger
+                value="website-catalog"
+                className="text-xs gap-1.5 data-[state=active]:bg-cyan-600 data-[state=active]:text-white font-semibold"
+              >
+                <Globe className="h-3.5 w-3.5" />
+                <span>Website Product Backend &amp; Upload</span>
+              </TabsTrigger>
+            )}
             <TabsTrigger
               value="cladding"
               className="text-xs gap-1.5 data-[state=active]:bg-cyan-600 data-[state=active]:text-white font-semibold"
@@ -198,13 +213,15 @@ function ProductsPage() {
               <Sparkles className="h-3.5 w-3.5 text-amber-400" />
               <span>Catalog Visual Display &amp; PDF</span>
             </TabsTrigger>
-            <TabsTrigger
-              value="sidebar-tabs"
-              className="text-xs gap-1.5 data-[state=active]:bg-cyan-600 data-[state=active]:text-white font-semibold"
-            >
-              <Sliders className="h-3.5 w-3.5" />
-              <span>Sidebar Toolbar Tabs Renamer</span>
-            </TabsTrigger>
+            {isSuperAdmin && (
+              <TabsTrigger
+                value="sidebar-tabs"
+                className="text-xs gap-1.5 data-[state=active]:bg-cyan-600 data-[state=active]:text-white font-semibold"
+              >
+                <Sliders className="h-3.5 w-3.5" />
+                <span>Sidebar Toolbar Tabs Renamer</span>
+              </TabsTrigger>
+            )}
             <TabsTrigger
               value="inventory"
               className="text-xs gap-1.5 data-[state=active]:bg-cyan-600 data-[state=active]:text-white font-semibold"
@@ -215,17 +232,42 @@ function ProductsPage() {
           </TabsList>
         </div>
 
-        <TabsContent value="website-catalog" className="pt-2">
-          <WebsiteProductsBackend />
-        </TabsContent>
+        {isSuperAdmin ? (
+          <TabsContent value="website-catalog" className="pt-2">
+            <WebsiteProductsBackend />
+          </TabsContent>
+        ) : (
+          <TabsContent value="website-catalog" className="pt-4">
+            <div className="p-8 text-center rounded-xl border border-dashed border-slate-300 bg-slate-50 text-slate-600">
+              <ShieldAlert className="h-8 w-8 text-amber-600 mx-auto mb-2" />
+              <h3 className="text-sm font-semibold text-slate-800">Super Admin Access Only</h3>
+              <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+                Only platform Super Administrators have permissions to view, add, or edit website
+                products and pricing.
+              </p>
+            </div>
+          </TabsContent>
+        )}
 
         <TabsContent value="cladding" className="pt-2">
-          <WallCladdingCatalog showAdminBanner={true} />
+          <WallCladdingCatalog showAdminBanner={isSuperAdmin} />
         </TabsContent>
 
-        <TabsContent value="sidebar-tabs" className="pt-2">
-          <SidebarTabsBackend />
-        </TabsContent>
+        {isSuperAdmin ? (
+          <TabsContent value="sidebar-tabs" className="pt-2">
+            <SidebarTabsBackend />
+          </TabsContent>
+        ) : (
+          <TabsContent value="sidebar-tabs" className="pt-4">
+            <div className="p-8 text-center rounded-xl border border-dashed border-slate-300 bg-slate-50 text-slate-600">
+              <ShieldAlert className="h-8 w-8 text-amber-600 mx-auto mb-2" />
+              <h3 className="text-sm font-semibold text-slate-800">Super Admin Access Only</h3>
+              <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+                Only platform Super Administrators can configure and rename sidebar navigation tabs.
+              </p>
+            </div>
+          </TabsContent>
+        )}
 
         <TabsContent value="inventory" className="space-y-4 pt-1">
           <DataToolbar
