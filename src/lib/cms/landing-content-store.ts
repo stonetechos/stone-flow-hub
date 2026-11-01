@@ -106,10 +106,10 @@ export const DEFAULT_LANDING_CONTENT: WebsiteLandingContent = {
   contactAddressMakrana: "Gunawati Road, Makrana, Didwana-Kuchaman District, Rajasthan 341505",
   contactHours: "Mon – Sat: 9:00 AM – 7:30 PM IST",
 
-  announcementEnabled: true,
-  announcementText: "✨ 2026 Architectural Natural Stone Catalog & Live Mine Rates Now Published!",
-  announcementLinkText: "View Catalog",
-  announcementLinkUrl: "#wall-cladding-catalogue",
+  announcementEnabled: false,
+  announcementText: "",
+  announcementLinkText: "",
+  announcementLinkUrl: "",
 };
 
 const STORAGE_KEY = "stos_website_landing_content";

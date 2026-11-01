@@ -9,7 +9,6 @@ import {
   Layers,
   Phone,
   HelpCircle,
-  Megaphone,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -106,57 +105,7 @@ export function WebsiteLandingContentEditor() {
         </div>
       </div>
 
-      {/* 1. TOP ANNOUNCEMENT BANNER */}
-      <Card className="rounded-2xl border-border shadow-xs">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                <Megaphone className="h-4 w-4" />
-              </div>
-              <CardTitle className="text-sm font-bold">Top Promotional Banner / Alert</CardTitle>
-            </div>
-            <div className="flex items-center gap-2">
-              <Label htmlFor="banner-enabled" className="text-xs font-semibold">
-                Show Banner on Website
-              </Label>
-              <Switch
-                id="banner-enabled"
-                checked={form.announcementEnabled}
-                onCheckedChange={(checked) => handleChange("announcementEnabled", checked)}
-              />
-            </div>
-          </div>
-          <CardDescription className="text-xs">
-            Displays a festive greeting, important factory dispatch alert, or special promotion at
-            the top of the landing page.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4 pt-0">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div className="md:col-span-2 space-y-1.5">
-              <Label className="text-xs">Banner Message Text</Label>
-              <Input
-                value={form.announcementText}
-                onChange={(e) => handleChange("announcementText", e.target.value)}
-                placeholder="e.g. 2026 Architectural Natural Stone Catalog & Mine Rates Now Published!"
-                className="text-xs h-9"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Callout Action Text</Label>
-              <Input
-                value={form.announcementLinkText}
-                onChange={(e) => handleChange("announcementLinkText", e.target.value)}
-                placeholder="e.g. View Catalog"
-                className="text-xs h-9"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 2. HERO SECTION MATTER */}
+      {/* 1. HERO SECTION MATTER */}
       <Card className="rounded-2xl border-border shadow-xs">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">

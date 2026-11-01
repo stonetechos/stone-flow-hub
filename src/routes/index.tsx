@@ -884,23 +884,6 @@ function HomePage() {
   // -------------------------------------------------------------
   return (
     <div className="min-h-screen paper-texture dark:bg-slate-950 text-foreground antialiased pb-20 sm:pb-12 w-full max-w-full overflow-x-hidden">
-      {/* 0. ANNOUNCEMENT BANNER (MANAGED VIA WEBSITE CMS) */}
-      {cmsContent.announcementEnabled && cmsContent.announcementText && (
-        <div className="bg-gradient-to-r from-emerald-800 via-teal-900 to-emerald-950 text-white text-center py-2 px-4 text-xs font-medium flex items-center justify-center gap-2 border-b border-emerald-700/40 relative z-50">
-          <Sparkles className="h-3.5 w-3.5 text-amber-300 shrink-0" />
-          <span>{cmsContent.announcementText}</span>
-          {cmsContent.announcementLinkText && (
-            <a
-              href={cmsContent.announcementLinkUrl || "#lead-form"}
-              className="underline font-bold text-amber-300 hover:text-amber-200 ml-1 inline-flex items-center gap-1"
-            >
-              <span>{cmsContent.announcementLinkText}</span>
-              <ArrowRight className="h-3 w-3" />
-            </a>
-          )}
-        </div>
-      )}
-
       {/* 1. STOS ENTERPRISE NAVBAR (TURQUOISE & PAPER WHITE) */}
       <header className="sticky top-0 z-40 border-b border-border/80 bg-background/95 backdrop-blur-md shadow-2xs pt-[max(env(safe-area-inset-top),0px)]">
         <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
