@@ -116,35 +116,47 @@ export function WallCladdingCatalog({
     return ["all", ...Array.from(set)];
   }, [products]);
 
-  // Filtered & Sorted items
+  // Filtered & Sorted items (respects custom drag & drop sequence from CMS)
   const filteredItems = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return products
-      .filter((item) => {
-        if (selectedCategory !== "all" && item.category !== selectedCategory) return false;
-        if (selectedStoneType !== "all" && item.stoneType !== selectedStoneType) return false;
-        if (!q) return true;
+    const items = products.filter((item) => {
+      if (selectedCategory !== "all" && item.category !== selectedCategory) return false;
+      if (selectedStoneType !== "all" && item.stoneType !== selectedStoneType) return false;
+      if (!q) return true;
 
-        const p = getPrice(item.id, item.category, item.stoneType, item.index);
-        return (
-          item.name.toLowerCase().includes(q) ||
-          item.id.toLowerCase().includes(q) ||
-          item.stoneType.toLowerCase().includes(q) ||
-          item.category.toLowerCase().includes(q) ||
-          (p.badge && p.badge.toLowerCase().includes(q)) ||
-          item.finishes?.some((f) => f.toLowerCase().includes(q)) ||
-          item.applications?.some((a) => a.toLowerCase().includes(q))
-        );
-      })
-      .sort((a, b) => {
+      const p = getPrice(item.id, item.category, item.stoneType, item.index);
+      return (
+        item.name.toLowerCase().includes(q) ||
+        item.id.toLowerCase().includes(q) ||
+        item.stoneType.toLowerCase().includes(q) ||
+        item.category.toLowerCase().includes(q) ||
+        (p.badge && p.badge.toLowerCase().includes(q)) ||
+        item.finishes?.some((f) => f.toLowerCase().includes(q)) ||
+        item.applications?.some((a) => a.toLowerCase().includes(q))
+      );
+    });
+
+    // If explicit sorting by price or name is requested, apply it;
+    // otherwise preserve exact custom sequence from `products` (useWebsiteCatalog order)
+    if (sortBy === "price-asc") {
+      return [...items].sort((a, b) => {
         const priceA = getPrice(a.id, a.category, a.stoneType, a.index).price;
         const priceB = getPrice(b.id, b.category, b.stoneType, b.index).price;
-
-        if (sortBy === "price-asc") return priceA - priceB;
-        if (sortBy === "price-desc") return priceB - priceA;
-        if (sortBy === "name") return a.name.localeCompare(b.name);
-        return (a.index || 0) - (b.index || 0);
+        return priceA - priceB;
       });
+    }
+    if (sortBy === "price-desc") {
+      return [...items].sort((a, b) => {
+        const priceA = getPrice(a.id, a.category, a.stoneType, a.index).price;
+        const priceB = getPrice(b.id, b.category, b.stoneType, b.index).price;
+        return priceB - priceA;
+      });
+    }
+    if (sortBy === "name") {
+      return [...items].sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    return items;
   }, [products, search, selectedCategory, selectedStoneType, sortBy, getPrice]);
 
   // High-performance infinite scroll: uses IntersectionObserver on bottom sentinel
