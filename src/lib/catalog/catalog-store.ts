@@ -19,6 +19,19 @@ import {
 import { fetchSiteSettings, upsertSiteSetting } from "@/lib/site-settings/api";
 import { syncWebsiteProductToErpServerFn } from "@/lib/products/products.functions";
 
+export const OFFICIAL_PRODUCT_CATEGORIES = [
+  "Stone Wall Cladding",
+  "Stone Wall Mural Artwork",
+  "Artwork",
+  "Stone Inlay",
+  "Stone Article",
+  "Ladscaping Product",
+  "PU Panels",
+  "Stone Veneer",
+] as const;
+
+export type OfficialProductCategory = (typeof OFFICIAL_PRODUCT_CATEGORIES)[number];
+
 export interface CatalogProduct {
   id: string; // ST-WC-001, etc.
   index: number;
@@ -193,15 +206,15 @@ export function useWebsiteCatalog() {
     return items.sort((a, b) => (a.index || 999) - (b.index || 999));
   }, [customItems, customOrder]);
 
-  // Extract all categories dynamically
+  // Extract all categories dynamically prioritizing official category set
   const categories = useMemo(() => {
-    const set = new Set<string>();
+    const list: string[] = [...OFFICIAL_PRODUCT_CATEGORIES];
     for (const p of allProducts) {
-      if (p.category && p.category.trim()) {
-        set.add(p.category.trim());
+      if (p.category && p.category.trim() && !list.includes(p.category.trim())) {
+        list.push(p.category.trim());
       }
     }
-    return Array.from(set).sort();
+    return list;
   }, [allProducts]);
 
   // Helper to get active attached price

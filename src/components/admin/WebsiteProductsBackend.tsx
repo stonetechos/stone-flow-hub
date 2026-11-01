@@ -41,8 +41,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
-import { useWebsiteCatalog, type CatalogProduct } from "@/lib/catalog/catalog-store";
+import {
+  useWebsiteCatalog,
+  type CatalogProduct,
+  OFFICIAL_PRODUCT_CATEGORIES,
+} from "@/lib/catalog/catalog-store";
 import { STONE_TYPES, PRODUCT_UNITS } from "@/lib/products/schema";
 import { useRoles } from "@/hooks/use-roles";
 
@@ -393,13 +398,12 @@ export function WebsiteProductsBackend() {
                     title="Drag and drop to arrange sequence"
                   ></th>
                 )}
-                <th className="py-2.5 px-3 w-14">Image</th>
+                <th className="py-2.5 px-3 w-16">Image</th>
                 <th className="py-2.5 px-3">Product Name &amp; Code</th>
                 <th className="py-2.5 px-3">Category</th>
                 <th className="py-2.5 px-3">Stone Type</th>
                 <th className="py-2.5 px-3">Selling Price</th>
                 <th className="py-2.5 px-3">MRP</th>
-                <th className="py-2.5 px-3">Commercial Badge</th>
                 <th className="py-2.5 px-3 text-right">Actions</th>
               </tr>
             </thead>
@@ -407,7 +411,7 @@ export function WebsiteProductsBackend() {
               {paginatedProducts.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={isSuperAdmin ? 9 : 8}
+                    colSpan={isSuperAdmin ? 8 : 7}
                     className="py-8 text-center text-muted-foreground"
                   >
                     No products found matching the search criteria.
@@ -478,13 +482,30 @@ export function WebsiteProductsBackend() {
                         </td>
                       )}
                       <td className="py-2 px-3">
-                        <div className="relative h-10 w-14 rounded overflow-hidden border border-border bg-stone-900 shrink-0">
+                        <div className="relative group/thumb h-11 w-14 rounded-lg overflow-visible border border-border bg-stone-900 shrink-0">
                           <img
                             src={p.image}
                             alt={p.name}
-                            className="h-full w-full object-cover pointer-events-none"
+                            className="h-full w-full object-cover rounded-lg pointer-events-none transition-transform duration-200"
                             loading="lazy"
                           />
+                          {/* Rich High-Resolution Floating Image Preview on Hover */}
+                          <div className="pointer-events-none fixed z-[9999] opacity-0 group-hover/thumb:opacity-100 transition-opacity duration-200 shadow-2xl rounded-2xl border-2 border-cyan-500/80 bg-stone-950 p-2 transform -translate-y-1/2 left-32 w-72 sm:w-80 h-72 sm:h-80 flex flex-col justify-between hidden group-hover/thumb:flex">
+                            <div className="relative flex-1 w-full rounded-xl overflow-hidden bg-black">
+                              <img
+                                src={p.image}
+                                alt={p.name}
+                                className="h-full w-full object-contain"
+                              />
+                            </div>
+                            <div className="mt-2 text-white">
+                              <div className="font-bold text-xs truncate">{p.name}</div>
+                              <div className="text-[10px] text-cyan-300 font-mono flex items-center justify-between">
+                                <span>{p.id}</span>
+                                <span>{p.stoneType}</span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </td>
                       <td className="py-2 px-3">
@@ -515,11 +536,6 @@ export function WebsiteProductsBackend() {
                         ) : (
                           "—"
                         )}
-                      </td>
-                      <td className="py-2 px-3">
-                        <Badge className="bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 border-cyan-200 text-[10px] px-1.5">
-                          {priceInfo.badge || "Standard"}
-                        </Badge>
                       </td>
                       <td className="py-2 px-3 text-right">
                         <div className="flex items-center justify-end gap-1">
@@ -716,16 +732,6 @@ export function WebsiteProductsBackend() {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">Commercial Badge Tag</Label>
-                <Input
-                  value={formBadge}
-                  onChange={(e) => setFormBadge(e.target.value)}
-                  placeholder="e.g. Quarry Direct, Best Seller"
-                  className="h-9 text-xs"
-                />
-              </div>
-
-              <div className="space-y-1.5">
                 <Label className="text-xs font-semibold">Dispatch Lead Time</Label>
                 <Input
                   value={formLeadTime}
@@ -885,15 +891,6 @@ export function WebsiteProductsBackend() {
                       <SelectItem value="box">per box</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold">Commercial Badge Tag</Label>
-                  <Input
-                    value={formBadge}
-                    onChange={(e) => setFormBadge(e.target.value)}
-                    className="h-9 text-xs"
-                  />
                 </div>
 
                 <div className="sm:col-span-2 space-y-1.5">
