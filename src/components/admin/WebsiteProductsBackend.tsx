@@ -19,7 +19,10 @@ import {
   GripVertical,
   ArrowUpDown,
   RotateCcw,
+  ZoomIn,
+  ImageIcon,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -50,6 +53,86 @@ import {
 } from "@/lib/catalog/catalog-store";
 import { STONE_TYPES, PRODUCT_UNITS } from "@/lib/products/schema";
 import { useRoles } from "@/hooks/use-roles";
+
+function ProductImageZoomPreview({
+  src,
+  alt,
+  id,
+  className,
+}: {
+  src: string;
+  alt: string;
+  id?: string;
+  className?: string;
+}) {
+  const [zoom, setZoom] = useState({ active: false, x: 50, y: 50 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
+    const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100));
+    setZoom({ active: true, x, y });
+  };
+
+  const handleMouseLeave = () => {
+    setZoom({ active: false, x: 50, y: 50 });
+  };
+
+  return (
+    <div className={cn("space-y-1.5", className)}>
+      <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground">
+        <span className="flex items-center gap-1.5 text-cyan-600 dark:text-cyan-400 font-semibold">
+          <ZoomIn className="h-3.5 w-3.5" />
+          Product Photo &amp; Relief Inspector
+        </span>
+        <span className="text-[10px] bg-muted/80 border border-border px-2 py-0.5 rounded-full font-mono">
+          Hover over image to zoom 2.5× into stone relief
+        </span>
+      </div>
+      <div
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        className="relative h-60 sm:h-72 w-full rounded-2xl overflow-hidden border-2 border-border/80 bg-stone-950 shadow-inner cursor-crosshair group select-none flex items-center justify-center"
+      >
+        {src ? (
+          <>
+            <img
+              src={src}
+              alt={alt}
+              style={{
+                transformOrigin: `${zoom.x}% ${zoom.y}%`,
+                transform: zoom.active ? "scale(2.5)" : "scale(1)",
+              }}
+              className="max-h-full max-w-full object-contain transition-transform duration-100 ease-out pointer-events-none"
+            />
+            {zoom.active ? (
+              <div className="absolute bottom-2.5 right-2.5 bg-black/85 backdrop-blur-md text-amber-300 text-[10px] font-mono px-2 py-0.5 rounded-md border border-amber-400/30 flex items-center gap-1 pointer-events-none shadow-md">
+                <span>2.5× Inspection Lens</span>
+              </div>
+            ) : (
+              <div className="absolute inset-0 bg-black/15 group-hover:bg-transparent transition-colors flex items-center justify-center pointer-events-none">
+                <div className="bg-black/75 backdrop-blur-xs text-white text-xs px-3 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 shadow-lg">
+                  <ZoomIn className="h-3.5 w-3.5 text-cyan-400" />
+                  <span>Move cursor over photo to inspect fine stone relief</span>
+                </div>
+              </div>
+            )}
+            {id && (
+              <div className="absolute top-2.5 left-2.5 bg-stone-900/90 backdrop-blur-md text-cyan-300 text-[10px] font-mono px-2 py-0.5 rounded-md border border-cyan-500/30 pointer-events-none">
+                {id}
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="text-muted-foreground text-xs flex flex-col items-center gap-1.5">
+            <ImageIcon className="h-8 w-8 opacity-40" />
+            <span>No image URL specified</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export function WebsiteProductsBackend() {
   const roles = useRoles();
@@ -95,6 +178,13 @@ export function WebsiteProductsBackend() {
   const [formLeadTime, setFormLeadTime] = useState("Ready to Ship");
   const [formImage, setFormImage] = useState("");
   const [formDescription, setFormDescription] = useState("");
+
+  // Floating Hover Image Inspector
+  const [hoveredProduct, setHoveredProduct] = useState<{
+    product: CatalogProduct;
+    top: number;
+    left: number;
+  } | null>(null);
 
   // Filtered products list
   const filteredProducts = useMemo(() => {
@@ -482,30 +572,27 @@ export function WebsiteProductsBackend() {
                         </td>
                       )}
                       <td className="py-2 px-3">
-                        <div className="relative group/thumb h-11 w-14 rounded-lg overflow-visible border border-border bg-stone-900 shrink-0">
+                        <div
+                          onMouseEnter={(e) => {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            setHoveredProduct({
+                              product: p,
+                              top: Math.min(
+                                Math.max(rect.top - 120, 20),
+                                Math.max(window.innerHeight - 360, 20),
+                              ),
+                              left: rect.right + 16,
+                            });
+                          }}
+                          onMouseLeave={() => setHoveredProduct(null)}
+                          className="relative group/thumb h-11 w-14 rounded-lg overflow-hidden border border-border bg-stone-900 shrink-0 cursor-zoom-in hover:ring-2 hover:ring-cyan-500 transition-all"
+                        >
                           <img
                             src={p.image}
                             alt={p.name}
-                            className="h-full w-full object-cover rounded-lg pointer-events-none transition-transform duration-200"
+                            className="h-full w-full object-cover rounded-lg pointer-events-none transition-transform duration-200 group-hover/thumb:scale-110"
                             loading="lazy"
                           />
-                          {/* Rich High-Resolution Floating Image Preview on Hover */}
-                          <div className="pointer-events-none fixed z-[9999] opacity-0 group-hover/thumb:opacity-100 transition-opacity duration-200 shadow-2xl rounded-2xl border-2 border-cyan-500/80 bg-stone-950 p-2 transform -translate-y-1/2 left-32 w-72 sm:w-80 h-72 sm:h-80 flex flex-col justify-between hidden group-hover/thumb:flex">
-                            <div className="relative flex-1 w-full rounded-xl overflow-hidden bg-black">
-                              <img
-                                src={p.image}
-                                alt={p.name}
-                                className="h-full w-full object-contain"
-                              />
-                            </div>
-                            <div className="mt-2 text-white">
-                              <div className="font-bold text-xs truncate">{p.name}</div>
-                              <div className="text-[10px] text-cyan-300 font-mono flex items-center justify-between">
-                                <span>{p.id}</span>
-                                <span>{p.stoneType}</span>
-                              </div>
-                            </div>
-                          </div>
                         </div>
                       </td>
                       <td className="py-2 px-3">
@@ -631,6 +718,13 @@ export function WebsiteProductsBackend() {
                 available on stonetech.in and automatically seeded into ERP quotes &amp; orders.
               </DialogDescription>
             </DialogHeader>
+
+            {formImage.trim() && (
+              <ProductImageZoomPreview
+                src={formImage.trim()}
+                alt={formName || "New Product Preview"}
+              />
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div className="sm:col-span-2 space-y-1.5">
@@ -820,6 +914,13 @@ export function WebsiteProductsBackend() {
                 </DialogDescription>
               </DialogHeader>
 
+              {/* Product Photo & Texture Inspector with 2.5x Zoom on Hover */}
+              <ProductImageZoomPreview
+                src={formImage.trim() || editTarget.image}
+                alt={formName || editTarget.name}
+                id={editTarget.id}
+              />
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 <div className="sm:col-span-2 space-y-1.5">
                   <Label className="text-xs font-semibold">Product Name *</Label>
@@ -935,6 +1036,33 @@ export function WebsiteProductsBackend() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Floating High-Resolution Product Hover Inspection Popover */}
+      {hoveredProduct && (
+        <div
+          style={{ top: hoveredProduct.top, left: hoveredProduct.left }}
+          className="fixed z-[99999] pointer-events-none w-80 h-80 rounded-2xl border-2 border-cyan-500 bg-stone-950 p-3 shadow-2xl flex flex-col justify-between animate-in fade-in-0 zoom-in-95 duration-150"
+        >
+          <div className="relative flex-1 w-full rounded-xl overflow-hidden bg-black flex items-center justify-center">
+            <img
+              src={hoveredProduct.product.image}
+              alt={hoveredProduct.product.name}
+              className="max-h-full max-w-full object-contain"
+            />
+          </div>
+          <div className="mt-2.5 text-white">
+            <div className="font-bold text-xs truncate text-cyan-300">
+              {hoveredProduct.product.name}
+            </div>
+            <div className="text-[10px] text-stone-300 font-mono flex items-center justify-between mt-1">
+              <span>{hoveredProduct.product.id}</span>
+              <span className="bg-stone-800 px-1.5 py-0.5 rounded text-cyan-400 font-sans">
+                {hoveredProduct.product.category}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -324,23 +324,31 @@ export function useWebsiteCatalog() {
         // 3. Central software sync: Push update to Supabase products table
         const finalPrice =
           typeof updates.price === "number" ? updates.price : getProductPrice(mergedItem).price;
-        await syncWebsiteProductToErpServerFn({
-          data: {
-            id: mergedItem.id,
-            name: mergedItem.name,
-            price: finalPrice,
-            unit: updates.unit || getProductPrice(mergedItem).unit,
-            mrp: updates.mrp || getProductPrice(mergedItem).mrp,
-            category: mergedItem.category,
-            stoneType: mergedItem.stoneType,
-            description: `${mergedItem.name} — ${mergedItem.stoneType} (${mergedItem.category})`,
-            thickness: mergedItem.thickness,
-            image: mergedItem.image,
-          },
-        });
+        try {
+          await syncWebsiteProductToErpServerFn({
+            data: {
+              id: mergedItem.id,
+              name: mergedItem.name,
+              price: finalPrice,
+              unit: updates.unit || getProductPrice(mergedItem).unit,
+              mrp: updates.mrp || getProductPrice(mergedItem).mrp,
+              category: mergedItem.category,
+              stoneType: mergedItem.stoneType,
+              description: `${mergedItem.name} — ${mergedItem.stoneType} (${mergedItem.category})`,
+              thickness: mergedItem.thickness,
+              image: mergedItem.image,
+            },
+          });
+        } catch (erpErr) {
+          console.warn("[catalog-store] ERP products sync warning:", erpErr);
+        }
 
         // 4. Update site_settings for landing page
-        await upsertSiteSetting("website_catalog_items", updatedItems);
+        try {
+          await upsertSiteSetting("website_catalog_items", updatedItems);
+        } catch (setErr) {
+          console.warn("[catalog-store] site_settings sync warning:", setErr);
+        }
 
         return { success: true };
       } finally {
@@ -402,22 +410,30 @@ export function useWebsiteCatalog() {
         setCustomPrices(nextPrices);
 
         // Sync with ERP products table
-        await syncWebsiteProductToErpServerFn({
-          data: {
-            id,
-            name: created.name,
-            price: newProd.price,
-            unit: priceObj.unit,
-            mrp: priceObj.mrp,
-            category: created.category,
-            stoneType: created.stoneType,
-            description: `${created.name} — ${created.stoneType}`,
-            thickness: created.thickness,
-            image: created.image,
-          },
-        });
+        try {
+          await syncWebsiteProductToErpServerFn({
+            data: {
+              id,
+              name: created.name,
+              price: newProd.price,
+              unit: priceObj.unit,
+              mrp: priceObj.mrp,
+              category: created.category,
+              stoneType: created.stoneType,
+              description: `${created.name} — ${created.stoneType}`,
+              thickness: created.thickness,
+              image: created.image,
+            },
+          });
+        } catch (erpErr) {
+          console.warn("[catalog-store] ERP products sync warning:", erpErr);
+        }
 
-        await upsertSiteSetting("website_catalog_items", updatedItems);
+        try {
+          await upsertSiteSetting("website_catalog_items", updatedItems);
+        } catch (setErr) {
+          console.warn("[catalog-store] site_settings sync warning:", setErr);
+        }
 
         return created;
       } finally {

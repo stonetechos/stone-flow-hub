@@ -31,14 +31,32 @@ function parseSetting<K extends keyof SiteSettings>(
 const db = supabase as any;
 
 export async function fetchSiteSettings(): Promise<SiteSettings> {
-  const { data, error } = await db.from("site_settings").select("key, value");
+  let rows: RawRow[] = [];
 
-  if (error || !data) {
-    console.warn("[site-settings] fetch failed, using defaults:", error?.message);
-    return SITE_SETTINGS_DEFAULTS;
+  // 1. Try reading from site_settings
+  try {
+    const { data, error } = await db.from("site_settings").select("key, value");
+    if (!error && data && Array.isArray(data) && data.length > 0) {
+      rows = data as RawRow[];
+    }
+  } catch (err) {
+    console.warn("[site-settings] fetch from site_settings failed:", err);
   }
 
-  const rows = data as RawRow[];
+  // 2. Fall back to app_settings if site_settings is empty or not in schema cache
+  if (rows.length === 0) {
+    try {
+      const { data, error } = await supabase.from("app_settings").select("key, value");
+      if (!error && data && Array.isArray(data)) {
+        rows = (data as RawRow[]).map((r) => ({
+          key: r.key.startsWith("site.") ? r.key.replace("site.", "") : r.key,
+          value: r.value,
+        }));
+      }
+    } catch (err) {
+      console.warn("[site-settings] fetch from app_settings fallback failed:", err);
+    }
+  }
 
   return {
     google_rating: parseSetting(rows, "google_rating", SITE_SETTINGS_DEFAULTS.google_rating),
@@ -81,8 +99,30 @@ export async function fetchSiteSettings(): Promise<SiteSettings> {
 }
 
 export async function upsertSiteSetting(key: string, value: unknown): Promise<void> {
-  const { error } = await db
-    .from("site_settings")
-    .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" });
-  if (error) throw new Error(error.message);
+  // 1. Try upserting to site_settings table
+  try {
+    const { error } = await db
+      .from("site_settings")
+      .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" });
+    if (!error) return;
+  } catch {
+    /* fallback to app_settings */
+  }
+
+  // 2. Fall back to app_settings table (present in Supabase schema cache)
+  try {
+    const { error: appErr } = await supabase.from("app_settings").upsert(
+      {
+        key: `site.${key}`,
+        value: value as never,
+        description: `Site setting for ${key}`,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "key" },
+    );
+    if (!appErr) return;
+    console.warn("[site-settings] app_settings fallback:", appErr.message);
+  } catch (err) {
+    console.warn("[site-settings] app_settings fallback caught error:", err);
+  }
 }
