@@ -1,10 +1,46 @@
 [
   {
-    "id": "ST-WC-001",
+    "id": "ST-WC-006",
     "index": 1,
-    "name": "White Sandstone Faceted Origami Fan Ashlar",
-    "slug": "white-sandstone-faceted-origami-fan-ashlar",
-    "image": "/images/catalog/wall-cladding/cladding-84-white-sandstone-faceted-origami-fan-ashlar.jpg",
+    "name": "3D Origami Prism Agra Red Sandstone",
+    "slug": "3d-prism-origami-pink-sandstone",
+    "image": "/images/catalog/wall-cladding/cladding-14-3d-prism-origami-pink-sandstone.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered", "Natural Cleft"]
+  },
+  {
+    "id": "ST-WC-009",
+    "index": 2,
+    "name": "3D Origami Prism Teakwood Sandstone",
+    "slug": "3d-prism-origami-teakwood-gold",
+    "image": "/images/catalog/wall-cladding/cladding-12-3d-prism-origami-teakwood-gold.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered", "Natural Cleft"]
+  },
+  {
+    "id": "ST-WC-007",
+    "index": 3,
+    "name": "3D Origami Prism Mint Sandstone",
+    "slug": "3d-prism-origami-white-sandstone",
+    "image": "/images/catalog/wall-cladding/cladding-11-3d-prism-origami-white-sandstone.jpg",
     "category": "Stone Wall Cladding",
     "stoneType": "Natural Sandstone",
     "standardSizes": "300x300mm / 600x300mm / Custom Modules",
@@ -19,8 +55,8 @@
   },
   {
     "id": "ST-WC-002",
-    "index": 2,
-    "name": "Dual-Tone White & Gold Pyramid Pitched Mosaic",
+    "index": 4,
+    "name": "Dual-Tone Mint Sandstone Pyramid Pitched Mosaic",
     "slug": "dualtone-white-gold-pyramid-pitched-mosaic",
     "image": "/images/catalog/wall-cladding/cladding-119-dualtone-white-gold-pyramid-pitched-mosaic.jpg",
     "category": "Stone Wall Cladding",
@@ -37,8 +73,8 @@
   },
   {
     "id": "ST-WC-003",
-    "index": 3,
-    "name": "White Sandstone 3D Origami Pinwheel Faceted Relief",
+    "index": 5,
+    "name": "Mint Sandstone 3D Origami Pinwheel Faceted Relief",
     "slug": "white-sandstone-3d-origami-pinwheel-faceted-relief",
     "image": "/images/catalog/wall-cladding/cladding-131-white-sandstone-3d-origami-pinwheel-faceted-relief.jpg",
     "category": "Stone Wall Cladding",
@@ -54,8 +90,116 @@
     "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered", "Natural Cleft"]
   },
   {
+    "id": "ST-WC-008",
+    "index": 6,
+    "name": "Agra Red Sandstone 3D Gable Prism Relief",
+    "slug": "terracotta-pink-sandstone-3d-gable-prism-relief",
+    "image": "/images/catalog/wall-cladding/cladding-133-terracotta-pink-sandstone-3d-gable-prism-relief.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered", "Natural Cleft"]
+  },
+  {
+    "id": "ST-WC-010",
+    "index": 7,
+    "name": "Mint Sandstone Radial Sunburst Relief",
+    "slug": "white-mint-sandstone-radial-sunburst-relief",
+    "image": "/images/catalog/wall-cladding/cladding-29-white-mint-sandstone-radial-sunburst-relief.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered", "Natural Cleft"]
+  },
+  {
+    "id": "ST-WC-011",
+    "index": 8,
+    "name": "Rainbow Sandstone Radial Sunburst Relief",
+    "slug": "rainbow-teakwood-radial-sunburst-relief",
+    "image": "/images/catalog/wall-cladding/cladding-23-rainbow-teakwood-radial-sunburst-relief.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered", "Natural Cleft"]
+  },
+  {
+    "id": "ST-WC-017",
+    "index": 9,
+    "name": "Mint Sandstone Rosette Jharokha Ashlar",
+    "slug": "jodhpur-sandstone-rosette-jharokha-ashlar",
+    "image": "/images/catalog/wall-cladding/cladding-26-jodhpur-sandstone-rosette-jharokha-ashlar.jpg",
+    "category": "Stone Wall Mural Artwork",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered", "Natural Cleft"]
+  },
+  {
+    "id": "ST-WC-016",
+    "index": 10,
+    "name": "Teakwood Carved Lotus Floral Rosette Mural",
+    "slug": "teakwood-carved-lotus-floral-rosette-mural",
+    "image": "/images/catalog/wall-cladding/cladding-123-teakwood-carved-lotus-floral-rosette-mural.jpg",
+    "category": "Stone Wall Mural Artwork",
+    "stoneType": "Teakwood Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered", "Natural Cleft"]
+  },
+  {
+    "id": "ST-WC-001",
+    "index": 11,
+    "name": "White Sandstone Faceted Origami Fan Ashlar",
+    "slug": "white-sandstone-faceted-origami-fan-ashlar",
+    "image": "/images/catalog/wall-cladding/cladding-84-white-sandstone-faceted-origami-fan-ashlar.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered", "Natural Cleft"]
+  },
+  {
     "id": "ST-WC-004",
-    "index": 4,
+    "index": 12,
     "name": "Teakwood Origami Pyramid Faceted Relief",
     "slug": "teakwood-origami-pyramid-faceted-relief",
     "image": "/images/catalog/wall-cladding/cladding-69-teakwood-origami-pyramid-faceted-relief.jpg",
@@ -73,7 +217,7 @@
   },
   {
     "id": "ST-WC-005",
-    "index": 5,
+    "index": 13,
     "name": "Teakwood Sandstone Pyramid Pitched Mosaic",
     "slug": "teakwood-sandstone-pyramid-pitched-mosaic",
     "image": "/images/catalog/wall-cladding/cladding-39-teakwood-sandstone-pyramid-pitched-mosaic.jpg",
@@ -90,116 +234,8 @@
     "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered", "Natural Cleft"]
   },
   {
-    "id": "ST-WC-006",
-    "index": 6,
-    "name": "3D Origami Prism Pink Sandstone",
-    "slug": "3d-prism-origami-pink-sandstone",
-    "image": "/images/catalog/wall-cladding/cladding-14-3d-prism-origami-pink-sandstone.jpg",
-    "category": "Stone Wall Cladding",
-    "stoneType": "Natural Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered", "Natural Cleft"]
-  },
-  {
-    "id": "ST-WC-007",
-    "index": 7,
-    "name": "3D Origami Prism White Sandstone",
-    "slug": "3d-prism-origami-white-sandstone",
-    "image": "/images/catalog/wall-cladding/cladding-11-3d-prism-origami-white-sandstone.jpg",
-    "category": "Stone Wall Cladding",
-    "stoneType": "Natural Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered", "Natural Cleft"]
-  },
-  {
-    "id": "ST-WC-008",
-    "index": 8,
-    "name": "Terracotta Pink Sandstone 3D Gable Prism Relief",
-    "slug": "terracotta-pink-sandstone-3d-gable-prism-relief",
-    "image": "/images/catalog/wall-cladding/cladding-133-terracotta-pink-sandstone-3d-gable-prism-relief.jpg",
-    "category": "Stone Wall Cladding",
-    "stoneType": "Natural Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered", "Natural Cleft"]
-  },
-  {
-    "id": "ST-WC-009",
-    "index": 9,
-    "name": "3D Origami Prism Teakwood Gold",
-    "slug": "3d-prism-origami-teakwood-gold",
-    "image": "/images/catalog/wall-cladding/cladding-12-3d-prism-origami-teakwood-gold.jpg",
-    "category": "Stone Wall Cladding",
-    "stoneType": "Teakwood Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered", "Natural Cleft"]
-  },
-  {
-    "id": "ST-WC-010",
-    "index": 10,
-    "name": "White Mint Sandstone Radial Sunburst Relief",
-    "slug": "white-mint-sandstone-radial-sunburst-relief",
-    "image": "/images/catalog/wall-cladding/cladding-29-white-mint-sandstone-radial-sunburst-relief.jpg",
-    "category": "Stone Wall Cladding",
-    "stoneType": "Natural Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered", "Natural Cleft"]
-  },
-  {
-    "id": "ST-WC-011",
-    "index": 11,
-    "name": "Rainbow Teakwood Radial Sunburst Relief",
-    "slug": "rainbow-teakwood-radial-sunburst-relief",
-    "image": "/images/catalog/wall-cladding/cladding-23-rainbow-teakwood-radial-sunburst-relief.jpg",
-    "category": "Stone Wall Cladding",
-    "stoneType": "Teakwood Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered", "Natural Cleft"]
-  },
-  {
     "id": "ST-WC-012",
-    "index": 12,
+    "index": 14,
     "name": "Teakwood Sandstone Radial Fan Sunburst Relief",
     "slug": "teakwood-sandstone-radial-fan-sunburst-relief",
     "image": "/images/catalog/wall-cladding/cladding-87-teakwood-sandstone-radial-fan-sunburst-relief.jpg",
@@ -217,7 +253,7 @@
   },
   {
     "id": "ST-WC-013",
-    "index": 13,
+    "index": 15,
     "name": "White Sandstone Sculpted Rose Blossom Panel",
     "slug": "white-sandstone-sculpted-rose-blossom-panel",
     "image": "/images/catalog/wall-cladding/cladding-126-white-sandstone-sculpted-rose-blossom-panel.jpg",
@@ -235,7 +271,7 @@
   },
   {
     "id": "ST-WC-014",
-    "index": 14,
+    "index": 16,
     "name": "Teakwood Sandstone Carved Jharokha Floral Panel",
     "slug": "teakwood-sandstone-carved-jharokha-floral-panel",
     "image": "/images/catalog/wall-cladding/cladding-89-teakwood-sandstone-carved-jharokha-floral-panel.jpg",
@@ -253,46 +289,10 @@
   },
   {
     "id": "ST-WC-015",
-    "index": 15,
+    "index": 17,
     "name": "White Sandstone Embossed Gold Lotus Blossom",
     "slug": "white-sandstone-embossed-gold-lotus-blossom",
     "image": "/images/catalog/wall-cladding/cladding-81-white-sandstone-embossed-gold-lotus-blossom.jpg",
-    "category": "Stone Wall Mural Artwork",
-    "stoneType": "Natural Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered", "Natural Cleft"]
-  },
-  {
-    "id": "ST-WC-016",
-    "index": 16,
-    "name": "Teakwood Carved Lotus Floral Rosette Mural",
-    "slug": "teakwood-carved-lotus-floral-rosette-mural",
-    "image": "/images/catalog/wall-cladding/cladding-123-teakwood-carved-lotus-floral-rosette-mural.jpg",
-    "category": "Stone Wall Mural Artwork",
-    "stoneType": "Teakwood Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered", "Natural Cleft"]
-  },
-  {
-    "id": "ST-WC-017",
-    "index": 17,
-    "name": "Jodhpur Sandstone Rosette Jharokha Ashlar",
-    "slug": "jodhpur-sandstone-rosette-jharokha-ashlar",
-    "image": "/images/catalog/wall-cladding/cladding-26-jodhpur-sandstone-rosette-jharokha-ashlar.jpg",
     "category": "Stone Wall Mural Artwork",
     "stoneType": "Natural Sandstone",
     "standardSizes": "300x300mm / 600x300mm / Custom Modules",

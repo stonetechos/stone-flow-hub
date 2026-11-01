@@ -17,6 +17,7 @@ import {
   saveCustomPrices,
 } from "./product-prices";
 import { fetchSiteSettings, upsertSiteSetting } from "@/lib/site-settings/api";
+import { DEFAULT_WEBSITE_CATALOG_ORDER } from "@/lib/site-settings/types";
 import { syncWebsiteProductToErpServerFn } from "@/lib/products/products.functions";
 
 export const OFFICIAL_PRODUCT_CATEGORIES = [
@@ -93,12 +94,13 @@ export const ITEMS_EVENT_NAME = "st:catalog-items-changed";
 export const ORDER_EVENT_NAME = "st:catalog-order-changed";
 
 export function readCatalogOrder(): string[] {
-  if (typeof window === "undefined" || !window.localStorage) return [];
+  if (typeof window === "undefined" || !window.localStorage) return DEFAULT_WEBSITE_CATALOG_ORDER;
   try {
     const raw = window.localStorage.getItem(ORDER_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_WEBSITE_CATALOG_ORDER;
   } catch {
-    return [];
+    return DEFAULT_WEBSITE_CATALOG_ORDER;
   }
 }
 
@@ -212,6 +214,12 @@ export function useWebsiteCatalog() {
         ) {
           saveCatalogOrder(settings.website_catalog_order as string[], false);
           setCustomOrder(settings.website_catalog_order as string[]);
+        } else {
+          // If remote does not yet have an order stored in app_settings, sync the active sequence
+          const localOrder = readCatalogOrder();
+          if (localOrder && localOrder.length > 0) {
+            upsertSiteSetting("website_catalog_order", localOrder).catch(() => {});
+          }
         }
         if (
           settings.website_deleted_product_ids &&

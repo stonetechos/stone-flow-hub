@@ -1,16 +1,18 @@
 /**
- * Client-side helper — fetches site_settings directly from Supabase.
- * Falls back to hard-coded defaults so the landing page still renders
- * when the DB is unreachable or the table hasn't been migrated yet.
+ * Site settings helper — fetches and updates site settings.
  *
- * NOTE: The `site_settings` table is created by migration
- * 20260919000000_site_settings.sql. Until that migration is applied and the
- * Supabase types are regenerated the client is cast via `as any` to avoid
- * TypeScript errors — the runtime behaviour is identical.
+ * Uses TanStack Start server functions (with supabaseAdmin) so that
+ * both anonymous landing-page visitors and authenticated staff can read and
+ * persist settings without being blocked by client-side Supabase RLS.
+ * Falls back to direct client access and hard-coded defaults if offline.
  */
 import { supabase } from "@/integrations/supabase/client";
 import type { SiteSettings, SiteReview } from "./types";
 import { SITE_SETTINGS_DEFAULTS } from "./types";
+import {
+  fetchPublicSiteSettingsServerFn,
+  upsertSiteSettingServerFn,
+} from "./site-settings.functions";
 
 interface RawRow {
   key: string;
@@ -31,19 +33,30 @@ function parseSetting<K extends keyof SiteSettings>(
 const db = supabase as any;
 
 export async function fetchSiteSettings(): Promise<SiteSettings> {
-  let rows: RawRow[] = [];
+  // 1. Try server function (uses service_role supabaseAdmin, bypasses RLS for both anon and authenticated)
+  try {
+    const res = await fetchPublicSiteSettingsServerFn();
+    if (res && typeof res === "object") {
+      return res;
+    }
+  } catch (err) {
+    console.warn(
+      "[site-settings] fetchPublicSiteSettingsServerFn failed, trying client fallback:",
+      err,
+    );
+  }
 
-  // 1. Try reading from site_settings
+  // 2. Client fallback: Try reading from site_settings or app_settings
+  let rows: RawRow[] = [];
   try {
     const { data, error } = await db.from("site_settings").select("key, value");
     if (!error && data && Array.isArray(data) && data.length > 0) {
       rows = data as RawRow[];
     }
-  } catch (err) {
-    console.warn("[site-settings] fetch from site_settings failed:", err);
+  } catch {
+    /* ignore */
   }
 
-  // 2. Fall back to app_settings if site_settings is empty or not in schema cache
   if (rows.length === 0) {
     try {
       const { data, error } = await supabase.from("app_settings").select("key, value");
@@ -53,8 +66,8 @@ export async function fetchSiteSettings(): Promise<SiteSettings> {
           value: r.value,
         }));
       }
-    } catch (err) {
-      console.warn("[site-settings] fetch from app_settings fallback failed:", err);
+    } catch {
+      /* ignore */
     }
   }
 
@@ -109,7 +122,18 @@ export async function fetchSiteSettings(): Promise<SiteSettings> {
 }
 
 export async function upsertSiteSetting(key: string, value: unknown): Promise<void> {
-  // 1. Try upserting to site_settings table
+  // 1. Try server function (uses service_role supabaseAdmin, bypasses client RLS)
+  try {
+    const res = await upsertSiteSettingServerFn({ data: { key, value } });
+    if (res?.success) return;
+  } catch (err) {
+    console.warn(
+      "[site-settings] upsertSiteSettingServerFn failed, attempting client fallback:",
+      err,
+    );
+  }
+
+  // 2. Client fallback: site_settings table
   try {
     const { error } = await db
       .from("site_settings")
@@ -119,9 +143,9 @@ export async function upsertSiteSetting(key: string, value: unknown): Promise<vo
     /* fallback to app_settings */
   }
 
-  // 2. Fall back to app_settings table (present in Supabase schema cache)
+  // 3. Client fallback: app_settings table
   try {
-    const { error: appErr } = await supabase.from("app_settings").upsert(
+    await supabase.from("app_settings").upsert(
       {
         key: `site.${key}`,
         value: value as never,
@@ -130,9 +154,7 @@ export async function upsertSiteSetting(key: string, value: unknown): Promise<vo
       },
       { onConflict: "key" },
     );
-    if (!appErr) return;
-    console.warn("[site-settings] app_settings fallback:", appErr.message);
-  } catch (err) {
-    console.warn("[site-settings] app_settings fallback caught error:", err);
+  } catch {
+    /* ignore */
   }
 }
