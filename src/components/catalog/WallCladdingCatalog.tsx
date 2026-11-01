@@ -463,16 +463,16 @@ export function WallCladdingCatalog({
                       contentVisibility: idx >= INITIAL_BATCH ? "auto" : undefined,
                       containIntrinsicSize: idx >= INITIAL_BATCH ? "auto 120px" : undefined,
                     }}
-                    className="group relative aspect-square rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer bg-stone-100 dark:bg-stone-900 border border-border/60 hover:border-amber-500/50 shadow-2xs hover:shadow-md transition-all duration-300"
+                    className="group relative aspect-square rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer bg-stone-900/95 dark:bg-black border border-border/60 hover:border-amber-500/50 shadow-2xs hover:shadow-md transition-all duration-300 flex items-center justify-center p-1 sm:p-2"
                     title={item.name}
                   >
-                    {/* Media Cover Image */}
+                    {/* Media Image — Complete uncropped panel with NO zooming on hover */}
                     <img
                       src={item.image}
                       alt={item.name}
                       loading="lazy"
                       decoding="async"
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-108"
+                      className="h-full w-full object-contain drop-shadow-sm select-none transition-opacity duration-300"
                     />
 
                     {/* Subtle Top-Right Code Badge */}
@@ -599,7 +599,7 @@ export function WallCladdingCatalog({
                     <img
                       src={lightboxTarget.image}
                       alt={lightboxTarget.name}
-                      className="max-h-[72vh] w-auto h-auto max-w-full object-contain rounded-xl shadow-2xl transition-transform duration-300 group-hover:scale-[1.02]"
+                      className="max-h-[72vh] w-auto h-auto max-w-full object-contain rounded-xl shadow-2xl select-none"
                     />
                     {price.badge && (
                       <Badge className="absolute top-3 left-3 bg-amber-500 text-amber-950 font-bold text-xs uppercase shadow-md pointer-events-none">
