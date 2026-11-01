@@ -155,7 +155,7 @@ export function useAttachedProductPrices() {
           Object.keys(settings.website_catalog_prices).length > 0
         ) {
           const local = readCustomPrices();
-          const remotePrices = settings.website_catalog_prices as Record<
+          const remotePrices = settings.website_catalog_prices as unknown as Record<
             string,
             AttachedProductPrice
           >;
