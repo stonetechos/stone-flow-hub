@@ -224,4 +224,71 @@ describe("PDF Generator", () => {
       "max-width:50px;max-height:36px;width:auto;height:auto;object-fit:contain",
     );
   });
+
+  it("omits GSTIN, bank details, UPI QR, and printed signature on cash deal quotes", () => {
+    const cashQuote: PdfDoc = {
+      ...sampleDoc,
+      isCashDeal: true,
+      saleMode: "cash",
+      notes: "Cash deal agreed",
+    };
+    const html = renderDocHtml(cashQuote);
+    // Company GSTIN omitted
+    expect(html).not.toContain("GSTIN 24AAAAA0000A1Z5");
+    expect(html).not.toContain("GSTIN 24BJEPR8383P1ZB");
+    // Bank & UPI details omitted
+    expect(html).not.toContain("Bank of Baroda");
+    expect(html).not.toContain("53130200000136");
+    expect(html).not.toContain("stonetech.ahmedabad@okicici");
+    expect(html).not.toContain('alt="UPI QR Code"');
+    // Printed signature omitted for rubber stamp space
+    expect(html).not.toContain("PROPRIETOR");
+    expect(html).not.toContain('alt="Authorized Signature"');
+    expect(html).not.toContain("FOR: STONE TECH");
+  });
+
+  it("omits GSTIN, bank details, UPI QR, and printed signature on delivery challans", () => {
+    const challanDoc: PdfDoc = {
+      ...sampleDoc,
+      kind: "delivery_challan",
+      title: "Delivery Challan",
+      number: "DC-00001",
+    };
+    const html = renderDocHtml(challanDoc);
+    // Company GSTIN omitted
+    expect(html).not.toContain("GSTIN 24AAAAA0000A1Z5");
+    // Bank & UPI details omitted
+    expect(html).not.toContain("Bank of Baroda");
+    expect(html).not.toContain('alt="UPI QR Code"');
+    // Printed signature omitted
+    expect(html).not.toContain("PROPRIETOR");
+    expect(html).not.toContain('alt="Authorized Signature"');
+  });
+
+  it("preserves GSTIN, bank details, UPI QR, and signature on standard invoiced quotes and invoices", () => {
+    const invoicedQuote: PdfDoc = {
+      ...sampleDoc,
+      isCashDeal: false,
+      saleMode: "invoiced",
+    };
+    const html = renderDocHtml(invoicedQuote);
+    expect(html).toContain("Bank of Baroda");
+    expect(html).toContain("53130200000136");
+    expect(html).toContain('alt="UPI QR Code"');
+    expect(html).toContain("PROPRIETOR");
+    expect(html).toContain('alt="Authorized Signature"');
+  });
+
+  it("renders Bill To / Ship To table with generous vertical padding to avoid edge clipping", () => {
+    const html = renderDocHtml(sampleDoc);
+    expect(html).toContain("padding:8px 10px 10px");
+    expect(html).toContain("The Home Decor Point");
+  });
+
+  it("renders table header with vertical-align: middle and padded Total In Words box", () => {
+    const html = renderDocHtml(sampleDoc);
+    expect(html).toContain("vertical-align:middle !important");
+    expect(html).toContain("padding:6px 12px");
+    expect(html).toContain("Total In Words:");
+  });
 });

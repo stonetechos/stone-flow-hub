@@ -41,20 +41,30 @@ export const SALE_MODE_CONFIG: Record<SaleMode, SaleModeConfig> = {
 };
 
 export function getQuoteSaleMode(
-  quote?: { workflow_state?: unknown; notes?: string | null } | null,
+  quote?: { workflow_state?: unknown; notes?: string | null; sale_mode?: string | null } | null,
 ): SaleMode {
   if (!quote) return "invoiced";
+  const directMode = (quote as Record<string, unknown>).sale_mode;
+  if (directMode === "cash" || directMode === "hybrid" || directMode === "invoiced") {
+    return directMode as SaleMode;
+  }
   const wf = (quote.workflow_state as Record<string, unknown> | null) ?? {};
   if (wf.sale_mode === "cash" || wf.sale_mode === "hybrid" || wf.sale_mode === "invoiced") {
     return wf.sale_mode as SaleMode;
   }
   // Check fallback in notes
-  if (quote.notes?.includes("[CASH_SALE]") || quote.notes?.toLowerCase().includes("cash deal")) {
+  const notesLower = (quote.notes || "").toLowerCase();
+  if (
+    quote.notes?.includes("[CASH_SALE]") ||
+    notesLower.includes("cash deal") ||
+    notesLower.includes("cash sale")
+  ) {
     return "cash";
   }
   if (
     quote.notes?.includes("[HYBRID_SALE]") ||
-    quote.notes?.toLowerCase().includes("hybrid deal")
+    notesLower.includes("hybrid deal") ||
+    notesLower.includes("hybrid sale")
   ) {
     return "hybrid";
   }

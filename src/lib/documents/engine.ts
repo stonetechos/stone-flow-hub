@@ -18,6 +18,7 @@ import {
   detectDealScopeFromItems,
   generateQuoteTerms,
 } from "@/lib/quotes/terms";
+import { getQuoteSaleMode } from "@/lib/quotes/sale-mode";
 import { getInvoice, getInvoiceItems } from "@/lib/invoices/api";
 import { getReceipt, getReceiptAllocations } from "@/lib/receipts/api";
 import { RECEIPT_METHOD_LABELS, type ReceiptMethod } from "@/lib/receipts/schema";
@@ -278,6 +279,9 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
       const scope = detectDealScopeFromItems(items);
       const isClientSlab = detectClientProvidedSlabFromItems(items, q.wall_estimate);
       const effectiveTerms = q.terms && q.terms.trim() ? q.terms.trim() : undefined;
+      const saleMode = getQuoteSaleMode(q);
+      const isCashDeal =
+        saleMode === "cash" || (q.notes?.toLowerCase().includes("cash deal") ?? false);
       return {
         doc: {
           kind: "quotation",
@@ -286,6 +290,8 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
           date: q.issue_date ?? q.created_at?.slice(0, 10) ?? "",
           from: companyFrom,
           to: customerParty(cust),
+          isCashDeal,
+          saleMode,
           meta: [
             { label: "Project", value: q.project?.name ?? "—" },
             { label: "Valid until", value: q.valid_until ?? "—" },
@@ -566,6 +572,8 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
           date: d.dispatch_date ?? d.created_at?.slice(0, 10) ?? "",
           from: companyFrom,
           to: customerParty(cust),
+          isCashDeal: true,
+          saleMode: "cash",
           meta: [
             { label: "Site address", value: d.site_address ?? "—" },
             { label: "Vehicle", value: d.vehicle_no ?? "—" },
