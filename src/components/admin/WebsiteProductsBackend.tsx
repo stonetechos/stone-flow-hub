@@ -154,7 +154,7 @@ export function WebsiteProductsBackend() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedStoneType, setSelectedStoneType] = useState<string>("all");
   const [page, setPage] = useState(1);
-  const pageSize = 15;
+  const [pageSize, setPageSize] = useState<number | "all">(10);
 
   // Drag and drop state
   const [draggedProductId, setDraggedProductId] = useState<string | null>(null);
@@ -202,10 +202,15 @@ export function WebsiteProductsBackend() {
     });
   }, [products, selectedCategory, selectedStoneType, search]);
 
-  const totalPages = Math.ceil(filteredProducts.length / pageSize) || 1;
+  const totalPages =
+    pageSize === "all" ? 1 : Math.ceil(filteredProducts.length / (pageSize as number)) || 1;
   const paginatedProducts = useMemo(() => {
-    const start = (page - 1) * pageSize;
-    return filteredProducts.slice(start, start + pageSize);
+    if (pageSize === "all") {
+      return filteredProducts;
+    }
+    const size = pageSize as number;
+    const start = (page - 1) * size;
+    return filteredProducts.slice(start, start + size);
   }, [filteredProducts, page, pageSize]);
 
   // Open Create Dialog
@@ -473,8 +478,85 @@ export function WebsiteProductsBackend() {
               ))}
             </SelectContent>
           </Select>
+
+          {/* Page Display Selector (10 / page, 25, 50, or See All) */}
+          <Select
+            value={String(pageSize)}
+            onValueChange={(v) => {
+              setPageSize(v === "all" ? "all" : (Number(v) as number));
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="h-9 w-44 text-xs bg-background font-medium">
+              <SelectValue placeholder="Display Option" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="10" className="text-xs">
+                10 items / page
+              </SelectItem>
+              <SelectItem value="25" className="text-xs">
+                25 items / page
+              </SelectItem>
+              <SelectItem value="50" className="text-xs">
+                50 items / page
+              </SelectItem>
+              <SelectItem
+                value="all"
+                className="text-xs font-semibold text-cyan-600 dark:text-cyan-400"
+              >
+                ✨ See All ({filteredProducts.length}) at once
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
+
+      {/* Re-order Helper Banner */}
+      {pageSize === "all" ? (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-2.5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-950 dark:text-cyan-100 text-xs">
+          <div className="flex items-center gap-2">
+            <ArrowUpDown className="h-4 w-4 text-cyan-600 dark:text-cyan-400 shrink-0" />
+            <span>
+              <strong>All-Products Reorder Mode Active:</strong> All {filteredProducts.length} items
+              are displayed on this single page. Click &amp; hold the drag handle (
+              <strong>#</strong>) on any product to move it anywhere in the list or club
+              similar-looking products together.
+            </span>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setPageSize(10);
+              setPage(1);
+            }}
+            className="h-7 px-2.5 text-[11px] bg-background border-cyan-500/30 hover:bg-cyan-500/20 shrink-0 self-start sm:self-auto font-medium"
+          >
+            Switch to 10 items / page
+          </Button>
+        </div>
+      ) : (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3.5 py-2 rounded-lg border border-border/80 bg-muted/20 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1.5">
+            <Layers className="h-3.5 w-3.5 text-cyan-600 dark:text-cyan-400 shrink-0" />
+            <span>
+              Showing {pageSize} items per page. Need to rearrange or club products across the
+              entire catalog?
+            </span>
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              setPageSize("all");
+              setPage(1);
+            }}
+            className="inline-flex items-center gap-1 text-cyan-600 dark:text-cyan-400 font-semibold hover:underline cursor-pointer text-xs self-start sm:self-auto"
+          >
+            <span>Click here to see all {filteredProducts.length} at once</span>
+            <ArrowUpDown className="h-3 w-3" />
+          </button>
+        </div>
+      )}
 
       {/* Products Table */}
       <Card className="overflow-hidden border-border/80 shadow-xs">
@@ -484,9 +566,11 @@ export function WebsiteProductsBackend() {
               <tr>
                 {isSuperAdmin && (
                   <th
-                    className="py-2.5 px-2 w-8 text-center"
-                    title="Drag and drop to arrange sequence"
-                  ></th>
+                    className="py-2.5 px-2 w-14 text-center font-mono text-[11px] text-muted-foreground"
+                    title="Drag and drop sequence rank"
+                  >
+                    #
+                  </th>
                 )}
                 <th className="py-2.5 px-3 w-16">Image</th>
                 <th className="py-2.5 px-3">Product Name &amp; Code</th>
@@ -512,6 +596,8 @@ export function WebsiteProductsBackend() {
                   const priceInfo = getProductPrice(p);
                   const isBeingDragged = draggedProductId === p.id;
                   const isOver = dragOverProductId === p.id;
+                  const globalIndex =
+                    pageSize === "all" ? idx + 1 : (page - 1) * (pageSize as number) + idx + 1;
 
                   return (
                     <tr
@@ -546,7 +632,7 @@ export function WebsiteProductsBackend() {
 
                         if (sourceId !== targetId) {
                           await reorderProducts(sourceId, targetId);
-                          toast.success(`Moved product position successfully`);
+                          toast.success(`Moved product to position #${globalIndex}`);
                         }
                       }}
                       onDragEnd={() => {
@@ -564,10 +650,13 @@ export function WebsiteProductsBackend() {
                       {isSuperAdmin && (
                         <td className="py-2 px-1 text-center align-middle cursor-grab active:cursor-grabbing text-muted-foreground hover:text-cyan-600">
                           <div
-                            className="flex items-center justify-center h-full"
-                            title="Click & hold to drag up or down"
+                            className="flex items-center justify-center gap-1 h-full px-1"
+                            title={`Sequence Rank #${globalIndex} — Click & hold to drag up or down`}
                           >
-                            <GripVertical className="h-4 w-4" />
+                            <GripVertical className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0" />
+                            <span className="text-[11px] font-mono text-muted-foreground font-semibold w-5 text-center select-none">
+                              {globalIndex}
+                            </span>
                           </div>
                         </td>
                       )}
@@ -673,34 +762,65 @@ export function WebsiteProductsBackend() {
         </div>
 
         {/* Pagination Bar */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-t border-border bg-muted/20 text-xs">
-          <div className="text-muted-foreground">
-            Showing {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, filteredProducts.length)}{" "}
-            of {filteredProducts.length} products
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => setPage((p) => p - 1)}
-              className="h-7 px-2 text-xs"
-            >
-              Previous
-            </Button>
-            <span className="px-2 font-medium">
-              Page {page} of {totalPages}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-2.5 border-t border-border bg-muted/20 text-xs">
+          <div className="flex flex-wrap items-center gap-2 text-muted-foreground">
+            <span>
+              {pageSize === "all"
+                ? `Showing all ${filteredProducts.length} products (Full catalog view)`
+                : `Showing ${filteredProducts.length === 0 ? 0 : (page - 1) * (pageSize as number) + 1}–${Math.min(
+                    page * (pageSize as number),
+                    filteredProducts.length,
+                  )} of ${filteredProducts.length} products`}
             </span>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page >= totalPages}
-              onClick={() => setPage((p) => p + 1)}
-              className="h-7 px-2 text-xs"
-            >
-              Next
-            </Button>
+
+            <div className="flex items-center gap-1 ml-0 sm:ml-3">
+              <span className="text-[11px] text-muted-foreground">Per page:</span>
+              {([10, 25, 50, "all"] as const).map((opt) => (
+                <button
+                  key={String(opt)}
+                  type="button"
+                  onClick={() => {
+                    setPageSize(opt);
+                    setPage(1);
+                  }}
+                  className={cn(
+                    "px-2 py-0.5 rounded text-[11px] transition-colors border cursor-pointer",
+                    pageSize === opt
+                      ? "bg-cyan-600 text-white border-cyan-600 font-bold shadow-xs"
+                      : "bg-background text-muted-foreground border-border hover:text-foreground hover:bg-muted font-medium",
+                  )}
+                >
+                  {opt === "all" ? `All (${filteredProducts.length})` : opt}
+                </button>
+              ))}
+            </div>
           </div>
+
+          {pageSize !== "all" && totalPages > 1 && (
+            <div className="flex items-center gap-1.5 self-end sm:self-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => p - 1)}
+                className="h-7 px-2 text-xs"
+              >
+                Previous
+              </Button>
+              <span className="px-2 font-medium">
+                Page {page} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => p + 1)}
+                className="h-7 px-2 text-xs"
+              >
+                Next
+              </Button>
+            </div>
+          )}
         </div>
       </Card>
 
