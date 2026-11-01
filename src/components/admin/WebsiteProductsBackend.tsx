@@ -726,25 +726,25 @@ export function WebsiteProductsBackend() {
                                 <Edit2 className="h-3.5 w-3.5 mr-1" />
                                 Edit
                               </Button>
-                              {p.isCustomUploaded && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => {
-                                    if (
-                                      window.confirm(
-                                        `Remove "${p.name}" from the live website catalogue?`,
-                                      )
-                                    ) {
-                                      deleteProduct(p.id);
-                                      toast.success(`Removed "${p.name}" from catalogue`);
-                                    }
-                                  }}
-                                  className="h-7 px-2 text-xs text-rose-500 hover:bg-rose-50"
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </Button>
-                              )}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={async () => {
+                                  if (
+                                    window.confirm(
+                                      `Are you sure you want to delete "${p.name}" (${p.id}) from the product catalog?\n\nThis will remove it from the website and software product list.`,
+                                    )
+                                  ) {
+                                    await deleteProduct(p.id);
+                                    toast.success(`Deleted "${p.name}" from catalogue`);
+                                  }
+                                }}
+                                className="h-7 px-2 text-xs text-rose-500 hover:bg-rose-50 hover:text-rose-600"
+                                title="Delete this product from catalog"
+                              >
+                                <Trash2 className="h-3.5 w-3.5 mr-1" />
+                                Delete
+                              </Button>
                             </>
                           ) : (
                             <span className="text-[11px] text-muted-foreground italic px-2">
@@ -1134,23 +1134,45 @@ export function WebsiteProductsBackend() {
                 </div>
               </div>
 
-              <DialogFooter className="pt-2 border-t border-border">
+              <DialogFooter className="pt-2 border-t border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 w-full">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="destructive"
                   size="sm"
-                  onClick={() => setEditTarget(null)}
+                  onClick={async () => {
+                    if (
+                      window.confirm(
+                        `Are you sure you want to delete "${editTarget.name}" (${editTarget.id}) from the catalog?\n\nThis will remove it from the website and software product list.`,
+                      )
+                    ) {
+                      await deleteProduct(editTarget.id);
+                      toast.success(`Deleted "${editTarget.name}" from catalogue`);
+                      setEditTarget(null);
+                    }
+                  }}
+                  className="bg-rose-600 hover:bg-rose-500 text-white font-medium text-xs gap-1.5 self-start sm:self-auto"
                 >
-                  Cancel
+                  <Trash2 className="h-3.5 w-3.5" />
+                  <span>Delete Product</span>
                 </Button>
-                <Button
-                  type="submit"
-                  size="sm"
-                  disabled={isSubmitting}
-                  className="bg-cyan-600 hover:bg-cyan-500 text-white font-semibold"
-                >
-                  {isSubmitting ? "Saving & Syncing..." : "Save & Sync Everywhere"}
-                </Button>
+                <div className="flex items-center gap-2 self-end sm:self-auto">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setEditTarget(null)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    size="sm"
+                    disabled={isSubmitting}
+                    className="bg-cyan-600 hover:bg-cyan-500 text-white font-semibold"
+                  >
+                    {isSubmitting ? "Saving & Syncing..." : "Save & Sync Everywhere"}
+                  </Button>
+                </div>
               </DialogFooter>
             </form>
           )}

@@ -127,6 +127,34 @@ export function readCustomCatalogItems(): CatalogProduct[] {
   }
 }
 
+const DELETED_STORAGE_KEY = "stos_website_deleted_product_ids";
+const DELETED_EVENT_NAME = "st:catalog-deleted-changed";
+
+export function readDeletedProductIds(): string[] {
+  if (typeof window === "undefined" || !window.localStorage) return [];
+  try {
+    const raw = window.localStorage.getItem(DELETED_STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as string[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveDeletedProductIds(ids: string[], syncRemote = true): void {
+  if (typeof window === "undefined" || !window.localStorage) return;
+  try {
+    window.localStorage.setItem(DELETED_STORAGE_KEY, JSON.stringify(ids));
+    window.dispatchEvent(new Event(DELETED_EVENT_NAME));
+    if (syncRemote) {
+      upsertSiteSetting("website_deleted_product_ids", ids).catch((e) =>
+        console.warn("[catalog-store] remote deleted IDs sync error:", e),
+      );
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
 export function saveCustomCatalogItems(items: CatalogProduct[], syncRemote = true): void {
   if (typeof window === "undefined" || !window.localStorage) return;
   try {
@@ -147,6 +175,7 @@ export function useWebsiteCatalog() {
   const [customPrices, setCustomPrices] =
     useState<Record<string, AttachedProductPrice>>(readCustomPrices);
   const [customOrder, setCustomOrder] = useState<string[]>(readCatalogOrder);
+  const [deletedIds, setDeletedIds] = useState<string[]>(readDeletedProductIds);
   const [isSyncing, setIsSyncing] = useState(false);
 
   // Initial load & remote sync with site_settings
@@ -184,25 +213,37 @@ export function useWebsiteCatalog() {
           saveCatalogOrder(settings.website_catalog_order as string[], false);
           setCustomOrder(settings.website_catalog_order as string[]);
         }
+        if (
+          settings.website_deleted_product_ids &&
+          Array.isArray(settings.website_deleted_product_ids)
+        ) {
+          saveDeletedProductIds(settings.website_deleted_product_ids as string[], false);
+          setDeletedIds(settings.website_deleted_product_ids as string[]);
+        }
       })
       .catch(() => {});
 
     const onItemsChanged = () => setCustomItems(readCustomCatalogItems());
     const onPricesChanged = () => setCustomPrices(readCustomPrices());
     const onOrderChanged = () => setCustomOrder(readCatalogOrder());
+    const onDeletedChanged = () => setDeletedIds(readDeletedProductIds());
 
     window.addEventListener(ITEMS_EVENT_NAME, onItemsChanged);
     window.addEventListener("st:catalog-prices-changed", onPricesChanged);
     window.addEventListener(ORDER_EVENT_NAME, onOrderChanged);
+    window.addEventListener(DELETED_EVENT_NAME, onDeletedChanged);
     window.addEventListener("storage", onItemsChanged);
     window.addEventListener("storage", onOrderChanged);
+    window.addEventListener("storage", onDeletedChanged);
 
     return () => {
       window.removeEventListener(ITEMS_EVENT_NAME, onItemsChanged);
       window.removeEventListener("st:catalog-prices-changed", onPricesChanged);
       window.removeEventListener(ORDER_EVENT_NAME, onOrderChanged);
+      window.removeEventListener(DELETED_EVENT_NAME, onDeletedChanged);
       window.removeEventListener("storage", onItemsChanged);
       window.removeEventListener("storage", onOrderChanged);
+      window.removeEventListener("storage", onDeletedChanged);
     };
   }, []);
 
@@ -210,15 +251,18 @@ export function useWebsiteCatalog() {
   const allProducts = useMemo<CatalogProduct[]>(() => {
     const defaultList = rawCatalogData as CatalogProduct[];
     const map = new Map<string, CatalogProduct>();
+    const deletedSet = new Set(deletedIds);
 
-    // 1. Add base catalog items
+    // 1. Add base catalog items (skipping deleted)
     for (const item of defaultList) {
+      if (deletedSet.has(item.id)) continue;
       const normalizedCat = OLD_CATEGORY_MAP[item.category] || item.category;
       map.set(item.id, { ...item, category: normalizedCat, isActive: true });
     }
 
-    // 2. Overlay / add custom items from backend
+    // 2. Overlay / add custom items from backend (skipping deleted)
     for (const custom of customItems) {
+      if (deletedSet.has(custom.id)) continue;
       const normalizedCat = OLD_CATEGORY_MAP[custom.category] || custom.category;
       map.set(custom.id, { ...(map.get(custom.id) || {}), ...custom, category: normalizedCat });
     }
@@ -238,7 +282,7 @@ export function useWebsiteCatalog() {
     }
 
     return items.sort((a, b) => (a.index || 999) - (b.index || 999));
-  }, [customItems, customOrder]);
+  }, [customItems, customOrder, deletedIds]);
 
   // Return strictly the 8 official categories requested, plus any new custom categories created
   const categories = useMemo(() => {
@@ -443,13 +487,40 @@ export function useWebsiteCatalog() {
     [allProducts],
   );
 
-  // Delete product
+  // Delete product (both custom and default products)
   const deleteProduct = useCallback(async (id: string) => {
-    const current = readCustomCatalogItems();
-    const updated = current.filter((x) => x.id !== id);
-    saveCustomCatalogItems(updated, true);
-    setCustomItems(updated);
-    await upsertSiteSetting("website_catalog_items", updated);
+    setIsSyncing(true);
+    try {
+      // 1. Remove from custom items if custom
+      const current = readCustomCatalogItems();
+      const updated = current.filter((x) => x.id !== id);
+      saveCustomCatalogItems(updated, true);
+      setCustomItems(updated);
+
+      // 2. Add to deleted IDs set (ensures base catalog items are also hidden/removed)
+      const currentDeleted = readDeletedProductIds();
+      if (!currentDeleted.includes(id)) {
+        const nextDeleted = [...currentDeleted, id];
+        saveDeletedProductIds(nextDeleted, true);
+        setDeletedIds(nextDeleted);
+      }
+
+      // 3. Remove from custom order sequence if present
+      const currentOrder = readCatalogOrder();
+      if (currentOrder.includes(id)) {
+        const nextOrder = currentOrder.filter((x) => x !== id);
+        saveCatalogOrder(nextOrder, true);
+        setCustomOrder(nextOrder);
+      }
+
+      try {
+        await upsertSiteSetting("website_catalog_items", updated);
+      } catch (setErr) {
+        console.warn("[catalog-store] site_settings sync warning:", setErr);
+      }
+    } finally {
+      setIsSyncing(false);
+    }
   }, []);
 
   // Reorder product sequence (drag & drop reordering)

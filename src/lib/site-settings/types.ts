@@ -39,6 +39,7 @@ export interface SiteSettings {
   website_catalog_items?: Record<string, unknown>[];
   website_catalog_prices?: Record<string, unknown>;
   website_catalog_order?: string[];
+  website_deleted_product_ids?: string[];
 }
 
 /** Hard-coded defaults — used as fallback when the DB is unavailable. */
@@ -48,6 +49,7 @@ export const SITE_SETTINGS_DEFAULTS: SiteSettings = {
   website_catalog_items: [],
   website_catalog_prices: {},
   website_catalog_order: [],
+  website_deleted_product_ids: [],
   reviews: [
     {
       quote:

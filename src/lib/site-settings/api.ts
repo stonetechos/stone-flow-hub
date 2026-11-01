@@ -95,6 +95,16 @@ export async function fetchSiteSettings(): Promise<SiteSettings> {
       "website_catalog_prices",
       SITE_SETTINGS_DEFAULTS.website_catalog_prices ?? {},
     ),
+    website_catalog_order: parseSetting(
+      rows,
+      "website_catalog_order",
+      SITE_SETTINGS_DEFAULTS.website_catalog_order ?? [],
+    ),
+    website_deleted_product_ids: parseSetting(
+      rows,
+      "website_deleted_product_ids",
+      SITE_SETTINGS_DEFAULTS.website_deleted_product_ids ?? [],
+    ),
   };
 }
 
