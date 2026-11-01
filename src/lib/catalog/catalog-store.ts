@@ -30,6 +30,38 @@ export const OFFICIAL_PRODUCT_CATEGORIES = [
   "Stone Veneer",
 ] as const;
 
+export const OLD_CATEGORIES_TO_REPLACE = [
+  "3D Origami & Faceted Relief",
+  "Radial Sunburst & Fan Relief",
+  "Carved Sacred Rosettes & Lotus",
+  "Botanical Foliage & Nature Murals",
+  "Semi-Precious & Brass Inlay",
+  "Woven Basketweave & Parquet",
+  "Linear Fluted & Reeded Panels",
+  "Modular Checkerboard Grids",
+  "Geometric Tessellations & Accents",
+  "Splitface Ledgestone & Z-Panels",
+  "Precision Coursed Ashlar",
+  "Polygonal Fieldstone & Castle Rock",
+  "Modular Strip & Linear Mosaics",
+];
+
+export const OLD_CATEGORY_MAP: Record<string, string> = {
+  "3D Origami & Faceted Relief": "Stone Wall Cladding",
+  "Radial Sunburst & Fan Relief": "Stone Wall Cladding",
+  "Linear Fluted & Reeded Panels": "Stone Wall Cladding",
+  "Modular Checkerboard Grids": "Stone Wall Cladding",
+  "Geometric Tessellations & Accents": "Stone Wall Cladding",
+  "Splitface Ledgestone & Z-Panels": "Stone Wall Cladding",
+  "Precision Coursed Ashlar": "Stone Wall Cladding",
+  "Polygonal Fieldstone & Castle Rock": "Stone Wall Cladding",
+  "Modular Strip & Linear Mosaics": "Stone Wall Cladding",
+  "Woven Basketweave & Parquet": "Stone Wall Cladding",
+  "Botanical Foliage & Nature Murals": "Stone Wall Mural Artwork",
+  "Carved Sacred Rosettes & Lotus": "Stone Wall Mural Artwork",
+  "Semi-Precious & Brass Inlay": "Stone Inlay",
+};
+
 export type OfficialProductCategory = (typeof OFFICIAL_PRODUCT_CATEGORIES)[number];
 
 export interface CatalogProduct {
@@ -181,12 +213,14 @@ export function useWebsiteCatalog() {
 
     // 1. Add base catalog items
     for (const item of defaultList) {
-      map.set(item.id, { ...item, isActive: true });
+      const normalizedCat = OLD_CATEGORY_MAP[item.category] || item.category;
+      map.set(item.id, { ...item, category: normalizedCat, isActive: true });
     }
 
     // 2. Overlay / add custom items from backend
     for (const custom of customItems) {
-      map.set(custom.id, { ...(map.get(custom.id) || {}), ...custom });
+      const normalizedCat = OLD_CATEGORY_MAP[custom.category] || custom.category;
+      map.set(custom.id, { ...(map.get(custom.id) || {}), ...custom, category: normalizedCat });
     }
 
     const items = Array.from(map.values());
@@ -206,11 +240,16 @@ export function useWebsiteCatalog() {
     return items.sort((a, b) => (a.index || 999) - (b.index || 999));
   }, [customItems, customOrder]);
 
-  // Extract all categories dynamically prioritizing official category set
+  // Return strictly the 8 official categories requested, plus any new custom categories created
   const categories = useMemo(() => {
     const list: string[] = [...OFFICIAL_PRODUCT_CATEGORIES];
     for (const p of allProducts) {
-      if (p.category && p.category.trim() && !list.includes(p.category.trim())) {
+      if (
+        p.category &&
+        p.category.trim() &&
+        !list.includes(p.category.trim()) &&
+        !OLD_CATEGORIES_TO_REPLACE.includes(p.category.trim())
+      ) {
         list.push(p.category.trim());
       }
     }
@@ -454,11 +493,13 @@ export function getActiveWebsiteProducts(): (CatalogProduct & {
   const map = new Map<string, CatalogProduct>();
 
   for (const item of defaultList) {
-    map.set(item.id, { ...item, isActive: true });
+    const normalizedCat = OLD_CATEGORY_MAP[item.category] || item.category;
+    map.set(item.id, { ...item, category: normalizedCat, isActive: true });
   }
 
   for (const custom of customItems) {
-    map.set(custom.id, { ...(map.get(custom.id) || {}), ...custom });
+    const normalizedCat = OLD_CATEGORY_MAP[custom.category] || custom.category;
+    map.set(custom.id, { ...(map.get(custom.id) || {}), ...custom, category: normalizedCat });
   }
 
   const items = Array.from(map.values()).filter((p) => p.isActive !== false);
