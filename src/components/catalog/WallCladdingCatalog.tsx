@@ -1,46 +1,37 @@
 /**
  * WallCladdingCatalog.tsx
  *
- * Full-featured interactive Product Catalogue for Natural Stone Wall Cladding Mosaics & Panels.
- * Displays all 150 unique patterns staged with zero duplicates.
+ * Full-featured Architectural Product Catalogue for Natural Stone Wall Cladding Mosaics & Panels.
+ * Matches the exact box size, 3-column aspect-square layout, hover overlay, and modal dialog
+ * specifications of "LIVE INSTALLATIONS & EXECUTED WORKS" (StoneGalleryFeed.tsx).
  *
  * Capabilities:
- * - Super admin price writing & attachment directly on/over the image
- * - WhatsApp PDF softcopy download & WhatsApp sharing triggers
- * - Rich categorization, stone geology filtering, surface finish filtering, and live search
- * - Architectural detail lightbox with high-res texture and specifications
- * - Custom pricing persistence across sessions
+ * - Identical container, height limits (max-h-[640px] sm:max-h-[700px] lg:max-h-[750px]), and 3-column square grid
+ * - Smooth infinite / progressive loading with 60fps native momentum scrolling
+ * - Clean default card view with elegant hover overlay displaying product name, live quarry rate & specs
+ * - Super admin price writing & attachment directly on/over the image, synced everywhere (ERP & Quote Calculator)
+ * - WhatsApp PDF softcopy download & WhatsApp inquiry integration
+ * - Side-by-side architectural modal dialog (sm:max-w-2xl rounded-3xl)
  */
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import {
   Search,
-  Filter,
   Download,
   Share2,
-  Tag,
   Pencil,
   Sparkles,
-  Maximize2,
-  SlidersHorizontal,
-  Check,
-  ChevronRight,
-  ShieldCheck,
-  RotateCcw,
   Eye,
   Layers,
+  ShieldCheck,
+  RotateCcw,
   ArrowUpDown,
-  Building,
-  Info,
-  CheckCircle2,
   FileDown,
   X,
-  ChevronLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
@@ -58,7 +49,6 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import catalogData from "@/data/wall-cladding-catalog.json";
 import { useAttachedProductPrices, type AttachedProductPrice } from "@/lib/catalog/product-prices";
 import { AttachPriceDialog, type PatternPriceTarget } from "./AttachPriceDialog";
 import { useRoles } from "@/hooks/use-roles";
@@ -73,16 +63,17 @@ interface WallCladdingCatalogProps {
   showAdminBanner?: boolean;
 }
 
-const BASE_ITEMS = catalogData as WallCladdingItem[];
+const INITIAL_BATCH = 18;
+const BATCH_SIZE = 18;
 
 export function WallCladdingCatalog({
   onSelectPattern,
   className,
   initialCategory = "all",
-  showAdminBanner = true,
+  showAdminBanner = false,
 }: WallCladdingCatalogProps) {
   const { isSuperAdmin: userIsSuperAdmin } = useRoles();
-  const { products, categories: backendCategories, updateProduct } = useWebsiteCatalog();
+  const { products, updateProduct } = useWebsiteCatalog();
   const {
     customPrices,
     getPrice,
@@ -91,7 +82,6 @@ export function WallCladdingCatalog({
     resetAllPrices,
     batchAdjust,
     exportJson,
-    importJson,
   } = useAttachedProductPrices();
 
   // Admin Mode state (defaults to true if super admin, or user can toggle)
@@ -103,12 +93,11 @@ export function WallCladdingCatalog({
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
   const [selectedStoneType, setSelectedStoneType] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"index" | "price-asc" | "price-desc" | "name">("index");
-  const [viewMode, setViewMode] = useState<"grid" | "compact">("grid");
 
-  // Pagination states
-  const [page, setPage] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(12);
-  const [showAll, setShowAll] = useState<boolean>(false);
+  // Infinite scroll batch state
+  const [visibleCount, setVisibleCount] = useState<number>(INITIAL_BATCH);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   // Dialog targets
   const [priceEditTarget, setPriceEditTarget] = useState<PatternPriceTarget | null>(null);
@@ -156,13 +145,36 @@ export function WallCladdingCatalog({
       });
   }, [products, search, selectedCategory, selectedStoneType, sortBy, getPrice]);
 
-  // Paginated items
-  const totalPages = Math.ceil(filteredItems.length / pageSize) || 1;
+  // High-performance infinite scroll: uses IntersectionObserver on bottom sentinel
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    const container = scrollContainerRef.current;
+    if (!sentinel || !container) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const first = entries[0];
+        if (first?.isIntersecting) {
+          setVisibleCount((prev) => {
+            if (prev >= filteredItems.length) return prev;
+            return Math.min(prev + BATCH_SIZE, filteredItems.length);
+          });
+        }
+      },
+      {
+        root: container,
+        rootMargin: "350px 0px",
+        threshold: 0,
+      },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [filteredItems.length, visibleCount]);
+
   const displayedItems = useMemo(() => {
-    if (showAll) return filteredItems;
-    const start = (page - 1) * pageSize;
-    return filteredItems.slice(start, start + pageSize);
-  }, [filteredItems, showAll, page, pageSize]);
+    return filteredItems.slice(0, visibleCount);
+  }, [filteredItems, visibleCount]);
 
   const handleEditPrice = useCallback(
     (item: WallCladdingItem) => {
@@ -188,14 +200,6 @@ export function WallCladdingCatalog({
     window.open(`https://wa.me/919414161129?text=${text}`, "_blank");
   };
 
-  const handleShareCatalog = () => {
-    const shareUrl = `${window.location.origin}/#wall-cladding-catalogue`;
-    const shareText = encodeURIComponent(
-      `Explore Stone Tech's 2026 Natural Stone Wall Cladding & Mosaics Catalogue (150 Architectural Patterns):\n${shareUrl}`,
-    );
-    window.open(`https://wa.me/?text=${shareText}`, "_blank");
-  };
-
   const handleBatchAdjustPrompt = () => {
     const val = window.prompt(
       "Enter price adjustment percentage (e.g. +10 for +10%, or -5 for -5%):",
@@ -212,34 +216,34 @@ export function WallCladdingCatalog({
   };
 
   return (
-    <div className={cn("space-y-6", className)} id="wall-cladding-catalogue">
-      {/* Super Admin Control Bar */}
+    <div className="space-y-4">
+      {/* Super Admin Control Bar (if enabled) */}
       {showAdminBanner && (
-        <div className="rounded-xl border border-cyan-800/40 bg-gradient-to-r from-slate-900 via-cyan-950 to-slate-900 p-4 text-white shadow-lg">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
-                <ShieldCheck className="h-5 w-5" />
+        <div className="rounded-2xl border border-cyan-800/40 bg-gradient-to-r from-slate-900 via-cyan-950 to-slate-900 p-3.5 text-white shadow-md">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
+                <ShieldCheck className="h-4 w-4" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-bold tracking-tight text-white">
-                    Super Admin Rights: Price Attachment &amp; Image Badging
+                  <h3 className="text-xs font-bold text-white">
+                    Super Admin Rights: Live Price Attachment &amp; ERP Sync
                   </h3>
-                  <Badge className="bg-cyan-500/20 text-cyan-300 border-cyan-400/40 text-[10px]">
-                    Super Admin Mode
+                  <Badge className="bg-cyan-500/20 text-cyan-300 border-cyan-400/40 text-[9px]">
+                    Super Admin
                   </Badge>
                 </div>
-                <p className="text-xs text-cyan-100/70">
-                  Click directly on any image price tag or pencil icon to edit, attach, and
-                  customize rates. Changes persist across sessions.
+                <p className="text-[11px] text-cyan-100/70">
+                  Click the pencil icon on any item or modal to edit rates. All edits sync live to
+                  the Quote Calculator.
                 </p>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2 shrink-0">
-              <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-lg border border-white/10 text-xs">
-                <span>Admin Edit Badges:</span>
+              <div className="flex items-center gap-1.5 bg-black/40 px-2.5 py-1 rounded-lg border border-white/10 text-xs">
+                <span className="text-[11px]">Admin Edit:</span>
                 <Switch checked={adminMode} onCheckedChange={setAdminMode} />
               </div>
 
@@ -249,10 +253,10 @@ export function WallCladdingCatalog({
                     variant="outline"
                     size="sm"
                     onClick={handleBatchAdjustPrompt}
-                    className="h-8 text-xs border-cyan-700/60 bg-cyan-950/60 text-cyan-200 hover:bg-cyan-900"
+                    className="h-7 text-xs border-cyan-700/60 bg-cyan-950/60 text-cyan-200 hover:bg-cyan-900"
                   >
-                    <ArrowUpDown className="h-3.5 w-3.5 mr-1" />
-                    Batch Adjust +/- %
+                    <ArrowUpDown className="h-3 w-3 mr-1" />
+                    Adjust +/- %
                   </Button>
 
                   <Button
@@ -267,12 +271,12 @@ export function WallCladdingCatalog({
                       a.download = `stos-wall-cladding-prices-${new Date().toISOString().slice(0, 10)}.json`;
                       a.click();
                       URL.revokeObjectURL(url);
-                      toast.success("Exported custom price sheet");
+                      toast.success("Exported price sheet");
                     }}
-                    className="h-8 text-xs border-cyan-700/60 bg-cyan-950/60 text-cyan-200 hover:bg-cyan-900"
+                    className="h-7 text-xs border-cyan-700/60 bg-cyan-950/60 text-cyan-200 hover:bg-cyan-900"
                   >
-                    <FileDown className="h-3.5 w-3.5 mr-1" />
-                    Export JSON
+                    <FileDown className="h-3 w-3 mr-1" />
+                    Export
                   </Button>
 
                   {Object.keys(customPrices).length > 0 && (
@@ -281,18 +285,16 @@ export function WallCladdingCatalog({
                       size="sm"
                       onClick={() => {
                         if (
-                          window.confirm(
-                            "Reset all custom attached prices to benchmark quarry rates?",
-                          )
+                          window.confirm("Reset all custom attached prices to benchmark rates?")
                         ) {
                           resetAllPrices();
-                          toast.success("Reset all prices to quarry benchmarks");
+                          toast.success("Reset all prices to benchmarks");
                         }
                       }}
-                      className="h-8 text-xs text-amber-300 hover:text-amber-200 hover:bg-amber-950/30"
+                      className="h-7 text-xs text-amber-300 hover:text-amber-200 hover:bg-amber-950/30"
                     >
-                      <RotateCcw className="h-3.5 w-3.5 mr-1" />
-                      Reset All
+                      <RotateCcw className="h-3 w-3 mr-1" />
+                      Reset
                     </Button>
                   )}
                 </>
@@ -302,87 +304,40 @@ export function WallCladdingCatalog({
         </div>
       )}
 
-      {/* Hero Header & Quick Actions Bar */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-2 border-b border-border/60">
-        <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold text-primary mb-2">
-            <Layers className="h-3.5 w-3.5" />
-            <span>2026 Collection · 150 Architectural Patterns</span>
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-            Natural Stone Wall Cladding &amp; Mosaics
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-            Quarry-direct 3D relief, fluted linear ribbed, CNC interlocking panels, waterjet brass
-            inlays, and mesh mosaics.
-          </p>
-        </div>
-
-        {/* Action Buttons: WhatsApp PDF & Share */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          <a
-            href="/catalogues/stos-wall-cladding-catalogue-2026.pdf"
-            download="Stone-Tech-Wall-Cladding-Catalogue-2026.pdf"
-            className="inline-flex"
-          >
-            <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-md h-9 gap-2">
-              <Download className="h-4 w-4" />
-              <span>Download WhatsApp PDF Softcopy</span>
-            </Button>
-          </a>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleShareCatalog}
-            className="h-9 text-xs border-emerald-600/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 gap-1.5"
-          >
-            <Share2 className="h-3.5 w-3.5" />
-            <span>Share on WhatsApp</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* Filter and Search Bar */}
-      <div className="space-y-3 bg-muted/30 p-3.5 rounded-xl border border-border/80">
-        <div className="flex flex-col sm:flex-row items-center gap-3">
-          {/* Search Input */}
-          <div className="relative flex-1 w-full">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              placeholder="Search 150 patterns by name, stone type, ST-WC code, finish, or relief..."
-              className="pl-9 h-9 text-xs sm:text-sm bg-background"
-            />
-            {search && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSearch("");
-                  setPage(1);
-                }}
-                className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
+      {/* Outer rounded container without sharp edges — EXACT SAME SPEC as StoneGalleryFeed */}
+      <div
+        className={cn(
+          "rounded-3xl border border-border/80 bg-card/70 backdrop-blur-xs p-4 sm:p-5 shadow-md space-y-3.5",
+          className,
+        )}
+      >
+        {/* Header Strip with Live Status, Integrated Category Filter, Search, and WhatsApp PDF */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="flex h-2.5 w-2.5 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+            </span>
+            <span className="text-xs font-bold uppercase tracking-wider text-foreground">
+              Natural Stone Wall Cladding &amp; Architectural Mosaics
+            </span>
+            <span className="text-[11px] text-muted-foreground hidden md:inline">
+              ({filteredItems.length} Patterns)
+            </span>
           </div>
 
-          {/* Category Dropdown Filter */}
-          <div className="w-full sm:w-52 shrink-0">
+          {/* Compact Right Controls: Category Dropdown, Search & WhatsApp PDF */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Category Dropdown */}
             <Select
               value={selectedCategory}
               onValueChange={(v) => {
                 setSelectedCategory(v);
-                setPage(1);
+                setVisibleCount(INITIAL_BATCH);
               }}
             >
-              <SelectTrigger className="h-9 text-xs bg-background">
-                <SelectValue placeholder="All Categories" />
+              <SelectTrigger className="h-8 text-xs bg-background/80 w-[150px] sm:w-[180px]">
+                <SelectValue placeholder="All Collections" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all" className="text-xs">
@@ -397,23 +352,21 @@ export function WallCladdingCatalog({
                   ))}
               </SelectContent>
             </Select>
-          </div>
 
-          {/* Stone Type Filter */}
-          <div className="w-full sm:w-44 shrink-0">
+            {/* Stone Geology Dropdown */}
             <Select
               value={selectedStoneType}
               onValueChange={(v) => {
                 setSelectedStoneType(v);
-                setPage(1);
+                setVisibleCount(INITIAL_BATCH);
               }}
             >
-              <SelectTrigger className="h-9 text-xs bg-background">
-                <SelectValue placeholder="All Stone Types" />
+              <SelectTrigger className="h-8 text-xs bg-background/80 w-[120px] sm:w-[140px] hidden sm:flex">
+                <SelectValue placeholder="All Stones" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all" className="text-xs">
-                  All Stone Geologies
+                  All Stones
                 </SelectItem>
                 {stoneTypes
                   .filter((s) => s !== "all")
@@ -424,307 +377,169 @@ export function WallCladdingCatalog({
                   ))}
               </SelectContent>
             </Select>
-          </div>
 
-          {/* Sort By Filter */}
-          <div className="w-full sm:w-44 shrink-0">
-            <Select
-              value={sortBy}
-              onValueChange={(v) => {
-                setSortBy(v as "index" | "price-asc" | "price-desc" | "name");
-                setPage(1);
-              }}
-            >
-              <SelectTrigger className="h-9 text-xs bg-background">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="index" className="text-xs">
-                  Default Catalogue Order
-                </SelectItem>
-                <SelectItem value="price-asc" className="text-xs">
-                  Price: Low to High
-                </SelectItem>
-                <SelectItem value="price-desc" className="text-xs">
-                  Price: High to Low
-                </SelectItem>
-                <SelectItem value="name" className="text-xs">
-                  Alphabetical (A-Z)
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {/* Category Pill Tabs */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin pt-1">
-          {categories.map((cat) => {
-            const count =
-              cat === "all" ? products.length : products.filter((i) => i.category === cat).length;
-            const active = selectedCategory === cat;
-            return (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => {
-                  setSelectedCategory(cat);
-                  setPage(1);
+            {/* Quick Search */}
+            <div className="relative w-28 sm:w-36">
+              <Search className="absolute left-2.5 top-2.5 h-3 w-3 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setVisibleCount(INITIAL_BATCH);
                 }}
-                className={cn(
-                  "whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition-all shrink-0 border",
-                  active
-                    ? "bg-primary text-primary-foreground border-primary shadow-xs"
-                    : "bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground",
-                )}
-              >
-                <span>{cat === "all" ? "All Collections" : cat}</span>
-                <span
-                  className={cn(
-                    "ml-1.5 text-[10px] px-1.5 py-0.2 rounded-full",
-                    active ? "bg-white/20 text-white" : "bg-muted text-muted-foreground",
-                  )}
+                placeholder="Search..."
+                className="pl-7 pr-6 h-8 text-xs bg-background/80"
+              />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearch("");
+                    setVisibleCount(INITIAL_BATCH);
+                  }}
+                  className="absolute right-2 top-2 text-muted-foreground hover:text-foreground"
                 >
-                  {count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
 
-        {/* Results summary counter */}
-        <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
-          <span>
-            Showing <strong className="text-foreground">{displayedItems.length}</strong> of{" "}
-            {filteredItems.length} patterns
-            {selectedCategory !== "all" && ` in "${selectedCategory}"`}
-            {selectedStoneType !== "all" && ` · ${selectedStoneType}`}
-          </span>
-          {(search || selectedCategory !== "all" || selectedStoneType !== "all") && (
-            <button
-              type="button"
-              onClick={() => {
-                setSearch("");
-                setSelectedCategory("all");
-                setSelectedStoneType("all");
-                setPage(1);
-              }}
-              className="text-primary hover:underline font-medium text-xs"
+            {/* WhatsApp PDF Download */}
+            <a
+              href="/catalogues/stos-wall-cladding-catalogue-2026.pdf"
+              download="Stone-Tech-Wall-Cladding-Catalogue-2026.pdf"
+              title="Download WhatsApp PDF Softcopy"
+              className="inline-flex"
             >
-              Reset filters
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Main Pattern Grid — Same Square Box Luxury Format as Live Installations & Executed Works */}
-      {filteredItems.length === 0 ? (
-        <div className="text-center py-16 border rounded-2xl bg-muted/20 space-y-3">
-          <Layers className="h-10 w-10 text-muted-foreground mx-auto" />
-          <h4 className="text-base font-semibold text-foreground">No matching patterns found</h4>
-          <p className="text-xs text-muted-foreground max-w-md mx-auto">
-            Try adjusting your search keyword or clearing the stone type and category filters.
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setSearch("");
-              setSelectedCategory("all");
-              setSelectedStoneType("all");
-              setPage(1);
-            }}
-          >
-            Show All Collections
-          </Button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
-          {displayedItems.map((item) => {
-            const price = getPrice(item.id, item.category, item.stoneType, item.index);
-
-            return (
-              <div
-                key={item.id}
-                onClick={() => setLightboxTarget(item)}
-                className="group relative aspect-square rounded-2xl overflow-hidden cursor-pointer bg-stone-100 dark:bg-stone-900 border border-border/70 hover:border-amber-500/70 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 px-2.5 text-xs text-emerald-700 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 gap-1.5"
               >
-                {/* Full Box Cover Image with Smooth Zoom */}
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-108"
-                  loading="lazy"
-                />
+                <Download className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">PDF</span>
+              </Button>
+            </a>
+          </div>
+        </div>
 
-                {/* Floating Top Header Badges */}
-                <div className="relative z-10 p-2 sm:p-2.5 flex items-center justify-between pointer-events-none">
-                  <div className="flex items-center gap-1.5 bg-black/75 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/15 text-[10px] font-mono font-bold text-cyan-300 shadow-md">
-                    <span>{item.id}</span>
-                  </div>
+        {/* 3-Column Scrollable Box with Native Momentum — EXACT SAME SPEC as StoneGalleryFeed */}
+        <div
+          ref={scrollContainerRef}
+          className="max-h-[640px] sm:max-h-[700px] lg:max-h-[750px] overflow-y-auto overscroll-y-contain pr-1 rounded-2xl scrollbar-thin scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/40 [touch-action:pan-y] [-webkit-overflow-scrolling:touch]"
+        >
+          {filteredItems.length === 0 ? (
+            <div className="text-center py-16 border rounded-2xl bg-muted/20 space-y-3">
+              <Layers className="h-10 w-10 text-muted-foreground mx-auto" />
+              <h4 className="text-base font-semibold text-foreground">No matching patterns</h4>
+              <p className="text-xs text-muted-foreground max-w-md mx-auto">
+                Try clearing your search or changing the collection filter.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSearch("");
+                  setSelectedCategory("all");
+                  setSelectedStoneType("all");
+                  setVisibleCount(INITIAL_BATCH);
+                }}
+              >
+                Reset Filters
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2 pb-2">
+              {displayedItems.map((item, idx) => {
+                const price = getPrice(item.id, item.category, item.stoneType, item.index);
 
-                  {price.badge ? (
-                    <div className="bg-amber-500/90 text-amber-950 backdrop-blur-md px-2 py-0.5 rounded-md text-[9.5px] font-bold shadow-md uppercase tracking-wider">
-                      {price.badge}
+                return (
+                  <div
+                    key={`${item.id}-${idx}`}
+                    onClick={() => setLightboxTarget(item)}
+                    style={{
+                      contentVisibility: idx >= INITIAL_BATCH ? "auto" : undefined,
+                      containIntrinsicSize: idx >= INITIAL_BATCH ? "auto 120px" : undefined,
+                    }}
+                    className="group relative aspect-square rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer bg-stone-100 dark:bg-stone-900 border border-border/60 hover:border-amber-500/50 shadow-2xs hover:shadow-md transition-all duration-300"
+                    title={item.name}
+                  >
+                    {/* Media Cover Image */}
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      loading="lazy"
+                      decoding="async"
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-108"
+                    />
+
+                    {/* Subtle Top-Right Code Badge */}
+                    <div className="absolute top-1.5 right-1.5 bg-black/60 backdrop-blur-xs text-white px-1.5 py-0.5 rounded-md text-[9px] font-mono font-bold shadow-xs pointer-events-none z-10">
+                      {item.id}
                     </div>
-                  ) : (
-                    <div className="bg-black/60 text-white backdrop-blur-md px-2 py-0.5 rounded-md text-[9.5px] font-semibold shadow-md">
-                      {item.stoneType}
-                    </div>
-                  )}
-                </div>
 
-                {/* Permanent Bottom Dark Gradient Overlay with Title & Attached Price */}
-                <div className="relative z-10 p-2.5 sm:p-3 bg-gradient-to-t from-black/95 via-black/70 to-transparent flex flex-col justify-end space-y-1 text-white">
-                  <div className="flex items-center justify-between gap-1 text-[10px] text-cyan-300/90 font-medium">
-                    <span className="truncate">{item.category}</span>
-                    <span className="text-white/60 shrink-0">{item.thickness?.split(" ")[0]}</span>
-                  </div>
+                    {/* Promotional Badge (if any, e.g. "INTERLOCKING") */}
+                    {price.badge && (
+                      <div className="absolute top-1.5 left-1.5 bg-amber-500/90 text-amber-950 backdrop-blur-xs px-1.5 py-0.5 rounded-md text-[8.5px] font-bold shadow-xs uppercase pointer-events-none z-10">
+                        {price.badge}
+                      </div>
+                    )}
 
-                  <h3 className="text-xs sm:text-sm font-bold text-white line-clamp-1 drop-shadow-sm group-hover:text-amber-300 transition-colors">
-                    {item.name}
-                  </h3>
-
-                  <div className="flex items-center justify-between pt-0.5">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-xs sm:text-sm font-extrabold text-emerald-400">
-                        {price.currency} {price.price}
-                      </span>
-                      <span className="text-[10px] text-white/70">/ {price.unit}</span>
-                      {price.mrp && (
-                        <span className="text-[9px] text-white/40 line-through ml-0.5">
-                          {price.currency} {price.mrp}
+                    {/* Subtle dark gradient overlay on hover — EXACT SAME as Live Installations */}
+                    <div className="absolute inset-0 bg-black/65 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-between p-2 text-white z-10">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="font-semibold truncate max-w-[85%] drop-shadow-xs">
+                          {item.name}
                         </span>
-                      )}
-                    </div>
+                        <Eye className="h-3 w-3 shrink-0 opacity-80" />
+                      </div>
 
-                    {/* Hover Action Badges */}
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      {isSuperAdmin && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEditPrice(item);
-                          }}
-                          className="px-1.5 py-0.5 rounded bg-cyan-600 hover:bg-cyan-500 text-white text-[9.5px] font-bold shadow-xs flex items-center gap-1"
-                          title="Super Admin: Edit Price"
-                        >
-                          <Pencil className="h-2.5 w-2.5" />
-                          <span>Price</span>
-                        </button>
-                      )}
-                      <div className="flex items-center gap-1 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-2 py-0.5 rounded text-[10px] font-semibold">
-                        <Eye className="h-3 w-3" />
-                        <span>Specs</span>
+                      <div className="flex items-center justify-between text-[11px] font-bold">
+                        <span className="flex items-baseline gap-1 text-emerald-400">
+                          <span>
+                            {price.currency} {price.price}
+                          </span>
+                          <span className="text-[9px] text-white/70">/{price.unit}</span>
+                        </span>
+
+                        <div className="flex items-center gap-1">
+                          {isSuperAdmin && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditPrice(item);
+                              }}
+                              className="px-1.5 py-0.5 rounded bg-cyan-600 hover:bg-cyan-500 text-white text-[9px] font-bold shadow-xs flex items-center gap-0.5"
+                              title="Super Admin: Edit Price"
+                            >
+                              <Pencil className="h-2.5 w-2.5" />
+                              <span>Price</span>
+                            </button>
+                          )}
+                          <span className="text-[9.5px] bg-white/20 hover:bg-white/30 px-1.5 py-0.5 rounded font-medium">
+                            Specs
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+                );
+              })}
+            </div>
+          )}
 
-      {/* Pagination Bar */}
-      {filteredItems.length > 0 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-border bg-muted/10 p-4 rounded-xl">
-          <div className="text-xs text-muted-foreground">
-            {!showAll ? (
-              <span>
-                Showing{" "}
-                <strong className="text-foreground">
-                  {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, filteredItems.length)}
-                </strong>{" "}
-                of {filteredItems.length} patterns
+          {/* Sentinel element observed by IntersectionObserver to seamlessly load next batches */}
+          {displayedItems.length < filteredItems.length && (
+            <div ref={sentinelRef} className="py-4 text-center">
+              <span className="text-xs text-muted-foreground flex items-center justify-center gap-2">
+                <span className="animate-spin h-3.5 w-3.5 border-2 border-primary border-t-transparent rounded-full" />
+                Loading more patterns ({displayedItems.length}/{filteredItems.length})...
               </span>
-            ) : (
-              <span>
-                Showing all <strong className="text-foreground">{filteredItems.length}</strong>{" "}
-                patterns
-              </span>
-            )}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            {!showAll && totalPages > 1 && (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page <= 1}
-                  onClick={() => {
-                    setPage((p) => p - 1);
-                    document
-                      .getElementById("wall-cladding-catalogue")
-                      ?.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className="h-8 text-xs"
-                >
-                  <ChevronLeft className="h-3.5 w-3.5 mr-1" />
-                  Prev
-                </Button>
-
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: Math.min(totalPages, 7) }).map((_, i) => {
-                    let pageNum = i + 1;
-                    if (totalPages > 7 && page > 4) {
-                      pageNum = Math.min(page - 3 + i, totalPages);
-                    }
-                    return (
-                      <Button
-                        key={pageNum}
-                        variant={page === pageNum ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => {
-                          setPage(pageNum);
-                          document
-                            .getElementById("wall-cladding-catalogue")
-                            ?.scrollIntoView({ behavior: "smooth" });
-                        }}
-                        className="h-8 w-8 text-xs p-0 font-medium"
-                      >
-                        {pageNum}
-                      </Button>
-                    );
-                  })}
-                  {totalPages > 7 && page < totalPages - 3 && (
-                    <span className="text-xs text-muted-foreground px-1">... {totalPages}</span>
-                  )}
-                </div>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page >= totalPages}
-                  onClick={() => {
-                    setPage((p) => p + 1);
-                    document
-                      .getElementById("wall-cladding-catalogue")
-                      ?.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className="h-8 text-xs"
-                >
-                  Next
-                  <ChevronRight className="h-3.5 w-3.5 ml-1" />
-                </Button>
-              </>
-            )}
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setShowAll(!showAll);
-                setPage(1);
-              }}
-              className="h-8 text-xs ml-2 text-cyan-700 dark:text-cyan-300 border-cyan-300 dark:border-cyan-800"
-            >
-              {showAll ? "Paginate (12 per page)" : `Show All (${filteredItems.length})`}
-            </Button>
-          </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Super Admin Attach Price Dialog */}
       <AttachPriceDialog
@@ -752,151 +567,151 @@ export function WallCladdingCatalog({
         }}
       />
 
-      {/* Architectural Lightbox / Inspection Modal */}
+      {/* Architectural Lightbox Dialog — EXACT SAME 2-Column Modal Layout as StoneGalleryFeed */}
       <Dialog
-        open={!!lightboxTarget}
-        onOpenChange={(open) => {
-          if (!open) setLightboxTarget(null);
-        }}
+        open={Boolean(lightboxTarget)}
+        onOpenChange={(open) => !open && setLightboxTarget(null)}
       >
         {lightboxTarget && (
-          <DialogContent className="max-w-4xl p-0 overflow-hidden max-h-[92vh] flex flex-col">
-            <div className="relative bg-black flex items-center justify-center max-h-[55vh] overflow-hidden">
-              <img
-                src={lightboxTarget.image}
-                alt={lightboxTarget.name}
-                className="max-h-[55vh] w-full object-contain"
-              />
-              <div className="absolute top-3 left-3 bg-black/80 px-2.5 py-1 rounded text-xs font-mono font-semibold text-cyan-300 border border-white/20">
-                {lightboxTarget.id}
-              </div>
-              <div className="absolute top-3 right-3 bg-black/80 px-2.5 py-1 rounded text-xs text-white border border-white/20">
-                {lightboxTarget.category}
-              </div>
-            </div>
+          <DialogContent className="sm:max-w-2xl p-0 overflow-hidden rounded-3xl border-border">
+            {(() => {
+              const price = getPrice(
+                lightboxTarget.id,
+                lightboxTarget.category,
+                lightboxTarget.stoneType,
+                lightboxTarget.index,
+              );
+              return (
+                <div className="grid grid-cols-1 md:grid-cols-2">
+                  {/* Left side: Media preview */}
+                  <div className="aspect-square md:aspect-auto bg-black flex items-center justify-center select-none overflow-hidden group relative max-h-[440px]">
+                    <img
+                      src={lightboxTarget.image}
+                      alt={lightboxTarget.name}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    {price.badge && (
+                      <Badge className="absolute top-3 left-3 bg-amber-500 text-amber-950 font-bold text-xs uppercase shadow-md">
+                        {price.badge}
+                      </Badge>
+                    )}
+                    <div className="absolute bottom-3 left-3 bg-black/75 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/15 text-[10.5px] font-mono text-cyan-300 font-bold">
+                      {lightboxTarget.id}
+                    </div>
+                  </div>
 
-            <div className="p-6 space-y-4 overflow-y-auto">
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                <div>
-                  <h3 className="text-xl font-extrabold text-foreground">{lightboxTarget.name}</h3>
-                  <p className="text-sm text-muted-foreground mt-0.5">
-                    {lightboxTarget.stoneType} · {lightboxTarget.category}
-                  </p>
-                </div>
+                  {/* Right side: Details, Specs & Inquire */}
+                  <div className="p-6 flex flex-col justify-between space-y-4 bg-background">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <Badge variant="secondary" className="text-[11px] font-medium">
+                          {lightboxTarget.category}
+                        </Badge>
+                        <span className="font-medium text-foreground">
+                          {lightboxTarget.stoneType}
+                        </span>
+                      </div>
 
-                {/* Overlaid Attached Price */}
-                {(() => {
-                  const p = getPrice(
-                    lightboxTarget.id,
-                    lightboxTarget.category,
-                    lightboxTarget.stoneType,
-                    lightboxTarget.index,
-                  );
-                  return (
-                    <div className="flex items-center gap-3 bg-muted/60 px-4 py-2 rounded-xl border border-border">
                       <div>
-                        <div className="text-xs text-muted-foreground">Direct Quarry Rate</div>
-                        <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
-                          {p.currency} {p.price}{" "}
-                          <span className="text-xs font-normal">/ {p.unit}</span>
+                        <DialogTitle className="text-lg font-bold leading-snug">
+                          {lightboxTarget.name}
+                        </DialogTitle>
+                        <div className="flex items-baseline gap-1.5 mt-1">
+                          <span className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">
+                            {price.currency} {price.price}
+                          </span>
+                          <span className="text-xs text-muted-foreground">/ {price.unit}</span>
+                          {price.mrp && (
+                            <span className="text-xs text-muted-foreground line-through ml-1">
+                              {price.currency} {price.mrp}
+                            </span>
+                          )}
+                          {isSuperAdmin && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const target = lightboxTarget;
+                                setLightboxTarget(null);
+                                handleEditPrice(target);
+                              }}
+                              className="ml-2 px-2 py-0.5 rounded bg-cyan-600/10 hover:bg-cyan-600/20 text-cyan-700 dark:text-cyan-300 text-xs font-semibold flex items-center gap-1"
+                            >
+                              <Pencil className="h-3 w-3" />
+                              <span>Edit Price</span>
+                            </button>
+                          )}
                         </div>
                       </div>
-                      {isSuperAdmin && (
+
+                      <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
+                        Precision natural {lightboxTarget.stoneType.toLowerCase()} architectural
+                        panel. Engineered for exterior elevations, boundary facades, and luxury
+                        interior feature walls.
+                      </DialogDescription>
+
+                      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/60 text-xs">
+                        <div>
+                          <span className="text-muted-foreground block text-[10px]">Relief</span>
+                          <span className="font-medium">
+                            {lightboxTarget.thickness || "20-35mm"}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground block text-[10px]">
+                            Standard Sizes
+                          </span>
+                          <span className="font-medium truncate block">
+                            {lightboxTarget.standardSizes || "600x300mm / Custom"}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground block text-[10px]">
+                            Surface Finish
+                          </span>
+                          <span className="font-medium truncate block">
+                            {lightboxTarget.finishes?.join(", ") || "Natural Cleft"}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground block text-[10px]">Lead Time</span>
+                          <span className="font-medium truncate block text-emerald-600 dark:text-emerald-400">
+                            {price.leadTime || "Ready to Ship"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 pt-2 border-t border-border/60">
+                      {onSelectPattern && (
                         <Button
+                          className="w-full font-semibold bg-primary hover:bg-primary/90 text-primary-foreground text-xs"
                           size="sm"
-                          variant="outline"
                           onClick={() => {
-                            const curTarget = lightboxTarget;
                             setLightboxTarget(null);
-                            handleEditPrice(curTarget);
+                            onSelectPattern(lightboxTarget, price);
+                            toast.success(
+                              `Selected "${lightboxTarget.name}" for your estimate inquiry!`,
+                            );
                           }}
-                          className="h-8 text-xs border-cyan-600/40 text-cyan-700 dark:text-cyan-300"
                         >
-                          <Pencil className="h-3 w-3 mr-1" />
-                          Edit Price
+                          <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                          Add to Estimate &amp; Calculate
                         </Button>
                       )}
+                      <Button
+                        variant="outline"
+                        className="w-full text-xs font-semibold text-emerald-700 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10"
+                        size="sm"
+                        onClick={() => handleWhatsAppInquiry(lightboxTarget)}
+                      >
+                        <Share2 className="h-3.5 w-3.5 mr-1.5" />
+                        Inquire on WhatsApp
+                      </Button>
                     </div>
-                  );
-                })()}
-              </div>
-
-              {/* Technical Specifications Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-                <div className="p-3 rounded-lg border border-border bg-card space-y-1">
-                  <div className="font-semibold text-muted-foreground">Standard Modules</div>
-                  <div className="font-bold text-foreground">{lightboxTarget.standardSizes}</div>
-                </div>
-                <div className="p-3 rounded-lg border border-border bg-card space-y-1">
-                  <div className="font-semibold text-muted-foreground">Relief Thickness</div>
-                  <div className="font-bold text-foreground">{lightboxTarget.thickness}</div>
-                </div>
-                <div className="p-3 rounded-lg border border-border bg-card space-y-1">
-                  <div className="font-semibold text-muted-foreground">Available Finishes</div>
-                  <div className="font-bold text-foreground truncate">
-                    {lightboxTarget.finishes.join(", ")}
                   </div>
                 </div>
-                <div className="p-3 rounded-lg border border-border bg-card space-y-1">
-                  <div className="font-semibold text-muted-foreground">Installation Substrate</div>
-                  <div className="font-bold text-foreground">C2TE S1/S2 Adhesive &amp; Dry-Lay</div>
-                </div>
-              </div>
-
-              {/* Applications Chips */}
-              <div className="space-y-1.5">
-                <div className="text-xs font-semibold text-foreground">Recommended Spaces</div>
-                <div className="flex flex-wrap gap-1.5">
-                  {lightboxTarget.applications.map((app) => (
-                    <Badge key={app} variant="secondary" className="text-xs font-medium">
-                      {app}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-border">
-                <div className="text-xs text-muted-foreground">
-                  Stone Tech Atelier · Direct Quarry Dispatch · Export Wooden Crating
-                </div>
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <Button
-                    variant="outline"
-                    onClick={() => setLightboxTarget(null)}
-                    className="text-xs flex-1 sm:flex-none"
-                  >
-                    Close
-                  </Button>
-                  {onSelectPattern && (
-                    <Button
-                      onClick={() => {
-                        const p = getPrice(
-                          lightboxTarget.id,
-                          lightboxTarget.category,
-                          lightboxTarget.stoneType,
-                          lightboxTarget.index,
-                        );
-                        onSelectPattern(lightboxTarget, p);
-                        setLightboxTarget(null);
-                        toast.success(
-                          `Selected "${lightboxTarget.name}" for your estimate request!`,
-                        );
-                      }}
-                      className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs flex-1 sm:flex-none"
-                    >
-                      <span>Add to Estimate</span>
-                    </Button>
-                  )}
-                  <Button
-                    onClick={() => handleWhatsAppInquiry(lightboxTarget)}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs flex-1 sm:flex-none"
-                  >
-                    Inquire on WhatsApp
-                  </Button>
-                </div>
-              </div>
-            </div>
+              );
+            })()}
           </DialogContent>
         )}
       </Dialog>
