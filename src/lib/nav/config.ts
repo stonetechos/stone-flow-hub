@@ -74,7 +74,7 @@ export const NAV_GROUPS: ReadonlyArray<NavGroupDef> = [
   { id: "overview", label: "Home", icon: LayoutDashboard, to: "/dashboard" },
   {
     id: "website",
-    label: "Website Backend & CMS",
+    label: "Website CMS",
     icon: Globe,
     to: "/admin/website",
     allowedRoles: ["admin", "super_admin"],
@@ -188,23 +188,16 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     group: "overview",
   },
 
-  // 1.5. Website Backend & CMS
+  // 1.5. Website CMS
   {
     id: "website-backend",
     to: "/admin/website",
-    label: "Website Backend & CMS",
+    label: "Website CMS",
     icon: Globe,
     group: "website",
   },
 
   // 2. Items & Inventory
-  {
-    id: "website-backend-items",
-    to: "/admin/website",
-    label: "Website Backend & CMS",
-    icon: Globe,
-    group: "items",
-  },
   {
     id: "products",
     to: "/products",
@@ -553,7 +546,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   {
     id: "website-admin",
     to: "/admin/website",
-    label: "Website Backend & CMS",
+    label: "Website CMS",
     icon: Globe,
     group: "settings",
   },

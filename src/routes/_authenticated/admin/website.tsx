@@ -32,7 +32,7 @@ function WebsiteAdminPage() {
     return (
       <div className="p-6 max-w-4xl mx-auto space-y-6">
         <PageHeader
-          title="Website Backend & CMS"
+          title="Website CMS"
           subtitle="Public website content, product catalogue uploading, and navigation controls."
         />
         <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-6 text-center space-y-3">
@@ -57,7 +57,7 @@ function WebsiteAdminPage() {
               <Globe className="h-5 w-5" />
             </div>
             <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
-              Website Backend &amp; CMS
+              Website CMS
             </h1>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
