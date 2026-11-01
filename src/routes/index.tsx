@@ -916,7 +916,7 @@ function HomePage() {
               className="hover:text-primary transition-colors whitespace-nowrap py-1 flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold"
             >
               <Sparkles className="h-3.5 w-3.5" />
-              <span>150 Cladding Patterns</span>
+              <span>Our Products</span>
             </a>
             <a
               href="#wall-cladding-catalogue"
@@ -968,24 +968,23 @@ function HomePage() {
               />
             </div>
 
-            {/* Employees Login CTA — full on desktop, sleek compact icon on mobile */}
+            {/* Employees Login CTA — circled lock icon to save navbar space */}
             <Button
               asChild
-              size="default"
-              className="h-8 sm:h-9 px-2 sm:px-3.5 gap-1 sm:gap-1.5 text-xs font-semibold shadow-2xs transition-colors shrink-0 rounded-lg border bg-primary text-primary-foreground hover:bg-primary/90 border-primary"
+              size="icon"
+              className="h-8 w-8 sm:h-9 sm:w-9 rounded-full shadow-2xs transition-transform hover:scale-105 shrink-0 border bg-primary text-primary-foreground hover:bg-primary/90 border-primary"
             >
               <Link
                 to="/auth"
                 search={{ flow: "signin" }}
-                className="inline-flex items-center gap-1 sm:gap-1.5 whitespace-nowrap"
+                className="flex items-center justify-center"
                 title={texts.nav.employeesLogin}
                 aria-label={texts.nav.employeesLogin}
               >
                 <Lock
-                  className="h-3.5 w-3.5 shrink-0 stroke-[2.25] text-primary-foreground"
+                  className="h-4 w-4 shrink-0 stroke-[2.25] text-primary-foreground"
                   aria-hidden="true"
                 />
-                <span className="hidden sm:inline">{texts.nav.employeesLogin}</span>
               </Link>
             </Button>
           </div>
@@ -1796,10 +1795,6 @@ function HomePage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-10">
           {/* Section Header */}
           <div className="text-center space-y-3">
-            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100 dark:bg-emerald-900/40 px-4 py-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-widest border border-emerald-200/60 dark:border-emerald-700/40">
-              <Sparkles className="h-3.5 w-3.5" />
-              2026 Collection · Natural Stone Atelier
-            </div>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-foreground">
               {cmsContent.showcaseSectionTitle || "Architectural Products & Live Executed Works"}
             </h2>

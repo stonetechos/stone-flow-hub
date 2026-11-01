@@ -410,18 +410,6 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
     }
   });
 
-  const toggleEnabled = () => {
-    setIsEnabled((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem("stos_diwali_celebration", String(next));
-      } catch {
-        /* ignore */
-      }
-      return next;
-    });
-  };
-
   useEffect(() => {
     if (!isEnabled) return;
 
@@ -846,26 +834,6 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
           </div>
         </div>
       )}
-
-      {/* 3. Subtle Floating Toggle Button to Enable / Disable Celebration — Mobile-Safe Positioning */}
-      <div className="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] right-12 sm:bottom-4 sm:right-20 md:right-24 z-40 select-none pointer-events-auto">
-        <button
-          type="button"
-          onClick={toggleEnabled}
-          className={cn(
-            "h-7 sm:h-8 px-2 sm:px-3 rounded-full border backdrop-blur-md text-[10px] sm:text-[11px] font-bold shadow-md transition-all cursor-pointer flex items-center gap-1.5",
-            isEnabled
-              ? "bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-200 border-amber-400/50"
-              : "bg-stone-500/15 hover:bg-stone-500/25 text-stone-600 dark:text-stone-400 border-stone-300 dark:border-stone-700",
-          )}
-          title={isEnabled ? "Disable Diwali Celebration Glow" : "Enable Diwali Celebration Glow"}
-        >
-          <span className="text-xs sm:text-sm">🪔</span>
-          <span className="hidden sm:inline">
-            {isEnabled ? "Diwali Celebration" : "Diwali Off"}
-          </span>
-        </button>
-      </div>
 
       {/* Inlined CSS animations for living flame flicker, rapid chakri spin & weightless floating */}
       <style>{`
