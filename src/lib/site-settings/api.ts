@@ -62,6 +62,21 @@ export async function fetchSiteSettings(): Promise<SiteSettings> {
       "cladding_products",
       SITE_SETTINGS_DEFAULTS.cladding_products,
     ),
+    sidebar_tab_renames: parseSetting(
+      rows,
+      "sidebar_tab_renames",
+      SITE_SETTINGS_DEFAULTS.sidebar_tab_renames ?? {},
+    ),
+    website_catalog_items: parseSetting(
+      rows,
+      "website_catalog_items",
+      SITE_SETTINGS_DEFAULTS.website_catalog_items ?? [],
+    ),
+    website_catalog_prices: parseSetting(
+      rows,
+      "website_catalog_prices",
+      SITE_SETTINGS_DEFAULTS.website_catalog_prices ?? {},
+    ),
   };
 }
 

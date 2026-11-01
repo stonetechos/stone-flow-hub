@@ -35,11 +35,17 @@ export interface SiteSettings {
   estimate_card_heading: string;
   estimate_card_subtext: string;
   cladding_products: CladdingProductItem[];
+  sidebar_tab_renames?: Record<string, string>;
+  website_catalog_items?: Record<string, unknown>[];
+  website_catalog_prices?: Record<string, unknown>;
 }
 
 /** Hard-coded defaults — used as fallback when the DB is unavailable. */
 export const SITE_SETTINGS_DEFAULTS: SiteSettings = {
   google_rating: "4.9",
+  sidebar_tab_renames: {},
+  website_catalog_items: [],
+  website_catalog_prices: {},
   reviews: [
     {
       quote:

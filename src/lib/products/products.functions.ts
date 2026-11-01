@@ -87,3 +87,112 @@ export const seedDefaultProductsServerFn = createServerFn({ method: "POST" }).ha
     total: count ?? existingNames.size,
   };
 });
+
+export interface SyncProductPayload {
+  id: string; // ST-WC-xxx or custom
+  name: string;
+  price: number;
+  unit?: string;
+  mrp?: number;
+  category?: string;
+  stoneType?: string;
+  description?: string;
+  thickness?: string;
+  image?: string;
+}
+
+export const syncWebsiteProductToErpServerFn = createServerFn({ method: "POST" })
+  .validator((data: SyncProductPayload) => data)
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Standardize unit
+    let unit: "sqft" | "sqm" | "nos" | "running_ft" | "tonne" | "kg" | "brass" = "sqft";
+    const u = (data.unit || "").toLowerCase();
+    if (u.includes("sq.m") || u.includes("sqm")) unit = "sqm";
+    else if (u.includes("piece") || u.includes("tile") || u.includes("box") || u.includes("nos"))
+      unit = "nos";
+    else if (u.includes("run") || u.includes("rft")) unit = "running_ft";
+
+    // Standardize stone type
+    let stoneType: string | null = null;
+    const st = (data.stoneType || "").toLowerCase();
+    if (st.includes("marble")) stoneType = "marble";
+    else if (st.includes("granite")) stoneType = "granite";
+    else if (st.includes("sandstone")) stoneType = "sandstone";
+    else if (st.includes("quartzite")) stoneType = "quartzite";
+    else if (st.includes("limestone")) stoneType = "limestone";
+    else if (st.includes("slate")) stoneType = "slate";
+    else if (st.includes("basalt")) stoneType = "basalt";
+    else if (st.includes("travertine")) stoneType = "travertine";
+    else if (st.includes("onyx")) stoneType = "onyx";
+    else stoneType = "other";
+
+    // Standardize code
+    const code = data.id.startsWith("ST-") ? data.id : `ST-${data.id}`;
+
+    // 1. Check if product already exists by product_code or exact name
+    const { data: existing } = await supabaseAdmin
+      .from("products" as never)
+      .select("id, name, product_code" as never)
+      .or(`product_code.eq.${code},name.ilike.%${data.name.trim()}%` as never)
+      .maybeSingle();
+
+    if (existing && (existing as { id?: string }).id) {
+      const existingId = (existing as { id: string }).id;
+      // Update name, prices, and specs in Supabase products table
+      const { error: updErr } = await supabaseAdmin
+        .from("products" as never)
+        .update({
+          name: data.name.trim(),
+          last_selling_price_inr: data.price,
+          market_price_inr: data.mrp || Math.round(data.price * 1.25),
+          default_unit: unit,
+          stone_type: stoneType,
+          description: data.description || `${data.name} - ${data.category || "Wall Cladding"}`,
+          updated_at: new Date().toISOString(),
+        } as never)
+        .eq("id" as never, existingId as never);
+
+      if (updErr) {
+        console.warn("[syncWebsiteProductToErp] update error:", updErr);
+        throw new Error(updErr.message);
+      }
+
+      return {
+        success: true,
+        action: "updated",
+        productId: existingId,
+        productCode: (existing as { product_code?: string }).product_code || code,
+      };
+    } else {
+      // 2. Insert new product
+      const { data: created, error: insErr } = await supabaseAdmin
+        .from("products" as never)
+        .insert({
+          product_code: code,
+          name: data.name.trim(),
+          stone_type: stoneType,
+          default_unit: unit,
+          last_selling_price_inr: data.price,
+          market_price_inr: data.mrp || Math.round(data.price * 1.25),
+          description: data.description || `${data.name} - ${data.category || "Wall Cladding"}`,
+          is_active: true,
+          hsn_code: "68022190",
+        } as never)
+        .select("id, product_code" as never)
+        .maybeSingle();
+
+      if (insErr) {
+        console.warn("[syncWebsiteProductToErp] insert error:", insErr);
+        throw new Error(insErr.message);
+      }
+
+      return {
+        success: true,
+        action: "created",
+        productId: (created as unknown as { id?: string })?.id,
+        productCode: code,
+      };
+    }
+  });

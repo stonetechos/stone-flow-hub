@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { upsertSiteSetting, fetchSiteSettings } from "@/lib/site-settings/api";
 
 const RENAMES_KEY = "st.nav.customRenames";
 const SIDEBAR_WIDTH_KEY = "st.sidebar.width";
@@ -20,11 +21,16 @@ export function readCustomRenames(): CustomNavRenames {
   }
 }
 
-export function saveCustomRenames(renames: CustomNavRenames): void {
+export function saveCustomRenames(renames: CustomNavRenames, syncRemote = true): void {
   if (typeof window === "undefined" || !window.localStorage) return;
   try {
     window.localStorage.setItem(RENAMES_KEY, JSON.stringify(renames));
     window.dispatchEvent(new Event("st:nav-renames-changed"));
+    if (syncRemote) {
+      upsertSiteSetting("sidebar_tab_renames", renames).catch((err) =>
+        console.warn("[nav-renames] remote sync error:", err),
+      );
+    }
   } catch {
     /* ignore */
   }
@@ -57,6 +63,18 @@ export function useCustomNavRenames() {
   const [renames, setRenames] = useState<CustomNavRenames>(readCustomRenames);
 
   useEffect(() => {
+    // 1. Initial sync with remote site_settings if available
+    fetchSiteSettings()
+      .then((settings) => {
+        if (settings.sidebar_tab_renames && Object.keys(settings.sidebar_tab_renames).length > 0) {
+          const local = readCustomRenames();
+          const merged = { ...local, ...settings.sidebar_tab_renames };
+          saveCustomRenames(merged, false);
+          setRenames(merged);
+        }
+      })
+      .catch(() => {});
+
     const handler = () => setRenames(readCustomRenames());
     window.addEventListener("st:nav-renames-changed", handler);
     window.addEventListener("storage", handler);
@@ -74,12 +92,17 @@ export function useCustomNavRenames() {
     } else {
       updated[id] = newName.trim();
     }
-    saveCustomRenames(updated);
+    saveCustomRenames(updated, true);
     setRenames(updated);
   }, []);
 
+  const saveAll = useCallback((newRenames: CustomNavRenames) => {
+    saveCustomRenames(newRenames, true);
+    setRenames(newRenames);
+  }, []);
+
   const resetAll = useCallback(() => {
-    saveCustomRenames({});
+    saveCustomRenames({}, true);
     setRenames({});
   }, []);
 
@@ -90,7 +113,7 @@ export function useCustomNavRenames() {
     [renames],
   );
 
-  return { renames, rename, resetAll, getLabel };
+  return { renames, rename, saveAll, resetAll, getLabel };
 }
 
 export function useSidebarWidth() {

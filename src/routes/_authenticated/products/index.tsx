@@ -59,7 +59,10 @@ import {
 } from "@/lib/products/schema";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WallCladdingCatalog } from "@/components/catalog/WallCladdingCatalog";
+import { WebsiteProductsBackend } from "@/components/admin/WebsiteProductsBackend";
+import { SidebarTabsBackend } from "@/components/admin/SidebarTabsBackend";
 import { DEFAULT_NATURAL_STONE_PRODUCTS } from "@/lib/products/default-catalog";
+import { Sliders, Globe, PanelLeft } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/products/")({
   ssr: false,
@@ -83,7 +86,9 @@ function ProductsPage() {
   const [editing, setEditing] = useState<ProductRow | null>(null);
   const [toDelete, setToDelete] = useState<ProductRow | null>(null);
   const { prefs, setDensity, toggleColumn, isHidden } = list;
-  const [activeTab, setActiveTab] = useState<"cladding" | "inventory">("cladding");
+  const [activeTab, setActiveTab] = useState<
+    "website-catalog" | "cladding" | "sidebar-tabs" | "inventory"
+  >("website-catalog");
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
@@ -172,17 +177,33 @@ function ProductsPage() {
 
       <Tabs
         value={activeTab}
-        onValueChange={(v) => setActiveTab(v as "cladding" | "inventory")}
+        onValueChange={(v) =>
+          setActiveTab(v as "website-catalog" | "cladding" | "sidebar-tabs" | "inventory")
+        }
         className="w-full space-y-4"
       >
-        <div className="flex items-center justify-between pb-1 border-b">
+        <div className="flex items-center justify-between pb-1 border-b overflow-x-auto scrollbar-thin">
           <TabsList className="bg-muted/70 p-1 border">
+            <TabsTrigger
+              value="website-catalog"
+              className="text-xs gap-1.5 data-[state=active]:bg-cyan-600 data-[state=active]:text-white font-semibold"
+            >
+              <Globe className="h-3.5 w-3.5" />
+              <span>Website Product Backend &amp; Upload</span>
+            </TabsTrigger>
             <TabsTrigger
               value="cladding"
               className="text-xs gap-1.5 data-[state=active]:bg-cyan-600 data-[state=active]:text-white font-semibold"
             >
               <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-              <span>Wall Cladding &amp; Mosaic Atelier (150 Patterns)</span>
+              <span>Catalog Visual Display &amp; PDF</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="sidebar-tabs"
+              className="text-xs gap-1.5 data-[state=active]:bg-cyan-600 data-[state=active]:text-white font-semibold"
+            >
+              <Sliders className="h-3.5 w-3.5" />
+              <span>Sidebar Toolbar Tabs Renamer</span>
             </TabsTrigger>
             <TabsTrigger
               value="inventory"
@@ -194,8 +215,16 @@ function ProductsPage() {
           </TabsList>
         </div>
 
+        <TabsContent value="website-catalog" className="pt-2">
+          <WebsiteProductsBackend />
+        </TabsContent>
+
         <TabsContent value="cladding" className="pt-2">
           <WallCladdingCatalog showAdminBanner={true} />
+        </TabsContent>
+
+        <TabsContent value="sidebar-tabs" className="pt-2">
+          <SidebarTabsBackend />
         </TabsContent>
 
         <TabsContent value="inventory" className="space-y-4 pt-1">

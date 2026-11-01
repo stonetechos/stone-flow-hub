@@ -35,6 +35,7 @@ import {
   CheckCircle2,
   FileDown,
   X,
+  ChevronLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,20 +62,9 @@ import catalogData from "@/data/wall-cladding-catalog.json";
 import { useAttachedProductPrices, type AttachedProductPrice } from "@/lib/catalog/product-prices";
 import { AttachPriceDialog, type PatternPriceTarget } from "./AttachPriceDialog";
 import { useRoles } from "@/hooks/use-roles";
+import { useWebsiteCatalog, type CatalogProduct } from "@/lib/catalog/catalog-store";
 
-export interface WallCladdingItem {
-  id: string;
-  index: number;
-  name: string;
-  slug: string;
-  image: string;
-  category: string;
-  stoneType: string;
-  standardSizes: string;
-  thickness: string;
-  applications: string[];
-  finishes: string[];
-}
+export type WallCladdingItem = CatalogProduct;
 
 interface WallCladdingCatalogProps {
   onSelectPattern?: (pattern: WallCladdingItem, price: AttachedProductPrice) => void;
@@ -83,7 +73,7 @@ interface WallCladdingCatalogProps {
   showAdminBanner?: boolean;
 }
 
-const ALL_ITEMS = catalogData as WallCladdingItem[];
+const BASE_ITEMS = catalogData as WallCladdingItem[];
 
 export function WallCladdingCatalog({
   onSelectPattern,
@@ -92,6 +82,7 @@ export function WallCladdingCatalog({
   showAdminBanner = true,
 }: WallCladdingCatalogProps) {
   const { isSuperAdmin: userIsSuperAdmin } = useRoles();
+  const { products, categories: backendCategories, updateProduct } = useWebsiteCatalog();
   const {
     customPrices,
     getPrice,
@@ -114,49 +105,64 @@ export function WallCladdingCatalog({
   const [sortBy, setSortBy] = useState<"index" | "price-asc" | "price-desc" | "name">("index");
   const [viewMode, setViewMode] = useState<"grid" | "compact">("grid");
 
+  // Pagination states
+  const [page, setPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(12);
+  const [showAll, setShowAll] = useState<boolean>(false);
+
   // Dialog targets
   const [priceEditTarget, setPriceEditTarget] = useState<PatternPriceTarget | null>(null);
   const [lightboxTarget, setLightboxTarget] = useState<WallCladdingItem | null>(null);
 
   // Categories & Stone Types extraction
   const categories = useMemo(() => {
-    const set = new Set(ALL_ITEMS.map((item) => item.category));
+    const set = new Set(products.map((item) => item.category));
     return ["all", ...Array.from(set)];
-  }, []);
+  }, [products]);
 
   const stoneTypes = useMemo(() => {
-    const set = new Set(ALL_ITEMS.map((item) => item.stoneType));
+    const set = new Set(products.map((item) => item.stoneType));
     return ["all", ...Array.from(set)];
-  }, []);
+  }, [products]);
 
   // Filtered & Sorted items
   const filteredItems = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return ALL_ITEMS.filter((item) => {
-      if (selectedCategory !== "all" && item.category !== selectedCategory) return false;
-      if (selectedStoneType !== "all" && item.stoneType !== selectedStoneType) return false;
-      if (!q) return true;
+    return products
+      .filter((item) => {
+        if (selectedCategory !== "all" && item.category !== selectedCategory) return false;
+        if (selectedStoneType !== "all" && item.stoneType !== selectedStoneType) return false;
+        if (!q) return true;
 
-      const p = getPrice(item.id, item.category, item.stoneType, item.index);
-      return (
-        item.name.toLowerCase().includes(q) ||
-        item.id.toLowerCase().includes(q) ||
-        item.stoneType.toLowerCase().includes(q) ||
-        item.category.toLowerCase().includes(q) ||
-        (p.badge && p.badge.toLowerCase().includes(q)) ||
-        item.finishes.some((f) => f.toLowerCase().includes(q)) ||
-        item.applications.some((a) => a.toLowerCase().includes(q))
-      );
-    }).sort((a, b) => {
-      const priceA = getPrice(a.id, a.category, a.stoneType, a.index).price;
-      const priceB = getPrice(b.id, b.category, b.stoneType, b.index).price;
+        const p = getPrice(item.id, item.category, item.stoneType, item.index);
+        return (
+          item.name.toLowerCase().includes(q) ||
+          item.id.toLowerCase().includes(q) ||
+          item.stoneType.toLowerCase().includes(q) ||
+          item.category.toLowerCase().includes(q) ||
+          (p.badge && p.badge.toLowerCase().includes(q)) ||
+          item.finishes?.some((f) => f.toLowerCase().includes(q)) ||
+          item.applications?.some((a) => a.toLowerCase().includes(q))
+        );
+      })
+      .sort((a, b) => {
+        const priceA = getPrice(a.id, a.category, a.stoneType, a.index).price;
+        const priceB = getPrice(b.id, b.category, b.stoneType, b.index).price;
 
-      if (sortBy === "price-asc") return priceA - priceB;
-      if (sortBy === "price-desc") return priceB - priceA;
-      if (sortBy === "name") return a.name.localeCompare(b.name);
-      return a.index - b.index;
-    });
-  }, [search, selectedCategory, selectedStoneType, sortBy, getPrice]);
+        if (sortBy === "price-asc") return priceA - priceB;
+        if (sortBy === "price-desc") return priceB - priceA;
+        if (sortBy === "name") return a.name.localeCompare(b.name);
+        return (a.index || 0) - (b.index || 0);
+      });
+  }, [products, search, selectedCategory, selectedStoneType, sortBy, getPrice]);
+
+  // Paginated items
+  const totalPages = Math.ceil(filteredItems.length / pageSize) || 1;
+  const displayedItems = useMemo(() => {
+    if (showAll) return filteredItems;
+    const start = (page - 1) * pageSize;
+    return filteredItems.slice(start, start + pageSize);
+  }, [filteredItems, showAll, page, pageSize]);
 
   const handleEditPrice = useCallback(
     (item: WallCladdingItem) => {
@@ -345,14 +351,20 @@ export function WallCladdingCatalog({
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
               placeholder="Search 150 patterns by name, stone type, ST-WC code, finish, or relief..."
               className="pl-9 h-9 text-xs sm:text-sm bg-background"
             />
             {search && (
               <button
                 type="button"
-                onClick={() => setSearch("")}
+                onClick={() => {
+                  setSearch("");
+                  setPage(1);
+                }}
                 className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground"
               >
                 <X className="h-4 w-4" />
@@ -360,9 +372,42 @@ export function WallCladdingCatalog({
             )}
           </div>
 
+          {/* Category Dropdown Filter */}
+          <div className="w-full sm:w-52 shrink-0">
+            <Select
+              value={selectedCategory}
+              onValueChange={(v) => {
+                setSelectedCategory(v);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="h-9 text-xs bg-background">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all" className="text-xs">
+                  All Collections ({products.length})
+                </SelectItem>
+                {categories
+                  .filter((s) => s !== "all")
+                  .map((cat) => (
+                    <SelectItem key={cat} value={cat} className="text-xs">
+                      {cat} ({products.filter((p) => p.category === cat).length})
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Stone Type Filter */}
-          <div className="w-full sm:w-48 shrink-0">
-            <Select value={selectedStoneType} onValueChange={setSelectedStoneType}>
+          <div className="w-full sm:w-44 shrink-0">
+            <Select
+              value={selectedStoneType}
+              onValueChange={(v) => {
+                setSelectedStoneType(v);
+                setPage(1);
+              }}
+            >
               <SelectTrigger className="h-9 text-xs bg-background">
                 <SelectValue placeholder="All Stone Types" />
               </SelectTrigger>
@@ -385,7 +430,10 @@ export function WallCladdingCatalog({
           <div className="w-full sm:w-44 shrink-0">
             <Select
               value={sortBy}
-              onValueChange={(v) => setSortBy(v as "index" | "price-asc" | "price-desc" | "name")}
+              onValueChange={(v) => {
+                setSortBy(v as "index" | "price-asc" | "price-desc" | "name");
+                setPage(1);
+              }}
             >
               <SelectTrigger className="h-9 text-xs bg-background">
                 <SelectValue />
@@ -412,13 +460,16 @@ export function WallCladdingCatalog({
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin pt-1">
           {categories.map((cat) => {
             const count =
-              cat === "all" ? ALL_ITEMS.length : ALL_ITEMS.filter((i) => i.category === cat).length;
+              cat === "all" ? products.length : products.filter((i) => i.category === cat).length;
             const active = selectedCategory === cat;
             return (
               <button
                 key={cat}
                 type="button"
-                onClick={() => setSelectedCategory(cat)}
+                onClick={() => {
+                  setSelectedCategory(cat);
+                  setPage(1);
+                }}
                 className={cn(
                   "whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition-all shrink-0 border",
                   active
@@ -443,8 +494,8 @@ export function WallCladdingCatalog({
         {/* Results summary counter */}
         <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
           <span>
-            Showing <strong className="text-foreground">{filteredItems.length}</strong> of{" "}
-            {ALL_ITEMS.length} patterns
+            Showing <strong className="text-foreground">{displayedItems.length}</strong> of{" "}
+            {filteredItems.length} patterns
             {selectedCategory !== "all" && ` in "${selectedCategory}"`}
             {selectedStoneType !== "all" && ` · ${selectedStoneType}`}
           </span>
@@ -455,6 +506,7 @@ export function WallCladdingCatalog({
                 setSearch("");
                 setSelectedCategory("all");
                 setSelectedStoneType("all");
+                setPage(1);
               }}
               className="text-primary hover:underline font-medium text-xs"
             >
@@ -479,14 +531,15 @@ export function WallCladdingCatalog({
               setSearch("");
               setSelectedCategory("all");
               setSelectedStoneType("all");
+              setPage(1);
             }}
           >
-            Show All 150 Patterns
+            Show All Collections
           </Button>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-          {filteredItems.map((item) => {
+          {displayedItems.map((item) => {
             const price = getPrice(item.id, item.category, item.stoneType, item.index);
 
             return (
@@ -613,10 +666,17 @@ export function WallCladdingCatalog({
 
                     <Button
                       size="sm"
-                      onClick={() => handleWhatsAppInquiry(item)}
+                      onClick={() => {
+                        const p = getPrice(item.id, item.category, item.stoneType, item.index);
+                        if (onSelectPattern) {
+                          onSelectPattern(item, p);
+                        } else {
+                          handleWhatsAppInquiry(item);
+                        }
+                      }}
                       className="flex-1 h-8 text-[11px] px-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
                     >
-                      <span>WhatsApp</span>
+                      <span>Request Quote</span>
                     </Button>
                   </div>
                 </div>
@@ -626,14 +686,126 @@ export function WallCladdingCatalog({
         </div>
       )}
 
+      {/* Pagination Bar */}
+      {filteredItems.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-border bg-muted/10 p-4 rounded-xl">
+          <div className="text-xs text-muted-foreground">
+            {!showAll ? (
+              <span>
+                Showing{" "}
+                <strong className="text-foreground">
+                  {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, filteredItems.length)}
+                </strong>{" "}
+                of {filteredItems.length} patterns
+              </span>
+            ) : (
+              <span>
+                Showing all <strong className="text-foreground">{filteredItems.length}</strong>{" "}
+                patterns
+              </span>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {!showAll && totalPages > 1 && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page <= 1}
+                  onClick={() => {
+                    setPage((p) => p - 1);
+                    document
+                      .getElementById("wall-cladding-catalogue")
+                      ?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="h-8 text-xs"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5 mr-1" />
+                  Prev
+                </Button>
+
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(totalPages, 7) }).map((_, i) => {
+                    let pageNum = i + 1;
+                    if (totalPages > 7 && page > 4) {
+                      pageNum = Math.min(page - 3 + i, totalPages);
+                    }
+                    return (
+                      <Button
+                        key={pageNum}
+                        variant={page === pageNum ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => {
+                          setPage(pageNum);
+                          document
+                            .getElementById("wall-cladding-catalogue")
+                            ?.scrollIntoView({ behavior: "smooth" });
+                        }}
+                        className="h-8 w-8 text-xs p-0 font-medium"
+                      >
+                        {pageNum}
+                      </Button>
+                    );
+                  })}
+                  {totalPages > 7 && page < totalPages - 3 && (
+                    <span className="text-xs text-muted-foreground px-1">... {totalPages}</span>
+                  )}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page >= totalPages}
+                  onClick={() => {
+                    setPage((p) => p + 1);
+                    document
+                      .getElementById("wall-cladding-catalogue")
+                      ?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="h-8 text-xs"
+                >
+                  Next
+                  <ChevronRight className="h-3.5 w-3.5 ml-1" />
+                </Button>
+              </>
+            )}
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setShowAll(!showAll);
+                setPage(1);
+              }}
+              className="h-8 text-xs ml-2 text-cyan-700 dark:text-cyan-300 border-cyan-300 dark:border-cyan-800"
+            >
+              {showAll ? "Paginate (12 per page)" : `Show All (${filteredItems.length})`}
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Super Admin Attach Price Dialog */}
       <AttachPriceDialog
         target={priceEditTarget}
         onOpenChange={(open) => {
           if (!open) setPriceEditTarget(null);
         }}
-        onSave={(id, priceData) => {
+        onSave={async (id, priceData) => {
           updatePrice(id, priceData);
+          if (priceEditTarget) {
+            try {
+              await updateProduct(id, {
+                ...priceData,
+                name: priceEditTarget.name,
+                category: priceEditTarget.category,
+                stoneType: priceEditTarget.stoneType,
+              });
+            } catch (e) {
+              console.warn("[AttachPrice] sync to ERP warning:", e);
+            }
+          }
         }}
         onReset={(id) => {
           resetPrice(id);

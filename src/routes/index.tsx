@@ -47,6 +47,7 @@ import {
   Search,
   Briefcase,
   Tag,
+  Camera,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -361,6 +362,7 @@ function HomePage() {
 
   // Form states (2-Step Continuation 1/2 and 2/2)
   const [formStep, setFormStep] = useState<1 | 2>(1);
+  const [showcaseTab, setShowcaseTab] = useState<"products" | "installations">("products");
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [spaceType, setSpaceType] = useState<string>("");
   const [planDescription, setPlanDescription] = useState<string>("");
@@ -908,13 +910,15 @@ function HomePage() {
           <nav className="hidden md:flex items-center gap-6 xl:gap-8 text-sm font-semibold text-foreground/80">
             <a
               href="#wall-cladding-catalogue"
+              onClick={() => setShowcaseTab("products")}
               className="hover:text-primary transition-colors whitespace-nowrap py-1 flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold"
             >
               <Sparkles className="h-3.5 w-3.5" />
               <span>150 Cladding Patterns</span>
             </a>
             <a
-              href="#gallery-feed"
+              href="#wall-cladding-catalogue"
+              onClick={() => setShowcaseTab("installations")}
               className="hover:text-primary transition-colors whitespace-nowrap py-1"
             >
               {texts.nav.ourWork}
@@ -1782,51 +1786,84 @@ function HomePage() {
         </div>
       </section>
 
-      {/* 2b. NATURAL STONE WALL CLADDING & MOSAICS CATALOGUE — 150 Patterns */}
+      {/* 2b. ARCHITECTURAL PRODUCT SHOWCASE & LIVE INSTALLATIONS GALLERY */}
       <section
         id="wall-cladding-catalogue"
-        className="py-14 sm:py-20 border-b border-border/60 bg-gradient-to-b from-emerald-50/30 via-background to-stone-50/20 dark:from-emerald-950/10 dark:via-background dark:to-stone-950/20"
+        className="py-14 sm:py-20 border-b border-border/60 bg-gradient-to-b from-stone-50/50 via-background to-stone-50/30 dark:from-stone-950/40 dark:via-background dark:to-stone-950/20 scroll-mt-16"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-10">
           {/* Section Header */}
-          <div className="text-center mb-10 space-y-3">
+          <div className="text-center space-y-3">
             <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100 dark:bg-emerald-900/40 px-4 py-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-widest border border-emerald-200/60 dark:border-emerald-700/40">
               <Sparkles className="h-3.5 w-3.5" />
               2026 Collection · Natural Stone Atelier
             </div>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-foreground">
-              Wall Cladding &amp; Mosaic Catalogue
+              Architectural Products &amp; Live Executed Works
             </h2>
             <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-              150 handpicked natural stone patterns — marble, quartzite, sandstone, granite &amp;
-              slate — with pricing attached directly on each tile. Click any pattern to request a
-              quote instantly.
+              Explore our verified stone catalogue with transparent factory rates attached, or view
+              live Instagram installation feeds from our luxury villa, hotel &amp; mandir projects.
             </p>
           </div>
-          <WallCladdingCatalog
-            onSelectPattern={(pattern, price) => {
-              scrollToForm(
-                `${pattern.name} (${pattern.id}) - ${pattern.stoneType} @ ${price.currency}${price.price}/${price.unit}`,
-              );
-            }}
-            showAdminBanner={true}
-          />
-        </div>
-      </section>
 
-      {/* 2c. LIVE INSTALLATIONS & EXECUTED WORKS (GALLERY FEED & CURATED SHOWCASE) */}
-      <section className="py-12 sm:py-16 border-b border-border/60 bg-gradient-to-b from-stone-50/50 via-background to-stone-50/30 dark:from-stone-950/40 dark:via-background dark:to-stone-950/20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
-          {/* Embedded Stone Gallery Feed in rounded container */}
-          <div id="gallery-feed" className="scroll-mt-24">
-            <StoneGalleryFeed onSelectProduct={scrollToForm} />
+          {/* Top Tabs Switcher */}
+          <div className="flex justify-center">
+            <div className="inline-flex p-1 rounded-2xl bg-muted/80 border border-border shadow-xs">
+              <button
+                type="button"
+                onClick={() => setShowcaseTab("products")}
+                className={cn(
+                  "flex items-center gap-2 px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all",
+                  showcaseTab === "products"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <Sparkles className="h-4 w-4" />
+                <span>Natural Stone Products &amp; Catalogue</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowcaseTab("installations")}
+                className={cn(
+                  "flex items-center gap-2 px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all",
+                  showcaseTab === "installations"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <Camera className="h-4 w-4" />
+                <span>Live Installations &amp; Executed Works (Instagram)</span>
+              </button>
+            </div>
           </div>
 
-          {/* Curated Luxury Architectural Products Showcase */}
-          <LuxuryProductShowcase
-            onSelectProduct={scrollToForm}
-            selectedProducts={selectedProducts}
-          />
+          {/* TAB 1: NATURAL STONE PRODUCTS & CATALOGUE */}
+          {showcaseTab === "products" && (
+            <div className="animate-in fade-in duration-300">
+              <WallCladdingCatalog
+                onSelectPattern={(pattern, price) => {
+                  scrollToForm(
+                    `${pattern.name} (${pattern.id}) - ${pattern.stoneType} @ ${price.currency}${price.price}/${price.unit}`,
+                  );
+                }}
+                showAdminBanner={false}
+              />
+            </div>
+          )}
+
+          {/* TAB 2: LIVE INSTALLATIONS & EXECUTED WORKS */}
+          {showcaseTab === "installations" && (
+            <div id="gallery-feed" className="animate-in fade-in duration-300 space-y-12">
+              <StoneGalleryFeed onSelectProduct={scrollToForm} />
+              <LuxuryProductShowcase
+                onSelectProduct={scrollToForm}
+                selectedProducts={selectedProducts}
+              />
+            </div>
+          )}
         </div>
       </section>
 

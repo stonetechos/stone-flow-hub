@@ -7,6 +7,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { upsertSiteSetting, fetchSiteSettings } from "@/lib/site-settings/api";
 
 export interface AttachedProductPrice {
   price: number;
@@ -111,15 +112,25 @@ export function readCustomPrices(): Record<string, AttachedProductPrice> {
 /**
  * Saves full dictionary of custom prices and broadcasts change event.
  */
-export function saveAllCustomPrices(data: Record<string, AttachedProductPrice>): void {
+export function saveAllCustomPrices(
+  data: Record<string, AttachedProductPrice>,
+  syncRemote = true,
+): void {
   if (typeof window === "undefined" || !window.localStorage) return;
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     window.dispatchEvent(new Event(EVENT_NAME));
+    if (syncRemote) {
+      upsertSiteSetting("website_catalog_prices", data).catch((e) =>
+        console.warn("[product-prices] remote sync error:", e),
+      );
+    }
   } catch (e) {
     console.error("Failed to persist catalog prices:", e);
   }
 }
+
+export const saveCustomPrices = saveAllCustomPrices;
 
 /**
  * React hook to read, write, and reactively listen to catalog price updates.
@@ -129,6 +140,21 @@ export function useAttachedProductPrices() {
     useState<Record<string, AttachedProductPrice>>(readCustomPrices);
 
   useEffect(() => {
+    fetchSiteSettings()
+      .then((settings) => {
+        if (
+          settings.website_catalog_prices &&
+          typeof settings.website_catalog_prices === "object" &&
+          Object.keys(settings.website_catalog_prices).length > 0
+        ) {
+          const local = readCustomPrices();
+          const merged = { ...local, ...settings.website_catalog_prices };
+          saveCustomPrices(merged, false);
+          setCustomPrices(merged);
+        }
+      })
+      .catch(() => {});
+
     const handler = () => {
       setCustomPrices(readCustomPrices());
     };

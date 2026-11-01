@@ -50,7 +50,7 @@
   {
     "id": "ST-WC-003",
     "index": 3,
-    "name": "Tri Tone Gold Black White",
+    "name": "Tri-Tone Gold, Charcoal & White Strip Mosaic",
     "slug": "tri-tone-gold-black-white",
     "image": "/images/catalog/wall-cladding/cladding-03-tri-tone-gold-black-white.jpg",
     "category": "Modular Ashlar",
@@ -74,7 +74,7 @@
   {
     "id": "ST-WC-004",
     "index": 4,
-    "name": "Silver Grey Black Granite",
+    "name": "Silver Grey & Jet Black Granite Modular Cladding",
     "slug": "silver-grey-black-granite",
     "image": "/images/catalog/wall-cladding/cladding-04-silver-grey-black-granite.jpg",
     "category": "Modular Ashlar",
@@ -98,7 +98,7 @@
   {
     "id": "ST-WC-005",
     "index": 5,
-    "name": "Multi Tonal Mosaic Cladding",
+    "name": "Multi-Tonal Natural Quartzite Mosaic Cladding",
     "slug": "multi-tonal-mosaic-cladding",
     "image": "/images/catalog/wall-cladding/cladding-05-multi-tonal-mosaic-cladding.jpg",
     "category": "Mosaic & Pebble Tile",
@@ -122,7 +122,7 @@
   {
     "id": "ST-WC-006",
     "index": 6,
-    "name": "Pure White Quartzite Crystal",
+    "name": "Pure White Crystalline Quartzite Ledger",
     "slug": "pure-white-quartzite-crystal",
     "image": "/images/catalog/wall-cladding/cladding-06-pure-white-quartzite-crystal.jpg",
     "category": "Modular Ashlar",
@@ -146,7 +146,7 @@
   {
     "id": "ST-WC-007",
     "index": 7,
-    "name": "Dual Tone Black White Interlock",
+    "name": "Dual-Tone Obsidian & White Interlocking Cladding",
     "slug": "dual-tone-black-white-interlock",
     "image": "/images/catalog/wall-cladding/cladding-07-dual-tone-black-white-interlock.jpg",
     "category": "Modular Ashlar",
@@ -170,7 +170,7 @@
   {
     "id": "ST-WC-008",
     "index": 8,
-    "name": "Diagonal Woodgrain Marble",
+    "name": "Diagonal Woodgrain Teak Marble Ashlar",
     "slug": "diagonal-woodgrain-marble",
     "image": "/images/catalog/wall-cladding/cladding-08-diagonal-woodgrain-marble.jpg",
     "category": "Modular Ashlar",
@@ -194,7 +194,7 @@
   {
     "id": "ST-WC-009",
     "index": 9,
-    "name": "Black Granite White Linear Bars",
+    "name": "Black Granite with White Crystalline Linear Bars",
     "slug": "black-granite-white-linear-bars",
     "image": "/images/catalog/wall-cladding/cladding-09-black-granite-white-linear-bars.jpg",
     "category": "Fluted & Linear Ribbed",
@@ -218,7 +218,7 @@
   {
     "id": "ST-WC-010",
     "index": 10,
-    "name": "Charcoal Graphite Cleft Striated",
+    "name": "Charcoal Graphite Striated Cleft Cladding",
     "slug": "charcoal-graphite-cleft-striated",
     "image": "/images/catalog/wall-cladding/cladding-10-charcoal-graphite-cleft-striated.jpg",
     "category": "Linear Ledger & Split-Face",
@@ -240,249 +240,9 @@
     ]
   },
   {
-    "id": "ST-WC-100",
-    "index": 100,
-    "name": "Black White Crystalline Checkerboard Brick",
-    "slug": "black-white-crystalline-checkerboard-brick",
-    "image": "/images/catalog/wall-cladding/cladding-100-black-white-crystalline-checkerboard-brick.jpg",
-    "category": "Inlay & Geometric Accent",
-    "stoneType": "Natural Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-101",
-    "index": 101,
-    "name": "Teakwood Sandstone Fluted Rockface Checkerboard",
-    "slug": "teakwood-sandstone-fluted-rockface-checkerboard",
-    "image": "/images/catalog/wall-cladding/cladding-101-teakwood-sandstone-fluted-rockface-checkerboard.jpg",
-    "category": "Fluted & Linear Ribbed",
-    "stoneType": "Teakwood Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-102",
-    "index": 102,
-    "name": "White Sandstone Carved Rosette Jharokha Panel",
-    "slug": "white-sandstone-carved-rosette-jharokha-panel",
-    "image": "/images/catalog/wall-cladding/cladding-102-white-sandstone-carved-rosette-jharokha-panel.jpg",
-    "category": "3D Architectural Relief",
-    "stoneType": "Natural Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-103",
-    "index": 103,
-    "name": "Basalt Sandstone Compass Starburst Relief",
-    "slug": "basalt-sandstone-compass-starburst-relief",
-    "image": "/images/catalog/wall-cladding/cladding-103-basalt-sandstone-compass-starburst-relief.jpg",
-    "category": "3D Architectural Relief",
-    "stoneType": "Volcanic Basalt",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-104",
-    "index": 104,
-    "name": "Silver White Quartzite Modular Ashlar",
-    "slug": "silver-white-quartzite-modular-ashlar",
-    "image": "/images/catalog/wall-cladding/cladding-104-silver-white-quartzite-modular-ashlar.jpg",
-    "category": "Modular Ashlar",
-    "stoneType": "Natural Quartzite",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-105",
-    "index": 105,
-    "name": "Cream Ivory Tumbled River Pebble Mosaic",
-    "slug": "cream-ivory-tumbled-river-pebble-mosaic",
-    "image": "/images/catalog/wall-cladding/cladding-105-cream-ivory-tumbled-river-pebble-mosaic.jpg",
-    "category": "Mosaic & Pebble Tile",
-    "stoneType": "Natural Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-106",
-    "index": 106,
-    "name": "Dualtone Sandstone Quartzite Chiselled Ashlar",
-    "slug": "dualtone-sandstone-quartzite-chiselled-ashlar",
-    "image": "/images/catalog/wall-cladding/cladding-106-dualtone-sandstone-quartzite-chiselled-ashlar.jpg",
-    "category": "Modular Ashlar",
-    "stoneType": "Natural Quartzite",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-107",
-    "index": 107,
-    "name": "White Sandstone Bauhaus Quarter Circle Relief",
-    "slug": "white-sandstone-bauhaus-quarter-circle-relief",
-    "image": "/images/catalog/wall-cladding/cladding-107-white-sandstone-bauhaus-quarter-circle-relief.jpg",
-    "category": "3D Architectural Relief",
-    "stoneType": "Natural Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-108",
-    "index": 108,
-    "name": "White Marble Fluted Checkerboard Grid",
-    "slug": "white-marble-fluted-checkerboard-grid",
-    "image": "/images/catalog/wall-cladding/cladding-108-white-marble-fluted-checkerboard-grid.jpg",
-    "category": "Fluted & Linear Ribbed",
-    "stoneType": "Natural Marble",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-109",
-    "index": 109,
-    "name": "Cream Sandstone Black Granite Border Frame Brick",
-    "slug": "cream-sandstone-black-granite-border-frame-brick",
-    "image": "/images/catalog/wall-cladding/cladding-109-cream-sandstone-black-granite-border-frame-brick.jpg",
-    "category": "Inlay & Geometric Accent",
-    "stoneType": "Natural Granite",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
     "id": "ST-WC-011",
     "index": 11,
-    "name": "3d Prism Origami White Sandstone",
+    "name": "3D Origami Prism White Sandstone",
     "slug": "3d-prism-origami-white-sandstone",
     "image": "/images/catalog/wall-cladding/cladding-11-3d-prism-origami-white-sandstone.jpg",
     "category": "3D Architectural Relief",
@@ -504,493 +264,13 @@
     ]
   },
   {
-    "id": "ST-WC-110",
-    "index": 110,
-    "name": "Grey Woodgrain Sandstone Pillow Bevelled Ashlar",
-    "slug": "grey-woodgrain-sandstone-pillow-bevelled-ashlar",
-    "image": "/images/catalog/wall-cladding/cladding-110-grey-woodgrain-sandstone-pillow-bevelled-ashlar.jpg",
-    "category": "Woven Basketweave & Parquet",
-    "stoneType": "Natural Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-111",
-    "index": 111,
-    "name": "Sandstone Modular Woven Ashlar Grid",
-    "slug": "sandstone-modular-woven-ashlar-grid",
-    "image": "/images/catalog/wall-cladding/cladding-111-sandstone-modular-woven-ashlar-grid.jpg",
-    "category": "Woven Basketweave & Parquet",
-    "stoneType": "Natural Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-112",
-    "index": 112,
-    "name": "Dualtone Ribbed Checkerboard Mosaic",
-    "slug": "dualtone-ribbed-checkerboard-mosaic",
-    "image": "/images/catalog/wall-cladding/cladding-112-dualtone-ribbed-checkerboard-mosaic.jpg",
-    "category": "Fluted & Linear Ribbed",
-    "stoneType": "Natural Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-113",
-    "index": 113,
-    "name": "Silver Grey Cleft Rockface Modular Cladding",
-    "slug": "silver-grey-cleft-rockface-modular-cladding",
-    "image": "/images/catalog/wall-cladding/cladding-113-silver-grey-cleft-rockface-modular-cladding.jpg",
-    "category": "Linear Ledger & Split-Face",
-    "stoneType": "Natural Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-114",
-    "index": 114,
-    "name": "Sandstone Stepped Dual Relief Square Panels",
-    "slug": "sandstone-stepped-dual-relief-square-panels",
-    "image": "/images/catalog/wall-cladding/cladding-114-sandstone-stepped-dual-relief-square-panels.jpg",
-    "category": "3D Architectural Relief",
-    "stoneType": "Natural Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-115",
-    "index": 115,
-    "name": "Grey Multidepth Splitface Ledger Stone",
-    "slug": "grey-multidepth-splitface-ledger-stone",
-    "image": "/images/catalog/wall-cladding/cladding-115-grey-multidepth-splitface-ledger-stone.jpg",
-    "category": "Linear Ledger & Split-Face",
-    "stoneType": "Natural Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-116",
-    "index": 116,
-    "name": "Ivory Sandstone Heavy Chiseled Ashlar",
-    "slug": "ivory-sandstone-heavy-chiseled-ashlar",
-    "image": "/images/catalog/wall-cladding/cladding-116-ivory-sandstone-heavy-chiseled-ashlar.jpg",
-    "category": "Modular Ashlar",
-    "stoneType": "Natural Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-117",
-    "index": 117,
-    "name": "Charcoal Slate Cleft Modular Ashlar",
-    "slug": "charcoal-slate-cleft-modular-ashlar",
-    "image": "/images/catalog/wall-cladding/cladding-117-charcoal-slate-cleft-modular-ashlar.jpg",
-    "category": "Linear Ledger & Split-Face",
-    "stoneType": "Natural Slate",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-118",
-    "index": 118,
-    "name": "Teakwood Arabesque Swirl Basalt Leaf Insets",
-    "slug": "teakwood-arabesque-swirl-basalt-leaf-insets",
-    "image": "/images/catalog/wall-cladding/cladding-118-teakwood-arabesque-swirl-basalt-leaf-insets.jpg",
-    "category": "3D Architectural Relief",
-    "stoneType": "Volcanic Basalt",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-119",
-    "index": 119,
-    "name": "Dualtone White Gold Pyramid Pitched Mosaic",
-    "slug": "dualtone-white-gold-pyramid-pitched-mosaic",
-    "image": "/images/catalog/wall-cladding/cladding-119-dualtone-white-gold-pyramid-pitched-mosaic.jpg",
-    "category": "Mosaic & Pebble Tile",
-    "stoneType": "Natural Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
     "id": "ST-WC-012",
     "index": 12,
-    "name": "3d Prism Origami Teakwood Gold",
+    "name": "3D Origami Prism Teakwood Gold",
     "slug": "3d-prism-origami-teakwood-gold",
     "image": "/images/catalog/wall-cladding/cladding-12-3d-prism-origami-teakwood-gold.jpg",
     "category": "3D Architectural Relief",
     "stoneType": "Teakwood Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-120",
-    "index": 120,
-    "name": "Charcoal Granite Modular Cleft Mosaic",
-    "slug": "charcoal-granite-modular-cleft-mosaic",
-    "image": "/images/catalog/wall-cladding/cladding-120-charcoal-granite-modular-cleft-mosaic.jpg",
-    "category": "Mosaic & Pebble Tile",
-    "stoneType": "Natural Granite",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-121",
-    "index": 121,
-    "name": "Teakwood Sandstone Carved Palm Frond Inserts",
-    "slug": "teakwood-sandstone-carved-palm-frond-inserts",
-    "image": "/images/catalog/wall-cladding/cladding-121-teakwood-sandstone-carved-palm-frond-inserts.jpg",
-    "category": "3D Architectural Relief",
-    "stoneType": "Teakwood Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-122",
-    "index": 122,
-    "name": "Sandstone Carved Tree Of Life Sacred Symbols",
-    "slug": "sandstone-carved-tree-of-life-sacred-symbols",
-    "image": "/images/catalog/wall-cladding/cladding-122-sandstone-carved-tree-of-life-sacred-symbols.jpg",
-    "category": "3D Architectural Relief",
-    "stoneType": "Natural Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-123",
-    "index": 123,
-    "name": "Teakwood Carved Lotus Floral Rosette Mural",
-    "slug": "teakwood-carved-lotus-floral-rosette-mural",
-    "image": "/images/catalog/wall-cladding/cladding-123-teakwood-carved-lotus-floral-rosette-mural.jpg",
-    "category": "3D Architectural Relief",
-    "stoneType": "Teakwood Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-124",
-    "index": 124,
-    "name": "Black Slate Egyptian Winged Isis Gold Hieroglyphs",
-    "slug": "black-slate-egyptian-winged-isis-gold-hieroglyphs",
-    "image": "/images/catalog/wall-cladding/cladding-124-black-slate-egyptian-winged-isis-gold-hieroglyphs.jpg",
-    "category": "3D Architectural Relief",
-    "stoneType": "Natural Slate",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-125",
-    "index": 125,
-    "name": "Teakwood Sandstone Carved Mandala Rosette Panel",
-    "slug": "teakwood-sandstone-carved-mandala-rosette-panel",
-    "image": "/images/catalog/wall-cladding/cladding-125-teakwood-sandstone-carved-mandala-rosette-panel.jpg",
-    "category": "3D Architectural Relief",
-    "stoneType": "Teakwood Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-126",
-    "index": 126,
-    "name": "White Sandstone Sculpted Rose Blossom Panel",
-    "slug": "white-sandstone-sculpted-rose-blossom-panel",
-    "image": "/images/catalog/wall-cladding/cladding-126-white-sandstone-sculpted-rose-blossom-panel.jpg",
-    "category": "3D Architectural Relief",
-    "stoneType": "Natural Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-127",
-    "index": 127,
-    "name": "Teakwood Sandstone 4quadrant Chevron Diamond Relief",
-    "slug": "teakwood-sandstone-4quadrant-chevron-diamond-relief",
-    "image": "/images/catalog/wall-cladding/cladding-127-teakwood-sandstone-4quadrant-chevron-diamond-relief.jpg",
-    "category": "3D Architectural Relief",
-    "stoneType": "Teakwood Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-128",
-    "index": 128,
-    "name": "White Sandstone Carved Monstera Leaf Panel",
-    "slug": "white-sandstone-carved-monstera-leaf-panel",
-    "image": "/images/catalog/wall-cladding/cladding-128-white-sandstone-carved-monstera-leaf-panel.jpg",
-    "category": "3D Architectural Relief",
-    "stoneType": "Natural Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-129",
-    "index": 129,
-    "name": "Rustic Charcoal Copper Slate Stacked Ledger",
-    "slug": "rustic-charcoal-copper-slate-stacked-ledger",
-    "image": "/images/catalog/wall-cladding/cladding-129-rustic-charcoal-copper-slate-stacked-ledger.jpg",
-    "category": "Linear Ledger & Split-Face",
-    "stoneType": "Natural Slate",
     "standardSizes": "300x300mm / 600x300mm / Custom Modules",
     "thickness": "20-35mm variable relief",
     "applications": [
@@ -1032,277 +312,13 @@
     ]
   },
   {
-    "id": "ST-WC-130",
-    "index": 130,
-    "name": "Dualtone Sandstone Carved Palm Leaf Quad Panel",
-    "slug": "dualtone-sandstone-carved-palm-leaf-quad-panel",
-    "image": "/images/catalog/wall-cladding/cladding-130-dualtone-sandstone-carved-palm-leaf-quad-panel.jpg",
-    "category": "3D Architectural Relief",
-    "stoneType": "Natural Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-131",
-    "index": 131,
-    "name": "White Sandstone 3d Origami Pinwheel Faceted Relief",
-    "slug": "white-sandstone-3d-origami-pinwheel-faceted-relief",
-    "image": "/images/catalog/wall-cladding/cladding-131-white-sandstone-3d-origami-pinwheel-faceted-relief.jpg",
-    "category": "3D Architectural Relief",
-    "stoneType": "Natural Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-132",
-    "index": 132,
-    "name": "Desert Gold Rustic Tumbled Ledge Ashlar",
-    "slug": "desert-gold-rustic-tumbled-ledge-ashlar",
-    "image": "/images/catalog/wall-cladding/cladding-132-desert-gold-rustic-tumbled-ledge-ashlar.jpg",
-    "category": "Modular Ashlar",
-    "stoneType": "Natural Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-133",
-    "index": 133,
-    "name": "Terracotta Pink Sandstone 3d Gable Prism Relief",
-    "slug": "terracotta-pink-sandstone-3d-gable-prism-relief",
-    "image": "/images/catalog/wall-cladding/cladding-133-terracotta-pink-sandstone-3d-gable-prism-relief.jpg",
-    "category": "3D Architectural Relief",
-    "stoneType": "Natural Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-134",
-    "index": 134,
-    "name": "Yellow Sandstone Rockface Pillow Ashlar",
-    "slug": "yellow-sandstone-rockface-pillow-ashlar",
-    "image": "/images/catalog/wall-cladding/cladding-134-yellow-sandstone-rockface-pillow-ashlar.jpg",
-    "category": "Woven Basketweave & Parquet",
-    "stoneType": "Natural Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-135",
-    "index": 135,
-    "name": "Silver Grey Burgundy Polygonal Fieldstone Panel",
-    "slug": "silver-grey-burgundy-polygonal-fieldstone-panel",
-    "image": "/images/catalog/wall-cladding/cladding-135-silver-grey-burgundy-polygonal-fieldstone-panel.jpg",
-    "category": "Mosaic & Pebble Tile",
-    "stoneType": "Natural Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-136",
-    "index": 136,
-    "name": "White Quartzite Polygonal Fieldstone Panel",
-    "slug": "white-quartzite-polygonal-fieldstone-panel",
-    "image": "/images/catalog/wall-cladding/cladding-136-white-quartzite-polygonal-fieldstone-panel.jpg",
-    "category": "Mosaic & Pebble Tile",
-    "stoneType": "Natural Quartzite",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-137",
-    "index": 137,
-    "name": "Charcoal Gold Slate Cleft Fieldstone Panel",
-    "slug": "charcoal-gold-slate-cleft-fieldstone-panel",
-    "image": "/images/catalog/wall-cladding/cladding-137-charcoal-gold-slate-cleft-fieldstone-panel.jpg",
-    "category": "Mosaic & Pebble Tile",
-    "stoneType": "Natural Slate",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-138",
-    "index": 138,
-    "name": "Rustic Earth Brown Quartzite Fieldstone Panel",
-    "slug": "rustic-earth-brown-quartzite-fieldstone-panel",
-    "image": "/images/catalog/wall-cladding/cladding-138-rustic-earth-brown-quartzite-fieldstone-panel.jpg",
-    "category": "Mosaic & Pebble Tile",
-    "stoneType": "Natural Quartzite",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-139",
-    "index": 139,
-    "name": "Cream Grey Quartzite Castle Rock Panel",
-    "slug": "cream-grey-quartzite-castle-rock-panel",
-    "image": "/images/catalog/wall-cladding/cladding-139-cream-grey-quartzite-castle-rock-panel.jpg",
-    "category": "Mosaic & Pebble Tile",
-    "stoneType": "Natural Quartzite",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
     "id": "ST-WC-014",
     "index": 14,
-    "name": "3d Prism Origami Pink Sandstone",
+    "name": "3D Origami Prism Pink Sandstone",
     "slug": "3d-prism-origami-pink-sandstone",
     "image": "/images/catalog/wall-cladding/cladding-14-3d-prism-origami-pink-sandstone.jpg",
     "category": "3D Architectural Relief",
     "stoneType": "Natural Sandstone",
-    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
-    "thickness": "20-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Foyer & Reception Backdrops",
-      "Landscape & Water Features"
-    ],
-    "finishes": [
-      "Shot-blasted",
-      "Honed",
-      "Hand-chiselled",
-      "Bush-hammered",
-      "Natural Cleft"
-    ]
-  },
-  {
-    "id": "ST-WC-140",
-    "index": 140,
-    "name": "Blue Grey Slate Flagstone Facade Panel",
-    "slug": "blue-grey-slate-flagstone-facade-panel",
-    "image": "/images/catalog/wall-cladding/cladding-140-blue-grey-slate-flagstone-facade-panel.jpg",
-    "category": "Mosaic & Pebble Tile",
-    "stoneType": "Natural Slate",
     "standardSizes": "300x300mm / 600x300mm / Custom Modules",
     "thickness": "20-35mm variable relief",
     "applications": [
@@ -1610,7 +626,7 @@
   {
     "id": "ST-WC-027",
     "index": 27,
-    "name": "White Sandstone 3d Pyramid Chevron Mosaic",
+    "name": "White Sandstone 3D Pyramid Chevron Mosaic",
     "slug": "white-sandstone-3d-pyramid-chevron-mosaic",
     "image": "/images/catalog/wall-cladding/cladding-27-white-sandstone-3d-pyramid-chevron-mosaic.jpg",
     "category": "Fluted & Linear Ribbed",
@@ -1706,7 +722,7 @@
   {
     "id": "ST-WC-031",
     "index": 31,
-    "name": "Slate Sandstone 3d Compass Starburst",
+    "name": "Slate Sandstone 3D Compass Starburst",
     "slug": "slate-sandstone-3d-compass-starburst",
     "image": "/images/catalog/wall-cladding/cladding-31-slate-sandstone-3d-compass-starburst.jpg",
     "category": "3D Architectural Relief",
@@ -1730,7 +746,7 @@
   {
     "id": "ST-WC-032",
     "index": 32,
-    "name": "Sandstone Tree Of Life Celtic Carved Ashlar",
+    "name": "Sandstone Tree of Life Celtic Carved Ashlar",
     "slug": "sandstone-tree-of-life-celtic-carved-ashlar",
     "image": "/images/catalog/wall-cladding/cladding-32-sandstone-tree-of-life-celtic-carved-ashlar.jpg",
     "category": "3D Architectural Relief",
@@ -1874,7 +890,7 @@
   {
     "id": "ST-WC-038",
     "index": 38,
-    "name": "3d Geometric Starburst Teakwood White Sandstone",
+    "name": "3D Geometric Starburst Teakwood White Sandstone",
     "slug": "3d-geometric-starburst-teakwood-white-sandstone",
     "image": "/images/catalog/wall-cladding/cladding-38-3d-geometric-starburst-teakwood-white-sandstone.jpg",
     "category": "3D Architectural Relief",
@@ -2066,7 +1082,7 @@
   {
     "id": "ST-WC-046",
     "index": 46,
-    "name": "Dual Tone Stepped Square Bushhammered Ashlar",
+    "name": "Dual-Tone Stepped Square Bushhammered Ashlar",
     "slug": "dual-tone-stepped-square-bushhammered-ashlar",
     "image": "/images/catalog/wall-cladding/cladding-46-dual-tone-stepped-square-bushhammered-ashlar.jpg",
     "category": "Modular Ashlar",
@@ -2162,7 +1178,7 @@
   {
     "id": "ST-WC-050",
     "index": 50,
-    "name": "Teakwood Sandstone Multidepth Shotblast Ashlar",
+    "name": "Teakwood Sandstone Multi-Depth Shotblast Ashlar",
     "slug": "teakwood-sandstone-multidepth-shotblast-ashlar",
     "image": "/images/catalog/wall-cladding/cladding-50-teakwood-sandstone-multidepth-shotblast-ashlar.jpg",
     "category": "Modular Ashlar",
@@ -2186,7 +1202,7 @@
   {
     "id": "ST-WC-051",
     "index": 51,
-    "name": "White Sandstone Bauhaus Quarter Circle Relief",
+    "name": "White Sandstone Bauhaus Quarter-Circle Relief",
     "slug": "white-sandstone-bauhaus-quarter-circle-relief",
     "image": "/images/catalog/wall-cladding/cladding-51-white-sandstone-bauhaus-quarter-circle-relief.jpg",
     "category": "3D Architectural Relief",
@@ -2594,7 +1610,7 @@
   {
     "id": "ST-WC-068",
     "index": 68,
-    "name": "White Sandstone 3d Petal Ellipse Relief",
+    "name": "White Sandstone 3D Petal Ellipse Relief",
     "slug": "white-sandstone-3d-petal-ellipse-relief",
     "image": "/images/catalog/wall-cladding/cladding-68-white-sandstone-3d-petal-ellipse-relief.jpg",
     "category": "3D Architectural Relief",
@@ -2858,7 +1874,7 @@
   {
     "id": "ST-WC-079",
     "index": 79,
-    "name": "Teakwood White Sandstone 3d Compass Starburst",
+    "name": "Teakwood White Sandstone 3D Compass Starburst",
     "slug": "teakwood-white-sandstone-3d-compass-starburst",
     "image": "/images/catalog/wall-cladding/cladding-79-teakwood-white-sandstone-3d-compass-starburst.jpg",
     "category": "3D Architectural Relief",
@@ -3194,7 +2210,7 @@
   {
     "id": "ST-WC-093",
     "index": 93,
-    "name": "Teakwood Sandstone Diagonal Weave Basket Grid",
+    "name": "Teakwood Sandstone Diagonal Basketweave Grid",
     "slug": "teakwood-sandstone-diagonal-weave-basket-grid",
     "image": "/images/catalog/wall-cladding/cladding-93-teakwood-sandstone-diagonal-weave-basket-grid.jpg",
     "category": "Modular Ashlar",
@@ -3218,7 +2234,7 @@
   {
     "id": "ST-WC-094",
     "index": 94,
-    "name": "Graphite Grey Granite Split Face Brick Ledger",
+    "name": "Graphite Grey Granite Splitface Brick Ledger",
     "slug": "graphite-grey-granite-split-face-brick-ledger",
     "image": "/images/catalog/wall-cladding/cladding-94-graphite-grey-granite-split-face-brick-ledger.jpg",
     "category": "Linear Ledger & Split-Face",
@@ -3242,7 +2258,7 @@
   {
     "id": "ST-WC-095",
     "index": 95,
-    "name": "Silver Grey Woodgrain Marble Pillow Ashlar",
+    "name": "Silver Grey Woodgrain Marble Pillowed Ashlar",
     "slug": "silver-grey-woodgrain-marble-pillow-ashlar",
     "image": "/images/catalog/wall-cladding/cladding-95-silver-grey-woodgrain-marble-pillow-ashlar.jpg",
     "category": "Woven Basketweave & Parquet",
@@ -3266,7 +2282,7 @@
   {
     "id": "ST-WC-096",
     "index": 96,
-    "name": "Sandstone Black Basalt Border Frame Ashlar",
+    "name": "Sandstone & Black Basalt Border Frame Ashlar",
     "slug": "sandstone-black-basalt-border-frame-ashlar",
     "image": "/images/catalog/wall-cladding/cladding-96-sandstone-black-basalt-border-frame-ashlar.jpg",
     "category": "Inlay & Geometric Accent",
@@ -3290,7 +2306,7 @@
   {
     "id": "ST-WC-097",
     "index": 97,
-    "name": "Teakwood Sandstone 3d Pyramid Star Inlay",
+    "name": "Teakwood Sandstone 3D Pyramid Star Inlay",
     "slug": "teakwood-sandstone-3d-pyramid-star-inlay",
     "image": "/images/catalog/wall-cladding/cladding-97-teakwood-sandstone-3d-pyramid-star-inlay.jpg",
     "category": "Inlay & Geometric Accent",
@@ -3343,6 +2359,990 @@
     "image": "/images/catalog/wall-cladding/cladding-99-charcoal-grey-granite-modular-split-mosaic.jpg",
     "category": "Mosaic & Pebble Tile",
     "stoneType": "Natural Granite",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-100",
+    "index": 100,
+    "name": "Black & White Crystalline Checkerboard Tile",
+    "slug": "black-white-crystalline-checkerboard-brick",
+    "image": "/images/catalog/wall-cladding/cladding-100-black-white-crystalline-checkerboard-brick.jpg",
+    "category": "Inlay & Geometric Accent",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-101",
+    "index": 101,
+    "name": "Teakwood Sandstone Fluted & Rockface Checkerboard",
+    "slug": "teakwood-sandstone-fluted-rockface-checkerboard",
+    "image": "/images/catalog/wall-cladding/cladding-101-teakwood-sandstone-fluted-rockface-checkerboard.jpg",
+    "category": "Fluted & Linear Ribbed",
+    "stoneType": "Teakwood Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-102",
+    "index": 102,
+    "name": "White Sandstone Carved Rosette Jharokha Panel",
+    "slug": "white-sandstone-carved-rosette-jharokha-panel",
+    "image": "/images/catalog/wall-cladding/cladding-102-white-sandstone-carved-rosette-jharokha-panel.jpg",
+    "category": "3D Architectural Relief",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-103",
+    "index": 103,
+    "name": "Basalt & Sandstone Compass Starburst 3D Relief",
+    "slug": "basalt-sandstone-compass-starburst-relief",
+    "image": "/images/catalog/wall-cladding/cladding-103-basalt-sandstone-compass-starburst-relief.jpg",
+    "category": "3D Architectural Relief",
+    "stoneType": "Volcanic Basalt",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-104",
+    "index": 104,
+    "name": "Silver White Quartzite Modular Ashlar",
+    "slug": "silver-white-quartzite-modular-ashlar",
+    "image": "/images/catalog/wall-cladding/cladding-104-silver-white-quartzite-modular-ashlar.jpg",
+    "category": "Modular Ashlar",
+    "stoneType": "Natural Quartzite",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-105",
+    "index": 105,
+    "name": "Cream Ivory Tumbled River Pebble Mosaic",
+    "slug": "cream-ivory-tumbled-river-pebble-mosaic",
+    "image": "/images/catalog/wall-cladding/cladding-105-cream-ivory-tumbled-river-pebble-mosaic.jpg",
+    "category": "Mosaic & Pebble Tile",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-106",
+    "index": 106,
+    "name": "Dual-Tone Sandstone Quartzite Chiselled Ashlar",
+    "slug": "dualtone-sandstone-quartzite-chiselled-ashlar",
+    "image": "/images/catalog/wall-cladding/cladding-106-dualtone-sandstone-quartzite-chiselled-ashlar.jpg",
+    "category": "Modular Ashlar",
+    "stoneType": "Natural Quartzite",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-107",
+    "index": 107,
+    "name": "White Sandstone Bauhaus Quarter-Circle Relief",
+    "slug": "white-sandstone-bauhaus-quarter-circle-relief",
+    "image": "/images/catalog/wall-cladding/cladding-107-white-sandstone-bauhaus-quarter-circle-relief.jpg",
+    "category": "3D Architectural Relief",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-108",
+    "index": 108,
+    "name": "White Marble Fluted Checkerboard Grid",
+    "slug": "white-marble-fluted-checkerboard-grid",
+    "image": "/images/catalog/wall-cladding/cladding-108-white-marble-fluted-checkerboard-grid.jpg",
+    "category": "Fluted & Linear Ribbed",
+    "stoneType": "Natural Marble",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-109",
+    "index": 109,
+    "name": "Cream Sandstone with Black Granite Border Frame",
+    "slug": "cream-sandstone-black-granite-border-frame-brick",
+    "image": "/images/catalog/wall-cladding/cladding-109-cream-sandstone-black-granite-border-frame-brick.jpg",
+    "category": "Inlay & Geometric Accent",
+    "stoneType": "Natural Granite",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-110",
+    "index": 110,
+    "name": "Grey Woodgrain Sandstone Pillowed Bevelled Ashlar",
+    "slug": "grey-woodgrain-sandstone-pillow-bevelled-ashlar",
+    "image": "/images/catalog/wall-cladding/cladding-110-grey-woodgrain-sandstone-pillow-bevelled-ashlar.jpg",
+    "category": "Woven Basketweave & Parquet",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-111",
+    "index": 111,
+    "name": "Natural Sandstone Woven Modular Ashlar Grid",
+    "slug": "sandstone-modular-woven-ashlar-grid",
+    "image": "/images/catalog/wall-cladding/cladding-111-sandstone-modular-woven-ashlar-grid.jpg",
+    "category": "Woven Basketweave & Parquet",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-112",
+    "index": 112,
+    "name": "Dual-Tone Ribbed Fluted Checkerboard Mosaic",
+    "slug": "dualtone-ribbed-checkerboard-mosaic",
+    "image": "/images/catalog/wall-cladding/cladding-112-dualtone-ribbed-checkerboard-mosaic.jpg",
+    "category": "Fluted & Linear Ribbed",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-113",
+    "index": 113,
+    "name": "Silver Grey Cleft Rockface Modular Cladding",
+    "slug": "silver-grey-cleft-rockface-modular-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-113-silver-grey-cleft-rockface-modular-cladding.jpg",
+    "category": "Linear Ledger & Split-Face",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-114",
+    "index": 114,
+    "name": "Sandstone Stepped Dual-Relief Square Panels",
+    "slug": "sandstone-stepped-dual-relief-square-panels",
+    "image": "/images/catalog/wall-cladding/cladding-114-sandstone-stepped-dual-relief-square-panels.jpg",
+    "category": "3D Architectural Relief",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-115",
+    "index": 115,
+    "name": "Silver Grey Multi-Depth Splitface Ledger Stone",
+    "slug": "grey-multidepth-splitface-ledger-stone",
+    "image": "/images/catalog/wall-cladding/cladding-115-grey-multidepth-splitface-ledger-stone.jpg",
+    "category": "Linear Ledger & Split-Face",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-116",
+    "index": 116,
+    "name": "Ivory Sandstone Heavy Chiseled Ashlar",
+    "slug": "ivory-sandstone-heavy-chiseled-ashlar",
+    "image": "/images/catalog/wall-cladding/cladding-116-ivory-sandstone-heavy-chiseled-ashlar.jpg",
+    "category": "Modular Ashlar",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-117",
+    "index": 117,
+    "name": "Charcoal Slate Cleft Modular Ashlar",
+    "slug": "charcoal-slate-cleft-modular-ashlar",
+    "image": "/images/catalog/wall-cladding/cladding-117-charcoal-slate-cleft-modular-ashlar.jpg",
+    "category": "Linear Ledger & Split-Face",
+    "stoneType": "Natural Slate",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-118",
+    "index": 118,
+    "name": "Teakwood Sandstone Arabesque with Basalt Insets",
+    "slug": "teakwood-arabesque-swirl-basalt-leaf-insets",
+    "image": "/images/catalog/wall-cladding/cladding-118-teakwood-arabesque-swirl-basalt-leaf-insets.jpg",
+    "category": "3D Architectural Relief",
+    "stoneType": "Volcanic Basalt",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-119",
+    "index": 119,
+    "name": "Dual-Tone White & Gold Pyramid Pitched Mosaic",
+    "slug": "dualtone-white-gold-pyramid-pitched-mosaic",
+    "image": "/images/catalog/wall-cladding/cladding-119-dualtone-white-gold-pyramid-pitched-mosaic.jpg",
+    "category": "Mosaic & Pebble Tile",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-120",
+    "index": 120,
+    "name": "Charcoal Granite Modular Cleft Mosaic",
+    "slug": "charcoal-granite-modular-cleft-mosaic",
+    "image": "/images/catalog/wall-cladding/cladding-120-charcoal-granite-modular-cleft-mosaic.jpg",
+    "category": "Mosaic & Pebble Tile",
+    "stoneType": "Natural Granite",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-121",
+    "index": 121,
+    "name": "Teakwood Sandstone Carved Palm Frond Inserts",
+    "slug": "teakwood-sandstone-carved-palm-frond-inserts",
+    "image": "/images/catalog/wall-cladding/cladding-121-teakwood-sandstone-carved-palm-frond-inserts.jpg",
+    "category": "3D Architectural Relief",
+    "stoneType": "Teakwood Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-122",
+    "index": 122,
+    "name": "Sandstone Carved Tree of Life Sacred Symbols",
+    "slug": "sandstone-carved-tree-of-life-sacred-symbols",
+    "image": "/images/catalog/wall-cladding/cladding-122-sandstone-carved-tree-of-life-sacred-symbols.jpg",
+    "category": "3D Architectural Relief",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-123",
+    "index": 123,
+    "name": "Teakwood Carved Lotus Floral Rosette Mural",
+    "slug": "teakwood-carved-lotus-floral-rosette-mural",
+    "image": "/images/catalog/wall-cladding/cladding-123-teakwood-carved-lotus-floral-rosette-mural.jpg",
+    "category": "3D Architectural Relief",
+    "stoneType": "Teakwood Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-124",
+    "index": 124,
+    "name": "Black Slate Egyptian Winged Isis Gold Hieroglyphs",
+    "slug": "black-slate-egyptian-winged-isis-gold-hieroglyphs",
+    "image": "/images/catalog/wall-cladding/cladding-124-black-slate-egyptian-winged-isis-gold-hieroglyphs.jpg",
+    "category": "3D Architectural Relief",
+    "stoneType": "Natural Slate",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-125",
+    "index": 125,
+    "name": "Teakwood Sandstone Carved Mandala Rosette Panel",
+    "slug": "teakwood-sandstone-carved-mandala-rosette-panel",
+    "image": "/images/catalog/wall-cladding/cladding-125-teakwood-sandstone-carved-mandala-rosette-panel.jpg",
+    "category": "3D Architectural Relief",
+    "stoneType": "Teakwood Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-126",
+    "index": 126,
+    "name": "White Sandstone Sculpted Rose Blossom Panel",
+    "slug": "white-sandstone-sculpted-rose-blossom-panel",
+    "image": "/images/catalog/wall-cladding/cladding-126-white-sandstone-sculpted-rose-blossom-panel.jpg",
+    "category": "3D Architectural Relief",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-127",
+    "index": 127,
+    "name": "Teakwood Sandstone 4-Quadrant Chevron Diamond Relief",
+    "slug": "teakwood-sandstone-4quadrant-chevron-diamond-relief",
+    "image": "/images/catalog/wall-cladding/cladding-127-teakwood-sandstone-4quadrant-chevron-diamond-relief.jpg",
+    "category": "3D Architectural Relief",
+    "stoneType": "Teakwood Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-128",
+    "index": 128,
+    "name": "White Sandstone Carved Monstera Leaf Panel",
+    "slug": "white-sandstone-carved-monstera-leaf-panel",
+    "image": "/images/catalog/wall-cladding/cladding-128-white-sandstone-carved-monstera-leaf-panel.jpg",
+    "category": "3D Architectural Relief",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-129",
+    "index": 129,
+    "name": "Rustic Charcoal Copper Slate Stacked Ledger",
+    "slug": "rustic-charcoal-copper-slate-stacked-ledger",
+    "image": "/images/catalog/wall-cladding/cladding-129-rustic-charcoal-copper-slate-stacked-ledger.jpg",
+    "category": "Linear Ledger & Split-Face",
+    "stoneType": "Natural Slate",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-130",
+    "index": 130,
+    "name": "Dual-Tone Sandstone Carved Palm Leaf Quad Panel",
+    "slug": "dualtone-sandstone-carved-palm-leaf-quad-panel",
+    "image": "/images/catalog/wall-cladding/cladding-130-dualtone-sandstone-carved-palm-leaf-quad-panel.jpg",
+    "category": "3D Architectural Relief",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-131",
+    "index": 131,
+    "name": "White Sandstone 3D Origami Pinwheel Faceted Relief",
+    "slug": "white-sandstone-3d-origami-pinwheel-faceted-relief",
+    "image": "/images/catalog/wall-cladding/cladding-131-white-sandstone-3d-origami-pinwheel-faceted-relief.jpg",
+    "category": "3D Architectural Relief",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-132",
+    "index": 132,
+    "name": "Desert Gold Rustic Tumbled Ledge Ashlar",
+    "slug": "desert-gold-rustic-tumbled-ledge-ashlar",
+    "image": "/images/catalog/wall-cladding/cladding-132-desert-gold-rustic-tumbled-ledge-ashlar.jpg",
+    "category": "Modular Ashlar",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-133",
+    "index": 133,
+    "name": "Terracotta Pink Sandstone 3D Gable Prism Relief",
+    "slug": "terracotta-pink-sandstone-3d-gable-prism-relief",
+    "image": "/images/catalog/wall-cladding/cladding-133-terracotta-pink-sandstone-3d-gable-prism-relief.jpg",
+    "category": "3D Architectural Relief",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-134",
+    "index": 134,
+    "name": "Yellow Sandstone Rockface Pillow Ashlar",
+    "slug": "yellow-sandstone-rockface-pillow-ashlar",
+    "image": "/images/catalog/wall-cladding/cladding-134-yellow-sandstone-rockface-pillow-ashlar.jpg",
+    "category": "Woven Basketweave & Parquet",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-135",
+    "index": 135,
+    "name": "Silver Grey Burgundy Polygonal Fieldstone Panel",
+    "slug": "silver-grey-burgundy-polygonal-fieldstone-panel",
+    "image": "/images/catalog/wall-cladding/cladding-135-silver-grey-burgundy-polygonal-fieldstone-panel.jpg",
+    "category": "Mosaic & Pebble Tile",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-136",
+    "index": 136,
+    "name": "White Quartzite Polygonal Fieldstone Panel",
+    "slug": "white-quartzite-polygonal-fieldstone-panel",
+    "image": "/images/catalog/wall-cladding/cladding-136-white-quartzite-polygonal-fieldstone-panel.jpg",
+    "category": "Mosaic & Pebble Tile",
+    "stoneType": "Natural Quartzite",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-137",
+    "index": 137,
+    "name": "Charcoal Gold Slate Cleft Fieldstone Panel",
+    "slug": "charcoal-gold-slate-cleft-fieldstone-panel",
+    "image": "/images/catalog/wall-cladding/cladding-137-charcoal-gold-slate-cleft-fieldstone-panel.jpg",
+    "category": "Mosaic & Pebble Tile",
+    "stoneType": "Natural Slate",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-138",
+    "index": 138,
+    "name": "Rustic Earth Brown Quartzite Fieldstone Panel",
+    "slug": "rustic-earth-brown-quartzite-fieldstone-panel",
+    "image": "/images/catalog/wall-cladding/cladding-138-rustic-earth-brown-quartzite-fieldstone-panel.jpg",
+    "category": "Mosaic & Pebble Tile",
+    "stoneType": "Natural Quartzite",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-139",
+    "index": 139,
+    "name": "Cream Grey Quartzite Castle Rock Panel",
+    "slug": "cream-grey-quartzite-castle-rock-panel",
+    "image": "/images/catalog/wall-cladding/cladding-139-cream-grey-quartzite-castle-rock-panel.jpg",
+    "category": "Mosaic & Pebble Tile",
+    "stoneType": "Natural Quartzite",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape & Water Features"
+    ],
+    "finishes": [
+      "Shot-blasted",
+      "Honed",
+      "Hand-chiselled",
+      "Bush-hammered",
+      "Natural Cleft"
+    ]
+  },
+  {
+    "id": "ST-WC-140",
+    "index": 140,
+    "name": "Blue Grey Slate Flagstone Facade Panel",
+    "slug": "blue-grey-slate-flagstone-facade-panel",
+    "image": "/images/catalog/wall-cladding/cladding-140-blue-grey-slate-flagstone-facade-panel.jpg",
+    "category": "Mosaic & Pebble Tile",
+    "stoneType": "Natural Slate",
     "standardSizes": "300x300mm / 600x300mm / Custom Modules",
     "thickness": "20-35mm variable relief",
     "applications": [
