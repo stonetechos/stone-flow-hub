@@ -68,6 +68,7 @@ export type OfficialProductCategory = (typeof OFFICIAL_PRODUCT_CATEGORIES)[numbe
 export interface CatalogProduct {
   id: string; // ST-WC-001, etc.
   index: number;
+  code?: string; // Dynamic sequential catalogue pattern code: ST-WC-001, ST-WC-002, etc.
   name: string;
   slug: string;
   image: string;
@@ -278,18 +279,31 @@ export function useWebsiteCatalog() {
     const items = Array.from(map.values());
 
     // If a custom drag-and-drop order is set, sort accordingly
+    let sorted: CatalogProduct[];
     if (customOrder && customOrder.length > 0) {
       const orderMap = new Map<string, number>();
       customOrder.forEach((id, idx) => orderMap.set(id, idx));
 
-      return items.sort((a, b) => {
+      sorted = [...items].sort((a, b) => {
         const orderA = orderMap.has(a.id) ? orderMap.get(a.id)! : 10000 + (a.index || 999);
         const orderB = orderMap.has(b.id) ? orderMap.get(b.id)! : 10000 + (b.index || 999);
         return orderA - orderB;
       });
+    } else {
+      sorted = [...items].sort((a, b) => (a.index || 999) - (b.index || 999));
     }
 
-    return items.sort((a, b) => (a.index || 999) - (b.index || 999));
+    // Renumber every product strictly by its 1-based sequential position in the catalogue:
+    // e.g. dragging item 4 to position 1 renumbers it to 1 (ST-WC-001); subsequent items fall back / shift seamlessly.
+    return sorted.map((item, idx) => {
+      const seqIndex = idx + 1;
+      const seqCode = `ST-WC-${String(seqIndex).padStart(3, "0")}`;
+      return {
+        ...item,
+        index: seqIndex,
+        code: seqCode,
+      };
+    });
   }, [customItems, customOrder, deletedIds]);
 
   // Return strictly the 8 official categories requested, plus any new custom categories created
@@ -584,15 +598,19 @@ export function getActiveWebsiteProducts(): (CatalogProduct & {
   const customItems = readCustomCatalogItems();
   const customPrices = readCustomPrices();
   const customOrder = readCatalogOrder();
+  const deletedIds = readDeletedProductIds();
   const defaultList = rawCatalogData as CatalogProduct[];
   const map = new Map<string, CatalogProduct>();
+  const deletedSet = new Set(deletedIds);
 
   for (const item of defaultList) {
+    if (deletedSet.has(item.id)) continue;
     const normalizedCat = OLD_CATEGORY_MAP[item.category] || item.category;
     map.set(item.id, { ...item, category: normalizedCat, isActive: true });
   }
 
   for (const custom of customItems) {
+    if (deletedSet.has(custom.id)) continue;
     const normalizedCat = OLD_CATEGORY_MAP[custom.category] || custom.category;
     map.set(custom.id, { ...(map.get(custom.id) || {}), ...custom, category: normalizedCat });
   }
@@ -612,11 +630,15 @@ export function getActiveWebsiteProducts(): (CatalogProduct & {
     items.sort((a, b) => (a.index || 999) - (b.index || 999));
   }
 
-  return items.map((prod) => {
+  return items.map((prod, idx) => {
+    const seqIndex = idx + 1;
+    const seqCode = `ST-WC-${String(seqIndex).padStart(3, "0")}`;
     const activePrice =
-      customPrices[prod.id] || getBenchmarkPrice(prod.category, prod.stoneType, prod.index || 1);
+      customPrices[prod.id] || getBenchmarkPrice(prod.category, prod.stoneType, seqIndex);
     return {
       ...prod,
+      index: seqIndex,
+      code: seqCode,
       activePrice,
     };
   });

@@ -196,6 +196,7 @@ export function WebsiteProductsBackend() {
       return (
         p.name.toLowerCase().includes(q) ||
         p.id.toLowerCase().includes(q) ||
+        (p.code && p.code.toLowerCase().includes(q)) ||
         p.stoneType.toLowerCase().includes(q) ||
         p.category.toLowerCase().includes(q)
       );
@@ -326,7 +327,7 @@ export function WebsiteProductsBackend() {
       });
 
       toast.success(
-        `Updated "${formName}" (${editTarget.id}) — synchronized with website and ERP quotes/inventory!`,
+        `Updated "${formName}" (${editTarget.code || editTarget.id}) — synchronized with website and ERP quotes/inventory!`,
       );
       setEditTarget(null);
     } catch (err: unknown) {
@@ -572,7 +573,8 @@ export function WebsiteProductsBackend() {
                   const isBeingDragged = draggedProductId === p.id;
                   const isOver = dragOverProductId === p.id;
                   const globalIndex =
-                    pageSize === "all" ? idx + 1 : (page - 1) * (pageSize as number) + idx + 1;
+                    p.index ||
+                    (pageSize === "all" ? idx + 1 : (page - 1) * (pageSize as number) + idx + 1);
 
                   return (
                     <tr
@@ -662,7 +664,7 @@ export function WebsiteProductsBackend() {
                       <td className="py-2 px-3">
                         <div className="font-semibold text-foreground">{p.name}</div>
                         <div className="text-[10px] font-mono text-cyan-600 dark:text-cyan-400">
-                          {p.id}
+                          {p.code || p.id}
                         </div>
                       </td>
                       <td className="py-2 px-3">
@@ -707,7 +709,7 @@ export function WebsiteProductsBackend() {
                                 onClick={async () => {
                                   if (
                                     window.confirm(
-                                      `Are you sure you want to delete "${p.name}" (${p.id}) from the product catalog?\n\nThis will remove it from the website and software product list.`,
+                                      `Are you sure you want to delete "${p.name}" (${p.code || p.id}) from the product catalog?\n\nThis will remove it from the website and software product list.`,
                                     )
                                   ) {
                                     await deleteProduct(p.id);
@@ -1000,7 +1002,7 @@ export function WebsiteProductsBackend() {
                     Edit Website Product &amp; Sync Software-Wide
                   </DialogTitle>
                   <Badge variant="outline" className="font-mono text-xs">
-                    {editTarget.id}
+                    {editTarget.code || editTarget.id}
                   </Badge>
                 </div>
                 <DialogDescription>
@@ -1013,7 +1015,7 @@ export function WebsiteProductsBackend() {
               <ProductImageZoomPreview
                 src={formImage.trim() || editTarget.image}
                 alt={formName || editTarget.name}
-                id={editTarget.id}
+                id={editTarget.code || editTarget.id}
               />
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
@@ -1172,7 +1174,7 @@ export function WebsiteProductsBackend() {
               {hoveredProduct.product.name}
             </div>
             <div className="text-[10px] text-stone-300 font-mono flex items-center justify-between mt-1">
-              <span>{hoveredProduct.product.id}</span>
+              <span>{hoveredProduct.product.code || hoveredProduct.product.id}</span>
               <span className="bg-stone-800 px-1.5 py-0.5 rounded text-cyan-400 font-sans">
                 {hoveredProduct.product.category}
               </span>

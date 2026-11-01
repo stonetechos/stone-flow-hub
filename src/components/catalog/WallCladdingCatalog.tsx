@@ -128,6 +128,7 @@ export function WallCladdingCatalog({
       return (
         item.name.toLowerCase().includes(q) ||
         item.id.toLowerCase().includes(q) ||
+        (item.code && item.code.toLowerCase().includes(q)) ||
         item.stoneType.toLowerCase().includes(q) ||
         item.category.toLowerCase().includes(q) ||
         (p.badge && p.badge.toLowerCase().includes(q)) ||
@@ -195,6 +196,7 @@ export function WallCladdingCatalog({
       const p = getPrice(item.id, item.category, item.stoneType, item.index);
       setPriceEditTarget({
         id: item.id,
+        code: item.code,
         name: item.name,
         image: item.image,
         category: item.category,
@@ -208,8 +210,9 @@ export function WallCladdingCatalog({
 
   const handleWhatsAppInquiry = (item: WallCladdingItem) => {
     const p = getPrice(item.id, item.category, item.stoneType, item.index);
+    const itemCode = item.code || item.id;
     const text = encodeURIComponent(
-      `Hello Stone Tech Atelier,\n\nI am interested in your Natural Stone Wall Cladding pattern:\n*${item.name}* (Code: ${item.id})\n*Category:* ${item.category}\n*Stone:* ${item.stoneType}\n*Standard Relief:* ${item.thickness}\n*Catalogue Price:* ${p.currency} ${p.price} / ${p.unit}\n\nPlease share availability, project discount, and freight estimate.\nReference URL: https://stonetech.in#cladding-${item.id}`,
+      `Hello Stone Tech Atelier,\n\nI am interested in your Natural Stone Wall Cladding pattern:\n*${item.name}* (Code: ${itemCode})\n*Category:* ${item.category}\n*Stone:* ${item.stoneType}\n*Standard Relief:* ${item.thickness}\n*Catalogue Price:* ${p.currency} ${p.price} / ${p.unit}\n\nPlease share availability, project discount, and freight estimate.\nReference URL: https://stonetech.in#cladding-${item.id}`,
     );
     window.open(`https://wa.me/919414161129?text=${text}`, "_blank");
   };
@@ -489,7 +492,7 @@ export function WallCladdingCatalog({
 
                     {/* Subtle Top-Right Code Badge */}
                     <div className="absolute top-1.5 right-1.5 bg-black/60 backdrop-blur-xs text-white px-1.5 py-0.5 rounded-md text-[9px] font-mono font-bold shadow-xs pointer-events-none z-10">
-                      {item.id}
+                      {item.code || item.id}
                     </div>
 
                     {/* Subtle dark gradient overlay on hover — EXACT SAME as Live Installations */}
@@ -607,7 +610,7 @@ export function WallCladdingCatalog({
                       className="max-h-[72vh] w-auto h-auto max-w-full object-contain rounded-xl shadow-2xl select-none"
                     />
                     <div className="absolute bottom-3 left-3 bg-black/75 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/15 text-[10.5px] font-mono text-cyan-300 font-bold pointer-events-none">
-                      {lightboxTarget.id}
+                      {lightboxTarget.code || lightboxTarget.id}
                     </div>
 
                     <button
@@ -762,7 +765,7 @@ export function WallCladdingCatalog({
             />
             <div className="mt-3 text-center text-white/90">
               <div className="text-sm font-bold">
-                {lightboxTarget.name} ({lightboxTarget.id})
+                {lightboxTarget.name} ({lightboxTarget.code || lightboxTarget.id})
               </div>
               <div className="text-xs text-white/60">
                 {lightboxTarget.category} · {lightboxTarget.stoneType} · {lightboxTarget.thickness}

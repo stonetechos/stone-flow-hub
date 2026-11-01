@@ -34,6 +34,7 @@ import type { AttachedProductPrice } from "@/lib/catalog/product-prices";
 
 export interface PatternPriceTarget {
   id: string;
+  code?: string;
   name: string;
   image: string;
   category: string;
@@ -159,7 +160,7 @@ export function AttachPriceDialog({
               loading="lazy"
             />
             <div className="absolute top-1 left-1 bg-black/75 px-1 py-0.5 rounded text-[9px] font-mono text-cyan-300">
-              {target.id}
+              {target.code || target.id}
             </div>
           </div>
           <div className="min-w-0 flex-1">
