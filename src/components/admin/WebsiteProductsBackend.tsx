@@ -16,6 +16,9 @@ import {
   Eye,
   AlertCircle,
   ShieldCheck,
+  GripVertical,
+  ArrowUpDown,
+  RotateCcw,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -55,6 +58,8 @@ export function WebsiteProductsBackend() {
     updateProduct,
     addProduct,
     deleteProduct,
+    reorderProducts,
+    resetOrder,
   } = useWebsiteCatalog();
 
   const [search, setSearch] = useState("");
@@ -62,6 +67,10 @@ export function WebsiteProductsBackend() {
   const [selectedStoneType, setSelectedStoneType] = useState<string>("all");
   const [page, setPage] = useState(1);
   const pageSize = 15;
+
+  // Drag and drop state
+  const [draggedProductId, setDraggedProductId] = useState<string | null>(null);
+  const [dragOverProductId, setDragOverProductId] = useState<string | null>(null);
 
   // Modals state
   const [createOpen, setCreateOpen] = useState(false);
@@ -303,6 +312,27 @@ export function WebsiteProductsBackend() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          {/* Reset Order Button if custom ordering applied */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              if (
+                window.confirm(
+                  "Reset product order back to the default catalog benchmark sequence?",
+                )
+              ) {
+                await resetOrder();
+                toast.success("Product order reset to standard catalog sequence");
+              }
+            }}
+            className="h-9 text-xs gap-1.5 text-muted-foreground hover:text-foreground"
+            title="Reset drag-and-drop order to default sequence"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            <span className="hidden md:inline">Reset Order</span>
+          </Button>
+
           {/* Category Dropdown */}
           <Select
             value={selectedCategory}
@@ -357,6 +387,12 @@ export function WebsiteProductsBackend() {
           <table className="w-full text-xs text-left">
             <thead className="bg-muted/70 text-muted-foreground font-semibold border-b border-border">
               <tr>
+                {isSuperAdmin && (
+                  <th
+                    className="py-2.5 px-2 w-8 text-center"
+                    title="Drag and drop to arrange sequence"
+                  ></th>
+                )}
                 <th className="py-2.5 px-3 w-14">Image</th>
                 <th className="py-2.5 px-3">Product Name &amp; Code</th>
                 <th className="py-2.5 px-3">Category</th>
@@ -370,21 +406,83 @@ export function WebsiteProductsBackend() {
             <tbody className="divide-y divide-border">
               {paginatedProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-muted-foreground">
+                  <td
+                    colSpan={isSuperAdmin ? 9 : 8}
+                    className="py-8 text-center text-muted-foreground"
+                  >
                     No products found matching the search criteria.
                   </td>
                 </tr>
               ) : (
-                paginatedProducts.map((p) => {
+                paginatedProducts.map((p, idx) => {
                   const priceInfo = getProductPrice(p);
+                  const isBeingDragged = draggedProductId === p.id;
+                  const isOver = dragOverProductId === p.id;
+
                   return (
-                    <tr key={p.id} className="hover:bg-muted/30 transition-colors">
+                    <tr
+                      key={p.id}
+                      draggable={isSuperAdmin}
+                      onDragStart={(e) => {
+                        if (!isSuperAdmin) return;
+                        setDraggedProductId(p.id);
+                        e.dataTransfer.effectAllowed = "move";
+                        e.dataTransfer.setData("text/plain", p.id);
+                      }}
+                      onDragOver={(e) => {
+                        if (!isSuperAdmin || !draggedProductId) return;
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = "move";
+                        if (dragOverProductId !== p.id) {
+                          setDragOverProductId(p.id);
+                        }
+                      }}
+                      onDragLeave={() => {
+                        if (dragOverProductId === p.id) {
+                          setDragOverProductId(null);
+                        }
+                      }}
+                      onDrop={async (e) => {
+                        e.preventDefault();
+                        if (!isSuperAdmin || !draggedProductId) return;
+                        const sourceId = draggedProductId;
+                        const targetId = p.id;
+                        setDraggedProductId(null);
+                        setDragOverProductId(null);
+
+                        if (sourceId !== targetId) {
+                          await reorderProducts(sourceId, targetId);
+                          toast.success(`Moved product position successfully`);
+                        }
+                      }}
+                      onDragEnd={() => {
+                        setDraggedProductId(null);
+                        setDragOverProductId(null);
+                      }}
+                      className={`hover:bg-muted/30 transition-colors ${
+                        isBeingDragged ? "opacity-40 bg-muted/50" : ""
+                      } ${
+                        isOver
+                          ? "border-t-2 border-t-cyan-500 bg-cyan-50/20 dark:bg-cyan-950/20 shadow-xs"
+                          : ""
+                      }`}
+                    >
+                      {isSuperAdmin && (
+                        <td className="py-2 px-1 text-center align-middle cursor-grab active:cursor-grabbing text-muted-foreground hover:text-cyan-600">
+                          <div
+                            className="flex items-center justify-center h-full"
+                            title="Click & hold to drag up or down"
+                          >
+                            <GripVertical className="h-4 w-4" />
+                          </div>
+                        </td>
+                      )}
                       <td className="py-2 px-3">
                         <div className="relative h-10 w-14 rounded overflow-hidden border border-border bg-stone-900 shrink-0">
                           <img
                             src={p.image}
                             alt={p.name}
-                            className="h-full w-full object-cover"
+                            className="h-full w-full object-cover pointer-events-none"
                             loading="lazy"
                           />
                         </div>

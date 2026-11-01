@@ -43,7 +43,34 @@ export interface CatalogProduct {
 }
 
 const ITEMS_STORAGE_KEY = "st.catalog.customItems";
+const ORDER_STORAGE_KEY = "st.catalog.order";
 export const ITEMS_EVENT_NAME = "st:catalog-items-changed";
+export const ORDER_EVENT_NAME = "st:catalog-order-changed";
+
+export function readCatalogOrder(): string[] {
+  if (typeof window === "undefined" || !window.localStorage) return [];
+  try {
+    const raw = window.localStorage.getItem(ORDER_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveCatalogOrder(order: string[], syncRemote = true): void {
+  if (typeof window === "undefined" || !window.localStorage) return;
+  try {
+    window.localStorage.setItem(ORDER_STORAGE_KEY, JSON.stringify(order));
+    window.dispatchEvent(new Event(ORDER_EVENT_NAME));
+    if (syncRemote) {
+      upsertSiteSetting("website_catalog_order", order).catch((e) =>
+        console.warn("[catalog-store] remote order sync error:", e),
+      );
+    }
+  } catch {
+    /* ignore */
+  }
+}
 
 export function readCustomCatalogItems(): CatalogProduct[] {
   if (typeof window === "undefined" || !window.localStorage) return [];
@@ -74,6 +101,7 @@ export function useWebsiteCatalog() {
   const [customItems, setCustomItems] = useState<CatalogProduct[]>(readCustomCatalogItems);
   const [customPrices, setCustomPrices] =
     useState<Record<string, AttachedProductPrice>>(readCustomPrices);
+  const [customOrder, setCustomOrder] = useState<string[]>(readCatalogOrder);
   const [isSyncing, setIsSyncing] = useState(false);
 
   // Initial load & remote sync with site_settings
@@ -103,24 +131,37 @@ export function useWebsiteCatalog() {
             settings.website_catalog_prices as unknown as Record<string, AttachedProductPrice>,
           );
         }
+        if (
+          settings.website_catalog_order &&
+          Array.isArray(settings.website_catalog_order) &&
+          settings.website_catalog_order.length > 0
+        ) {
+          saveCatalogOrder(settings.website_catalog_order as string[], false);
+          setCustomOrder(settings.website_catalog_order as string[]);
+        }
       })
       .catch(() => {});
 
     const onItemsChanged = () => setCustomItems(readCustomCatalogItems());
     const onPricesChanged = () => setCustomPrices(readCustomPrices());
+    const onOrderChanged = () => setCustomOrder(readCatalogOrder());
 
     window.addEventListener(ITEMS_EVENT_NAME, onItemsChanged);
     window.addEventListener("st:catalog-prices-changed", onPricesChanged);
+    window.addEventListener(ORDER_EVENT_NAME, onOrderChanged);
     window.addEventListener("storage", onItemsChanged);
+    window.addEventListener("storage", onOrderChanged);
 
     return () => {
       window.removeEventListener(ITEMS_EVENT_NAME, onItemsChanged);
       window.removeEventListener("st:catalog-prices-changed", onPricesChanged);
+      window.removeEventListener(ORDER_EVENT_NAME, onOrderChanged);
       window.removeEventListener("storage", onItemsChanged);
+      window.removeEventListener("storage", onOrderChanged);
     };
   }, []);
 
-  // Merge default 150 items with any custom items/modifications
+  // Merge default 150 items with any custom items/modifications and apply custom sequence/drag order
   const allProducts = useMemo<CatalogProduct[]>(() => {
     const defaultList = rawCatalogData as CatalogProduct[];
     const map = new Map<string, CatalogProduct>();
@@ -135,8 +176,22 @@ export function useWebsiteCatalog() {
       map.set(custom.id, { ...(map.get(custom.id) || {}), ...custom });
     }
 
-    return Array.from(map.values()).sort((a, b) => (a.index || 999) - (b.index || 999));
-  }, [customItems]);
+    const items = Array.from(map.values());
+
+    // If a custom drag-and-drop order is set, sort accordingly
+    if (customOrder && customOrder.length > 0) {
+      const orderMap = new Map<string, number>();
+      customOrder.forEach((id, idx) => orderMap.set(id, idx));
+
+      return items.sort((a, b) => {
+        const orderA = orderMap.has(a.id) ? orderMap.get(a.id)! : 10000 + (a.index || 999);
+        const orderB = orderMap.has(b.id) ? orderMap.get(b.id)! : 10000 + (b.index || 999);
+        return orderA - orderB;
+      });
+    }
+
+    return items.sort((a, b) => (a.index || 999) - (b.index || 999));
+  }, [customItems, customOrder]);
 
   // Extract all categories dynamically
   const categories = useMemo(() => {
@@ -329,6 +384,36 @@ export function useWebsiteCatalog() {
     await upsertSiteSetting("website_catalog_items", updated);
   }, []);
 
+  // Reorder product sequence (drag & drop reordering)
+  const reorderProducts = useCallback(
+    async (sourceId: string, targetId: string) => {
+      const currentList = [...allProducts];
+      const sourceIndex = currentList.findIndex((p) => p.id === sourceId);
+      const targetIndex = currentList.findIndex((p) => p.id === targetId);
+
+      if (sourceIndex === -1 || targetIndex === -1 || sourceIndex === targetIndex) {
+        return;
+      }
+
+      // Remove source item and insert at target position
+      const [movedItem] = currentList.splice(sourceIndex, 1);
+      currentList.splice(targetIndex, 0, movedItem);
+
+      // New ordered ID sequence
+      const newOrderIds = currentList.map((p) => p.id);
+
+      saveCatalogOrder(newOrderIds, true);
+      setCustomOrder(newOrderIds);
+    },
+    [allProducts],
+  );
+
+  // Reset order to factory benchmark sequence
+  const resetOrder = useCallback(async () => {
+    saveCatalogOrder([], true);
+    setCustomOrder([]);
+  }, []);
+
   return {
     products: allProducts,
     categories,
@@ -337,6 +422,8 @@ export function useWebsiteCatalog() {
     updateProduct,
     addProduct,
     deleteProduct,
+    reorderProducts,
+    resetOrder,
   };
 }
 
@@ -349,6 +436,7 @@ export function getActiveWebsiteProducts(): (CatalogProduct & {
 })[] {
   const customItems = readCustomCatalogItems();
   const customPrices = readCustomPrices();
+  const customOrder = readCatalogOrder();
   const defaultList = rawCatalogData as CatalogProduct[];
   const map = new Map<string, CatalogProduct>();
 
@@ -360,15 +448,27 @@ export function getActiveWebsiteProducts(): (CatalogProduct & {
     map.set(custom.id, { ...(map.get(custom.id) || {}), ...custom });
   }
 
-  return Array.from(map.values())
-    .filter((p) => p.isActive !== false)
-    .sort((a, b) => (a.index || 999) - (b.index || 999))
-    .map((prod) => {
-      const activePrice =
-        customPrices[prod.id] || getBenchmarkPrice(prod.category, prod.stoneType, prod.index || 1);
-      return {
-        ...prod,
-        activePrice,
-      };
+  const items = Array.from(map.values()).filter((p) => p.isActive !== false);
+
+  if (customOrder && customOrder.length > 0) {
+    const orderMap = new Map<string, number>();
+    customOrder.forEach((id, idx) => orderMap.set(id, idx));
+
+    items.sort((a, b) => {
+      const orderA = orderMap.has(a.id) ? orderMap.get(a.id)! : 10000 + (a.index || 999);
+      const orderB = orderMap.has(b.id) ? orderMap.get(b.id)! : 10000 + (b.index || 999);
+      return orderA - orderB;
     });
+  } else {
+    items.sort((a, b) => (a.index || 999) - (b.index || 999));
+  }
+
+  return items.map((prod) => {
+    const activePrice =
+      customPrices[prod.id] || getBenchmarkPrice(prod.category, prod.stoneType, prod.index || 1);
+    return {
+      ...prod,
+      activePrice,
+    };
+  });
 }
