@@ -480,13 +480,6 @@ export function WallCladdingCatalog({
                       {item.id}
                     </div>
 
-                    {/* Promotional Badge (if any, e.g. "INTERLOCKING") */}
-                    {price.badge && (
-                      <div className="absolute top-1.5 left-1.5 bg-amber-500/90 text-amber-950 backdrop-blur-xs px-1.5 py-0.5 rounded-md text-[8.5px] font-bold shadow-xs uppercase pointer-events-none z-10">
-                        {price.badge}
-                      </div>
-                    )}
-
                     {/* Subtle dark gradient overlay on hover — EXACT SAME as Live Installations */}
                     <div className="absolute inset-0 bg-black/65 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-between p-2 text-white z-10">
                       <div className="flex items-center justify-between text-[10px]">
@@ -601,11 +594,6 @@ export function WallCladdingCatalog({
                       alt={lightboxTarget.name}
                       className="max-h-[72vh] w-auto h-auto max-w-full object-contain rounded-xl shadow-2xl select-none"
                     />
-                    {price.badge && (
-                      <Badge className="absolute top-3 left-3 bg-amber-500 text-amber-950 font-bold text-xs uppercase shadow-md pointer-events-none">
-                        {price.badge}
-                      </Badge>
-                    )}
                     <div className="absolute bottom-3 left-3 bg-black/75 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/15 text-[10.5px] font-mono text-cyan-300 font-bold pointer-events-none">
                       {lightboxTarget.id}
                     </div>
