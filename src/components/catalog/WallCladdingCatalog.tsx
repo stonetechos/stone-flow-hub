@@ -516,7 +516,7 @@ export function WallCladdingCatalog({
         </div>
       </div>
 
-      {/* Main Pattern Grid */}
+      {/* Main Pattern Grid — Same Square Box Luxury Format as Live Installations & Executed Works */}
       {filteredItems.length === 0 ? (
         <div className="text-center py-16 border rounded-2xl bg-muted/20 space-y-3">
           <Layers className="h-10 w-10 text-muted-foreground mx-auto" />
@@ -538,146 +538,86 @@ export function WallCladdingCatalog({
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
           {displayedItems.map((item) => {
             const price = getPrice(item.id, item.category, item.stoneType, item.index);
 
             return (
               <div
                 key={item.id}
-                className="group relative rounded-xl border border-border/80 bg-card overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col"
+                onClick={() => setLightboxTarget(item)}
+                className="group relative aspect-square rounded-2xl overflow-hidden cursor-pointer bg-stone-100 dark:bg-stone-900 border border-border/70 hover:border-amber-500/70 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
               >
-                {/* Image Container with Super Admin Overlaid Price Badge */}
-                <div className="relative aspect-[16/10] overflow-hidden bg-stone-900">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    loading="lazy"
-                  />
+                {/* Full Box Cover Image with Smooth Zoom */}
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-108"
+                  loading="lazy"
+                />
 
-                  {/* Pattern Code Tag (Top Left) */}
-                  <div className="absolute top-2.5 left-2.5 z-10 flex items-center gap-1.5 bg-black/75 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/15 text-[10.5px] font-mono font-semibold text-cyan-300 shadow-md">
+                {/* Floating Top Header Badges */}
+                <div className="relative z-10 p-2 sm:p-2.5 flex items-center justify-between pointer-events-none">
+                  <div className="flex items-center gap-1.5 bg-black/75 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/15 text-[10px] font-mono font-bold text-cyan-300 shadow-md">
                     <span>{item.id}</span>
                   </div>
 
-                  {/* Promotional Image Badge (Top Right) */}
-                  {price.badge && (
-                    <div className="absolute top-2.5 right-2.5 z-10 bg-amber-500/90 text-amber-950 backdrop-blur-md px-2 py-0.5 rounded-md text-[10px] font-bold shadow-md uppercase tracking-wider">
+                  {price.badge ? (
+                    <div className="bg-amber-500/90 text-amber-950 backdrop-blur-md px-2 py-0.5 rounded-md text-[9.5px] font-bold shadow-md uppercase tracking-wider">
                       {price.badge}
                     </div>
+                  ) : (
+                    <div className="bg-black/60 text-white backdrop-blur-md px-2 py-0.5 rounded-md text-[9.5px] font-semibold shadow-md">
+                      {item.stoneType}
+                    </div>
                   )}
-
-                  {/* High-Res Lightbox Trigger (Center on Hover) */}
-                  <button
-                    type="button"
-                    onClick={() => setLightboxTarget(item)}
-                    aria-label={`Inspect ${item.name}`}
-                    className="absolute inset-0 z-1 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/40 backdrop-blur-[1px] transition-all duration-200 cursor-pointer"
-                  >
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 text-slate-900 text-xs font-semibold shadow-lg hover:scale-105 transition-transform">
-                      <Maximize2 className="h-3.5 w-3.5 text-primary" />
-                      <span>Inspect Texture</span>
-                    </div>
-                  </button>
-
-                  {/* SUPER ADMIN ATTACHED PRICE OVERLAY (Bottom Banner directly on the image) */}
-                  <div
-                    className={cn(
-                      "absolute bottom-0 inset-x-0 z-10 px-3 py-2 bg-gradient-to-t from-black/95 via-black/80 to-transparent flex items-end justify-between backdrop-blur-[2px]",
-                      isSuperAdmin && "cursor-pointer hover:bg-black/90 transition-colors",
-                    )}
-                    onClick={() => {
-                      if (isSuperAdmin) {
-                        handleEditPrice(item);
-                      }
-                    }}
-                    title={isSuperAdmin ? "Click to write & attach price to this image" : undefined}
-                  >
-                    <div className="text-white min-w-0">
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-base font-extrabold text-cyan-300 tracking-tight drop-shadow-sm">
-                          {price.currency} {price.price}
-                        </span>
-                        <span className="text-[11px] text-slate-300 font-medium">
-                          / {price.unit}
-                        </span>
-                        {price.mrp && (
-                          <span className="text-[10px] text-slate-400 line-through">
-                            {price.currency} {price.mrp}
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-[9.5px] text-slate-300 truncate max-w-[180px]">
-                        {price.leadTime || "Quarry Direct Dispatch"}
-                      </div>
-                    </div>
-
-                    {/* Super Admin Edit Trigger Button */}
-                    {isSuperAdmin && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEditPrice(item);
-                        }}
-                        aria-label={`Edit price for ${item.name}`}
-                        className="flex items-center gap-1 px-2 py-1 rounded bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-semibold shadow-xs shrink-0 transition-transform active:scale-95"
-                      >
-                        <Pencil className="h-3 w-3" />
-                        <span>Edit Price</span>
-                      </button>
-                    )}
-                  </div>
                 </div>
 
-                {/* Card Information */}
-                <div className="p-3.5 flex-1 flex flex-col justify-between space-y-3">
-                  <div className="space-y-1">
-                    <div className="text-[11px] font-medium text-primary flex items-center justify-between">
-                      <span>{item.category}</span>
-                      <span className="text-muted-foreground">{item.thickness}</span>
+                {/* Permanent Bottom Dark Gradient Overlay with Title & Attached Price */}
+                <div className="relative z-10 p-2.5 sm:p-3 bg-gradient-to-t from-black/95 via-black/70 to-transparent flex flex-col justify-end space-y-1 text-white">
+                  <div className="flex items-center justify-between gap-1 text-[10px] text-cyan-300/90 font-medium">
+                    <span className="truncate">{item.category}</span>
+                    <span className="text-white/60 shrink-0">{item.thickness?.split(" ")[0]}</span>
+                  </div>
+
+                  <h3 className="text-xs sm:text-sm font-bold text-white line-clamp-1 drop-shadow-sm group-hover:text-amber-300 transition-colors">
+                    {item.name}
+                  </h3>
+
+                  <div className="flex items-center justify-between pt-0.5">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-xs sm:text-sm font-extrabold text-emerald-400">
+                        {price.currency} {price.price}
+                      </span>
+                      <span className="text-[10px] text-white/70">/ {price.unit}</span>
+                      {price.mrp && (
+                        <span className="text-[9px] text-white/40 line-through ml-0.5">
+                          {price.currency} {price.mrp}
+                        </span>
+                      )}
                     </div>
-                    <h3 className="text-sm font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
-                      {item.name}
-                    </h3>
-                    <p className="text-xs text-muted-foreground line-clamp-1">
-                      {item.stoneType} · {item.finishes[0]}
-                    </p>
-                  </div>
 
-                  {/* Standard Sizes */}
-                  <div className="text-[11px] text-muted-foreground bg-muted/50 p-2 rounded-lg border border-border/50">
-                    <span className="font-semibold text-foreground">Standard: </span>
-                    <span>{item.standardSizes}</span>
-                  </div>
-
-                  {/* Card Action Buttons */}
-                  <div className="flex items-center gap-2 pt-1 border-t border-border/60">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setLightboxTarget(item)}
-                      className="flex-1 h-8 text-[11px] px-2"
-                    >
-                      <Eye className="h-3 w-3 mr-1" />
-                      Specs
-                    </Button>
-
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        const p = getPrice(item.id, item.category, item.stoneType, item.index);
-                        if (onSelectPattern) {
-                          onSelectPattern(item, p);
-                        } else {
-                          handleWhatsAppInquiry(item);
-                        }
-                      }}
-                      className="flex-1 h-8 text-[11px] px-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
-                    >
-                      <span>Request Quote</span>
-                    </Button>
+                    {/* Hover Action Badges */}
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {isSuperAdmin && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditPrice(item);
+                          }}
+                          className="px-1.5 py-0.5 rounded bg-cyan-600 hover:bg-cyan-500 text-white text-[9.5px] font-bold shadow-xs flex items-center gap-1"
+                          title="Super Admin: Edit Price"
+                        >
+                          <Pencil className="h-2.5 w-2.5" />
+                          <span>Price</span>
+                        </button>
+                      )}
+                      <div className="flex items-center gap-1 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-2 py-0.5 rounded text-[10px] font-semibold">
+                        <Eye className="h-3 w-3" />
+                        <span>Specs</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -928,6 +868,26 @@ export function WallCladdingCatalog({
                   >
                     Close
                   </Button>
+                  {onSelectPattern && (
+                    <Button
+                      onClick={() => {
+                        const p = getPrice(
+                          lightboxTarget.id,
+                          lightboxTarget.category,
+                          lightboxTarget.stoneType,
+                          lightboxTarget.index,
+                        );
+                        onSelectPattern(lightboxTarget, p);
+                        setLightboxTarget(null);
+                        toast.success(
+                          `Selected "${lightboxTarget.name}" for your estimate request!`,
+                        );
+                      }}
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs flex-1 sm:flex-none"
+                    >
+                      <span>Add to Estimate</span>
+                    </Button>
+                  )}
                   <Button
                     onClick={() => handleWhatsAppInquiry(lightboxTarget)}
                     className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs flex-1 sm:flex-none"

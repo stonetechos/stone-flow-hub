@@ -85,15 +85,23 @@ export function useWebsiteCatalog() {
           Array.isArray(settings.website_catalog_items) &&
           settings.website_catalog_items.length > 0
         ) {
-          saveCustomCatalogItems(settings.website_catalog_items, false);
-          setCustomItems(settings.website_catalog_items);
+          saveCustomCatalogItems(
+            settings.website_catalog_items as unknown as CatalogProduct[],
+            false,
+          );
+          setCustomItems(settings.website_catalog_items as unknown as CatalogProduct[]);
         }
         if (
           settings.website_catalog_prices &&
           typeof settings.website_catalog_prices === "object"
         ) {
-          saveCustomPrices(settings.website_catalog_prices, false);
-          setCustomPrices(settings.website_catalog_prices);
+          saveCustomPrices(
+            settings.website_catalog_prices as unknown as Record<string, AttachedProductPrice>,
+            false,
+          );
+          setCustomPrices(
+            settings.website_catalog_prices as unknown as Record<string, AttachedProductPrice>,
+          );
         }
       })
       .catch(() => {});

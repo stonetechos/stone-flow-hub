@@ -56,9 +56,16 @@ export function getBenchmarkPrice(
   } else if (catLower.includes("mosaic") || catLower.includes("pebble")) {
     basePrice = 590;
     badge = "Mesh-Mounted Mosaic";
+  } else if (
+    catLower.includes("interlock") ||
+    catLower.includes("z-panel") ||
+    catLower.includes("finger")
+  ) {
+    basePrice = 520;
+    badge = "Interlocking Z-Panel";
   } else if (catLower.includes("ashlar")) {
     basePrice = 480;
-    badge = "Calibrated Interlocking";
+    badge = "Coursed Ashlar Masonry";
   } else {
     // Linear Ledger / Split face
     basePrice = 420;
@@ -148,7 +155,14 @@ export function useAttachedProductPrices() {
           Object.keys(settings.website_catalog_prices).length > 0
         ) {
           const local = readCustomPrices();
-          const merged = { ...local, ...settings.website_catalog_prices };
+          const remotePrices = settings.website_catalog_prices as Record<
+            string,
+            AttachedProductPrice
+          >;
+          const merged: Record<string, AttachedProductPrice> = {
+            ...local,
+            ...remotePrices,
+          };
           saveCustomPrices(merged, false);
           setCustomPrices(merged);
         }
