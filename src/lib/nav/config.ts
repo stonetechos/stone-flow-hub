@@ -47,6 +47,7 @@ import type { AppRole } from "@/lib/admin/users";
 
 export type NavGroupId =
   | "overview"
+  | "website"
   | "items"
   | "sales"
   | "purchase"
@@ -71,6 +72,13 @@ export interface NavGroupDef {
 // Order here is the sidebar's group order (Zoho Books 11-module hierarchy).
 export const NAV_GROUPS: ReadonlyArray<NavGroupDef> = [
   { id: "overview", label: "Home", icon: LayoutDashboard, to: "/dashboard" },
+  {
+    id: "website",
+    label: "Website Backend & CMS",
+    icon: Globe,
+    to: "/admin/website",
+    allowedRoles: ["admin", "super_admin"],
+  },
   {
     id: "items",
     label: "Items",
@@ -180,14 +188,22 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     group: "overview",
   },
 
-  // 2. Items & Inventory
+  // 1.5. Website Backend & CMS
   {
     id: "website-backend",
     to: "/admin/website",
     label: "Website Backend & CMS",
     icon: Globe,
+    group: "website",
+  },
+
+  // 2. Items & Inventory
+  {
+    id: "website-backend-items",
+    to: "/admin/website",
+    label: "Website Backend & CMS",
+    icon: Globe,
     group: "items",
-    allowedRoles: ["admin", "super_admin"],
   },
   {
     id: "products",
@@ -540,7 +556,6 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     label: "Website Backend & CMS",
     icon: Globe,
     group: "settings",
-    allowedRoles: ["admin", "super_admin"],
   },
   {
     id: "settings",
