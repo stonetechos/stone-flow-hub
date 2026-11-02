@@ -49,6 +49,11 @@ export const Route = createFileRoute("/careers")({
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://stonetech.in/careers" },
+      { property: "og:image", content: "https://stonetech.in/branding/careers-og-banner.png" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: "https://stonetech.in/branding/careers-og-banner.png" },
     ],
   }),
   component: CareersPage,
@@ -179,11 +184,19 @@ function CareersPage() {
             >
               Apply Online Now <ChevronRight className="h-4 w-4" />
             </a>
+            <a
+              href="/branding/hiring-story-flyer.png"
+              download="Stone-Tech-Hiring-Flyer.png"
+              className="h-10 px-4 rounded-lg border border-border bg-card text-xs font-semibold inline-flex items-center gap-1.5 hover:bg-muted/40 transition-colors shadow-sm"
+            >
+              <Sparkles className="h-4 w-4 text-amber-500" />
+              <span>Download Story Flyer (Image)</span>
+            </a>
             <Button
               variant="outline"
               size="default"
               onClick={() => copyShareLink(undefined, "share")}
-              className="h-10 px-4 text-xs font-semibold gap-1.5 border-border bg-card"
+              className="h-10 px-4 text-xs font-semibold gap-1.5 border-border bg-card shadow-sm"
             >
               {copiedLink ? (
                 <Check className="h-4 w-4 text-emerald-500" />

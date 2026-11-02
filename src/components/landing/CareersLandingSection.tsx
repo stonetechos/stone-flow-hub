@@ -29,6 +29,7 @@ import { toast } from "sonner";
 
 export function CareersLandingSection() {
   const [selectedJobForModal, setSelectedJobForModal] = useState<JobPosting | null>(null);
+  const [showPosterPreview, setShowPosterPreview] = useState(false);
 
   const applyViaWhatsApp = (job: JobPosting) => {
     const text = encodeURIComponent(
@@ -64,6 +65,24 @@ export function CareersLandingSection() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
+          <div className="flex justify-center mb-1">
+            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-card border border-border/80 shadow-sm">
+              <img
+                src="/branding/stone-tech-logo.png"
+                alt="Stone Tech Logo"
+                className="h-8 w-8 object-contain"
+              />
+              <div className="text-left">
+                <div className="font-extrabold text-xs tracking-wider text-foreground">
+                  STONE TECH
+                </div>
+                <div className="text-[10px] text-muted-foreground uppercase tracking-widest leading-none">
+                  Architectural Stone Atelier
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-xs font-bold uppercase tracking-wider">
             <Briefcase className="h-3.5 w-3.5" />
             <span>We Are Actively Hiring in Ahmedabad</span>
@@ -78,6 +97,27 @@ export function CareersLandingSection() {
             enthusiastic talent to join our Gota studio and field operations with rewarding growth
             and performance incentives.
           </p>
+
+          {/* Quick Flyer & Share Actions Bar */}
+          <div className="pt-2 flex items-center justify-center gap-2.5 flex-wrap">
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-xs font-semibold gap-1.5 shadow-sm border-primary/30 text-primary hover:bg-primary/5"
+              onClick={() => setShowPosterPreview(true)}
+            >
+              <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+              <span>View Hiring Story Flyer</span>
+            </Button>
+
+            <a
+              href="/branding/hiring-story-flyer.png"
+              download="Stone-Tech-Hiring-Flyer.png"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-md border border-border bg-card hover:bg-muted/40 transition-colors text-foreground"
+            >
+              <span>Download Flyer Image</span>
+            </a>
+          </div>
         </div>
 
         {/* 2 Active Job Cards Grid */}
@@ -272,6 +312,52 @@ export function CareersLandingSection() {
               onCancel={() => setSelectedJobForModal(null)}
             />
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Official Hiring Flyer / Poster Modal */}
+      <Dialog open={showPosterPreview} onOpenChange={setShowPosterPreview}>
+        <DialogContent className="sm:max-w-md max-h-[92vh] overflow-y-auto">
+          <DialogHeader className="border-b border-border/70 pb-3">
+            <DialogTitle className="text-base font-bold flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-amber-500" />
+              <span>Official Stone Tech Hiring Flyer</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Ready to post on WhatsApp Status, Instagram Stories, and Facebook.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-2 space-y-3">
+            <div className="rounded-xl overflow-hidden border border-border shadow-md bg-black">
+              <img
+                src="/branding/hiring-story-flyer.png"
+                alt="Stone Tech Hiring Flyer"
+                className="w-full h-auto object-contain max-h-[55vh] mx-auto"
+              />
+            </div>
+
+            <div className="flex items-center gap-2 pt-1">
+              <Button asChild className="flex-1 font-bold text-xs gap-1.5">
+                <a href="/branding/hiring-story-flyer.png" download="Stone-Tech-Hiring-Flyer.png">
+                  Download Image Flyer
+                </a>
+              </Button>
+              <Button
+                variant="outline"
+                className="text-xs text-emerald-600 gap-1"
+                onClick={() => {
+                  const text = encodeURIComponent(
+                    `*We are hiring at Stone Tech (Gota, Ahmedabad)!* 🏛️\n\n1️⃣ Data Entry Executive (₹12k-15k/mo)\n2️⃣ Field Sales Executive (₹15k-18k/mo + Fuel + Incentives)\n\nApply directly online here:\nhttps://stonetech.in/careers`,
+                  );
+                  window.open(`https://api.whatsapp.com/send?text=${text}`, "_blank");
+                }}
+              >
+                <Send className="h-3 w-3" />
+                <span>Share WhatsApp</span>
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </section>

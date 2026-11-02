@@ -122,12 +122,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover, interactive-widget=resizes-content",
       },
-      { title: "Stone Tech-Architectural Stone Atelier" },
+      { title: "Stone Tech - Architectural Stone Atelier" },
       {
         name: "description",
-        content: "Stone Tech-Architectural Stone Atelier. By Vedora Vision.",
+        content:
+          "Stone Tech - Architectural Stone Atelier, Ahmedabad. Premium Natural Stone, Cladding & Murals.",
       },
-      { name: "author", content: "Vedora Vision" },
+      { name: "author", content: "Stone Tech" },
       // Phase G.10A — PWA foundation. theme_color mirrors the manifest and
       // the branding primary in src/lib/branding/index.ts; background here
       // matches the icon tile so browser chrome doesn't clash with the mark.
@@ -135,20 +136,26 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
-      { name: "apple-mobile-web-app-title", content: "STOS" },
-      { property: "og:title", content: "Stone Tech-Architectural Stone Atelier" },
+      { name: "apple-mobile-web-app-title", content: "Stone Tech" },
+      { property: "og:title", content: "Stone Tech - Architectural Stone Atelier" },
       {
         property: "og:description",
-        content: "Stone Tech-Architectural Stone Atelier. By Vedora Vision.",
+        content:
+          "Stone Tech - Architectural Stone Atelier, Ahmedabad. Premium Natural Stone, Cladding & Murals.",
       },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "Stone Tech" },
+      { property: "og:image", content: "https://stonetech.in/branding/careers-og-banner.png" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Stone Tech-Architectural Stone Atelier" },
+      { name: "twitter:title", content: "Stone Tech - Architectural Stone Atelier" },
       {
         name: "twitter:description",
-        content: "Stone Tech-Architectural Stone Atelier. By Vedora Vision.",
+        content:
+          "Stone Tech - Architectural Stone Atelier, Ahmedabad. Premium Natural Stone, Cladding & Murals.",
       },
+      { name: "twitter:image", content: "https://stonetech.in/branding/careers-og-banner.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
