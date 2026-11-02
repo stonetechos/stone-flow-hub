@@ -1154,14 +1154,6 @@ function HomePage() {
                     </span>
                     <ArrowDown className="h-3.5 w-3.5 transition-transform duration-250 ease-out group-hover:translate-y-1" />
                   </a>
-
-                  <a
-                    href="#wall-cladding-catalogue"
-                    className="group inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 transition-colors"
-                  >
-                    <Sparkles className="h-4 w-4" />
-                    <span>150 Wall Cladding Patterns &amp; Attached Pricing</span>
-                  </a>
                 </div>
               </div>
             </div>
