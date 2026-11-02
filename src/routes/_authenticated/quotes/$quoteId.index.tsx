@@ -1307,6 +1307,7 @@ function QuoteDetailPage() {
           product_id: it.product_id,
           product_name: it.description,
           description: it.description,
+          notes: (it as { notes?: string | null }).notes || null,
           quantity: it.quantity,
           uom: it.unit,
         }))}

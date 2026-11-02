@@ -1,6 +1,10 @@
 import { describe, expect, it } from "bun:test";
 import { isStoneMaterialItem } from "@/lib/quotes/quote-images";
-import type { QuoteSendRfqItem } from "./QuoteSendRfqDialog";
+import {
+  formatRfqItemsSummary,
+  resolveRfqItemDescription,
+  type QuoteSendRfqItem,
+} from "@/lib/rfqs/summary";
 
 describe("QuoteSendRfqDialog - isStoneMaterialItem", () => {
   it("keeps natural stone materials and slabs", () => {
@@ -74,5 +78,72 @@ describe("QuoteSendRfqDialog - isStoneMaterialItem", () => {
     for (const it of transportItems) {
       expect(isStoneMaterialItem(it)).toBe(false);
     }
+  });
+});
+
+describe("QuoteSendRfqDialog - resolveRfqItemDescription & formatRfqItemsSummary", () => {
+  it("resolves manual description from item notes", () => {
+    const item: QuoteSendRfqItem = {
+      id: "item-1",
+      product_name: "Clay Veneers",
+      description: "Clay Veneers",
+      notes: "Hammerstone 8 ft x 4 ft, Light Cool Grey",
+      quantity: 288,
+      unit: "sqft",
+    };
+
+    expect(resolveRfqItemDescription(item)).toBe("Hammerstone 8 ft x 4 ft, Light Cool Grey");
+  });
+
+  it("prioritizes custom user edits over original notes", () => {
+    const item: QuoteSendRfqItem = {
+      id: "item-1",
+      product_name: "Clay Veneers",
+      notes: "Hammerstone 8 ft x 4 ft, Light Cool Grey",
+    };
+
+    expect(resolveRfqItemDescription(item, "Hammerstone 8x4, calibrated 30mm, honed finish")).toBe(
+      "Hammerstone 8x4, calibrated 30mm, honed finish",
+    );
+  });
+
+  it("falls back to description if distinct from catalog product_name", () => {
+    const item: QuoteSendRfqItem = {
+      id: "item-2",
+      product_name: "Sandstone Slabs",
+      description: "Mint Sandstone Rosette 4ft diameter",
+      notes: null,
+    };
+
+    expect(resolveRfqItemDescription(item)).toBe("Mint Sandstone Rosette 4ft diameter");
+  });
+
+  it("formats items summary with manual description and specs for WhatsApp RFQ", () => {
+    const items: QuoteSendRfqItem[] = [
+      {
+        id: "item-1",
+        product_name: "Clay Veneers",
+        description: "Clay Veneers",
+        notes: "Hammerstone 8 ft x 4 ft, Light Cool Grey",
+        quantity: 288,
+        unit: "sqft",
+      },
+      {
+        id: "item-2",
+        product_name: "Mint Sandstone",
+        description: "Mint Sandstone",
+        notes: "3D Origami Pinwheel Faceted Relief, Honed 25mm",
+        quantity: 450,
+        unit: "sqft",
+      },
+    ];
+
+    const summary = formatRfqItemsSummary(items);
+    expect(summary).toContain("• *Clay Veneers* — 288 sqft");
+    expect(summary).toContain("📝 *Description & Specs:* Hammerstone 8 ft x 4 ft, Light Cool Grey");
+    expect(summary).toContain("• *Mint Sandstone* — 450 sqft");
+    expect(summary).toContain(
+      "📝 *Description & Specs:* 3D Origami Pinwheel Faceted Relief, Honed 25mm",
+    );
   });
 });

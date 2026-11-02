@@ -56,6 +56,7 @@ import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { buildWhatsappUrl } from "@/lib/whatsapp";
 import { assignVendorToQuote } from "@/lib/quotes/vendor-assignment";
+import { getQuoteItems } from "@/lib/quotes/api";
 import { listAttachments } from "@/lib/attachments/api";
 import {
   resolveAllQuoteImages,
@@ -64,15 +65,13 @@ import {
 } from "@/lib/quotes/quote-images";
 import { FILES_BUCKET } from "@/lib/constants";
 
-export interface QuoteSendRfqItem {
-  id?: string;
-  product_name?: string | null;
-  description?: string | null;
-  product_id?: string | null;
-  quantity?: number;
-  uom?: string | null;
-  unit?: string | null;
-}
+import {
+  type QuoteSendRfqItem,
+  resolveRfqItemDescription,
+  formatRfqItemsSummary,
+} from "@/lib/rfqs/summary";
+
+export type { QuoteSendRfqItem };
 
 /**
  * Uploads a base64 data URL to Supabase storage (FILES_BUCKET) so it can be previewed/unfurled on WhatsApp
@@ -143,19 +142,19 @@ export function QuoteSendRfqDialog({
   const [notes, setNotes] = useState("");
   const [selectedImageUrl, setSelectedImageUrl] = useState<string>("");
   const [copiedTemplate, setCopiedTemplate] = useState(false);
+  // Manual descriptions / specifications for each line item (allows editing in dialog)
+  const [customDescriptions, setCustomDescriptions] = useState<Record<string, string>>({});
 
   // Fallback query to load quote line items if not supplied directly
   const quoteItemsFallback = useQuery({
     queryKey: ["quote-items-for-rfq-dialog", quoteId],
     queryFn: async (): Promise<QuoteSendRfqItem[]> => {
-      const { data } = await supabase
-        .from("quote_items")
-        .select("id, description, product_id, quantity, unit")
-        .eq("quote_id", quoteId);
-      return (data ?? []).map((row) => ({
+      const qItems = await getQuoteItems(quoteId);
+      return qItems.map((row) => ({
         id: row.id,
         description: row.description,
         product_name: row.description,
+        notes: (row as { notes?: string | null }).notes || null,
         product_id: row.product_id,
         quantity: row.quantity,
         uom: row.unit,
@@ -415,6 +414,20 @@ export function QuoteSendRfqDialog({
     }
   };
 
+  // Helper to get or set line item specs
+  const getItemDesc = (it: QuoteSendRfqItem, idx: number): string => {
+    const itemKey = it.id || String(idx);
+    return resolveRfqItemDescription(it, customDescriptions[itemKey]);
+  };
+
+  const handleUpdateItemDesc = (it: QuoteSendRfqItem, idx: number, val: string) => {
+    const itemKey = it.id || String(idx);
+    setCustomDescriptions((prev) => ({
+      ...prev,
+      [itemKey]: val,
+    }));
+  };
+
   // Build the tailored WhatsApp RFQ text (Stone only, anonymized, no quote no, direct time & price request)
   const generateWhatsappMessage = (
     vendorName: string,
@@ -423,16 +436,7 @@ export function QuoteSendRfqDialog({
   ) => {
     const greeting = contactPerson ? `Namaste ${contactPerson} ji` : `Namaste Team ${vendorName}`;
 
-    const itemsSummary = stoneItems
-      .map((it, idx) => {
-        const name = it.product_name || it.description || `Stone Material #${idx + 1}`;
-        const qty = it.quantity ?? 1;
-        const uom = it.uom || it.unit || "sqft";
-        const specs =
-          it.description && it.description !== it.product_name ? ` (${it.description})` : "";
-        return `• *${name}* — ${qty} ${uom}${specs}`;
-      })
-      .join("\n");
+    const itemsSummary = formatRfqItemsSummary(stoneItems, customDescriptions);
 
     const imgUrl = overrideImageUrl ?? selectedImageUrl;
     const imgBlock =
@@ -707,6 +711,7 @@ export function QuoteSendRfqDialog({
                 ? unitVal
                 : "sqft"
             ) as "sqft" | "sqm" | "piece" | "slab" | "linear_ft" | "linear_m" | "cbm";
+            const itemManualDesc = getItemDesc(it, idx);
             return {
               enquiry_id: enq.id,
               product_id: it.product_id ?? null,
@@ -714,6 +719,7 @@ export function QuoteSendRfqDialog({
               quantity: Number(it.quantity) || 1,
               unit: validUnit,
               sort_order: idx + 1,
+              remarks: itemManualDesc || null,
             };
           });
           const { error: itemsErr } = await supabase.from("enquiry_items").insert(enqItems);
@@ -721,6 +727,62 @@ export function QuoteSendRfqDialog({
         }
 
         await supabase.from("quotes").update({ enquiry_id: enq.id }).eq("id", quoteId);
+      } else {
+        // If targetEnquiryId already exists, ensure enquiry_items has the manual descriptions in remarks
+        const { data: existingItems } = await supabase
+          .from("enquiry_items")
+          .select("id, product_id, product_name_snapshot")
+          .eq("enquiry_id", targetEnquiryId);
+
+        if (!existingItems || existingItems.length === 0) {
+          if (stoneItems.length > 0) {
+            const enqItems = stoneItems.map((it, idx) => {
+              const unitVal = it.uom || it.unit;
+              const validUnit = (
+                unitVal === "sqm" ||
+                unitVal === "piece" ||
+                unitVal === "slab" ||
+                unitVal === "linear_ft" ||
+                unitVal === "linear_m" ||
+                unitVal === "cbm"
+                  ? unitVal
+                  : "sqft"
+              ) as "sqft" | "sqm" | "piece" | "slab" | "linear_ft" | "linear_m" | "cbm";
+              const itemManualDesc = getItemDesc(it, idx);
+              return {
+                enquiry_id: targetEnquiryId!,
+                product_id: it.product_id ?? null,
+                product_name_snapshot: it.product_name ?? it.description ?? "Stone product",
+                quantity: Number(it.quantity) || 1,
+                unit: validUnit,
+                sort_order: idx + 1,
+                remarks: itemManualDesc || null,
+              };
+            });
+            await supabase.from("enquiry_items").insert(enqItems);
+          }
+        } else {
+          // Update remarks on matching existing enquiry items so send_rfq copies them to rfq_items.specs
+          for (let idx = 0; idx < stoneItems.length; idx++) {
+            const it = stoneItems[idx];
+            const itemManualDesc = getItemDesc(it, idx);
+            if (itemManualDesc) {
+              const matched =
+                existingItems.find(
+                  (ei) =>
+                    (it.product_id && ei.product_id === it.product_id) ||
+                    ei.product_name_snapshot === (it.product_name ?? it.description),
+                ) || existingItems[idx];
+
+              if (matched) {
+                await supabase
+                  .from("enquiry_items")
+                  .update({ remarks: itemManualDesc })
+                  .eq("id", matched.id);
+              }
+            }
+          }
+        }
       }
 
       return await sendRfq({
@@ -775,22 +837,43 @@ export function QuoteSendRfqDialog({
             )}
           </div>
 
-          <div className="flex flex-wrap gap-1.5">
+          <div className="space-y-2">
             {stoneItems.length === 0 ? (
               <span className="text-xs text-muted-foreground italic">Loading quote products…</span>
             ) : (
-              stoneItems.map((it, idx) => (
-                <Badge
-                  key={idx}
-                  variant="outline"
-                  className="text-xs font-medium bg-background border-border"
-                >
-                  {it.product_name || it.description || `Item #${idx + 1}`}{" "}
-                  <span className="text-muted-foreground ml-1 font-mono">
-                    ({it.quantity ?? 1} {it.uom || it.unit || "sqft"})
-                  </span>
-                </Badge>
-              ))
+              stoneItems.map((it, idx) => {
+                const desc = getItemDesc(it, idx);
+                return (
+                  <div
+                    key={it.id || idx}
+                    className="p-2.5 rounded-lg border border-border/80 bg-background/90 space-y-1.5 shadow-2xs"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="font-semibold text-xs text-foreground truncate">
+                          {idx + 1}. {it.product_name || it.description || `Stone Item #${idx + 1}`}
+                        </span>
+                        <Badge
+                          variant="secondary"
+                          className="font-mono text-[10px] px-1.5 py-0 shrink-0"
+                        >
+                          {it.quantity ?? 1} {it.uom || it.unit || "sqft"}
+                        </Badge>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground shrink-0 font-medium">
+                        Manual Specs / RFQ Description
+                      </span>
+                    </div>
+
+                    <Input
+                      value={desc}
+                      onChange={(e) => handleUpdateItemDesc(it, idx, e.target.value)}
+                      placeholder="Type actual description & specs (e.g. Hammerstone 8 ft x 4 ft, Light Cool Grey, 20mm, honed)..."
+                      className="h-7 text-xs bg-muted/20 focus-visible:bg-background"
+                    />
+                  </div>
+                );
+              })
             )}
           </div>
 
