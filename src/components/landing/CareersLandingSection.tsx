@@ -331,7 +331,7 @@ export function CareersLandingSection() {
           <div className="py-2 space-y-3">
             <div className="rounded-xl overflow-hidden border border-border shadow-md bg-black">
               <img
-                src="/branding/hiring-story-flyer.png"
+                src="/branding/hiring-story-flyer.png?v=2"
                 alt="Stone Tech Hiring Flyer"
                 className="w-full h-auto object-contain max-h-[55vh] mx-auto"
               />
@@ -339,7 +339,7 @@ export function CareersLandingSection() {
 
             <div className="flex items-center gap-2 pt-1">
               <Button asChild className="flex-1 font-bold text-xs gap-1.5">
-                <a href="/branding/hiring-story-flyer.png" download="Stone-Tech-Hiring-Flyer.png">
+                <a href="/branding/hiring-story-flyer.png?v=2" download="Stone-Tech-Hiring-Flyer.png">
                   Download Image Flyer
                 </a>
               </Button>

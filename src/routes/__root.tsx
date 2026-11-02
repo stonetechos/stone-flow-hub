@@ -145,7 +145,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "Stone Tech" },
-      { property: "og:image", content: "https://stonetech.in/branding/careers-og-banner.png" },
+      { property: "og:image", content: "https://stonetech.in/branding/careers-og-banner.png?v=2" },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -155,7 +155,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Stone Tech - Architectural Stone Atelier, Ahmedabad. Premium Natural Stone, Cladding & Murals.",
       },
-      { name: "twitter:image", content: "https://stonetech.in/branding/careers-og-banner.png" },
+      { name: "twitter:image", content: "https://stonetech.in/branding/careers-og-banner.png?v=2" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
