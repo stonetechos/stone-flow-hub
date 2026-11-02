@@ -1253,6 +1253,12 @@
   font-family: var(--font-cursive);
 }
 
+/* Prevent native mobile browser pull-to-refresh from reloading the page when scrolling */
+html,
+body {
+  overscroll-behavior-y: none;
+}
+
 /* When any Radix overlay is open, Radix already locks body scroll.
  * We additionally suppress overscroll so mobile Safari can't rubber-band
  * the underlying page through the scrim. */

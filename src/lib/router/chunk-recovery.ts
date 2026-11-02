@@ -11,8 +11,10 @@
  * stranding the user on an error screen.
  */
 
-const RELOAD_THROTTLE_MS = 15_000;
+const RELOAD_THROTTLE_MS = 60_000;
 const SESSION_KEY = "stos:chunk_reload_ts";
+const SESSION_COUNT_KEY = "stos:chunk_reload_count";
+const MAX_AUTO_RELOADS_PER_SESSION = 1;
 
 export function isChunkLoadError(error: unknown): boolean {
   if (!error) return false;
@@ -36,18 +38,27 @@ export function recoverFromChunkError(force = false): boolean {
 
   try {
     const lastReload = Number(sessionStorage.getItem(SESSION_KEY) || 0);
+    const reloadCount = Number(sessionStorage.getItem(SESSION_COUNT_KEY) || 0);
     const now = Date.now();
 
+    // Prevent infinite reload loops: allow at most 1 automatic reload per tab session
+    if (!force && reloadCount >= MAX_AUTO_RELOADS_PER_SESSION) {
+      console.warn(
+        "[chunk-recovery] Maximum auto-recovery reload limit reached for this session. Suppressing reload loop.",
+      );
+      return false;
+    }
+
     if (!force && lastReload > 0 && now - lastReload < RELOAD_THROTTLE_MS) {
-      // Throttled: prevent infinite reload loops if the network is genuinely disconnected
+      // Throttled: prevent rapid reload loops
       return false;
     }
 
     sessionStorage.setItem(SESSION_KEY, String(now));
+    sessionStorage.setItem(SESSION_COUNT_KEY, String(reloadCount + 1));
     window.location.reload();
     return true;
   } catch {
-    window.location.reload();
-    return true;
+    return false;
   }
 }

@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { listPendingOperations } from "@/lib/pwa/sync-queue";
 import { isCapacitorAppOrigin } from "@/lib/capacitor/server-origin-allowlist";
 
-const SW_CACHE_VERSION = "stos-24";
+const SW_CACHE_VERSION = "stos-25";
 let registered = false;
 
 export function registerServiceWorker(): void {
@@ -67,22 +67,18 @@ export function registerServiceWorker(): void {
           if (!installing) return;
           installing.addEventListener("statechange", () => {
             if (installing.state === "installed" && navigator.serviceWorker.controller) {
-              // Immediately activate the new worker
-              installing.postMessage({ type: "SKIP_WAITING" });
+              // New version is installed and will control subsequent visits/tabs naturally
+              console.info("[pwa] New service worker version cached.");
             }
           });
         });
       })
       .catch((err) => console.warn("[pwa] service worker registration failed", err));
 
-    // Reload immediately when an already-controlled page swaps to a new worker
-    // to guarantee all active tabs run the latest deployment without requiring manual action.
-    const hadController = Boolean(navigator.serviceWorker.controller);
-    let reloading = false;
+    // When the service worker swaps controllers, NEVER violently reload the active page!
+    // Automatic reloads cause multi-refresh loops, disrupt user scroll positions, and drop form inputs.
     navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (!hadController || reloading) return;
-      reloading = true;
-      window.location.reload();
+      console.info("[pwa] Active service worker controller changed.");
     });
 
     navigator.serviceWorker.addEventListener("message", (event) => {

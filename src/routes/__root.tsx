@@ -231,10 +231,11 @@ function RootComponent() {
       /* ignore */
     }
 
-    // Auto-recover from chunk load errors when a new deployment is shipped
+    // Guard against unhandled chunk load errors when a new deployment is shipped
     const onPreloadError = (e: Event) => {
       e.preventDefault();
-      recoverFromChunkError();
+      // Speculative background preloading failures must NEVER reload the active page
+      console.warn("[router] Background chunk preload failed (non-fatal):", e);
     };
     const onUnhandledRejection = (e: PromiseRejectionEvent) => {
       if (isChunkLoadError(e.reason)) {
