@@ -63,6 +63,7 @@ import { LuxuryProductShowcase } from "@/components/landing/LuxuryProductShowcas
 import { WallCladdingCatalog } from "@/components/catalog/WallCladdingCatalog";
 import { ContactCenter } from "@/components/landing/ContactCenter";
 import { JobOpeningsDialog } from "@/components/landing/JobOpeningsDialog";
+import { CareersLandingSection } from "@/components/landing/CareersLandingSection";
 import { ShreeYantraHeroShowcase } from "@/components/landing/ShreeYantraHeroShowcase";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -953,14 +954,13 @@ function HomePage() {
             >
               {texts.nav.whyUs}
             </a>
-            <JobOpeningsDialog
-              trigger={
-                <button className="hover:text-primary transition-colors cursor-pointer flex items-center gap-1.5 text-sm font-semibold text-foreground/80 py-1 whitespace-nowrap">
-                  <Briefcase className="h-4 w-4 text-primary" />
-                  <span>{texts.nav.jobOpenings}</span>
-                </button>
-              }
-            />
+            <a
+              href="#careers"
+              className="hover:text-primary transition-colors whitespace-nowrap py-1 flex items-center gap-1.5"
+            >
+              <Briefcase className="h-4 w-4 text-primary" />
+              <span>{texts.nav.jobOpenings}</span>
+            </a>
             <a
               href="#contact-us"
               className="hover:text-primary transition-colors whitespace-nowrap py-1"
@@ -1950,6 +1950,9 @@ function HomePage() {
         </div>
       </section>
 
+      {/* 2.5 CAREERS & ACTIVE JOB OPENINGS SECTION */}
+      <CareersLandingSection />
+
       {/* 3. BROAD "HOW TO REACH US" & VERIFIED RATINGS FOOTER */}
       <ContactCenter />
 
@@ -1966,6 +1969,13 @@ function HomePage() {
             <span>• {texts.brandSubtitle}</span>
           </div>
           <div className="flex items-center gap-4 text-xs">
+            <Link
+              to="/careers"
+              className="hover:text-primary transition-colors cursor-pointer underline-offset-4 hover:underline"
+            >
+              Careers
+            </Link>
+            <span>•</span>
             <CustomerInquiryLookupDialog
               trigger={
                 <button
