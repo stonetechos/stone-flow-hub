@@ -38,7 +38,22 @@ function parseSetting<K extends keyof SiteSettings>(
 const db = supabase as any;
 
 export async function fetchSiteSettings(): Promise<SiteSettings> {
-  // 1. Try server function (uses service_role supabaseAdmin, bypasses RLS for both anon and authenticated)
+  // 1. In browser, try fast public API route
+  if (typeof window !== "undefined") {
+    try {
+      const res = await fetch("/api/public/site-settings");
+      if (res.ok) {
+        const json = await res.json();
+        if (json && typeof json === "object") {
+          return json as SiteSettings;
+        }
+      }
+    } catch {
+      /* fallback to server function / client */
+    }
+  }
+
+  // 2. Try server function (uses service_role supabaseAdmin, bypasses RLS for both anon and authenticated)
   try {
     const res = await fetchPublicSiteSettingsServerFn();
     if (res && typeof res === "object") {
@@ -51,7 +66,7 @@ export async function fetchSiteSettings(): Promise<SiteSettings> {
     );
   }
 
-  // 2. Client fallback: Try reading from site_settings or app_settings
+  // 3. Client fallback: Try reading from site_settings or app_settings
   let rows: RawRow[] = [];
   try {
     const { data, error } = await db.from("site_settings").select("key, value");
@@ -132,7 +147,21 @@ export async function fetchSiteSettings(): Promise<SiteSettings> {
 }
 
 export async function upsertSiteSetting(key: string, value: unknown): Promise<void> {
-  // 1. Try server function (uses service_role supabaseAdmin, bypasses client RLS)
+  // 1. In browser, try fast public API route
+  if (typeof window !== "undefined") {
+    try {
+      const res = await fetch("/api/public/site-settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key, value }),
+      });
+      if (res.ok) return;
+    } catch {
+      /* fallback */
+    }
+  }
+
+  // 2. Try server function (uses service_role supabaseAdmin, bypasses client RLS)
   try {
     const res = await upsertSiteSettingServerFn({ data: { key, value } });
     if (res?.success) return;
@@ -143,7 +172,7 @@ export async function upsertSiteSetting(key: string, value: unknown): Promise<vo
     );
   }
 
-  // 2. Client fallback: site_settings table
+  // 3. Client fallback: site_settings table
   try {
     const { error } = await db
       .from("site_settings")

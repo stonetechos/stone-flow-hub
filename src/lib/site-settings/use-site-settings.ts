@@ -10,7 +10,7 @@ export function useSiteSettings() {
   return useQuery({
     queryKey: SITE_SETTINGS_QUERY_KEY,
     queryFn: fetchSiteSettings,
-    staleTime: 5 * 60 * 1000, // 5 min — landing page doesn't need live updates
+    staleTime: 30 * 1000, // 30 sec — allows fast sync between CMS changes and public views
     placeholderData: SITE_SETTINGS_DEFAULTS,
   });
 }

@@ -75,6 +75,7 @@ import { Route as AuthenticatedDashboardsIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers/index'
 import { Route as AuthenticatedBusinessExpensesIndexRouteImport } from './routes/_authenticated/business-expenses/index'
 import { Route as VendorRfqsRfqIdRouteImport } from './routes/vendor/rfqs/$rfqId'
+import { Route as ApiPublicSiteSettingsRouteImport } from './routes/api/public/site-settings'
 import { Route as AuthenticatedVendorsVendorIdRouteImport } from './routes/_authenticated/vendors/$vendorId'
 import { Route as AuthenticatedVendorPaymentsNewRouteImport } from './routes/_authenticated/vendor-payments/new'
 import { Route as AuthenticatedVendorPaymentsIdRouteImport } from './routes/_authenticated/vendor-payments/$id'
@@ -564,6 +565,11 @@ const VendorRfqsRfqIdRoute = VendorRfqsRfqIdRouteImport.update({
   id: '/rfqs/$rfqId',
   path: '/rfqs/$rfqId',
   getParentRoute: () => VendorRouteRoute,
+} as any)
+const ApiPublicSiteSettingsRoute = ApiPublicSiteSettingsRouteImport.update({
+  id: '/api/public/site-settings',
+  path: '/api/public/site-settings',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedVendorsVendorIdRoute =
   AuthenticatedVendorsVendorIdRouteImport.update({
@@ -1404,6 +1410,7 @@ export interface FileRoutesByFullPath {
   '/vendor-payments/$id': typeof AuthenticatedVendorPaymentsIdRoute
   '/vendor-payments/new': typeof AuthenticatedVendorPaymentsNewRoute
   '/vendors/$vendorId': typeof AuthenticatedVendorsVendorIdRouteWithChildren
+  '/api/public/site-settings': typeof ApiPublicSiteSettingsRoute
   '/vendor/rfqs/$rfqId': typeof VendorRfqsRfqIdRoute
   '/business-expenses/': typeof AuthenticatedBusinessExpensesIndexRoute
   '/customers/': typeof AuthenticatedCustomersIndexRoute
@@ -1593,6 +1600,7 @@ export interface FileRoutesByTo {
   '/vendor-payments/$id': typeof AuthenticatedVendorPaymentsIdRoute
   '/vendor-payments/new': typeof AuthenticatedVendorPaymentsNewRoute
   '/vendors/$vendorId': typeof AuthenticatedVendorsVendorIdRouteWithChildren
+  '/api/public/site-settings': typeof ApiPublicSiteSettingsRoute
   '/vendor/rfqs/$rfqId': typeof VendorRfqsRfqIdRoute
   '/business-expenses': typeof AuthenticatedBusinessExpensesIndexRoute
   '/customers': typeof AuthenticatedCustomersIndexRoute
@@ -1785,6 +1793,7 @@ export interface FileRoutesById {
   '/_authenticated/vendor-payments/$id': typeof AuthenticatedVendorPaymentsIdRoute
   '/_authenticated/vendor-payments/new': typeof AuthenticatedVendorPaymentsNewRoute
   '/_authenticated/vendors/$vendorId': typeof AuthenticatedVendorsVendorIdRouteWithChildren
+  '/api/public/site-settings': typeof ApiPublicSiteSettingsRoute
   '/vendor/rfqs/$rfqId': typeof VendorRfqsRfqIdRoute
   '/_authenticated/business-expenses/': typeof AuthenticatedBusinessExpensesIndexRoute
   '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
@@ -1977,6 +1986,7 @@ export interface FileRouteTypes {
     | '/vendor-payments/$id'
     | '/vendor-payments/new'
     | '/vendors/$vendorId'
+    | '/api/public/site-settings'
     | '/vendor/rfqs/$rfqId'
     | '/business-expenses/'
     | '/customers/'
@@ -2166,6 +2176,7 @@ export interface FileRouteTypes {
     | '/vendor-payments/$id'
     | '/vendor-payments/new'
     | '/vendors/$vendorId'
+    | '/api/public/site-settings'
     | '/vendor/rfqs/$rfqId'
     | '/business-expenses'
     | '/customers'
@@ -2357,6 +2368,7 @@ export interface FileRouteTypes {
     | '/_authenticated/vendor-payments/$id'
     | '/_authenticated/vendor-payments/new'
     | '/_authenticated/vendors/$vendorId'
+    | '/api/public/site-settings'
     | '/vendor/rfqs/$rfqId'
     | '/_authenticated/business-expenses/'
     | '/_authenticated/customers/'
@@ -2443,6 +2455,7 @@ export interface RootRouteChildren {
   PayLinkIdRoute: typeof PayLinkIdRoute
   TrackOrderNoRoute: typeof TrackOrderNoRoute
   TrackIndexRoute: typeof TrackIndexRoute
+  ApiPublicSiteSettingsRoute: typeof ApiPublicSiteSettingsRoute
   ApiPublicDiagnosticsEnvStatusRoute: typeof ApiPublicDiagnosticsEnvStatusRoute
   ApiPublicHooksAgentSuiteSchedulerRoute: typeof ApiPublicHooksAgentSuiteSchedulerRoute
   ApiPublicHooksAuthEmailRoute: typeof ApiPublicHooksAuthEmailRoute
@@ -2920,6 +2933,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/vendor/rfqs/$rfqId'
       preLoaderRoute: typeof VendorRfqsRfqIdRouteImport
       parentRoute: typeof VendorRouteRoute
+    }
+    '/api/public/site-settings': {
+      id: '/api/public/site-settings'
+      path: '/api/public/site-settings'
+      fullPath: '/api/public/site-settings'
+      preLoaderRoute: typeof ApiPublicSiteSettingsRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/vendors/$vendorId': {
       id: '/_authenticated/vendors/$vendorId'
@@ -4313,6 +4333,7 @@ const rootRouteChildren: RootRouteChildren = {
   PayLinkIdRoute: PayLinkIdRoute,
   TrackOrderNoRoute: TrackOrderNoRoute,
   TrackIndexRoute: TrackIndexRoute,
+  ApiPublicSiteSettingsRoute: ApiPublicSiteSettingsRoute,
   ApiPublicDiagnosticsEnvStatusRoute: ApiPublicDiagnosticsEnvStatusRoute,
   ApiPublicHooksAgentSuiteSchedulerRoute:
     ApiPublicHooksAgentSuiteSchedulerRoute,

@@ -511,33 +511,19 @@ export function WebsiteProductsBackend() {
 
   return (
     <div className="space-y-4">
-      {/* Top Action Bar — clean product header & prominent Upload button */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-border/40">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-            <PackagePlus className="h-4.5 w-4.5" />
-          </div>
-          <div>
-            <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-              <span>Website Product Catalogue &amp; Pricing Sync</span>
-              <Badge
-                variant="outline"
-                className="text-[10px] bg-muted/60 text-muted-foreground border-border/60 font-mono"
-              >
-                {products.length} Products
-              </Badge>
-            </h2>
-            <p className="text-[11px] text-muted-foreground">
-              Live synchronized across stonetech.in, quotations, estimates, sales orders, and
-              inventory.
-            </p>
-          </div>
-        </div>
+      {/* Top Action Bar — cleanly positioned Upload New Product button */}
+      <div className="flex items-center justify-between gap-3">
+        <Badge
+          variant="outline"
+          className="text-xs bg-muted/60 text-muted-foreground border-border/60 font-mono"
+        >
+          {products.length} Products
+        </Badge>
 
         <Button
           onClick={handleOpenCreate}
           size="sm"
-          className="h-9 px-4 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-xs gap-1.5 shrink-0 self-start sm:self-auto cursor-pointer"
+          className="h-9 px-4 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-xs gap-1.5 cursor-pointer"
         >
           <PackagePlus className="h-4 w-4" />
           <span>Upload New Product</span>

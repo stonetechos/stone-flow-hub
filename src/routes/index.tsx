@@ -94,7 +94,7 @@ export const Route = createFileRoute("/")({
       await context.queryClient.ensureQueryData({
         queryKey: SITE_SETTINGS_QUERY_KEY,
         queryFn: fetchSiteSettings,
-        staleTime: 5 * 60 * 1000,
+        staleTime: 30 * 1000,
       });
     } catch {
       /* ignore */
