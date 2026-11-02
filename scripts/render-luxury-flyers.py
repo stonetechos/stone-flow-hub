@@ -2,8 +2,8 @@ import os
 import base64
 import subprocess
 
-# 1. Read base64 logo
-with open("public/branding/stone-tech-logo-transparent.png", "rb") as f:
+# 1. Read base64 cropped logo
+with open("public/branding/stone-tech-logo-cropped.png", "rb") as f:
     logo_b64 = "data:image/png;base64," + base64.b64encode(f.read()).decode("utf-8")
 
 # 2. Template for 1080x1920 Vertical Story Flyer
@@ -31,7 +31,7 @@ body {{
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 60px 54px;
+  padding: 55px 54px;
 }}
 
 /* Ambient Luxury Glows */
@@ -80,26 +80,23 @@ body {{
   text-align: center;
   position: relative;
   z-index: 10;
-  margin-top: 10px;
 }}
 
 .logo-wrapper {{
   display: inline-block;
-  padding: 16px 36px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 32px;
-  backdrop-filter: blur(16px);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  padding: 16px 38px 14px 38px;
+  background: #ffffff;
+  border-radius: 30px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.5), 0 0 0 2px rgba(255, 255, 255, 0.2);
 }}
 
 .logo-img {{
-  height: 190px;
-  max-width: 440px;
+  height: 220px;
+  width: auto;
+  max-width: 460px;
   object-fit: contain;
   display: block;
   margin: 0 auto;
-  filter: drop-shadow(0 6px 20px rgba(0,0,0,0.5));
 }}
 
 .hiring-badge {{
@@ -115,7 +112,7 @@ body {{
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  margin-top: 24px;
+  margin-top: 22px;
 }}
 
 .hiring-badge svg {{
@@ -126,11 +123,11 @@ body {{
 
 .main-title {{
   font-family: 'Outfit', sans-serif;
-  font-size: 56px;
+  font-size: 54px;
   font-weight: 800;
   letter-spacing: -0.02em;
   color: #ffffff;
-  margin-top: 18px;
+  margin-top: 14px;
   line-height: 1.15;
 }}
 
@@ -141,9 +138,9 @@ body {{
 }}
 
 .subtitle {{
-  font-size: 24px;
+  font-size: 23px;
   color: #94a3b8;
-  margin-top: 10px;
+  margin-top: 8px;
   font-weight: 500;
   display: flex;
   align-items: center;
@@ -155,17 +152,17 @@ body {{
 .cards-container {{
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 26px;
   position: relative;
   z-index: 10;
-  margin: 25px 0;
+  margin: 20px 0;
 }}
 
 .job-card {{
-  background: rgba(19, 28, 46, 0.75);
+  background: rgba(19, 28, 46, 0.85);
   border: 1.5px solid rgba(255, 255, 255, 0.12);
   border-radius: 28px;
-  padding: 34px 40px;
+  padding: 32px 38px;
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(12px);
   position: relative;
@@ -197,8 +194,8 @@ body {{
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   border-radius: 12px;
   background: #0d9488;
   color: #ffffff;
@@ -249,8 +246,8 @@ body {{
   display: flex;
   align-items: center;
   gap: 28px;
-  margin-top: 20px;
-  padding-top: 18px;
+  margin-top: 18px;
+  padding-top: 16px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   font-size: 22px;
   color: #cbd5e1;
@@ -272,7 +269,7 @@ body {{
 .meta-item.time svg {{ fill: #38bdf8; }}
 
 .card-details {{
-  margin-top: 18px;
+  margin-top: 16px;
   background: rgba(0, 0, 0, 0.25);
   border-radius: 18px;
   padding: 18px 24px;
@@ -331,7 +328,7 @@ body {{
   background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
   border: 2px solid rgba(255, 255, 255, 0.25);
   border-radius: 28px;
-  padding: 30px 40px;
+  padding: 28px 40px;
   box-shadow: 0 20px 50px rgba(13, 148, 136, 0.4);
   display: flex;
   align-items: center;
@@ -395,8 +392,8 @@ body {{
 
 .atelier-brand {{
   text-align: center;
-  margin-top: 14px;
-  font-size: 20px;
+  margin-top: 12px;
+  font-size: 19px;
   color: #64748b;
   font-weight: 600;
   letter-spacing: 0.05em;
@@ -558,8 +555,6 @@ body {{
 with open("scripts/templates/hiring-story-flyer.html", "w") as f:
     f.write(story_html)
 
-print("Wrote scripts/templates/hiring-story-flyer.html")
-
 # 3. Template for 1200x630 OpenGraph Banner
 og_html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -581,7 +576,7 @@ body {{
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 44px 50px;
+  padding: 40px 48px;
 }}
 
 .ambient-glow {{
@@ -608,17 +603,16 @@ body {{
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  background: #ffffff;
   border-radius: 24px;
-  padding: 30px;
+  padding: 24px;
   height: 100%;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.45);
 }}
 
 .logo-img {{
   width: 280px;
-  max-height: 260px;
+  max-height: 280px;
   object-fit: contain;
   display: block;
   margin: 0 auto;
@@ -629,7 +623,7 @@ body {{
   font-family: 'Outfit', sans-serif;
   font-size: 20px;
   font-weight: 800;
-  color: #e2e8f0;
+  color: #0f172a;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   text-align: center;
@@ -637,7 +631,7 @@ body {{
 
 .brand-sub {{
   font-size: 13px;
-  color: #94a3b8;
+  color: #64748b;
   margin-top: 4px;
   text-align: center;
   text-transform: uppercase;
@@ -688,7 +682,7 @@ body {{
 }}
 
 .strip {{
-  background: rgba(19, 28, 46, 0.8);
+  background: rgba(19, 28, 46, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 14px;
   padding: 14px 20px;
@@ -785,8 +779,6 @@ body {{
 
 with open("scripts/templates/careers-og-banner.html", "w") as f:
     f.write(og_html)
-
-print("Wrote scripts/templates/careers-og-banner.html")
 
 # 4. Render with Chrome Headless
 chrome_bin = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
