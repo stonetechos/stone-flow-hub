@@ -14,6 +14,105 @@ export type Database = {
   }
   public: {
     Tables: {
+      job_applications: {
+        Row: {
+          ai_tools_experience: string | null
+          application_no: string
+          cover_note: string | null
+          created_at: string
+          current_area: string | null
+          current_city: string
+          current_salary: string | null
+          email: string | null
+          expected_salary: string | null
+          full_name: string
+          has_driving_license: boolean | null
+          has_two_wheeler: boolean | null
+          highest_qualification: string | null
+          id: string
+          interview_date: string | null
+          interview_notes: string | null
+          job_id: string
+          job_title: string
+          key_skills: string[] | null
+          languages_known: string[] | null
+          notice_period: string | null
+          phone: string
+          rating: number | null
+          resume_file_name: string | null
+          resume_url: string | null
+          source: string
+          status: string
+          total_experience: string | null
+          updated_at: string
+          whatsapp: string | null
+        }
+        Insert: {
+          ai_tools_experience?: string | null
+          application_no: string
+          cover_note?: string | null
+          created_at?: string
+          current_area?: string | null
+          current_city?: string
+          current_salary?: string | null
+          email?: string | null
+          expected_salary?: string | null
+          full_name: string
+          has_driving_license?: boolean | null
+          has_two_wheeler?: boolean | null
+          highest_qualification?: string | null
+          id?: string
+          interview_date?: string | null
+          interview_notes?: string | null
+          job_id: string
+          job_title: string
+          key_skills?: string[] | null
+          languages_known?: string[] | null
+          notice_period?: string | null
+          phone: string
+          rating?: number | null
+          resume_file_name?: string | null
+          resume_url?: string | null
+          source?: string
+          status?: string
+          total_experience?: string | null
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Update: {
+          ai_tools_experience?: string | null
+          application_no?: string
+          cover_note?: string | null
+          created_at?: string
+          current_area?: string | null
+          current_city?: string
+          current_salary?: string | null
+          email?: string | null
+          expected_salary?: string | null
+          full_name?: string
+          has_driving_license?: boolean | null
+          has_two_wheeler?: boolean | null
+          highest_qualification?: string | null
+          id?: string
+          interview_date?: string | null
+          interview_notes?: string | null
+          job_id?: string
+          job_title?: string
+          key_skills?: string[] | null
+          languages_known?: string[] | null
+          notice_period?: string | null
+          phone?: string
+          rating?: number | null
+          resume_file_name?: string | null
+          resume_url?: string | null
+          source?: string
+          status?: string
+          total_experience?: string | null
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
       activity_log: {
         Row: {
           action: Database["public"]["Enums"]["activity_action"]

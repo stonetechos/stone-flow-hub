@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as InquiryRouteImport } from './routes/inquiry'
+import { Route as CareersRouteImport } from './routes/careers'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as VendorRouteRouteImport } from './routes/vendor/route'
 import { Route as BackendRouteRouteImport } from './routes/backend/route'
@@ -124,6 +125,7 @@ import { Route as AuthenticatedHrLeaveRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedHrHolidaysRouteImport } from './routes/_authenticated/hr/holidays'
 import { Route as AuthenticatedHrBranchesRouteImport } from './routes/_authenticated/hr/branches'
 import { Route as AuthenticatedHrAttendanceRouteImport } from './routes/_authenticated/hr/attendance'
+import { Route as AuthenticatedHrApplicationsRouteImport } from './routes/_authenticated/hr/applications'
 import { Route as AuthenticatedGrnsNewRouteImport } from './routes/_authenticated/grns/new'
 import { Route as AuthenticatedGrnsIdRouteImport } from './routes/_authenticated/grns/$id'
 import { Route as AuthenticatedFollowupsIdRouteImport } from './routes/_authenticated/followups/$id'
@@ -203,6 +205,11 @@ import { Route as AuthenticatedCustomersCustomerIdTimelineRouteImport } from './
 const InquiryRoute = InquiryRouteImport.update({
   id: '/inquiry',
   path: '/inquiry',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CareersRoute = CareersRouteImport.update({
+  id: '/careers',
+  path: '/careers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -849,6 +856,12 @@ const AuthenticatedHrAttendanceRoute =
     path: '/hr/attendance',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedHrApplicationsRoute =
+  AuthenticatedHrApplicationsRouteImport.update({
+    id: '/hr/applications',
+    path: '/hr/applications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedGrnsNewRoute = AuthenticatedGrnsNewRouteImport.update({
   id: '/grns/new',
   path: '/grns/new',
@@ -1300,6 +1313,7 @@ export interface FileRoutesByFullPath {
   '/backend': typeof BackendRouteRouteWithChildren
   '/vendor': typeof VendorRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/careers': typeof CareersRoute
   '/inquiry': typeof InquiryRoute
   '/activity': typeof AuthenticatedActivityRoute
   '/agency-payments': typeof AuthenticatedAgencyPaymentsRoute
@@ -1362,6 +1376,7 @@ export interface FileRoutesByFullPath {
   '/followups/$id': typeof AuthenticatedFollowupsIdRoute
   '/grns/$id': typeof AuthenticatedGrnsIdRoute
   '/grns/new': typeof AuthenticatedGrnsNewRoute
+  '/hr/applications': typeof AuthenticatedHrApplicationsRoute
   '/hr/attendance': typeof AuthenticatedHrAttendanceRoute
   '/hr/branches': typeof AuthenticatedHrBranchesRoute
   '/hr/holidays': typeof AuthenticatedHrHolidaysRoute
@@ -1490,6 +1505,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/vendor': typeof VendorRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/careers': typeof CareersRoute
   '/inquiry': typeof InquiryRoute
   '/activity': typeof AuthenticatedActivityRoute
   '/agency-payments': typeof AuthenticatedAgencyPaymentsRoute
@@ -1552,6 +1568,7 @@ export interface FileRoutesByTo {
   '/followups/$id': typeof AuthenticatedFollowupsIdRoute
   '/grns/$id': typeof AuthenticatedGrnsIdRoute
   '/grns/new': typeof AuthenticatedGrnsNewRoute
+  '/hr/applications': typeof AuthenticatedHrApplicationsRoute
   '/hr/attendance': typeof AuthenticatedHrAttendanceRoute
   '/hr/branches': typeof AuthenticatedHrBranchesRoute
   '/hr/holidays': typeof AuthenticatedHrHolidaysRoute
@@ -1683,6 +1700,7 @@ export interface FileRoutesById {
   '/backend': typeof BackendRouteRouteWithChildren
   '/vendor': typeof VendorRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/careers': typeof CareersRoute
   '/inquiry': typeof InquiryRoute
   '/_authenticated/activity': typeof AuthenticatedActivityRoute
   '/_authenticated/agency-payments': typeof AuthenticatedAgencyPaymentsRoute
@@ -1745,6 +1763,7 @@ export interface FileRoutesById {
   '/_authenticated/followups/$id': typeof AuthenticatedFollowupsIdRoute
   '/_authenticated/grns/$id': typeof AuthenticatedGrnsIdRoute
   '/_authenticated/grns/new': typeof AuthenticatedGrnsNewRoute
+  '/_authenticated/hr/applications': typeof AuthenticatedHrApplicationsRoute
   '/_authenticated/hr/attendance': typeof AuthenticatedHrAttendanceRoute
   '/_authenticated/hr/branches': typeof AuthenticatedHrBranchesRoute
   '/_authenticated/hr/holidays': typeof AuthenticatedHrHolidaysRoute
@@ -1876,6 +1895,7 @@ export interface FileRouteTypes {
     | '/backend'
     | '/vendor'
     | '/auth'
+    | '/careers'
     | '/inquiry'
     | '/activity'
     | '/agency-payments'
@@ -1938,6 +1958,7 @@ export interface FileRouteTypes {
     | '/followups/$id'
     | '/grns/$id'
     | '/grns/new'
+    | '/hr/applications'
     | '/hr/attendance'
     | '/hr/branches'
     | '/hr/holidays'
@@ -2066,6 +2087,7 @@ export interface FileRouteTypes {
     | '/'
     | '/vendor'
     | '/auth'
+    | '/careers'
     | '/inquiry'
     | '/activity'
     | '/agency-payments'
@@ -2128,6 +2150,7 @@ export interface FileRouteTypes {
     | '/followups/$id'
     | '/grns/$id'
     | '/grns/new'
+    | '/hr/applications'
     | '/hr/attendance'
     | '/hr/branches'
     | '/hr/holidays'
@@ -2258,6 +2281,7 @@ export interface FileRouteTypes {
     | '/backend'
     | '/vendor'
     | '/auth'
+    | '/careers'
     | '/inquiry'
     | '/_authenticated/activity'
     | '/_authenticated/agency-payments'
@@ -2320,6 +2344,7 @@ export interface FileRouteTypes {
     | '/_authenticated/followups/$id'
     | '/_authenticated/grns/$id'
     | '/_authenticated/grns/new'
+    | '/_authenticated/hr/applications'
     | '/_authenticated/hr/attendance'
     | '/_authenticated/hr/branches'
     | '/_authenticated/hr/holidays'
@@ -2451,6 +2476,7 @@ export interface RootRouteChildren {
   BackendRouteRoute: typeof BackendRouteRouteWithChildren
   VendorRouteRoute: typeof VendorRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  CareersRoute: typeof CareersRoute
   InquiryRoute: typeof InquiryRoute
   PayLinkIdRoute: typeof PayLinkIdRoute
   TrackOrderNoRoute: typeof TrackOrderNoRoute
@@ -2477,6 +2503,13 @@ declare module '@tanstack/react-router' {
       path: '/inquiry'
       fullPath: '/inquiry'
       preLoaderRoute: typeof InquiryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/careers': {
+      id: '/careers'
+      path: '/careers'
+      fullPath: '/careers'
+      preLoaderRoute: typeof CareersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -3277,6 +3310,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHrAttendanceRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/hr/applications': {
+      id: '/_authenticated/hr/applications'
+      path: '/hr/applications'
+      fullPath: '/hr/applications'
+      preLoaderRoute: typeof AuthenticatedHrApplicationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/grns/new': {
       id: '/_authenticated/grns/new'
       path: '/grns/new'
@@ -3980,6 +4020,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFollowupsIdRoute: typeof AuthenticatedFollowupsIdRoute
   AuthenticatedGrnsIdRoute: typeof AuthenticatedGrnsIdRoute
   AuthenticatedGrnsNewRoute: typeof AuthenticatedGrnsNewRoute
+  AuthenticatedHrApplicationsRoute: typeof AuthenticatedHrApplicationsRoute
   AuthenticatedHrAttendanceRoute: typeof AuthenticatedHrAttendanceRoute
   AuthenticatedHrBranchesRoute: typeof AuthenticatedHrBranchesRoute
   AuthenticatedHrHolidaysRoute: typeof AuthenticatedHrHolidaysRoute
@@ -4158,6 +4199,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFollowupsIdRoute: AuthenticatedFollowupsIdRoute,
   AuthenticatedGrnsIdRoute: AuthenticatedGrnsIdRoute,
   AuthenticatedGrnsNewRoute: AuthenticatedGrnsNewRoute,
+  AuthenticatedHrApplicationsRoute: AuthenticatedHrApplicationsRoute,
   AuthenticatedHrAttendanceRoute: AuthenticatedHrAttendanceRoute,
   AuthenticatedHrBranchesRoute: AuthenticatedHrBranchesRoute,
   AuthenticatedHrHolidaysRoute: AuthenticatedHrHolidaysRoute,
@@ -4329,6 +4371,7 @@ const rootRouteChildren: RootRouteChildren = {
   BackendRouteRoute: BackendRouteRouteWithChildren,
   VendorRouteRoute: VendorRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  CareersRoute: CareersRoute,
   InquiryRoute: InquiryRoute,
   PayLinkIdRoute: PayLinkIdRoute,
   TrackOrderNoRoute: TrackOrderNoRoute,
@@ -4352,13 +4395,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

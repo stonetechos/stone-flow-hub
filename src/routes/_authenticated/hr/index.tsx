@@ -15,6 +15,7 @@ import {
   Plus,
   Banknote,
   Wallet,
+  Briefcase,
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ErrorBlock, SkeletonTable } from "@/components/layout/States";
@@ -23,6 +24,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { listAttendanceDays, listHolidays, listLeaveRequests, listBranches } from "@/lib/hr/api";
 import { listEmployees } from "@/lib/workforce/api";
+import { listJobApplications } from "@/lib/careers/api";
 import { ATTENDANCE_STATUS_LABEL } from "@/lib/hr/types";
 import { toUserMessage } from "@/lib/errors";
 import {
@@ -71,6 +73,11 @@ function HrDashboard() {
     staleTime: 60_000,
     placeholderData: (prev) => prev,
   });
+  const applications = useQuery({
+    queryKey: ["hr", "job-applications", "all"],
+    queryFn: () => listJobApplications(),
+    staleTime: 30_000,
+  });
 
   const loading =
     employees.isLoading || attendance.isLoading || leave.isLoading || branches.isLoading;
@@ -82,6 +89,7 @@ function HrDashboard() {
   const active = (employees.data ?? []).filter((e) => e.employment_status === "active").length;
   const upcoming = (holidays.data ?? []).filter((h) => h.holiday_date >= today()).slice(0, 4);
   const salaryData = salaryBalances.data;
+  const newAppsCount = (applications.data ?? []).filter((a) => a.status === "new").length;
 
   return (
     <>
@@ -91,6 +99,19 @@ function HrDashboard() {
         eyebrow="People"
         actions={
           <div className="flex items-center gap-2">
+            <Button asChild variant="outline" size="sm">
+              <Link to="/hr/applications">
+                <Briefcase className="mr-1 h-4 w-4" /> Recruitment
+                {newAppsCount > 0 && (
+                  <Badge
+                    variant="secondary"
+                    className="ml-1.5 h-4 px-1.5 text-[10px] bg-primary text-primary-foreground"
+                  >
+                    {newAppsCount} New
+                  </Badge>
+                )}
+              </Link>
+            </Button>
             <Button asChild variant="outline" size="sm">
               <Link to="/hr/payments">
                 <Banknote className="mr-1 h-4 w-4" /> Employee Payments

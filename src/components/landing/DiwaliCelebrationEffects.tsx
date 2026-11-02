@@ -818,20 +818,7 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
             <DiyaSvg className="w-7 h-7 sm:w-9 sm:h-9 md:w-11 md:h-11" glowIntensity={1.2} />
           </div>
 
-          {/* Firecracker 1: Animated Spinning Chakri (Ground Spinner) at Bottom Left */}
-          <div className="absolute bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] sm:bottom-4 left-10 sm:left-20 md:left-24 animate-chakri-bob opacity-95 drop-shadow-[0_0_16px_rgba(245,158,11,0.75)]">
-            <ChakriFirecracker className="w-7 h-7 sm:w-10 sm:h-10 md:w-12 md:h-12" />
-          </div>
-
-          {/* Firecracker 2: Animated Anaar (Flowerpot Fountain) at Bottom Right */}
-          <div className="absolute bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] sm:bottom-3 right-2 sm:right-28 md:right-36 animate-anaar-pulse opacity-95 drop-shadow-[0_0_18px_rgba(245,158,11,0.75)]">
-            <AnaarFirecracker className="w-8 h-9 sm:w-10 sm:h-12 md:w-12 md:h-14" />
-          </div>
-
-          {/* Firecracker 3: Animated Phuljhadi (Handheld Sparkler) at Left Side */}
-          <div className="absolute top-[68%] left-1.5 sm:left-4 animate-phuljhadi-float opacity-90 drop-shadow-[0_0_14px_rgba(251,191,36,0.85)]">
-            <PhuljhadiSparkler className="w-5 h-12 sm:w-8 sm:h-18 md:w-9 md:h-20 transform rotate-12" />
-          </div>
+          {/* Clean, elegant Diwali ambience: Subtle drifting golden diyas */}
         </div>
       )}
 
