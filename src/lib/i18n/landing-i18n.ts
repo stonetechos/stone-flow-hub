@@ -74,7 +74,7 @@ export const LANDING_UI_TRANSLATIONS = {
         panIndia: "Pan India Installation",
         support: "Design-to-Installation Support",
       },
-      exploreProjects: "Explore 300+ Completed Projects",
+      exploreProjects: "Explore a few of our completed projects",
     },
     form: {
       title: "Request for estimate",
@@ -281,7 +281,7 @@ export const LANDING_UI_TRANSLATIONS = {
         panIndia: "संपूर्ण भारत में डिलीवरी व इंस्टॉलेशन",
         support: "डिजाइन से अंतिम फिटिंग तक पूर्ण सहयोग",
       },
-      exploreProjects: "300+ पूर्ण प्रोजेक्ट्स देखें",
+      exploreProjects: "हमारे कुछ पूर्ण प्रोजेक्ट्स देखें",
     },
     form: {
       title: "अनुमान व कोटेशन का अनुरोध",
@@ -488,7 +488,7 @@ export const LANDING_UI_TRANSLATIONS = {
         panIndia: "સમગ્ર ભારતમાં ડિલિવરી અને ઇન્સ્ટોલેશન",
         support: "ડિઝાઇનથી ફિટિંગ સુધી સંપૂર્ણ સપોર્ટ",
       },
-      exploreProjects: "300+ પૂર્ણ પ્રોજેક્ટ્સ જુઓ",
+      exploreProjects: "અમારા કેટલાક પૂર્ણ થયેલા પ્રોજેક્ટ્સ જુઓ",
     },
     form: {
       title: "અંદાજ / ક્વોટેશન માટે વિનંતી",
