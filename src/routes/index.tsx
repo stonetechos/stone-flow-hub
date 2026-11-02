@@ -577,6 +577,13 @@ function HomePage() {
     setRequiredDate(d.toISOString().split("T")[0]);
   };
 
+  // Primary contact phone cleaned for WhatsApp links
+  const primaryPhoneClean = useMemo(() => {
+    const raw = cmsContent.contactPhone1 || "917742090866";
+    const cleaned = raw.replace(/[^0-9]/g, "");
+    return cleaned.startsWith("91") || cleaned.length > 10 ? cleaned : `91${cleaned}`;
+  }, [cmsContent.contactPhone1]);
+
   // Pre-calculated WhatsApp fallback URL in case of network timeout
   const fallbackWhatsappUrl = useMemo(() => {
     const prods = selectedProducts.length > 0 ? selectedProducts.join(", ") : "Architectural Stone";
@@ -594,7 +601,7 @@ function HomePage() {
         discountLine +
         (planDescription ? `*Details:* ${planDescription}\n` : ""),
     );
-    return `https://api.whatsapp.com/send?phone=917742090866&text=${text}`;
+    return `https://api.whatsapp.com/send?phone=${primaryPhoneClean}&text=${text}`;
   }, [
     name,
     whatsapp,
@@ -603,6 +610,7 @@ function HomePage() {
     city,
     requiredDate,
     planDescription,
+    primaryPhoneClean,
     prepaymentDiscountSelected,
   ]);
 
@@ -1976,7 +1984,7 @@ function HomePage() {
           className="flex-1 h-10 bg-[#25D366] hover:bg-[#1EBE5D] text-white font-bold gap-1 text-xs"
         >
           <a
-            href="https://api.whatsapp.com/send?phone=917742090866&text=Hi%20Stone%20Tech%20Team,%20I%20have%20an%20inquiry%20for%20stone%20requirements"
+            href={`https://api.whatsapp.com/send?phone=${primaryPhoneClean}&text=Hi%20Stone%20Tech%20Team,%20I%20have%20an%20inquiry%20for%20stone%20requirements`}
             target="_blank"
             rel="noopener noreferrer"
           >

@@ -24,7 +24,12 @@ function parseSetting<K extends keyof SiteSettings>(
   key: K,
   fallback: SiteSettings[K],
 ): SiteSettings[K] {
-  const row = rows.find((r) => r.key === key);
+  const row = rows.find(
+    (r) =>
+      r.key === key ||
+      (key === "website_landing_content" &&
+        (r.key === "website.landing_content" || r.key === "website_landing_content")),
+  );
   if (!row) return fallback;
   return (row.value as SiteSettings[K]) ?? fallback;
 }
@@ -117,6 +122,11 @@ export async function fetchSiteSettings(): Promise<SiteSettings> {
       rows,
       "website_deleted_product_ids",
       SITE_SETTINGS_DEFAULTS.website_deleted_product_ids ?? [],
+    ),
+    website_landing_content: parseSetting(
+      rows,
+      "website_landing_content",
+      SITE_SETTINGS_DEFAULTS.website_landing_content ?? {},
     ),
   };
 }

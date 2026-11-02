@@ -22,7 +22,12 @@ function parseSetting<K extends keyof SiteSettings>(
   key: K,
   fallback: SiteSettings[K],
 ): SiteSettings[K] {
-  const row = rows.find((r) => r.key === key);
+  const row = rows.find(
+    (r) =>
+      r.key === key ||
+      (key === "website_landing_content" &&
+        (r.key === "website.landing_content" || r.key === "website_landing_content")),
+  );
   if (!row) return fallback;
   return (row.value as SiteSettings[K]) ?? fallback;
 }
@@ -93,6 +98,11 @@ export const fetchPublicSiteSettingsServerFn = createServerFn({ method: "GET" })
           "website_deleted_product_ids",
           SITE_SETTINGS_DEFAULTS.website_deleted_product_ids ?? [],
         ),
+        website_landing_content: parseSetting(
+          rows,
+          "website_landing_content",
+          SITE_SETTINGS_DEFAULTS.website_landing_content ?? {},
+        ),
       };
     } catch (err) {
       console.warn("[site-settings.functions] error fetching settings:", err);
@@ -126,6 +136,23 @@ export const upsertSiteSettingServerFn = createServerFn({ method: "POST" })
 
       if (appErr) {
         console.warn("[upsertSiteSettingServerFn] app_settings error:", appErr.message);
+      }
+
+      // Also mirror legacy key if website_landing_content
+      if (key === "website_landing_content") {
+        try {
+          await supabaseAdmin.from("app_settings" as never).upsert(
+            {
+              key: "website.landing_content",
+              value: value as never,
+              description: "Public Website Landing Page Matter & CMS Content",
+              updated_at: new Date().toISOString(),
+            } as never,
+            { onConflict: "key" },
+          );
+        } catch {
+          /* ignore */
+        }
       }
 
       // 2. Also attempt writing to site_settings table if available

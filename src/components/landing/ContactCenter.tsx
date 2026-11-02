@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSiteSettingsValue } from "@/lib/site-settings/use-site-settings";
 import { getLandingTexts, getLocalizedReviews } from "@/lib/i18n/landing-i18n";
+import { useWebsiteContent } from "@/lib/cms/landing-content-store";
 
 const GOOGLE_BUSINESS_URL = "https://share.google/0J6h6joQLwo1hVTWJ";
 
@@ -28,6 +29,18 @@ export function ContactCenter({ className }: { className?: string }) {
   const texts = getLandingTexts(currentLang);
 
   const settings = useSiteSettingsValue();
+  const { content } = useWebsiteContent();
+
+  const phone1 = content.contactPhone1 || "+91 77420 90866";
+  const phone2 = content.contactPhone2 || "+91 97844 52998";
+  const email = content.contactEmail || "info@stonetech.in";
+  const addressJaipur = content.contactAddressJaipur || texts.contact.experienceCenterAddress;
+  const addressMakrana = content.contactAddressMakrana || "";
+  const hours = content.contactHours || texts.contact.studioHours;
+
+  const phone1Clean = phone1.replace(/[^0-9]/g, "");
+  const phone2Clean = phone2.replace(/[^0-9]/g, "");
+
   const localizedReviews = useMemo(
     () => getLocalizedReviews(settings.reviews, currentLang),
     [settings.reviews, currentLang],
@@ -95,7 +108,7 @@ export function ContactCenter({ className }: { className?: string }) {
 
             <div className="space-y-2.5 pt-1">
               <a
-                href="https://wa.me/917742090866?text=Hi%20Stone%20Tech,%20I'd%20like%20to%20inquire%20about%20natural%20stone%20finishes"
+                href={`https://wa.me/${phone1Clean}?text=Hi%20Stone%20Tech,%20I'd%20like%20to%20inquire%20about%20natural%20stone%20finishes`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-between p-3.5 rounded-2xl border border-emerald-300/80 bg-background/90 hover:bg-emerald-100/50 dark:border-emerald-800 dark:bg-card dark:hover:bg-emerald-950/40 transition-all shadow-2xs group"
@@ -106,7 +119,7 @@ export function ContactCenter({ className }: { className?: string }) {
                   </div>
                   <div>
                     <div className="text-xs font-bold text-foreground group-hover:text-emerald-700 dark:group-hover:text-emerald-400">
-                      +91 77420 90866
+                      {phone1}
                     </div>
                     <div className="text-[10px] text-muted-foreground">
                       {texts.contact.tapToChat}
@@ -117,7 +130,7 @@ export function ContactCenter({ className }: { className?: string }) {
               </a>
 
               <a
-                href="https://wa.me/919784452998?text=Hi%20Stone%20Tech,%20I'd%20like%20to%20inquire%20about%20natural%20stone%20finishes"
+                href={`https://wa.me/${phone2Clean}?text=Hi%20Stone%20Tech,%20I'd%20like%20to%20inquire%20about%20natural%20stone%20finishes`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-between p-3.5 rounded-2xl border border-emerald-300/80 bg-background/90 hover:bg-emerald-100/50 dark:border-emerald-800 dark:bg-card dark:hover:bg-emerald-950/40 transition-all shadow-2xs group"
@@ -128,7 +141,7 @@ export function ContactCenter({ className }: { className?: string }) {
                   </div>
                   <div>
                     <div className="text-xs font-bold text-foreground group-hover:text-emerald-700 dark:group-hover:text-emerald-400">
-                      +91 97844 52998
+                      {phone2}
                     </div>
                     <div className="text-[10px] text-muted-foreground">
                       {texts.contact.tapToChat}
@@ -157,9 +170,17 @@ export function ContactCenter({ className }: { className?: string }) {
                 </div>
               </div>
 
-              <p className="text-xs text-foreground leading-relaxed font-medium">
-                {texts.contact.experienceCenterAddress}
-              </p>
+              <p className="text-xs text-foreground leading-relaxed font-medium">{addressJaipur}</p>
+              {addressMakrana && (
+                <div className="pt-2 border-t border-border/60">
+                  <span className="text-[10px] text-muted-foreground font-semibold block uppercase tracking-wider">
+                    Makrana Marble Quarry &amp; Depots:
+                  </span>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed mt-0.5">
+                    {addressMakrana}
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="pt-2">
@@ -199,17 +220,17 @@ export function ContactCenter({ className }: { className?: string }) {
                   {texts.contact.officialInquiries}
                 </span>
                 <a
-                  href="mailto:info@stonetech.in"
+                  href={`mailto:${email}`}
                   className="text-xs font-bold text-primary hover:underline font-mono inline-flex items-center gap-1.5"
                 >
                   <Mail className="h-3.5 w-3.5 text-primary shrink-0" />
-                  <span>info@stonetech.in</span>
+                  <span>{email}</span>
                 </a>
               </div>
 
               <div className="flex items-center gap-2 text-[11px] text-muted-foreground pt-1">
                 <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                <span>{texts.contact.studioHours}</span>
+                <span>{hours}</span>
               </div>
             </div>
 

@@ -43,6 +43,7 @@ export interface SiteSettings {
   website_catalog_prices?: Record<string, JsonValue>;
   website_catalog_order?: string[];
   website_deleted_product_ids?: string[];
+  website_landing_content?: Record<string, JsonValue>;
 }
 
 export const DEFAULT_WEBSITE_CATALOG_ORDER: string[] = [
@@ -196,6 +197,7 @@ export const SITE_SETTINGS_DEFAULTS: SiteSettings = {
   website_catalog_prices: {},
   website_catalog_order: DEFAULT_WEBSITE_CATALOG_ORDER,
   website_deleted_product_ids: [],
+  website_landing_content: {},
   reviews: [
     {
       quote:
