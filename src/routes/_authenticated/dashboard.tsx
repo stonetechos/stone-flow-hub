@@ -52,7 +52,6 @@ import {
   Flame,
   LineChart,
   Receipt,
-  Activity,
   TrendingUp,
   Truck,
   Users,
@@ -301,8 +300,6 @@ function DashboardPage() {
 
               {/* RIGHT RAIL */}
               <CopilotDock
-                health={computeHealth(kpisQ.data)}
-                kpis={kpisQ.data}
                 topInsights={topInsights}
                 activity={activityQ.data ?? []}
                 activityLoading={activityQ.isLoading}
@@ -988,14 +985,10 @@ function SalesCommandCentre({ kpis }: { kpis: DashboardKpis }) {
 /* -------------------------------------------------------------------------- */
 
 function CopilotDock({
-  health,
-  kpis,
   topInsights,
   activity,
   activityLoading,
 }: {
-  health: HealthScore;
-  kpis: DashboardKpis;
   topInsights: ProcessedInsight[];
   activity: Array<{
     id: string | number;
@@ -1011,34 +1004,6 @@ function CopilotDock({
   const suggestions = buildSuggestions(topInsights, t);
   return (
     <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start">
-      {/* Contextual summary in 3D Milky White Box */}
-      <div className="card-3d-milky p-5">
-        <div className="mb-2.5 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-engraved-kicker">
-          <Activity className="h-3.5 w-3.5 text-blue-600" aria-hidden />
-          {t("dashboard.aiCopilot", "OPERATIONAL SUMMARY")}
-        </div>
-        <div className="font-display text-[15px] font-black leading-snug text-engraved-title">
-          {health.band === "idle"
-            ? t(
-                "dashboard.aiCopilotDescIdle",
-                "Awaiting operational records. Enter incoming leads, customers, or quotations to begin health telemetry.",
-              )
-            : health.band === "strong"
-              ? t("dashboard.aiCopilotDescStrong")
-              : health.band === "steady"
-                ? t("dashboard.aiCopilotDescSteady")
-                : t("dashboard.aiCopilotDescWeak")}
-        </div>
-        <div className="mt-3.5 grid grid-cols-3 gap-2 border-t border-blue-50 pt-3">
-          <MiniStat
-            label={t("dashboard.cashToday")}
-            value={"₹" + formatMoney(kpis.collectionsTodayInr)}
-          />
-          <MiniStat label={t("dashboard.toApprove")} value={String(kpis.pendingQuotes)} />
-          <MiniStat label={t("dashboard.overdue")} value={String(kpis.overdueFollowups)} />
-        </div>
-      </div>
-
       {/* Suggested actions */}
       <SurfaceCard
         icon={<CheckSquare className="h-3.5 w-3.5" />}
@@ -1122,19 +1087,6 @@ function CopilotDock({
         )}
       </SurfaceCard>
     </aside>
-  );
-}
-
-function MiniStat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="engraved-well-glow rounded-xl p-2 text-center">
-      <div className="font-mono text-[9px] font-black uppercase tracking-wider text-engraved-kicker">
-        {label}
-      </div>
-      <div className="mt-0.5 font-display text-[14px] font-black tabular-nums text-engraved-blue-lg">
-        {value}
-      </div>
-    </div>
   );
 }
 
