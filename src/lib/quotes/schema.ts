@@ -33,6 +33,7 @@ export const quoteItemInputSchema = z.object({
     z.enum(QUOTE_CATEGORIES).nullable().optional(),
   ),
   image_url: z.string().nullable().optional(),
+  images: z.array(z.string()).optional(),
 });
 export type QuoteItemInput = z.infer<typeof quoteItemInputSchema>;
 

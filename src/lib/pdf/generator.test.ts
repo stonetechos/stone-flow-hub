@@ -277,16 +277,22 @@ describe("PDF Generator", () => {
     expect(html).toContain('alt="Authorized Signature"');
   });
 
-  it("renders Bill To / Ship To table with generous vertical padding to avoid edge clipping", () => {
+  it("renders Bill To / Ship To table with generous vertical padding and centered headers", () => {
     const html = renderDocHtml(sampleDoc);
-    expect(html).toContain("padding:10px 14px 14px");
+    expect(html).toContain("padding:10px 14px 12px");
+    expect(html).toContain(
+      "text-align:center;background:#f8fafc;border-right:1px solid #cbd5e1;border-bottom:1px solid #cbd5e1;padding:7px 14px;font-weight:700;color:#475569;text-transform:uppercase;font-size:8px;letter-spacing:0.05em;vertical-align:middle !important;",
+    );
     expect(html).toContain("The Home Decor Point");
   });
 
   it("renders table header with vertical-align: middle and padded Total In Words box", () => {
     const html = renderDocHtml(sampleDoc);
     expect(html).toContain("vertical-align:middle !important");
-    expect(html).toContain("padding:6px 14px");
+    expect(html).toContain(
+      "padding:8px 14px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;font-size:9.5px;line-height:1.45;text-align:left;",
+    );
     expect(html).toContain("Total In Words:");
+    expect(html).toContain("display:inline-block");
   });
 });

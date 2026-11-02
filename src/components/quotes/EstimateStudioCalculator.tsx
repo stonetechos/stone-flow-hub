@@ -51,6 +51,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { compressImageToDataUrl } from "@/lib/images/compress";
+import { supabase } from "@/integrations/supabase/client";
+import { FILES_BUCKET } from "@/lib/constants";
 import { Field } from "@/components/forms/Field";
 import { formatInr } from "@/lib/format";
 import { MATERIAL_OPTIONS } from "@/lib/customers/schema";
@@ -275,12 +277,34 @@ export function EstimateStudioCalculator({
       return;
     }
     try {
-      const dataUrl = await compressImageToDataUrl(file, 1000, 0.75);
+      // 1. Try uploading to Supabase Storage if user has session
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "");
+      const safeExt = ["png", "jpg", "jpeg", "webp"].includes(ext) ? ext : "jpg";
+      const filePath = `estimates/calc_${id}_${Date.now()}.${safeExt}`;
+      const { data: uploadData, error: uploadErr } = await supabase.storage
+        .from(FILES_BUCKET)
+        .upload(filePath, file, { upsert: true });
+
+      if (!uploadErr && uploadData?.path) {
+        const { data: pubData } = supabase.storage.from(FILES_BUCKET).getPublicUrl(uploadData.path);
+        if (pubData?.publicUrl) {
+          updateProduct(id, { imageDataUrl: pubData.publicUrl });
+          return;
+        }
+      }
+
+      // 2. Fallback to compact compressed dataUrl (< 40KB) so pruneOversizedDataUrls never strips it
+      const dataUrl = await compressImageToDataUrl(file, 480, 0.65);
       updateProduct(id, { imageDataUrl: dataUrl });
     } catch {
-      const reader = new FileReader();
-      reader.onload = () => updateProduct(id, { imageDataUrl: String(reader.result) });
-      reader.readAsDataURL(file);
+      try {
+        const dataUrl = await compressImageToDataUrl(file, 400, 0.6);
+        updateProduct(id, { imageDataUrl: dataUrl });
+      } catch {
+        const reader = new FileReader();
+        reader.onload = () => updateProduct(id, { imageDataUrl: String(reader.result) });
+        reader.readAsDataURL(file);
+      }
     }
   }
 

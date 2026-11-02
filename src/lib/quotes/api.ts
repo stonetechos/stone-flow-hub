@@ -348,15 +348,38 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
   if (itemErr) throw new AppError(mapDbError(itemErr));
 
   if (insertedRows && insertedRows.length > 0) {
-    let hasNotes = false;
+    let hasWfUpdates = false;
+    const wfObj = (rawWorkflowState ?? {}) as Record<string, unknown>;
+    const lineItemImages: Record<string, string> = {
+      ...((wfObj.line_item_images as Record<string, string> | null) ?? {}),
+    };
+    const lineItemMultiImages: Record<string, string[]> = {
+      ...((wfObj.line_item_multi_images as Record<string, string[]> | null) ?? {}),
+    };
+
     insertedRows.forEach((ins, idx) => {
-      const itNote = parsed.items[idx]?.notes;
+      const it = parsed.items[idx];
+      const itNote = it?.notes;
       if (itNote && itNote.trim()) {
         lineItemNotes[ins.id] = itNote.trim();
-        hasNotes = true;
+        hasWfUpdates = true;
+      }
+      const itImg = it?.image_url;
+      const itMulti = it?.images;
+      if (itImg && itImg.trim()) {
+        lineItemImages[ins.id] = itImg.trim();
+        hasWfUpdates = true;
+      }
+      if (Array.isArray(itMulti) && itMulti.length > 0) {
+        lineItemMultiImages[ins.id] = itMulti.filter(Boolean);
+        hasWfUpdates = true;
+      } else if (itImg && itImg.trim()) {
+        lineItemMultiImages[ins.id] = [itImg.trim()];
+        hasWfUpdates = true;
       }
     });
-    if (hasNotes) {
+
+    if (hasWfUpdates) {
       try {
         await getDb()
           .from("quotes")
@@ -364,12 +387,14 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
             workflow_state: pruneOversizedDataUrls({
               ...rawWorkflowState,
               line_item_notes: lineItemNotes,
+              line_item_images: lineItemImages,
+              line_item_multi_images: lineItemMultiImages,
             }),
           } as never)
           .eq("id", quote.id);
       } catch (err) {
         console.warn(
-          "[createQuote] Non-fatal error updating line_item_notes in workflow_state:",
+          "[createQuote] Non-fatal error updating line item metadata in workflow_state:",
           err,
         );
       }

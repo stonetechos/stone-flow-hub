@@ -20,6 +20,7 @@ import {
   Send,
   MessageCircle,
   Image as ImageIcon,
+  ImagePlus,
   Eye,
   Sparkles,
   Boxes,
@@ -95,7 +96,11 @@ import {
   reviseQuote,
   setQuoteStatus,
   updateQuote,
+  updateQuoteItemImage,
 } from "@/lib/quotes/api";
+import { compressImageToDataUrl } from "@/lib/images/compress";
+import { FILES_BUCKET } from "@/lib/constants";
+import { supabase } from "@/integrations/supabase/client";
 import { formatInr } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { getQuoteSaleMode, getQuoteHybridSplit, SALE_MODE_CONFIG } from "@/lib/quotes/sale-mode";
@@ -164,6 +169,87 @@ function QuoteDetailPage() {
   }, [items.data, dispatchItemsQ.data]);
 
   const [previewImage, setPreviewImage] = useState<{ url: string; title: string } | null>(null);
+  const [uploadingRowId, setUploadingRowId] = useState<string | null>(null);
+
+  const handleImageUpload = async (rowId: string, files: File[]) => {
+    const validFiles = files.filter(
+      (f) => f.type.startsWith("image/") && f.size <= 15 * 1024 * 1024,
+    );
+    if (validFiles.length === 0) {
+      toast.error("Please select valid image file(s) under 15MB");
+      return;
+    }
+
+    setUploadingRowId(rowId);
+    const toastId = toast.loading(
+      `Compressing and attaching ${validFiles.length} photo${validFiles.length > 1 ? "s" : ""}…`,
+    );
+
+    try {
+      const processedUrls: string[] = [];
+      for (const file of validFiles) {
+        const compressedDataUrl = await compressImageToDataUrl(file, 640, 0.7);
+        let finalUrl = compressedDataUrl;
+
+        try {
+          const res = await fetch(compressedDataUrl);
+          const blob = await res.blob();
+          const safeExt = file.name.split(".").pop()?.toLowerCase() || "jpg";
+          const storagePath = `quotes/${quoteId}/line_items/${rowId}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}.${safeExt}`;
+
+          const { data: upData, error: upErr } = await supabase.storage
+            .from(FILES_BUCKET)
+            .upload(storagePath, blob, {
+              contentType: "image/jpeg",
+              upsert: true,
+            });
+
+          if (!upErr && upData) {
+            const { data: pubData } = supabase.storage.from(FILES_BUCKET).getPublicUrl(storagePath);
+            if (pubData?.publicUrl) {
+              finalUrl = pubData.publicUrl;
+            }
+          }
+        } catch (storageErr) {
+          console.warn("[quotes] Storage upload fallback to compressed dataUrl:", storageErr);
+        }
+        processedUrls.push(finalUrl);
+      }
+
+      const currentRow = (items.data ?? []).find((r) => r.id === rowId);
+      const existing = getLineItemImages(
+        currentRow ?? { id: rowId },
+        quoteImages.data ?? new Map(),
+      );
+      const mergedUrls = Array.from(new Set([...processedUrls, ...existing]));
+
+      await updateQuoteItemImage(quoteId, rowId, mergedUrls, currentRow?.description);
+      invalidateQuote(qc, quoteId);
+      qc.invalidateQueries({ queryKey: qk.quotes.items(quoteId) });
+      qc.invalidateQueries({ queryKey: ["quotes", "images", quoteId] });
+      toast.success(
+        `Attached ${validFiles.length} photo${validFiles.length > 1 ? "s" : ""} to item`,
+        { id: toastId },
+      );
+    } catch (err) {
+      toast.error(toUserMessage(err), { id: toastId });
+    } finally {
+      setUploadingRowId(null);
+    }
+  };
+
+  const handleRemovePhoto = async (rowId: string, desc?: string) => {
+    try {
+      await updateQuoteItemImage(quoteId, rowId, null, desc);
+      invalidateQuote(qc, quoteId);
+      qc.invalidateQueries({ queryKey: qk.quotes.items(quoteId) });
+      qc.invalidateQueries({ queryKey: ["quotes", "images", quoteId] });
+      toast.success("Photo removed from line item");
+    } catch (err) {
+      toast.error(toUserMessage(err));
+    }
+  };
+
   const [termsDialogOpen, setTermsDialogOpen] = useState(false);
   const [editingTerms, setEditingTerms] = useState("");
   const [editingScope, setEditingScope] = useState<DealScope>("supply_only");
@@ -684,34 +770,86 @@ function QuoteDetailPage() {
                       className="rounded-lg border border-border bg-card p-3 shadow-2xs space-y-2.5"
                     >
                       <div className="flex items-start gap-3">
-                        {img ? (
-                          <button
-                            type="button"
-                            onClick={() => setPreviewImage({ url: img, title: it.description })}
-                            className="group relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-border bg-muted/40 shadow-xs cursor-pointer"
-                            title="Click to view full photo"
-                          >
-                            <img
-                              src={img}
-                              alt={it.description}
-                              className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-110"
-                            />
-                            <span className="absolute inset-0 flex items-center justify-center bg-black/35 text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                              <Eye className="h-4 w-4" />
-                            </span>
-                            {multiImgs.length > 1 && (
-                              <span className="absolute bottom-1 right-1 bg-black/75 text-white text-[9px] font-mono px-1 rounded">
-                                +{multiImgs.length - 1}
-                              </span>
-                            )}
-                          </button>
-                        ) : (
-                          <div
-                            className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border border-dashed border-border/80 bg-muted/20 text-muted-foreground/30"
-                            title="No photo attached"
-                          >
-                            <ImageIcon className="h-5 w-5" />
+                        {uploadingRowId === it.id ? (
+                          <div className="flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-lg border border-primary/30 bg-primary/5 text-primary">
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                            <span className="text-[9px] mt-1 font-medium">Saving…</span>
                           </div>
+                        ) : img ? (
+                          <div className="flex flex-col items-center gap-1 shrink-0">
+                            <div className="group relative h-16 w-16 overflow-hidden rounded-lg border border-border bg-muted/40 shadow-xs cursor-pointer">
+                              <img
+                                src={img}
+                                alt={it.description}
+                                className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-110"
+                                onClick={() => setPreviewImage({ url: img, title: it.description })}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setPreviewImage({ url: img, title: it.description })}
+                                className="absolute inset-0 flex items-center justify-center bg-black/35 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </button>
+                              {multiImgs.length > 1 && (
+                                <span className="absolute bottom-1 right-1 bg-black/75 text-white text-[9px] font-mono px-1 rounded">
+                                  +{multiImgs.length - 1}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <label
+                                className="cursor-pointer text-[10px] text-primary hover:underline flex items-center gap-0.5"
+                                title="Add another photo"
+                              >
+                                <ImagePlus className="h-2.5 w-2.5" />
+                                <span>+Add</span>
+                                <input
+                                  type="file"
+                                  multiple
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={(e) => {
+                                    if (e.target.files?.length) {
+                                      handleImageUpload(it.id, Array.from(e.target.files));
+                                    }
+                                    e.target.value = "";
+                                  }}
+                                />
+                              </label>
+                              <span className="text-muted-foreground/40 text-[9px]">·</span>
+                              <button
+                                type="button"
+                                onClick={() => handleRemovePhoto(it.id, it.description)}
+                                className="text-[10px] text-rose-500 hover:underline"
+                                title="Remove photo"
+                              >
+                                Del
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <label
+                            className="group flex h-16 w-16 shrink-0 flex-col cursor-pointer items-center justify-center rounded-lg border border-dashed border-primary/40 bg-muted/20 hover:bg-primary/5 hover:border-primary transition p-1 text-center"
+                            title="Click to upload product photo(s)"
+                          >
+                            <ImagePlus className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                            <span className="text-[9.5px] font-medium text-muted-foreground group-hover:text-primary transition-colors mt-0.5 leading-tight">
+                              + Photo
+                            </span>
+                            <input
+                              type="file"
+                              multiple
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                if (e.target.files?.length) {
+                                  handleImageUpload(it.id, Array.from(e.target.files));
+                                }
+                                e.target.value = "";
+                              }}
+                            />
+                          </label>
                         )}
                         <div className="min-w-0 flex-1">
                           <h4 className="font-semibold text-xs sm:text-sm text-foreground leading-snug">
@@ -796,34 +934,91 @@ function QuoteDetailPage() {
                       return (
                         <TableRow key={it.id}>
                           <TableCell className="p-2 text-center align-middle">
-                            {img ? (
-                              <button
-                                type="button"
-                                onClick={() => setPreviewImage({ url: img, title: it.description })}
-                                className="group relative inline-block h-16 w-16 overflow-hidden rounded-lg border border-border bg-muted/40 shadow-xs hover:border-primary transition cursor-pointer"
-                                title="Click to view full photo"
-                              >
-                                <img
-                                  src={img}
-                                  alt={it.description}
-                                  className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-110"
-                                />
-                                <span className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity text-white">
-                                  <Eye className="h-4 w-4" />
-                                </span>
-                                {multiImgs.length > 1 && (
-                                  <span className="absolute bottom-0.5 right-0.5 bg-black/75 text-white text-[9px] font-mono px-1 rounded">
-                                    +{multiImgs.length - 1}
-                                  </span>
-                                )}
-                              </button>
-                            ) : (
-                              <div
-                                className="inline-flex h-16 w-16 items-center justify-center rounded-lg border border-dashed border-border/80 bg-muted/20 text-muted-foreground/30"
-                                title="No photo attached"
-                              >
-                                <ImageIcon className="h-5 w-5" />
+                            {uploadingRowId === it.id ? (
+                              <div className="inline-flex flex-col h-16 w-16 items-center justify-center rounded-lg border border-primary/30 bg-primary/5 text-primary">
+                                <Loader2 className="h-5 w-5 animate-spin" />
+                                <span className="text-[9px] mt-1 font-medium">Saving…</span>
                               </div>
+                            ) : img ? (
+                              <div className="inline-flex flex-col items-center gap-1">
+                                <div className="group relative inline-block h-16 w-16 overflow-hidden rounded-lg border border-border bg-muted/40 shadow-xs hover:border-primary transition">
+                                  <img
+                                    src={img}
+                                    alt={it.description}
+                                    className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-110 cursor-pointer"
+                                    onClick={() =>
+                                      setPreviewImage({ url: img, title: it.description })
+                                    }
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setPreviewImage({ url: img, title: it.description })
+                                    }
+                                    className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity text-white cursor-pointer"
+                                    title="Click to view full photo"
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </button>
+                                  {multiImgs.length > 1 && (
+                                    <span className="absolute bottom-0.5 right-0.5 bg-black/75 text-white text-[9px] font-mono px-1 rounded">
+                                      +{multiImgs.length - 1}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <label
+                                    className="cursor-pointer text-[10px] text-primary hover:underline flex items-center gap-0.5"
+                                    title="Add another photo"
+                                  >
+                                    <ImagePlus className="h-2.5 w-2.5" />
+                                    <span>Add</span>
+                                    <input
+                                      type="file"
+                                      multiple
+                                      accept="image/*"
+                                      className="hidden"
+                                      onChange={(e) => {
+                                        if (e.target.files?.length) {
+                                          handleImageUpload(it.id, Array.from(e.target.files));
+                                        }
+                                        e.target.value = "";
+                                      }}
+                                    />
+                                  </label>
+                                  <span className="text-muted-foreground/40 text-[9px]">·</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemovePhoto(it.id, it.description)}
+                                    className="text-[10px] text-rose-500 hover:underline"
+                                    title="Remove photo"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <label
+                                className="group inline-flex flex-col h-16 w-16 cursor-pointer items-center justify-center rounded-lg border border-dashed border-primary/40 bg-muted/20 hover:bg-primary/5 hover:border-primary transition p-1 text-center"
+                                title="Click to upload product photo(s)"
+                              >
+                                <ImagePlus className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                                <span className="text-[9.5px] font-medium text-muted-foreground group-hover:text-primary transition-colors mt-0.5 leading-tight">
+                                  + Photo
+                                </span>
+                                <input
+                                  type="file"
+                                  multiple
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={(e) => {
+                                    if (e.target.files?.length) {
+                                      handleImageUpload(it.id, Array.from(e.target.files));
+                                    }
+                                    e.target.value = "";
+                                  }}
+                                />
+                              </label>
                             )}
                           </TableCell>
                           <TableCell className="font-medium">
