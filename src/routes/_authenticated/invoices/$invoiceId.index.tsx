@@ -17,6 +17,9 @@ import {
   ShieldAlert,
   Truck,
   CheckCircle2,
+  Eye,
+  ImageIcon,
+  Sparkles,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
@@ -70,6 +73,11 @@ import type { RecordPaymentInput } from "@/lib/invoices/schema";
 import type { DbTable } from "@/lib/types";
 import { createRazorpayLink, cancelRazorpayLink } from "@/lib/payments/razorpay.functions";
 import { invalidateInvoice, invalidatePayment } from "@/lib/query-invalidation";
+import {
+  resolveAllInvoiceImages,
+  getLineItemImage,
+  getLineItemImages,
+} from "@/lib/quotes/quote-images";
 
 type InvoiceStatus = DbTable<"invoices">["status"];
 
@@ -87,6 +95,7 @@ function InvoiceDetailPage() {
   const [writeOffOpen, setWriteOffOpen] = useState(false);
   const [confirmDel, setConfirmDel] = useState(false);
   const [ewbOpen, setEwbOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState<{ url: string; title: string } | null>(null);
 
   const inv = useQuery({
     queryKey: qk.invoices.byId(invoiceId),
@@ -95,6 +104,11 @@ function InvoiceDetailPage() {
   const items = useQuery({
     queryKey: qk.invoices.items(invoiceId),
     queryFn: () => getInvoiceItems(invoiceId),
+  });
+  const invoiceImages = useQuery({
+    queryKey: ["invoices", "images", invoiceId],
+    queryFn: () => resolveAllInvoiceImages(inv.data, items.data ?? []),
+    enabled: !!inv.data && !!items.data,
   });
   const payments = useQuery({
     queryKey: qk.invoices.payments(invoiceId),
@@ -389,6 +403,8 @@ function InvoiceDetailPage() {
             {/* Mobile Responsive Line Items Card View (< sm) */}
             <div className="sm:hidden space-y-3">
               {(items.data ?? []).map((it) => {
+                const img = getLineItemImage(it, invoiceImages.data ?? new Map());
+                const multiImgs = getLineItemImages(it, invoiceImages.data ?? new Map());
                 const linePreTax = Number(it.quantity ?? 0) * Number(it.unit_price ?? 0);
                 const itemNotes = (it as { notes?: string | null }).notes;
                 return (
@@ -396,26 +412,62 @@ function InvoiceDetailPage() {
                     key={it.id}
                     className="rounded-lg border border-border bg-card p-3 shadow-2xs space-y-2.5"
                   >
-                    <div>
-                      <h4 className="font-semibold text-xs sm:text-sm text-foreground leading-snug">
-                        {it.description}
-                      </h4>
-                      {itemNotes && (
-                        <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
-                          {itemNotes}
-                        </p>
+                    <div className="flex items-start gap-3">
+                      {img ? (
+                        <button
+                          type="button"
+                          onClick={() => setPreviewImage({ url: img, title: it.description })}
+                          className="group relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-border bg-muted/40 shadow-xs cursor-pointer"
+                          title="Click to view full photo"
+                        >
+                          <img
+                            src={img}
+                            alt={it.description}
+                            className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-110"
+                          />
+                          <span className="absolute inset-0 flex items-center justify-center bg-black/35 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Eye className="h-4 w-4" />
+                          </span>
+                          {multiImgs.length > 1 && (
+                            <span className="absolute bottom-1 right-1 bg-black/75 text-white text-[9px] font-mono px-1 rounded">
+                              +{multiImgs.length - 1}
+                            </span>
+                          )}
+                        </button>
+                      ) : (
+                        <div
+                          className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border border-dashed border-border/80 bg-muted/20 text-muted-foreground/30"
+                          title="No photo attached"
+                        >
+                          <ImageIcon className="h-5 w-5" />
+                        </div>
                       )}
-                      <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                        {(it as unknown as { hsn_sac?: string | null }).hsn_sac && (
-                          <span className="font-mono text-[10px] text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">
-                            HSN: {(it as unknown as { hsn_sac?: string | null }).hsn_sac}
-                          </span>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-semibold text-xs sm:text-sm text-foreground leading-snug">
+                          {it.description}
+                        </h4>
+                        {itemNotes && (
+                          <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
+                            {itemNotes}
+                          </p>
                         )}
-                        {it.unit && (
-                          <span className="text-[10px] text-muted-foreground bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
-                            Unit: {it.unit}
-                          </span>
-                        )}
+                        <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                          {(it as unknown as { hsn_sac?: string | null }).hsn_sac && (
+                            <span className="font-mono text-[10px] text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">
+                              HSN: {(it as unknown as { hsn_sac?: string | null }).hsn_sac}
+                            </span>
+                          )}
+                          {it.unit && (
+                            <span className="text-[10px] text-muted-foreground bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
+                              Unit: {it.unit}
+                            </span>
+                          )}
+                          {img && (
+                            <span className="inline-flex items-center gap-0.5 text-[10px] text-primary">
+                              <Sparkles className="h-2.5 w-2.5" /> Photo
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
 
@@ -454,6 +506,7 @@ function InvoiceDetailPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-20 text-center">Photo</TableHead>
                     <TableHead>Description</TableHead>
                     <TableHead>HSN</TableHead>
                     <TableHead className="text-right">Qty</TableHead>
@@ -465,10 +518,43 @@ function InvoiceDetailPage() {
                 </TableHeader>
                 <TableBody>
                   {(items.data ?? []).map((it) => {
+                    const img = getLineItemImage(it, invoiceImages.data ?? new Map());
+                    const multiImgs = getLineItemImages(it, invoiceImages.data ?? new Map());
                     const linePreTax = Number(it.quantity ?? 0) * Number(it.unit_price ?? 0);
                     const itemNotes = (it as { notes?: string | null }).notes;
                     return (
                       <TableRow key={it.id}>
+                        <TableCell className="p-2 text-center align-middle">
+                          {img ? (
+                            <button
+                              type="button"
+                              onClick={() => setPreviewImage({ url: img, title: it.description })}
+                              className="group relative inline-block h-16 w-16 overflow-hidden rounded-lg border border-border bg-muted/40 shadow-xs hover:border-primary transition cursor-pointer"
+                              title="Click to view full photo"
+                            >
+                              <img
+                                src={img}
+                                alt={it.description}
+                                className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-110"
+                              />
+                              <span className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity text-white">
+                                <Eye className="h-4 w-4" />
+                              </span>
+                              {multiImgs.length > 1 && (
+                                <span className="absolute bottom-0.5 right-0.5 bg-black/75 text-white text-[9px] font-mono px-1 rounded">
+                                  +{multiImgs.length - 1}
+                                </span>
+                              )}
+                            </button>
+                          ) : (
+                            <div
+                              className="inline-flex h-16 w-16 items-center justify-center rounded-lg border border-dashed border-border/80 bg-muted/20 text-muted-foreground/30"
+                              title="No photo attached"
+                            >
+                              <ImageIcon className="h-5 w-5" />
+                            </div>
+                          )}
+                        </TableCell>
                         <TableCell className="font-medium">
                           <div>{it.description}</div>
                           {itemNotes && (
@@ -914,6 +1000,25 @@ function InvoiceDetailPage() {
         invoice={invoice}
         items={items.data ?? []}
       />
+
+      <Dialog open={Boolean(previewImage)} onOpenChange={(open) => !open && setPreviewImage(null)}>
+        <DialogContent className="max-w-3xl p-4">
+          <DialogHeader>
+            <DialogTitle className="truncate text-base font-semibold">
+              {previewImage?.title || "Product Visual"}
+            </DialogTitle>
+          </DialogHeader>
+          {previewImage?.url && (
+            <div className="flex items-center justify-center overflow-hidden rounded-lg bg-black/5 p-2">
+              <img
+                src={previewImage.url}
+                alt={previewImage.title}
+                className="max-h-[75vh] w-auto max-w-full rounded-md object-contain shadow-md"
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

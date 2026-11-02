@@ -449,14 +449,21 @@ export async function convertQuoteToInvoice(input: ConvertQuoteInput) {
       .eq("id", parsed.quote_id)
       .maybeSingle();
     const qWf = (q?.workflow_state as Record<string, unknown> | null) ?? {};
-    if (qWf.line_item_notes) {
+    if (qWf.line_item_notes || qWf.line_item_images || qWf.line_item_multi_images) {
       const { data: curInv } = await getDb()
         .from("invoices")
         .select("workflow_state")
         .eq("id", invoice.id)
         .maybeSingle();
       const invWf = (curInv?.workflow_state as Record<string, unknown> | null) ?? {};
-      invUpdate.workflow_state = { ...invWf, line_item_notes: qWf.line_item_notes };
+      invUpdate.workflow_state = {
+        ...invWf,
+        ...(qWf.line_item_notes ? { line_item_notes: qWf.line_item_notes } : {}),
+        ...(qWf.line_item_images ? { line_item_images: qWf.line_item_images } : {}),
+        ...(qWf.line_item_multi_images
+          ? { line_item_multi_images: qWf.line_item_multi_images }
+          : {}),
+      };
     }
 
     // Auto-link Delivery Challan number to invoice
@@ -879,7 +886,7 @@ export async function reassignQuoteCustomer(
 export async function updateQuoteItemImage(
   quoteId: string,
   itemKeyOrDesc: string,
-  imageUrl: string | null,
+  imageUrl: string | string[] | null,
   descriptionHint?: string | null,
 ): Promise<void> {
   const { data: q, error: fetchErr } = await getDb()
@@ -891,6 +898,7 @@ export async function updateQuoteItemImage(
 
   const wf = (q.workflow_state as Record<string, unknown> | null) ?? {};
   const currentImages = { ...((wf.line_item_images as Record<string, string> | null) ?? {}) };
+  const multiImages = { ...((wf.line_item_multi_images as Record<string, string[]> | null) ?? {}) };
 
   // Sanitize any historical oversized base64 strings (> 60KB) to prevent Postgres statement timeout
   for (const [k, v] of Object.entries(currentImages)) {
@@ -903,19 +911,31 @@ export async function updateQuoteItemImage(
   if (itemKeyOrDesc?.trim()) keysToUpdate.add(itemKeyOrDesc.trim().toLowerCase());
   if (descriptionHint?.trim()) keysToUpdate.add(descriptionHint.trim().toLowerCase());
 
-  if (imageUrl && imageUrl.trim()) {
+  if (Array.isArray(imageUrl) && imageUrl.length > 0) {
+    const primary = imageUrl[0].trim();
+    const cleanList = imageUrl.map((x) => x.trim()).filter(Boolean);
+    for (const k of keysToUpdate) {
+      currentImages[k] = primary;
+      multiImages[k] = cleanList;
+    }
+  } else if (typeof imageUrl === "string" && imageUrl.trim()) {
     const cleanUrl = imageUrl.trim();
     for (const k of keysToUpdate) {
       currentImages[k] = cleanUrl;
+      multiImages[k] = [cleanUrl];
     }
   } else {
     // Explicitly set suppression sentinel so getLineItemImage suppresses fallback catalog/wall_estimate images
     for (const k of keysToUpdate) {
       currentImages[k] = "__none__";
+      delete multiImages[k];
     }
   }
 
-  const updatedWf = pruneOversizedDataUrls({ ...wf, line_item_images: currentImages }, 80_000);
+  const updatedWf = pruneOversizedDataUrls(
+    { ...wf, line_item_images: currentImages, line_item_multi_images: multiImages },
+    80_000,
+  );
   const { error } = await getDb()
     .from("quotes")
     .update({ workflow_state: updatedWf } as never)

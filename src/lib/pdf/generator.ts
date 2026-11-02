@@ -49,6 +49,7 @@ export type PdfLine = {
   amount?: number | string;
   hsn?: string;
   image?: string | null;
+  images?: string[];
 };
 export type PdfMeta = { label: string; value: string | number | null | undefined };
 
@@ -173,7 +174,9 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
   const termsText = doc.terms || "Due on Receipt";
 
   const showHsn = (doc.lines ?? []).some((l) => l.hsn);
-  const showPhoto = (doc.lines ?? []).some((l) => Boolean(l.image));
+  const showPhoto = (doc.lines ?? []).some((l) =>
+    Boolean(l.image || (l.images && l.images.length > 0)),
+  );
 
   const rows = (doc.lines ?? [])
     .map(
@@ -184,10 +187,25 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
         <td style="padding:6px 4px;color:${muted};text-align:center;vertical-align:top;width:32px">${i + 1}</td>
         ${
           showPhoto
-            ? `<td style="padding:4px;text-align:center;vertical-align:middle;width:56px">
+            ? `<td style="padding:6px 4px;text-align:center;vertical-align:middle;width:96px">
                 ${
-                  l.image
-                    ? `<img src="${esc(l.image)}" alt="${esc(l.label)}" style="max-width:50px;max-height:36px;width:auto;height:auto;object-fit:contain;background:#f8fafc;border-radius:3px;border:1px solid ${border};display:block;margin:0 auto;" />`
+                  l.image || (l.images && l.images.length > 0)
+                    ? `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin:0 auto;width:90px;">
+                        <img src="${esc(l.image || l.images?.[0])}" alt="${esc(l.label)}" style="width:84px;height:68px;object-fit:cover;background:#f8fafc;border-radius:4px;border:1px solid ${border};box-shadow:0 1px 3px rgba(0,0,0,0.06);display:block;" />
+                        ${
+                          l.images && l.images.length > 1
+                            ? `<div style="display:flex;gap:3px;justify-content:center;flex-wrap:wrap;margin-top:2px;">
+                                ${l.images
+                                  .slice(1, 4)
+                                  .map(
+                                    (sub) =>
+                                      `<img src="${esc(sub)}" alt="Angle" style="width:24px;height:20px;object-fit:cover;border-radius:2px;border:1px solid ${border};" />`,
+                                  )
+                                  .join("")}
+                              </div>`
+                            : ""
+                        }
+                      </div>`
                     : `<span style="color:${muted}">—</span>`
                 }
               </td>`
@@ -340,20 +358,39 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
       </div>`;
   }
 
-  // Only render gallery block if photos were NOT already shown in the table
-  const uniquePhotos = Array.from(
-    new Set((doc.lines ?? []).map((l) => l.image).filter((img): img is string => Boolean(img))),
-  );
+  // Collect all unique photos across line items (both primary and multi-photos)
+  const allVisualSpecs: { url: string; label: string }[] = [];
+  const seenVisualUrls = new Set<string>();
+  for (const l of doc.lines ?? []) {
+    const list = [l.image, ...(l.images ?? [])].filter((img): img is string => Boolean(img));
+    for (const url of list) {
+      if (!seenVisualUrls.has(url)) {
+        seenVisualUrls.add(url);
+        allVisualSpecs.push({ url, label: l.label });
+      }
+    }
+  }
+
   const galleryBlock =
-    !showPhoto && uniquePhotos.length > 0
-      ? `<div class="avoid-break" style="margin-top:8px;padding:6px 8px;border:1px solid ${border};border-radius:4px;background:#fafafa;">
-          <div style="font-size:8.5px;text-transform:uppercase;letter-spacing:.04em;color:${muted};margin-bottom:4px;font-weight:700">Product &amp; Material Visuals</div>
-          <div style="display:flex;flex-wrap:wrap;gap:6px">
-            ${uniquePhotos
+    allVisualSpecs.length > 0
+      ? `<div class="avoid-break" style="margin-top:12px;padding:8px 10px;border:1px solid ${border};border-radius:6px;background:#f8fafc;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #e2e8f0;">
+            <div style="font-size:8.5px;text-transform:uppercase;letter-spacing:.04em;color:${deepTurquoise};font-weight:800;">
+              Material &amp; Product Visual Specifications (Texture &amp; Relief Spec)
+            </div>
+            <div style="font-size:7.5px;color:${muted};font-family:sans-serif;">
+              Quarry Selection / Architectural Relief Samples
+            </div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            ${allVisualSpecs
               .map(
-                (url) =>
-                  `<div style="border:1px solid ${border};border-radius:3px;overflow:hidden;background:#fff;padding:2px">
-                    <img src="${esc(url)}" alt="Product Photo" style="width:64px;height:48px;object-fit:cover;border-radius:2px;display:block;" />
+                (spec) =>
+                  `<div style="border:1px solid #cbd5e1;border-radius:4px;overflow:hidden;background:#fff;padding:3px;box-shadow:0 1px 2px rgba(0,0,0,0.05);max-width:140px;">
+                    <img src="${esc(spec.url)}" alt="${esc(spec.label)}" style="width:130px;height:95px;object-fit:cover;border-radius:3px;display:block;" />
+                    <div style="font-size:7.5px;font-weight:700;color:${ink};margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;padding:0 1px;" title="${esc(spec.label)}">
+                      ${esc(spec.label)}
+                    </div>
                   </div>`,
               )
               .join("")}
@@ -504,7 +541,7 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
               <th style="width:36px;text-align:center;padding:7px 4px;vertical-align:middle;">#</th>
               ${
                 showPhoto
-                  ? `<th style="width:56px;text-align:center;padding:7px 4px;vertical-align:middle;">Photo</th>`
+                  ? `<th style="width:96px;text-align:center;padding:7px 4px;vertical-align:middle;">Photo</th>`
                   : ""
               }
               <th style="text-align:left;padding:7px 10px;vertical-align:middle;">Item &amp; Description</th>

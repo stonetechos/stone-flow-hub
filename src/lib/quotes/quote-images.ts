@@ -2,17 +2,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { getDb } from "@/integrations/supabase/server-context";
 import { listAttachments } from "@/lib/attachments/api";
 import { FILES_BUCKET } from "@/lib/constants";
+import rawCatalogData from "@/data/wall-cladding-catalog.json";
 import type { QuoteItemRow, QuoteListItem } from "./api";
 
 export interface ResolvedQuoteImage {
   itemId?: string;
   label: string;
   url: string;
-  source: "line_item" | "wall_estimate" | "master_product" | "attachment";
+  source: "line_item" | "wall_estimate" | "master_product" | "attachment" | "catalog";
 }
 
 export type ResolvableQuote = {
   id?: string;
+  quote_no?: string;
   workflow_state?: unknown;
   wall_estimate?: unknown;
 };
@@ -23,13 +25,28 @@ export type ResolvableQuoteItem = {
   description?: string | null;
 };
 
+export type ResolvableInvoice = {
+  id?: string;
+  invoice_no?: string;
+  quote_id?: string | null;
+  sales_order_id?: string | null;
+  workflow_state?: unknown;
+};
+
+export type ResolvableInvoiceItem = {
+  id?: string;
+  product_id?: string | null;
+  description?: string | null;
+};
+
 /**
  * Extracts all product images associated with a quotation and its line items.
  * Checks:
- * 1. workflow_state.line_item_images
+ * 1. workflow_state.line_item_images & workflow_state.line_item_multi_images
  * 2. wall_estimate.products[].imageDataUrl
  * 3. Master product catalog images (product_images table) for items with product_id
- * 4. File attachments on the quote with image/* mime types
+ * 4. Stone Tech official catalog matching by product name or code
+ * 5. File attachments on the quote with image/* mime types
  */
 export async function resolveAllQuoteImages(
   quote: ResolvableQuote | QuoteListItem | null | undefined,
@@ -39,12 +56,27 @@ export async function resolveAllQuoteImages(
   if (!quote) return imageMap;
 
   const wf = (quote.workflow_state as Record<string, unknown> | null) ?? {};
-  const lineItemImages = (wf.line_item_images as Record<string, string> | null) ?? {};
+  const lineItemImages = (wf.line_item_images as Record<string, string | string[]> | null) ?? {};
+  const multiImages = (wf.line_item_multi_images as Record<string, string[]> | null) ?? {};
 
   // 1. Explicit line item images stored in workflow_state
-  for (const [key, url] of Object.entries(lineItemImages)) {
-    if (url) {
-      imageMap.set(key, url);
+  for (const [key, val] of Object.entries(lineItemImages)) {
+    if (val) {
+      if (Array.isArray(val) && val.length > 0) {
+        imageMap.set(key, val[0]);
+        imageMap.set(`${key}_all`, JSON.stringify(val));
+      } else if (typeof val === "string") {
+        imageMap.set(key, val);
+      }
+    }
+  }
+
+  for (const [key, arr] of Object.entries(multiImages)) {
+    if (Array.isArray(arr) && arr.length > 0) {
+      if (!imageMap.has(key)) {
+        imageMap.set(key, arr[0]);
+      }
+      imageMap.set(`${key}_all`, JSON.stringify(arr));
     }
   }
 
@@ -70,7 +102,25 @@ export async function resolveAllQuoteImages(
     imageMap.set("mural", we.imageDataUrl);
   }
 
-  // 3. Master product catalog images (product_images table)
+  // 3. Match against Stone Tech Catalog Data (wall-cladding-catalog.json)
+  for (const it of items) {
+    const desc = (it.description || "").toLowerCase().trim();
+    if (!desc) continue;
+
+    const matched = rawCatalogData.find(
+      (c) =>
+        c.id.toLowerCase() === desc ||
+        c.name.toLowerCase() === desc ||
+        desc.includes(c.name.toLowerCase()) ||
+        (c.name.length > 8 && c.name.toLowerCase().includes(desc)),
+    );
+
+    if (matched?.image && it.id && !imageMap.has(it.id)) {
+      imageMap.set(it.id, matched.image);
+    }
+  }
+
+  // 4. Master product catalog images (product_images table)
   const productIds = items.map((it) => it.product_id).filter(Boolean) as string[];
   if (productIds.length > 0) {
     try {
@@ -92,7 +142,7 @@ export async function resolveAllQuoteImages(
     }
   }
 
-  // 4. Quote image attachments
+  // 5. Quote image attachments
   if (quote.id) {
     try {
       const attachments = await listAttachments("quote", quote.id);
@@ -123,6 +173,158 @@ export async function resolveAllQuoteImages(
       );
     } catch {
       // Safe fallback if attachments query fails
+    }
+  }
+
+  return imageMap;
+}
+
+/**
+ * Extracts all product images associated with an invoice (bill) and its line items.
+ * Checks:
+ * 1. invoice.workflow_state.line_item_images & multi_images
+ * 2. Linked Quotation photos (if invoice was converted from a quote)
+ * 3. Master product images from product_images table
+ * 4. Stone Tech Catalog items
+ * 5. Invoice image attachments
+ */
+export async function resolveAllInvoiceImages(
+  invoice: ResolvableInvoice | null | undefined,
+  items: ResolvableInvoiceItem[],
+): Promise<Map<string, string>> {
+  const imageMap = new Map<string, string>();
+  if (!invoice) return imageMap;
+
+  // 1. Explicit line item images in invoice workflow_state
+  const wf = (invoice.workflow_state as Record<string, unknown> | null) ?? {};
+  const lineItemImages = (wf.line_item_images as Record<string, string | string[]> | null) ?? {};
+  const multiImages = (wf.line_item_multi_images as Record<string, string[]> | null) ?? {};
+
+  for (const [key, val] of Object.entries(lineItemImages)) {
+    if (val) {
+      if (Array.isArray(val) && val.length > 0) {
+        imageMap.set(key, val[0]);
+        imageMap.set(`${key}_all`, JSON.stringify(val));
+      } else if (typeof val === "string") {
+        imageMap.set(key, val);
+      }
+    }
+  }
+
+  for (const [key, arr] of Object.entries(multiImages)) {
+    if (Array.isArray(arr) && arr.length > 0) {
+      if (!imageMap.has(key)) imageMap.set(key, arr[0]);
+      imageMap.set(`${key}_all`, JSON.stringify(arr));
+    }
+  }
+
+  // 2. Check linked Quote (via quote_id or lineage)
+  let quoteId = invoice.quote_id;
+  if (!quoteId && invoice.id) {
+    try {
+      const { data: lin } = await getDb()
+        .from("document_lineage")
+        .select("source_id")
+        .eq("target_type", "invoice")
+        .eq("target_id", invoice.id)
+        .eq("source_type", "quote")
+        .maybeSingle();
+      if (lin?.source_id) quoteId = lin.source_id;
+    } catch {
+      /* ignore */
+    }
+  }
+
+  if (quoteId) {
+    try {
+      const { data: q } = await getDb()
+        .from("quotes")
+        .select("id, quote_no, workflow_state, wall_estimate")
+        .eq("id", quoteId)
+        .maybeSingle();
+
+      if (q) {
+        const quoteMap = await resolveAllQuoteImages(q as ResolvableQuote, items);
+        for (const [k, v] of quoteMap.entries()) {
+          if (!imageMap.has(k)) {
+            imageMap.set(k, v);
+          }
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
+  // 3. Match against Stone Tech Catalog Data
+  for (const it of items) {
+    const desc = (it.description || "").toLowerCase().trim();
+    if (!desc) continue;
+
+    const matched = rawCatalogData.find(
+      (c) =>
+        c.id.toLowerCase() === desc ||
+        c.name.toLowerCase() === desc ||
+        desc.includes(c.name.toLowerCase()) ||
+        (c.name.length > 8 && c.name.toLowerCase().includes(desc)),
+    );
+
+    if (matched?.image && it.id && !imageMap.has(it.id)) {
+      imageMap.set(it.id, matched.image);
+    }
+  }
+
+  // 4. Master product catalog images (product_images table)
+  const productIds = items.map((it) => it.product_id).filter(Boolean) as string[];
+  if (productIds.length > 0) {
+    try {
+      const { data: prodImgs } = await getDb()
+        .from("product_images")
+        .select("product_id, url, is_primary")
+        .in("product_id", productIds)
+        .order("is_primary", { ascending: false });
+
+      if (prodImgs) {
+        for (const pi of prodImgs) {
+          if (pi.url && !imageMap.has(pi.product_id)) {
+            imageMap.set(pi.product_id, pi.url);
+          }
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
+  // 5. Invoice image attachments
+  if (invoice.id) {
+    try {
+      const attachments = await listAttachments("invoice", invoice.id);
+      const imageAttachments = attachments.filter((f) => f.mime_type?.startsWith("image/"));
+      await Promise.all(
+        imageAttachments.map(async (att) => {
+          let url: string | null = null;
+          try {
+            const { data: signed } = await supabase.storage
+              .from(att.bucket || FILES_BUCKET)
+              .createSignedUrl(att.object_path, 3600 * 24);
+            url = signed?.signedUrl ?? null;
+          } catch {
+            const { data } = supabase.storage
+              .from(att.bucket || FILES_BUCKET)
+              .getPublicUrl(att.object_path);
+            url = data?.publicUrl ?? null;
+          }
+          if (url) {
+            imageMap.set(`att_${att.id}`, url);
+            if (att.file_name) {
+              imageMap.set(`file_${att.file_name.toLowerCase()}`, url);
+            }
+          }
+        }),
+      );
+    } catch {
+      /* ignore */
     }
   }
 
@@ -218,6 +420,45 @@ export function getLineItemImage(
   }
 
   return null;
+}
+
+/**
+ * Returns all resolved product images for a line item (primary + secondary photos).
+ */
+export function getLineItemImages(
+  item: ResolvableQuoteItem | QuoteItemRow,
+  imageMap: Map<string, string>,
+): string[] {
+  const urls: string[] = [];
+  const seen = new Set<string>();
+
+  const add = (u: string | null | undefined) => {
+    if (!u || u === NO_IMAGE_SENTINEL || u === "none" || seen.has(u)) return;
+    seen.add(u);
+    urls.push(u);
+  };
+
+  // 1. Check if multi-images list was encoded in imageMap
+  if (item.id) {
+    const multiJson =
+      imageMap.get(`${item.id}_all`) ?? imageMap.get(`${item.id.toLowerCase()}_all`);
+    if (multiJson) {
+      try {
+        const parsed = JSON.parse(multiJson);
+        if (Array.isArray(parsed)) {
+          for (const img of parsed) add(img);
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+
+  // 2. Primary image
+  const primary = getLineItemImage(item, imageMap);
+  add(primary);
+
+  return urls;
 }
 
 /**

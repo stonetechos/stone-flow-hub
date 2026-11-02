@@ -12,7 +12,12 @@ import { loadBranding, DEFAULT_BRANDING, type BrandingConfig } from "@/lib/brand
 
 import { getEstimate, getEstimateItems, getEstimateSchedule } from "@/lib/estimates/api";
 import { getQuote, getQuoteItems } from "@/lib/quotes/api";
-import { resolveAllQuoteImages, getLineItemImage } from "@/lib/quotes/quote-images";
+import {
+  resolveAllQuoteImages,
+  getLineItemImage,
+  getLineItemImages,
+  resolveAllInvoiceImages,
+} from "@/lib/quotes/quote-images";
 import {
   detectClientProvidedSlabFromItems,
   detectDealScopeFromItems,
@@ -268,6 +273,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
           rate: inr(it.unit_price),
           amount: inr(itemPreTax),
           image: getLineItemImage(it, imageMap),
+          images: getLineItemImages(it, imageMap),
         };
       });
       const gstSplit = gstTotalsFromItems(items as unknown as GstItem[]);
@@ -416,6 +422,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
       if (!i) throw new Error("Invoice not found");
       const items = await getInvoiceItems(id);
       const cust = await fetchCustomer(i.customer_id);
+      const imageMap = await resolveAllInvoiceImages(i, items);
       const lines: PdfLine[] = items.map((it) => {
         const itemPreTax = Number(it.quantity ?? 0) * Number(it.unit_price ?? 0);
         return {
@@ -426,6 +433,8 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
           unit: it.unit ?? "",
           rate: inr(it.unit_price),
           amount: inr(itemPreTax),
+          image: getLineItemImage(it, imageMap),
+          images: getLineItemImages(it, imageMap),
         };
       });
       const gstSplit = gstTotalsFromItems(items as unknown as GstItem[]);

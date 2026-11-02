@@ -57,7 +57,11 @@ import {
   updateQuoteItemImage,
   type QuoteItemRow,
 } from "@/lib/quotes/api";
-import { resolveAllQuoteImages, getLineItemImage } from "@/lib/quotes/quote-images";
+import {
+  resolveAllQuoteImages,
+  getLineItemImage,
+  getLineItemImages,
+} from "@/lib/quotes/quote-images";
 import {
   QUOTE_CATEGORIES,
   QUOTE_CATEGORY_LABELS,
@@ -501,32 +505,32 @@ function LineItemsEditor({
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
-  const handleImageUpload = async (rowId: string, file: File) => {
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please upload a valid image file (JPG, PNG, WebP)");
-      return;
-    }
-    if (file.size > 15 * 1024 * 1024) {
-      toast.error("Image file should be under 15MB");
+  const handleImageUpload = async (rowId: string, files: File[]) => {
+    const validFiles = files.filter(
+      (f) => f.type.startsWith("image/") && f.size <= 15 * 1024 * 1024,
+    );
+    if (validFiles.length === 0) {
+      toast.error("Please upload valid image file(s) under 15MB");
       return;
     }
 
     setUploadingRowId(rowId);
-    const toastId = toast.loading("Compressing and attaching photo…");
+    const toastId = toast.loading(
+      `Compressing and attaching ${validFiles.length} photo${validFiles.length > 1 ? "s" : ""}…`,
+    );
 
     try {
-      // 1. High-speed client-side canvas compression down to max 640px width/height and 0.7 quality
-      // Drops a 5MB phone photo down to ~20-30KB with zero visible loss on print/screen
-      const compressedDataUrl = await compressImageToDataUrl(file, 640, 0.7);
-      let finalUrl = compressedDataUrl;
+      const processedUrls: string[] = [];
+      for (const file of validFiles) {
+        // High-speed client-side canvas compression down to max 640px width/height and 0.7 quality
+        const compressedDataUrl = await compressImageToDataUrl(file, 640, 0.7);
+        let finalUrl = compressedDataUrl;
 
-      // 2. Try uploading to Supabase Storage with 4s timeout
-      try {
-        const uploadPromise = (async () => {
+        try {
           const res = await fetch(compressedDataUrl);
           const blob = await res.blob();
           const safeExt = file.name.split(".").pop()?.toLowerCase() || "jpg";
-          const storagePath = `quotes/${quoteId}/line_items/${rowId}_${Date.now()}.${safeExt}`;
+          const storagePath = `quotes/${quoteId}/line_items/${rowId}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}.${safeExt}`;
 
           const { data: upData, error: upErr } = await supabase.storage
             .from(FILES_BUCKET)
@@ -538,30 +542,28 @@ function LineItemsEditor({
           if (!upErr && upData) {
             const { data: pubData } = supabase.storage.from(FILES_BUCKET).getPublicUrl(storagePath);
             if (pubData?.publicUrl) {
-              return pubData.publicUrl;
+              finalUrl = pubData.publicUrl;
             }
           }
-          return null;
-        })();
-
-        const timeoutPromise = new Promise<null>((resolve) =>
-          setTimeout(() => resolve(null), 4000),
-        );
-        const uploadedUrl = await Promise.race([uploadPromise, timeoutPromise]);
-        if (uploadedUrl) {
-          finalUrl = uploadedUrl;
+        } catch (storageErr) {
+          console.warn("[quotes] Storage upload fallback to compressed dataUrl:", storageErr);
         }
-      } catch (storageErr) {
-        console.warn(
-          "[quotes] Supabase storage upload fallback to compressed dataUrl:",
-          storageErr,
-        );
+        processedUrls.push(finalUrl);
       }
 
       const currentRow = rows.find((r) => r.id === rowId);
-      await updateQuoteItemImage(quoteId, rowId, finalUrl, currentRow?.description);
+      const existing = getLineItemImages(
+        currentRow ?? { id: rowId },
+        quoteImages.data ?? new Map(),
+      );
+      const mergedUrls = Array.from(new Set([...processedUrls, ...existing]));
+
+      await updateQuoteItemImage(quoteId, rowId, mergedUrls, currentRow?.description);
       invalidate();
-      toast.success("Product photo updated successfully", { id: toastId });
+      toast.success(
+        `Attached ${validFiles.length} photo${validFiles.length > 1 ? "s" : ""} to item`,
+        { id: toastId },
+      );
     } catch (err) {
       toast.error(toUserMessage(err), { id: toastId });
     } finally {
@@ -808,10 +810,11 @@ function LineItemsEditor({
                           id={`file-input-${r.id}`}
                           type="file"
                           accept="image/*"
+                          multiple
                           className="hidden"
                           onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) void handleImageUpload(r.id, file);
+                            const files = Array.from(e.target.files ?? []);
+                            if (files.length > 0) void handleImageUpload(r.id, files);
                             e.target.value = "";
                           }}
                         />
@@ -826,7 +829,7 @@ function LineItemsEditor({
                             <div
                               onClick={() => document.getElementById(`file-input-${r.id}`)?.click()}
                               className="group relative h-10 w-12 shrink-0 overflow-hidden rounded-md border border-border bg-slate-50 cursor-pointer transition hover:ring-2 hover:ring-primary/40"
-                              title="Click to change / replace photo"
+                              title="Click to add / replace photos (multiple supported)"
                             >
                               <img
                                 src={lineImg}

@@ -220,9 +220,7 @@ describe("PDF Generator", () => {
     };
     const html = renderDocHtml(quoteWithPhoto);
     expect(html).toContain('alt="Limestone Slabs"');
-    expect(html).toContain(
-      "max-width:50px;max-height:36px;width:auto;height:auto;object-fit:contain",
-    );
+    expect(html).toContain("width:84px;height:68px;object-fit:cover");
   });
 
   it("omits GSTIN, bank details, UPI QR, and printed signature on cash deal quotes", () => {

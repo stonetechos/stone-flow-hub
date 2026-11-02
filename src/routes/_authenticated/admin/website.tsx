@@ -24,11 +24,11 @@ export const Route = createFileRoute("/_authenticated/admin/website")({
 
 function WebsiteAdminPage() {
   const roles = useRoles();
-  const isSuperAdmin = roles.isSuperAdmin;
+  const canManage = roles.isSuperAdmin || roles.isAdmin;
 
   const [activeTab, setActiveTab] = useState<"products" | "content" | "navigation">("products");
 
-  if (roles.isReady && !isSuperAdmin) {
+  if (roles.isReady && !canManage) {
     return (
       <div className="p-6 max-w-4xl mx-auto space-y-6">
         <PageHeader
@@ -37,10 +37,12 @@ function WebsiteAdminPage() {
         />
         <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-6 text-center space-y-3">
           <ShieldAlert className="h-10 w-10 text-amber-500 mx-auto" />
-          <h3 className="text-base font-bold text-foreground">Super Admin Restricted Access</h3>
+          <h3 className="text-base font-bold text-foreground">
+            Super Admin &amp; Admin Restricted Access
+          </h3>
           <p className="text-xs text-muted-foreground max-w-md mx-auto">
-            Only Super Admins can edit public website landing page matter, manage catalogue
-            uploading, and alter navigation tabs.
+            Only Admins can edit public website landing page matter, manage catalogue uploading, and
+            alter navigation tabs.
           </p>
         </div>
       </div>

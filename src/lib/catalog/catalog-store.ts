@@ -17,7 +17,7 @@ import {
   saveCustomPrices,
 } from "./product-prices";
 import { fetchSiteSettings, upsertSiteSetting } from "@/lib/site-settings/api";
-import { DEFAULT_WEBSITE_CATALOG_ORDER } from "@/lib/site-settings/types";
+import { DEFAULT_WEBSITE_CATALOG_ORDER, type SiteSettings } from "@/lib/site-settings/types";
 import { syncWebsiteProductToErpServerFn } from "@/lib/products/products.functions";
 
 export const OFFICIAL_PRODUCT_CATEGORIES = [
@@ -72,6 +72,7 @@ export interface CatalogProduct {
   name: string;
   slug: string;
   image: string;
+  images?: string[]; // Multiple high-res photos for product gallery
   category: string;
   stoneType: string;
   standardSizes: string;
@@ -173,13 +174,81 @@ export function saveCustomCatalogItems(items: CatalogProduct[], syncRemote = tru
   }
 }
 
-export function useWebsiteCatalog() {
-  const [customItems, setCustomItems] = useState<CatalogProduct[]>(readCustomCatalogItems);
-  const [customPrices, setCustomPrices] =
-    useState<Record<string, AttachedProductPrice>>(readCustomPrices);
-  const [customOrder, setCustomOrder] = useState<string[]>(readCatalogOrder);
-  const [deletedIds, setDeletedIds] = useState<string[]>(readDeletedProductIds);
+export function useWebsiteCatalog(initialSettings?: Partial<SiteSettings>) {
+  const [customItems, setCustomItems] = useState<CatalogProduct[]>(() => {
+    if (
+      initialSettings?.website_catalog_items &&
+      Array.isArray(initialSettings.website_catalog_items) &&
+      initialSettings.website_catalog_items.length > 0
+    ) {
+      return initialSettings.website_catalog_items as unknown as CatalogProduct[];
+    }
+    return readCustomCatalogItems();
+  });
+
+  const [customPrices, setCustomPrices] = useState<Record<string, AttachedProductPrice>>(() => {
+    if (
+      initialSettings?.website_catalog_prices &&
+      typeof initialSettings.website_catalog_prices === "object"
+    ) {
+      return initialSettings.website_catalog_prices as unknown as Record<
+        string,
+        AttachedProductPrice
+      >;
+    }
+    return readCustomPrices();
+  });
+
+  const [customOrder, setCustomOrder] = useState<string[]>(() => {
+    if (
+      initialSettings?.website_catalog_order &&
+      Array.isArray(initialSettings.website_catalog_order) &&
+      initialSettings.website_catalog_order.length > 0
+    ) {
+      return initialSettings.website_catalog_order as string[];
+    }
+    return readCatalogOrder();
+  });
+
+  const [deletedIds, setDeletedIds] = useState<string[]>(() => {
+    if (
+      initialSettings?.website_deleted_product_ids &&
+      Array.isArray(initialSettings.website_deleted_product_ids)
+    ) {
+      return initialSettings.website_deleted_product_ids as string[];
+    }
+    return readDeletedProductIds();
+  });
+
   const [isSyncing, setIsSyncing] = useState(false);
+
+  // Sync if initialSettings changes from React Query
+  useEffect(() => {
+    if (
+      initialSettings?.website_catalog_order &&
+      Array.isArray(initialSettings.website_catalog_order) &&
+      initialSettings.website_catalog_order.length > 0
+    ) {
+      setCustomOrder(initialSettings.website_catalog_order as string[]);
+    }
+    if (
+      initialSettings?.website_catalog_items &&
+      Array.isArray(initialSettings.website_catalog_items) &&
+      initialSettings.website_catalog_items.length > 0
+    ) {
+      setCustomItems(initialSettings.website_catalog_items as unknown as CatalogProduct[]);
+    }
+    if (
+      initialSettings?.website_deleted_product_ids &&
+      Array.isArray(initialSettings.website_deleted_product_ids)
+    ) {
+      setDeletedIds(initialSettings.website_deleted_product_ids as string[]);
+    }
+  }, [
+    initialSettings?.website_catalog_order,
+    initialSettings?.website_catalog_items,
+    initialSettings?.website_deleted_product_ids,
+  ]);
 
   // Initial load & remote sync with site_settings
   useEffect(() => {
@@ -215,12 +284,6 @@ export function useWebsiteCatalog() {
         ) {
           saveCatalogOrder(settings.website_catalog_order as string[], false);
           setCustomOrder(settings.website_catalog_order as string[]);
-        } else {
-          // If remote does not yet have an order stored in app_settings, sync the active sequence
-          const localOrder = readCatalogOrder();
-          if (localOrder && localOrder.length > 0) {
-            upsertSiteSetting("website_catalog_order", localOrder).catch(() => {});
-          }
         }
         if (
           settings.website_deleted_product_ids &&

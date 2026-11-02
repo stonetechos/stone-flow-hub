@@ -54,6 +54,7 @@ import { useAttachedProductPrices, type AttachedProductPrice } from "@/lib/catal
 import { AttachPriceDialog, type PatternPriceTarget } from "./AttachPriceDialog";
 import { useRoles } from "@/hooks/use-roles";
 import { useWebsiteCatalog, type CatalogProduct } from "@/lib/catalog/catalog-store";
+import { useSiteSettingsValue } from "@/lib/site-settings/use-site-settings";
 
 export type WallCladdingItem = CatalogProduct;
 
@@ -74,7 +75,8 @@ export function WallCladdingCatalog({
   showAdminBanner = false,
 }: WallCladdingCatalogProps) {
   const { isSuperAdmin: userIsSuperAdmin } = useRoles();
-  const { products, updateProduct } = useWebsiteCatalog();
+  const siteSettings = useSiteSettingsValue();
+  const { products, updateProduct } = useWebsiteCatalog(siteSettings);
   const {
     customPrices,
     getPrice,

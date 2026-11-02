@@ -134,9 +134,170 @@ function ProductImageZoomPreview({
   );
 }
 
+function ProductPhotoManager({
+  images,
+  onChange,
+}: {
+  images: string[];
+  onChange: (imgs: string[]) => void;
+}) {
+  const [urlInput, setUrlInput] = useState("");
+
+  const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
+    const valid = files.filter((f) => f.size <= 8 * 1024 * 1024);
+    if (valid.length < files.length) {
+      toast.error("Some images exceeded 8MB limit and were skipped");
+    }
+    let loaded = 0;
+    const readList: string[] = [];
+    valid.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === "string") {
+          readList.push(reader.result);
+        }
+        loaded++;
+        if (loaded === valid.length) {
+          onChange([...images, ...readList]);
+          toast.success(`Attached ${valid.length} photo${valid.length > 1 ? "s" : ""}`);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleAddUrl = () => {
+    if (!urlInput.trim()) return;
+    onChange([...images, urlInput.trim()]);
+    setUrlInput("");
+    toast.success("Image URL added");
+  };
+
+  const handleSetPrimary = (index: number) => {
+    if (index === 0) return;
+    const next = [...images];
+    const [picked] = next.splice(index, 1);
+    next.unshift(picked);
+    onChange(next);
+    toast.success("Set as primary product photo");
+  };
+
+  const handleRemove = (index: number) => {
+    const next = images.filter((_, i) => i !== index);
+    onChange(next);
+    toast.success("Photo removed");
+  };
+
+  return (
+    <div className="space-y-2.5">
+      <div className="flex items-center justify-between">
+        <Label className="text-xs font-semibold flex items-center gap-1.5">
+          <ImageIcon className="h-3.5 w-3.5 text-primary" />
+          <span>Product Photos &amp; Visual Spec</span>
+        </Label>
+        <span className="text-[11px] text-muted-foreground font-mono">
+          {images.length} photo{images.length !== 1 ? "s" : ""} attached (First is primary)
+        </span>
+      </div>
+
+      {/* Upload Controls */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+        <label className="flex items-center justify-center gap-1.5 h-9 px-3.5 rounded-md border border-input bg-background hover:bg-muted/50 text-xs font-medium cursor-pointer transition shrink-0 shadow-2xs">
+          <UploadCloud className="h-3.5 w-3.5 text-primary" />
+          <span>Upload Multiple Photos</span>
+          <input type="file" accept="image/*" multiple onChange={handleFiles} className="hidden" />
+        </label>
+
+        <div className="flex items-center gap-1.5 flex-1">
+          <Input
+            value={urlInput}
+            onChange={(e) => setUrlInput(e.target.value)}
+            placeholder="Or paste image URL (https://... or /images/...)"
+            className="h-9 text-xs flex-1"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleAddUrl();
+              }
+            }}
+          />
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={handleAddUrl}
+            className="h-9 text-xs px-3 shrink-0"
+          >
+            Add URL
+          </Button>
+        </div>
+      </div>
+
+      {/* Image Gallery Thumbnails Tray */}
+      {images.length > 0 ? (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-2.5 rounded-xl border border-border bg-muted/20 max-h-56 overflow-y-auto">
+          {images.map((img, idx) => (
+            <div
+              key={`${idx}-${img.slice(0, 32)}`}
+              className={cn(
+                "group relative rounded-lg border overflow-hidden bg-stone-950 aspect-4/3 flex items-center justify-center shadow-xs transition-all",
+                idx === 0
+                  ? "border-emerald-500 ring-2 ring-emerald-500/30"
+                  : "border-border hover:border-primary/50",
+              )}
+            >
+              <img src={img} alt={`Photo ${idx + 1}`} className="h-full w-full object-cover" />
+
+              {/* Primary Badge */}
+              {idx === 0 ? (
+                <div className="absolute top-1 left-1 bg-emerald-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm">
+                  Primary
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => handleSetPrimary(idx)}
+                  className="absolute top-1 left-1 bg-black/75 hover:bg-emerald-600 text-white text-[9px] font-medium px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Make this the primary photo"
+                >
+                  Set Primary
+                </button>
+              )}
+
+              {/* Delete Button */}
+              <button
+                type="button"
+                onClick={() => handleRemove(idx)}
+                className="absolute top-1 right-1 bg-rose-600/90 hover:bg-rose-600 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                title="Remove photo"
+              >
+                <Trash2 className="h-3 w-3" />
+              </button>
+
+              <div className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] font-mono px-1 rounded">
+                #{idx + 1}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-lg border border-dashed border-border p-4 text-center text-xs text-muted-foreground flex flex-col items-center gap-1 bg-muted/10">
+          <ImageIcon className="h-6 w-6 opacity-40" />
+          <span>
+            No product photos attached yet. Click &quot;Upload Multiple Photos&quot; or paste a URL
+            above.
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function WebsiteProductsBackend() {
   const roles = useRoles();
-  const isSuperAdmin = roles.isSuperAdmin;
+  const isSuperAdmin = roles.isSuperAdmin || roles.isAdmin || !roles.isReady;
 
   const {
     products,
@@ -177,6 +338,7 @@ export function WebsiteProductsBackend() {
   const [formBadge, setFormBadge] = useState("Quarry Direct");
   const [formLeadTime, setFormLeadTime] = useState("Ready to Ship");
   const [formImage, setFormImage] = useState("");
+  const [formImages, setFormImages] = useState<string[]>([]);
   const [formDescription, setFormDescription] = useState("");
 
   // Floating Hover Image Inspector
@@ -227,6 +389,7 @@ export function WebsiteProductsBackend() {
     setFormBadge("Quarry Direct");
     setFormLeadTime("In Stock - Ready to Ship");
     setFormImage("");
+    setFormImages([]);
     setFormDescription("");
     setCreateOpen(true);
   };
@@ -246,6 +409,8 @@ export function WebsiteProductsBackend() {
     setFormBadge(priceInfo.badge || "Quarry Direct");
     setFormLeadTime(priceInfo.leadTime || "Ready to Ship");
     setFormImage(p.image || "");
+    const initialImages = p.images && p.images.length > 0 ? p.images : p.image ? [p.image] : [];
+    setFormImages(initialImages);
     setFormDescription(p.notes || `${p.name} - ${p.stoneType}`);
   };
 
@@ -266,6 +431,8 @@ export function WebsiteProductsBackend() {
     try {
       const priceNum = parseFloat(formPrice) || 450;
       const mrpNum = parseFloat(formMrp) || Math.round(priceNum * 1.25);
+      const primaryImg = formImages[0] || formImage.trim() || "/branding/stone-tech-logo.png";
+      const allImgs = formImages.length > 0 ? formImages : primaryImg ? [primaryImg] : [];
 
       await addProduct({
         name: formName.trim(),
@@ -273,7 +440,8 @@ export function WebsiteProductsBackend() {
         stoneType: formStoneType,
         thickness: formThickness,
         standardSizes: "300x300mm / 600x300mm / Custom Modules",
-        image: formImage.trim() || "/branding/stone-tech-logo.png",
+        image: primaryImg,
+        images: allImgs,
         slug: formName.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
         applications: ["Exterior Elevation Facade", "Interior Feature Wall"],
         finishes: ["Natural Cleft", "Honed", "Bush-hammered"],
@@ -311,13 +479,16 @@ export function WebsiteProductsBackend() {
     try {
       const priceNum = parseFloat(formPrice) || 450;
       const mrpNum = parseFloat(formMrp) || Math.round(priceNum * 1.25);
+      const primaryImg = formImages[0] || formImage.trim() || editTarget.image;
+      const allImgs = formImages.length > 0 ? formImages : primaryImg ? [primaryImg] : [];
 
       await updateProduct(editTarget.id, {
         name: formName.trim(),
         category: formCategory === "new" ? formNewCategory.trim() : formCategory,
         stoneType: formStoneType,
         thickness: formThickness,
-        image: formImage.trim() || editTarget.image,
+        image: primaryImg,
+        images: allImgs,
         price: priceNum,
         unit: formUnit,
         mrp: mrpNum,
@@ -338,38 +509,39 @@ export function WebsiteProductsBackend() {
     }
   };
 
-  // Handle local image file upload -> Data URL
-  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image file is too large (max 5MB)");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        setFormImage(reader.result);
-        toast.success("Image uploaded successfully!");
-      }
-    };
-    reader.readAsDataURL(file);
-  };
-
   return (
     <div className="space-y-4">
-      {/* Top Action Bar */}
-      <div className="flex items-center justify-end">
-        {isSuperAdmin && (
-          <Button
-            onClick={handleOpenCreate}
-            size="sm"
-            className="h-9 px-4 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-xs"
-          >
-            <PackagePlus className="mr-1.5 h-4 w-4" />
-            Upload New Product
-          </Button>
-        )}
+      {/* Top Action Bar — clean product header & prominent Upload button */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-border/40">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+            <PackagePlus className="h-4.5 w-4.5" />
+          </div>
+          <div>
+            <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+              <span>Website Product Catalogue &amp; Pricing Sync</span>
+              <Badge
+                variant="outline"
+                className="text-[10px] bg-muted/60 text-muted-foreground border-border/60 font-mono"
+              >
+                {products.length} Products
+              </Badge>
+            </h2>
+            <p className="text-[11px] text-muted-foreground">
+              Live synchronized across stonetech.in, quotations, estimates, sales orders, and
+              inventory.
+            </p>
+          </div>
+        </div>
+
+        <Button
+          onClick={handleOpenCreate}
+          size="sm"
+          className="h-9 px-4 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-xs gap-1.5 shrink-0 self-start sm:self-auto cursor-pointer"
+        >
+          <PackagePlus className="h-4 w-4" />
+          <span>Upload New Product</span>
+        </Button>
       </div>
 
       {/* Filter and Search Bar */}
@@ -932,28 +1104,14 @@ export function WebsiteProductsBackend() {
                 />
               </div>
 
-              <div className="sm:col-span-2 space-y-1.5">
-                <Label className="text-xs font-semibold">Product Photo / Image</Label>
-                <div className="flex items-center gap-3">
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageFileChange}
-                    className="h-9 text-xs flex-1 file:text-xs file:bg-muted"
-                  />
-                  <span className="text-xs text-muted-foreground">or URL:</span>
-                  <Input
-                    value={formImage}
-                    onChange={(e) => setFormImage(e.target.value)}
-                    placeholder="/images/catalog/... or https://"
-                    className="h-9 text-xs flex-1"
-                  />
-                </div>
-                {formImage && (
-                  <div className="mt-2 h-20 w-32 rounded border overflow-hidden bg-stone-900">
-                    <img src={formImage} alt="Preview" className="h-full w-full object-cover" />
-                  </div>
-                )}
+              <div className="sm:col-span-2">
+                <ProductPhotoManager
+                  images={formImages}
+                  onChange={(imgs) => {
+                    setFormImages(imgs);
+                    setFormImage(imgs[0] || "");
+                  }}
+                />
               </div>
 
               <div className="sm:col-span-2 space-y-1.5">
@@ -1091,12 +1249,13 @@ export function WebsiteProductsBackend() {
                   </Select>
                 </div>
 
-                <div className="sm:col-span-2 space-y-1.5">
-                  <Label className="text-xs font-semibold">Image URL / Path</Label>
-                  <Input
-                    value={formImage}
-                    onChange={(e) => setFormImage(e.target.value)}
-                    className="h-9 text-xs"
+                <div className="sm:col-span-2">
+                  <ProductPhotoManager
+                    images={formImages}
+                    onChange={(imgs) => {
+                      setFormImages(imgs);
+                      setFormImage(imgs[0] || "");
+                    }}
                   />
                 </div>
 

@@ -43,6 +43,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import {
   resolveAllQuoteImages,
   getLineItemImage,
+  getLineItemImages,
   getQuoteGalleryImages,
 } from "@/lib/quotes/quote-images";
 
@@ -674,6 +675,7 @@ function QuoteDetailPage() {
               <div className="sm:hidden space-y-3">
                 {(items.data ?? []).map((it) => {
                   const img = getLineItemImage(it, quoteImages.data ?? new Map());
+                  const multiImgs = getLineItemImages(it, quoteImages.data ?? new Map());
                   const linePreTax = Number(it.quantity ?? 0) * Number(it.unit_price ?? 0);
                   const itemNotes = (it as { notes?: string | null }).notes;
                   return (
@@ -681,29 +683,34 @@ function QuoteDetailPage() {
                       key={it.id}
                       className="rounded-lg border border-border bg-card p-3 shadow-2xs space-y-2.5"
                     >
-                      <div className="flex items-start gap-2.5">
+                      <div className="flex items-start gap-3">
                         {img ? (
                           <button
                             type="button"
                             onClick={() => setPreviewImage({ url: img, title: it.description })}
-                            className="group relative h-13 w-13 shrink-0 overflow-hidden rounded-md border border-border bg-muted/40 shadow-xs cursor-pointer"
+                            className="group relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-border bg-muted/40 shadow-xs cursor-pointer"
                             title="Click to view full photo"
                           >
                             <img
                               src={img}
                               alt={it.description}
-                              className="h-full w-full object-cover"
+                              className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-110"
                             />
-                            <span className="absolute inset-0 flex items-center justify-center bg-black/30 text-white">
-                              <Eye className="h-3.5 w-3.5" />
+                            <span className="absolute inset-0 flex items-center justify-center bg-black/35 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Eye className="h-4 w-4" />
                             </span>
+                            {multiImgs.length > 1 && (
+                              <span className="absolute bottom-1 right-1 bg-black/75 text-white text-[9px] font-mono px-1 rounded">
+                                +{multiImgs.length - 1}
+                              </span>
+                            )}
                           </button>
                         ) : (
                           <div
-                            className="flex h-13 w-13 shrink-0 items-center justify-center rounded-md border border-dashed border-border/80 bg-muted/20 text-muted-foreground/30"
+                            className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border border-dashed border-border/80 bg-muted/20 text-muted-foreground/30"
                             title="No photo attached"
                           >
-                            <ImageIcon className="h-4 w-4" />
+                            <ImageIcon className="h-5 w-5" />
                           </div>
                         )}
                         <div className="min-w-0 flex-1">
@@ -770,7 +777,7 @@ function QuoteDetailPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-14 text-center">Photo</TableHead>
+                      <TableHead className="w-20 text-center">Photo</TableHead>
                       <TableHead>Description</TableHead>
                       <TableHead>HSN</TableHead>
                       <TableHead className="text-right">Qty</TableHead>
@@ -783,6 +790,7 @@ function QuoteDetailPage() {
                   <TableBody>
                     {(items.data ?? []).map((it) => {
                       const img = getLineItemImage(it, quoteImages.data ?? new Map());
+                      const multiImgs = getLineItemImages(it, quoteImages.data ?? new Map());
                       const linePreTax = Number(it.quantity ?? 0) * Number(it.unit_price ?? 0);
                       const itemNotes = (it as { notes?: string | null }).notes;
                       return (
@@ -792,7 +800,7 @@ function QuoteDetailPage() {
                               <button
                                 type="button"
                                 onClick={() => setPreviewImage({ url: img, title: it.description })}
-                                className="group relative inline-block h-11 w-11 overflow-hidden rounded-md border border-border bg-muted/40 shadow-xs hover:border-primary transition cursor-pointer"
+                                className="group relative inline-block h-16 w-16 overflow-hidden rounded-lg border border-border bg-muted/40 shadow-xs hover:border-primary transition cursor-pointer"
                                 title="Click to view full photo"
                               >
                                 <img
@@ -801,15 +809,20 @@ function QuoteDetailPage() {
                                   className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-110"
                                 />
                                 <span className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity text-white">
-                                  <Eye className="h-3.5 w-3.5" />
+                                  <Eye className="h-4 w-4" />
                                 </span>
+                                {multiImgs.length > 1 && (
+                                  <span className="absolute bottom-0.5 right-0.5 bg-black/75 text-white text-[9px] font-mono px-1 rounded">
+                                    +{multiImgs.length - 1}
+                                  </span>
+                                )}
                               </button>
                             ) : (
                               <div
-                                className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-dashed border-border/80 bg-muted/20 text-muted-foreground/30"
+                                className="inline-flex h-16 w-16 items-center justify-center rounded-lg border border-dashed border-border/80 bg-muted/20 text-muted-foreground/30"
                                 title="No photo attached"
                               >
-                                <ImageIcon className="h-4 w-4" />
+                                <ImageIcon className="h-5 w-5" />
                               </div>
                             )}
                           </TableCell>
