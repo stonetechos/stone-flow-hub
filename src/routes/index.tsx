@@ -69,7 +69,11 @@ import {
   submitPublicEnquiryServerFn,
   type PublicInquiryResult,
 } from "@/lib/enquiries/public-inquiry.functions";
-import { useSiteSettingsValue } from "@/lib/site-settings/use-site-settings";
+import {
+  useSiteSettingsValue,
+  SITE_SETTINGS_QUERY_KEY,
+} from "@/lib/site-settings/use-site-settings";
+import { fetchSiteSettings } from "@/lib/site-settings/api";
 import { useWebsiteContent } from "@/lib/cms/landing-content-store";
 import { StonemanMascot } from "@/components/mascot/StonemanMascot";
 import { StonemanCustomerDialog } from "@/components/mascot/StonemanCustomerDialog";
@@ -85,6 +89,17 @@ import {
 } from "@/lib/i18n/landing-i18n";
 
 export const Route = createFileRoute("/")({
+  loader: async ({ context }) => {
+    try {
+      await context.queryClient.ensureQueryData({
+        queryKey: SITE_SETTINGS_QUERY_KEY,
+        queryFn: fetchSiteSettings,
+        staleTime: 5 * 60 * 1000,
+      });
+    } catch {
+      /* ignore */
+    }
+  },
   head: () => ({
     meta: [
       { title: "Stone Tech-Architectural Stone Atelier" },

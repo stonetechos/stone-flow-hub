@@ -185,7 +185,7 @@ export function WallCladdingCatalog({
 
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [filteredItems.length, visibleCount]);
+  }, [filteredItems.length]);
 
   const displayedItems = useMemo(() => {
     return filteredItems.slice(0, visibleCount);

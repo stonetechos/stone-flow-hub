@@ -138,35 +138,39 @@ export function useWebsiteContent() {
   const [isSaving, setIsSaving] = useState(false);
   const [, setTick] = useState(0);
 
-  // Compute merged content:
-  // Base: DEFAULT_LANDING_CONTENT
-  // Layer 1: localStorage cache
-  // Layer 2: remote server settings from Supabase (source of truth)
-  // Layer 3: localOverride while actively editing/saving
+  // Compute merged content cleanly without render-time side effects
   const content: WebsiteLandingContent = useMemo(() => {
     if (localOverride) return localOverride;
 
-    const local = loadSavedContent();
     const remote = settings?.website_landing_content;
-
-    let merged: WebsiteLandingContent = { ...DEFAULT_LANDING_CONTENT };
-    if (local && typeof local === "object") {
-      merged = { ...merged, ...local };
-    }
     if (remote && typeof remote === "object" && Object.keys(remote).length > 0) {
-      merged = {
-        ...merged,
+      return {
+        ...DEFAULT_LANDING_CONTENT,
         ...(remote as unknown as Partial<WebsiteLandingContent>),
       };
-      // Keep local storage fresh with the authoritative remote copy
+    }
+
+    const local = loadSavedContent();
+    if (local && typeof local === "object" && Object.keys(local).length > 0) {
+      return {
+        ...DEFAULT_LANDING_CONTENT,
+        ...local,
+      };
+    }
+
+    return DEFAULT_LANDING_CONTENT;
+  }, [localOverride, settings?.website_landing_content]);
+
+  // Keep local storage synchronized in the background
+  useEffect(() => {
+    if (settings?.website_landing_content && typeof settings.website_landing_content === "object") {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(content));
       } catch {
         /* ignore */
       }
     }
-    return merged;
-  }, [localOverride, settings?.website_landing_content]);
+  }, [content, settings?.website_landing_content]);
 
   // Sync across tabs / events
   useEffect(() => {
