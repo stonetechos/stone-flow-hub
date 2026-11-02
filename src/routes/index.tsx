@@ -63,7 +63,6 @@ import { LuxuryProductShowcase } from "@/components/landing/LuxuryProductShowcas
 import { WallCladdingCatalog } from "@/components/catalog/WallCladdingCatalog";
 import { ContactCenter } from "@/components/landing/ContactCenter";
 import { JobOpeningsDialog } from "@/components/landing/JobOpeningsDialog";
-import { CareersLandingSection } from "@/components/landing/CareersLandingSection";
 import { ShreeYantraHeroShowcase } from "@/components/landing/ShreeYantraHeroShowcase";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -954,13 +953,26 @@ function HomePage() {
             >
               {texts.nav.whyUs}
             </a>
-            <a
-              href="#careers"
-              className="hover:text-primary transition-colors whitespace-nowrap py-1 flex items-center gap-1.5"
-            >
-              <Briefcase className="h-4 w-4 text-primary" />
-              <span>{texts.nav.jobOpenings}</span>
-            </a>
+            <JobOpeningsDialog
+              trigger={
+                <button
+                  type="button"
+                  className="group hover:text-primary transition-colors whitespace-nowrap py-1 flex items-center gap-1.5 cursor-pointer text-foreground/85 hover:text-foreground font-semibold"
+                >
+                  <Briefcase className="h-4 w-4 text-primary transition-transform group-hover:scale-110" />
+                  <span>{texts.nav.jobOpenings}</span>
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-linear-to-r from-rose-600 via-orange-500 to-amber-500 text-white font-extrabold shadow-sm ring-1 ring-white/30 animate-attention-badge select-none ml-0.5">
+                    <span className="relative flex h-1.5 w-1.5 mr-1">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-90" />
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white" />
+                    </span>
+                    <span className="text-[9.5px] font-black uppercase tracking-wider text-white leading-none">
+                      NEW
+                    </span>
+                  </span>
+                </button>
+              }
+            />
             <a
               href="#contact-us"
               className="hover:text-primary transition-colors whitespace-nowrap py-1"
@@ -971,6 +983,25 @@ function HomePage() {
 
           {/* Action CTAs */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+            {/* Mobile Job Openings Trigger with Animated NEW Badge */}
+            <div className="md:hidden">
+              <JobOpeningsDialog
+                trigger={
+                  <button
+                    type="button"
+                    className="relative flex items-center gap-1 h-8 px-2 rounded-lg border border-border/80 bg-background/90 text-xs font-semibold text-foreground cursor-pointer shadow-2xs hover:border-primary/60 shrink-0"
+                    title={texts.nav.jobOpenings}
+                  >
+                    <Briefcase className="h-3.5 w-3.5 text-primary" />
+                    <span className="text-[11px] font-bold">Jobs</span>
+                    <span className="inline-flex items-center px-1 py-0.2 rounded-full bg-linear-to-r from-rose-600 to-amber-500 text-white text-[8px] font-black tracking-wider animate-attention-badge ml-0.5">
+                      NEW
+                    </span>
+                  </button>
+                }
+              />
+            </div>
+
             {/* Language Switcher — visible on sm+ (mobile already has it fixed in bottom bar) */}
             <LanguageToggle className="hidden sm:inline-flex h-8 sm:h-9 px-2 sm:px-2.5 text-xs rounded-lg border border-border/80 bg-background/80" />
 
@@ -1949,9 +1980,6 @@ function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* 2.5 CAREERS & ACTIVE JOB OPENINGS SECTION */}
-      <CareersLandingSection />
 
       {/* 3. BROAD "HOW TO REACH US" & VERIFIED RATINGS FOOTER */}
       <ContactCenter />

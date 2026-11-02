@@ -11,6 +11,7 @@ import {
   Share2,
   ExternalLink,
   ArrowLeft,
+  Download,
 } from "lucide-react";
 import {
   Dialog,
@@ -63,9 +64,18 @@ export function JobOpeningsDialog({ trigger }: JobOpeningsDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <button className="hover:text-primary transition-colors cursor-pointer flex items-center gap-1.5 text-sm font-semibold text-foreground/80 py-1 whitespace-nowrap">
-            <Briefcase className="h-4 w-4 text-primary" />
+          <button className="group hover:text-primary transition-colors cursor-pointer flex items-center gap-1.5 text-sm font-semibold text-foreground/80 hover:text-foreground py-1 whitespace-nowrap">
+            <Briefcase className="h-4 w-4 text-primary transition-transform group-hover:scale-110" />
             <span>Job Openings</span>
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-linear-to-r from-rose-600 via-orange-500 to-amber-500 text-white font-extrabold shadow-sm ring-1 ring-white/30 animate-attention-badge select-none ml-0.5">
+              <span className="relative flex h-1.5 w-1.5 mr-1">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-90" />
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white" />
+              </span>
+              <span className="text-[9.5px] font-black uppercase tracking-wider text-white leading-none">
+                NEW
+              </span>
+            </span>
           </button>
         )}
       </DialogTrigger>
@@ -293,7 +303,7 @@ export function JobOpeningsDialog({ trigger }: JobOpeningsDialogProps) {
                   You can share these openings directly on WhatsApp, Facebook, or Instagram. All
                   links lead directly to the application form.
                 </p>
-                <div className="pt-1 flex items-center justify-center gap-3">
+                <div className="pt-1 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
                   <Link
                     to="/careers"
                     onClick={() => setOpen(false)}
@@ -301,6 +311,14 @@ export function JobOpeningsDialog({ trigger }: JobOpeningsDialogProps) {
                   >
                     Open Shareable Careers Page <ExternalLink className="h-3 w-3" />
                   </Link>
+                  <span className="text-muted-foreground/40">|</span>
+                  <a
+                    href="/branding/hiring-story-flyer.png?v=3"
+                    download="Stone-Tech-Hiring-Flyer.png"
+                    className="text-xs font-semibold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1"
+                  >
+                    <Download className="h-3 w-3" /> Download Story Flyer
+                  </a>
                   <span className="text-muted-foreground/40">|</span>
                   <a
                     href="https://api.whatsapp.com/send?phone=917742090866&text=Hi%20Stone%20Tech%20HR,%20I%20am%20sharing%20my%20resume%20for%20future%20openings."
