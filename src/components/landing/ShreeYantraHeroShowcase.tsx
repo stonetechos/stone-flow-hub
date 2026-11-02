@@ -53,8 +53,7 @@ export function ShreeYantraHeroShowcase({
             </h3>
 
             <p className="font-cursive text-base sm:text-lg text-emerald-700 dark:text-emerald-400 font-bold">
-              ✨ Pre-make 100% payment to avail 5% discount + unlock this handcrafted divine
-              blessing!
+              Pre-make 100% payment to avail 5% discount + unlock this handcrafted divine blessing!
             </p>
 
             <p className="text-xs text-muted-foreground leading-relaxed">

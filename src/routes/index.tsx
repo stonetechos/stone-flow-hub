@@ -936,10 +936,9 @@ function HomePage() {
             <a
               href="#wall-cladding-catalogue"
               onClick={() => setShowcaseTab("products")}
-              className="hover:text-primary transition-colors whitespace-nowrap py-1 flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold"
+              className="hover:text-primary transition-colors whitespace-nowrap py-1"
             >
-              <Sparkles className="h-3.5 w-3.5" />
-              <span>Our Products</span>
+              {texts.nav.ourProducts || "Our Products"}
             </a>
             <a
               href="#wall-cladding-catalogue"

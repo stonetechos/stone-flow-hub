@@ -48,6 +48,7 @@ export const LANDING_UI_TRANSLATIONS = {
   en: {
     brandSubtitle: "Architectural Stone Atelier",
     nav: {
+      ourProducts: "Our Products",
       ourWork: "Our Work",
       whyUs: "Why Us",
       jobOpenings: "Job Openings",
@@ -254,6 +255,7 @@ export const LANDING_UI_TRANSLATIONS = {
   hi: {
     brandSubtitle: "आर्किटेक्चरल स्टोन एटलियर",
     nav: {
+      ourProducts: "हमारे उत्पाद",
       ourWork: "हमारा काम",
       whyUs: "हम ही क्यों",
       jobOpenings: "करियर / नौकरियां",
@@ -460,6 +462,7 @@ export const LANDING_UI_TRANSLATIONS = {
   gu: {
     brandSubtitle: "આર્કિટેક્ચરલ સ્ટોન એટલિયર",
     nav: {
+      ourProducts: "અમારા ઉત્પાદનો",
       ourWork: "અમારું કામ",
       whyUs: "અમે જ કેમ",
       jobOpenings: "નોકરીઓ / કારકિર્દી",
