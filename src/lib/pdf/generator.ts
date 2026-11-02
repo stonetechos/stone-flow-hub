@@ -184,14 +184,14 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
         l,
         i,
       ) => `<tr class="avoid-break" style="border-bottom:1px solid ${border};font-size:9.5px;background:${i % 2 === 1 ? "#fafbfc" : "#ffffff"};">
-        <td style="padding:6px 4px;color:${muted};text-align:center;vertical-align:top;width:32px">${i + 1}</td>
+        <td style="padding:8px 4px;color:${muted};text-align:center;vertical-align:middle !important;width:36px;font-weight:600;font-size:10px;">${i + 1}</td>
         ${
           showPhoto
-            ? `<td style="padding:6px 4px;text-align:center;vertical-align:middle;width:96px">
+            ? `<td style="padding:8px 4px;text-align:center;vertical-align:middle !important;width:96px;">
                 ${
                   l.image || (l.images && l.images.length > 0)
-                    ? `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin:0 auto;width:90px;">
-                        <img src="${esc(l.image || l.images?.[0])}" alt="${esc(l.label)}" style="width:84px;height:68px;object-fit:cover;background:#f8fafc;border-radius:4px;border:1px solid ${border};box-shadow:0 1px 3px rgba(0,0,0,0.06);display:block;" />
+                    ? `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;margin:0 auto;width:90px;">
+                        <img src="${esc(l.image || l.images?.[0])}" alt="${esc(l.label)}" style="width:84px;height:68px;object-fit:cover;background:#f8fafc;border-radius:4px;border:1px solid ${border};box-shadow:0 1px 3px rgba(0,0,0,0.06);display:block;margin:0 auto;" />
                         ${
                           l.images && l.images.length > 1
                             ? `<div style="display:flex;gap:3px;justify-content:center;flex-wrap:wrap;margin-top:2px;">
@@ -211,17 +211,17 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
               </td>`
             : ""
         }
-        <td style="padding:6px 8px;text-align:left;vertical-align:top;">
-          <div style="font-weight:700;color:${ink};font-size:10px;line-height:1.3;">${esc(l.label)}</div>
-          ${l.notes ? `<div style="font-size:8px;color:${muted};margin-top:1.5px;white-space:pre-wrap;line-height:1.25">${esc(l.notes)}</div>` : ""}
+        <td style="padding:8px 12px;text-align:left;vertical-align:middle !important;">
+          <div style="font-weight:700;color:${ink};font-size:10.5px;line-height:1.35;">${esc(l.label)}</div>
+          ${l.notes ? `<div style="font-size:8px;color:${muted};margin-top:2.5px;white-space:pre-wrap;line-height:1.3;">${esc(l.notes)}</div>` : ""}
         </td>
-        ${showHsn ? `<td style="padding:6px 4px;font-family:monospace;font-size:9px;color:#334155;text-align:center;vertical-align:top;width:68px">${esc(l.hsn ?? "—")}</td>` : ""}
-        <td style="padding:6px 6px;text-align:right;white-space:nowrap;vertical-align:top;width:58px">
-          <div style="font-weight:600;">${esc(l.qty ?? "")}</div>
-          ${l.unit ? `<div style="font-size:7.5px;color:${muted};">${esc(l.unit)}</div>` : ""}
+        ${showHsn ? `<td style="padding:8px 4px;font-family:monospace;font-size:9.5px;color:#334155;text-align:center;vertical-align:middle !important;width:70px;font-weight:500;">${esc(l.hsn ?? "—")}</td>` : ""}
+        <td style="padding:8px 6px;text-align:center;white-space:nowrap;vertical-align:middle !important;width:64px;">
+          <div style="font-weight:700;font-size:10.5px;color:${ink};">${esc(l.qty ?? "")}</div>
+          ${l.unit ? `<div style="font-size:8px;color:${muted};font-weight:500;margin-top:1px;">${esc(l.unit)}</div>` : ""}
         </td>
-        <td style="padding:6px 6px;text-align:right;white-space:nowrap;vertical-align:top;width:72px">${esc(l.rate ?? "")}</td>
-        <td style="padding:6px 8px;text-align:right;font-weight:700;white-space:nowrap;vertical-align:top;width:85px;color:${ink};">${esc(l.amount ?? "")}</td>
+        <td style="padding:8px 8px;text-align:right;white-space:nowrap;vertical-align:middle !important;width:75px;font-size:10px;color:#1e293b;font-weight:500;">${esc(l.rate ?? "")}</td>
+        <td style="padding:8px 10px;text-align:right;font-weight:800;white-space:nowrap;vertical-align:middle !important;width:90px;font-size:10.5px;color:${ink};">${esc(l.amount ?? "")}</td>
       </tr>`,
     )
     .join("");
@@ -472,46 +472,46 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
 
     ${
       isQuote
-        ? `<table class="avoid-break" style="width:100%;border-collapse:collapse;border:1px solid #cbd5e1;border-radius:4px;overflow:hidden;margin:6px 0 8px;font-size:9px;">
+        ? `<table class="avoid-break" style="width:100%;border-collapse:separate;border-spacing:0;border:1px solid #cbd5e1;border-radius:6px;overflow:hidden;margin:8px 0 10px;font-size:9px;">
             <thead>
               <tr style="background:#f8fafc;">
-                <th style="width:50%;text-align:left;background:#f8fafc;border-right:1px solid #cbd5e1;border-bottom:1px solid #cbd5e1;padding:5px 10px;font-weight:700;color:#475569;text-transform:uppercase;font-size:8px;letter-spacing:0.04em;">BILL TO</th>
-                <th style="width:50%;text-align:left;background:#f8fafc;border-bottom:1px solid #cbd5e1;padding:5px 10px;font-weight:700;color:#475569;text-transform:uppercase;font-size:8px;letter-spacing:0.04em;">SHIP TO</th>
+                <th style="width:50%;text-align:left;background:#f8fafc;border-right:1px solid #cbd5e1;border-bottom:1px solid #cbd5e1;padding:6px 14px;font-weight:700;color:#475569;text-transform:uppercase;font-size:8px;letter-spacing:0.05em;vertical-align:middle !important;">BILL TO</th>
+                <th style="width:50%;text-align:left;background:#f8fafc;border-bottom:1px solid #cbd5e1;padding:6px 14px;font-weight:700;color:#475569;text-transform:uppercase;font-size:8px;letter-spacing:0.05em;vertical-align:middle !important;">SHIP TO</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td style="width:50%;vertical-align:top;padding:8px 10px 10px;border-right:1px solid #cbd5e1;">
-                  <div style="font-weight:700;font-size:10.5px;color:#0f172a;line-height:1.35;">${esc(doc.to.name)}</div>
-                  ${doc.to.address ? `<div style="color:#475569;margin-top:3px;white-space:pre-line;line-height:1.4;">${esc(doc.to.address)}</div>` : ""}
-                  ${!isCash && doc.to.gstin ? `<div style="margin-top:4px;font-weight:600;color:#1e293b;">GSTIN ${esc(doc.to.gstin)}</div>` : ""}
+                <td style="width:50%;vertical-align:middle !important;padding:10px 14px 14px;border-right:1px solid #cbd5e1;">
+                  <div style="font-weight:700;font-size:10.5px;color:#0f172a;line-height:1.4;">${esc(doc.to.name)}</div>
+                  ${doc.to.address ? `<div style="color:#475569;margin-top:3px;white-space:pre-line;line-height:1.45;">${esc(doc.to.address)}</div>` : ""}
+                  ${!isCash && doc.to.gstin ? `<div style="margin-top:5px;font-weight:600;color:#1e293b;line-height:1.3;">GSTIN ${esc(doc.to.gstin)}</div>` : ""}
                 </td>
-                <td style="width:50%;vertical-align:top;padding:8px 10px 10px;">
-                  <div style="font-weight:700;font-size:10.5px;color:#0f172a;line-height:1.35;">${esc(doc.to.name)}</div>
-                  ${doc.to.address ? `<div style="color:#475569;margin-top:3px;white-space:pre-line;line-height:1.4;">${esc(doc.to.address)}</div>` : ""}
-                  ${!isCash && doc.to.gstin ? `<div style="margin-top:4px;font-weight:600;color:#1e293b;">GSTIN ${esc(doc.to.gstin)}</div>` : ""}
+                <td style="width:50%;vertical-align:middle !important;padding:10px 14px 14px;">
+                  <div style="font-weight:700;font-size:10.5px;color:#0f172a;line-height:1.4;">${esc(doc.to.name)}</div>
+                  ${doc.to.address ? `<div style="color:#475569;margin-top:3px;white-space:pre-line;line-height:1.45;">${esc(doc.to.address)}</div>` : ""}
+                  ${!isCash && doc.to.gstin ? `<div style="margin-top:5px;font-weight:600;color:#1e293b;line-height:1.3;">GSTIN ${esc(doc.to.gstin)}</div>` : ""}
                 </td>
               </tr>
             </tbody>
           </table>`
-        : `<table class="avoid-break" style="width:100%;border-collapse:collapse;margin:6px 0 6px;font-size:9px;">
+        : `<table class="avoid-break" style="width:100%;border-collapse:separate;border-spacing:0;border:1px solid #cbd5e1;border-radius:6px;overflow:hidden;margin:8px 0 10px;font-size:9px;">
             <thead>
-              <tr>
-                <th style="width:50%;text-align:left;font-size:8px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;padding:0 10px 4px 0;border:none;">BILL TO</th>
-                <th style="width:50%;text-align:left;font-size:8px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;padding:0 0 4px 10px;border:none;">SHIP TO</th>
+              <tr style="background:#f8fafc;">
+                <th style="width:50%;text-align:left;background:#f8fafc;border-right:1px solid #cbd5e1;border-bottom:1px solid #cbd5e1;padding:6px 14px;font-weight:700;color:#475569;text-transform:uppercase;font-size:8px;letter-spacing:0.05em;vertical-align:middle !important;">BILL TO</th>
+                <th style="width:50%;text-align:left;background:#f8fafc;border-bottom:1px solid #cbd5e1;padding:6px 14px;font-weight:700;color:#475569;text-transform:uppercase;font-size:8px;letter-spacing:0.05em;vertical-align:middle !important;">SHIP TO</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td style="width:50%;vertical-align:top;padding:0 10px 6px 0;border:none;">
-                  <div style="font-weight:700;font-size:10.5px;color:#0f172a;line-height:1.35;">${esc(doc.to.name)}</div>
-                  ${doc.to.address ? `<div style="color:#475569;margin-top:3px;white-space:pre-line;line-height:1.4;">${esc(doc.to.address)}</div>` : ""}
-                  ${!isCash && doc.to.gstin ? `<div style="margin-top:4px;font-weight:600;color:#1e293b;">GSTIN ${esc(doc.to.gstin)}</div>` : ""}
+                <td style="width:50%;vertical-align:middle !important;padding:10px 14px 14px;border-right:1px solid #cbd5e1;">
+                  <div style="font-weight:700;font-size:10.5px;color:#0f172a;line-height:1.4;">${esc(doc.to.name)}</div>
+                  ${doc.to.address ? `<div style="color:#475569;margin-top:3px;white-space:pre-line;line-height:1.45;">${esc(doc.to.address)}</div>` : ""}
+                  ${!isCash && doc.to.gstin ? `<div style="margin-top:5px;font-weight:600;color:#1e293b;line-height:1.3;">GSTIN ${esc(doc.to.gstin)}</div>` : ""}
                 </td>
-                <td style="width:50%;vertical-align:top;padding:0 0 6px 10px;border:none;">
-                  <div style="font-weight:700;font-size:10.5px;color:#0f172a;line-height:1.35;">${esc(doc.to.name)}</div>
-                  ${doc.to.address ? `<div style="color:#475569;margin-top:3px;white-space:pre-line;line-height:1.4;">${esc(doc.to.address)}</div>` : ""}
-                  ${!isCash && doc.to.gstin ? `<div style="margin-top:4px;font-weight:600;color:#1e293b;">GSTIN ${esc(doc.to.gstin)}</div>` : ""}
+                <td style="width:50%;vertical-align:middle !important;padding:10px 14px 14px;">
+                  <div style="font-weight:700;font-size:10.5px;color:#0f172a;line-height:1.4;">${esc(doc.to.name)}</div>
+                  ${doc.to.address ? `<div style="color:#475569;margin-top:3px;white-space:pre-line;line-height:1.45;">${esc(doc.to.address)}</div>` : ""}
+                  ${!isCash && doc.to.gstin ? `<div style="margin-top:5px;font-weight:600;color:#1e293b;line-height:1.3;">GSTIN ${esc(doc.to.gstin)}</div>` : ""}
                 </td>
               </tr>
             </tbody>
@@ -536,23 +536,23 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
 
     ${
       rows
-        ? `<table style="width:100%;border-collapse:collapse;margin-top:4px;font-size:9.5px;">
+        ? `<table style="width:100%;border-collapse:collapse;margin-top:6px;font-size:9.5px;table-layout:fixed;">
             <thead><tr style="background:${deepTurquoise};">
-              <th style="width:36px;text-align:center;padding:7px 4px;vertical-align:middle;">#</th>
+              <th style="width:36px;text-align:center;padding:8px 4px;vertical-align:middle !important;">#</th>
               ${
                 showPhoto
-                  ? `<th style="width:96px;text-align:center;padding:7px 4px;vertical-align:middle;">Photo</th>`
+                  ? `<th style="width:96px;text-align:center;padding:8px 4px;vertical-align:middle !important;">Photo</th>`
                   : ""
               }
-              <th style="text-align:left;padding:7px 10px;vertical-align:middle;">Item &amp; Description</th>
+              <th style="text-align:left;padding:8px 12px;vertical-align:middle !important;">Item &amp; Description</th>
               ${
                 showHsn
-                  ? `<th style="width:70px;text-align:center;padding:7px 6px;vertical-align:middle;">HSN/SAC</th>`
+                  ? `<th style="width:70px;text-align:center;padding:8px 4px;vertical-align:middle !important;">HSN/SAC</th>`
                   : ""
               }
-              <th style="width:58px;text-align:right;padding:7px 8px;vertical-align:middle;">Qty</th>
-              <th style="width:72px;text-align:right;padding:7px 8px;vertical-align:middle;">Rate</th>
-              <th style="width:88px;text-align:right;padding:7px 10px;vertical-align:middle;">Amount</th>
+              <th style="width:64px;text-align:center;padding:8px 6px;vertical-align:middle !important;">Qty</th>
+              <th style="width:75px;text-align:right;padding:8px 8px;vertical-align:middle !important;">Rate</th>
+              <th style="width:90px;text-align:right;padding:8px 10px;vertical-align:middle !important;">Amount</th>
             </tr></thead>
             <tbody>${rows}</tbody>
           </table>`
@@ -560,12 +560,12 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
     }
 
     <!-- Financial Totals Row -->
-    <div class="avoid-break" style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:6px;gap:14px;">
+    <div class="avoid-break" style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:8px;gap:14px;">
       <div style="flex:1;max-width:440px;">
         ${
           totalInWords
-            ? `<div style="font-size:9px;line-height:1.45;padding:6px 12px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:4px;display:inline-block;box-sizing:border-box;vertical-align:middle;">
-                <span style="color:#64748b;font-weight:600;">Total In Words: </span>
+            ? `<div style="display:inline-flex;align-items:center;min-height:34px;padding:6px 14px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:5px;box-sizing:border-box;font-size:9.5px;line-height:1.4;vertical-align:middle;">
+                <span style="color:#64748b;font-weight:600;margin-right:5px;white-space:nowrap;">Total In Words:</span>
                 <b style="color:${deepTurquoise};font-weight:700;">${esc(totalInWords)}</b>
               </div>`
             : ""

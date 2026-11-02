@@ -279,14 +279,14 @@ describe("PDF Generator", () => {
 
   it("renders Bill To / Ship To table with generous vertical padding to avoid edge clipping", () => {
     const html = renderDocHtml(sampleDoc);
-    expect(html).toContain("padding:8px 10px 10px");
+    expect(html).toContain("padding:10px 14px 14px");
     expect(html).toContain("The Home Decor Point");
   });
 
   it("renders table header with vertical-align: middle and padded Total In Words box", () => {
     const html = renderDocHtml(sampleDoc);
     expect(html).toContain("vertical-align:middle !important");
-    expect(html).toContain("padding:6px 12px");
+    expect(html).toContain("padding:6px 14px");
     expect(html).toContain("Total In Words:");
   });
 });
