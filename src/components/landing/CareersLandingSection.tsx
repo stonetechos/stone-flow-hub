@@ -339,7 +339,10 @@ export function CareersLandingSection() {
 
             <div className="flex items-center gap-2 pt-1">
               <Button asChild className="flex-1 font-bold text-xs gap-1.5">
-                <a href="/branding/hiring-story-flyer.png?v=2" download="Stone-Tech-Hiring-Flyer.png">
+                <a
+                  href="/branding/hiring-story-flyer.png?v=2"
+                  download="Stone-Tech-Hiring-Flyer.png"
+                >
                   Download Image Flyer
                 </a>
               </Button>
