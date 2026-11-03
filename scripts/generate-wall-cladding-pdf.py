@@ -74,6 +74,12 @@ def get_benchmark_price(category, stone_type, index):
     if "inlay" in cat_lower or "geometric" in cat_lower:
         base = 1250
         badge = "Brass & Stone Inlay"
+    elif "mural" in cat_lower or "artwork" in cat_lower:
+        base = 950
+        badge = "Hand-Carved Stone Mural"
+    elif "strip" in cat_lower or "ledger" in cat_lower:
+        base = 490
+        badge = "Interlocking Ledger Panel"
     elif "3d" in cat_lower or "relief" in cat_lower:
         base = 680
         badge = "CNC Sculpted Relief"
@@ -218,7 +224,7 @@ def create_cover_page(fonts):
     )
     draw.text(
         (PAGE_WIDTH // 2, 620),
-        "140 Precision Patterns · 3D CNC Relief · Waterjet Inlay · Linear Ledger · Interlocking Ashlar",
+        "182 Precision Patterns · Horizontal Strip Ledgestone · 3D CNC Relief · Waterjet Inlay · Interlocking Ashlar",
         fill=(148, 163, 184),
         font=fonts["card_text"],
         anchor="mm",
@@ -319,13 +325,10 @@ def create_table_of_contents_page(fonts, items, total_pages=38):
     draw.line([(50, 145), (PAGE_WIDTH - 50, 145)], fill=(14, 116, 144), width=2)
 
     categories = [
-        ("Inlay & Geometric Accent", "Brass, copper & semi-precious inlays in Makrana white marble & basalt", 18),
-        ("3D Architectural Relief", "Sculpted organic, diamond, and wave high-relief modular panels", 24),
-        ("Fluted & Linear Ribbed", "Precision micro-ribbed and fluted stone panels for contemporary spaces", 22),
-        ("Linear Ledger & Split-Face", "Natural split-cleft quartzite, sandstone, and slate interlocking ledger panels", 28),
-        ("Woven Basketweave & Parquet", "Geometric hand-assembled parquet and basketweave stone mosaics", 16),
-        ("Modular Ashlar & Castle Stone", "Multi-sized calibrated ashlar blocks for robust exterior boundary facades", 18),
-        ("Mosaic & Pebble Tile", "Mesh-backed tumbled pebbles, hexagons, and interlocking cobbles", 14),
+        ("Horizontal Strip & Split-Face Ledgestone", "Natural cleft quartzite, sandstone, and slate interlocking linear ledger panels (Pages 3–17)", 57),
+        ("3D CNC Relief & Sculpted Architectural Cladding", "Sculpted organic, diamond, and wave high-relief modular panels (Pages 18–42)", 98),
+        ("Botanical Murals & Sacred Stone Artworks", "Hand-carved lotus rosettes, floral medallions, and tree of life panels (Pages 43–47)", 20),
+        ("Semi-Precious & Brass Inlay Mosaics", "Waterjet-crafted brass and semi-precious inlays in Makrana marble & basalt (Pages 48–49)", 7),
     ]
 
     y = 175

@@ -442,6 +442,60 @@ export function WallCladdingCatalog({
           </div>
         </div>
 
+        {/* Quick Collection Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5 scrollbar-none [touch-action:pan-x]">
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedCategory("all");
+              setVisibleCount(INITIAL_BATCH);
+            }}
+            className={cn(
+              "px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all border shrink-0",
+              selectedCategory === "all"
+                ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                : "bg-muted/50 text-muted-foreground border-border/60 hover:text-foreground hover:bg-muted",
+            )}
+          >
+            All Patterns ({products.length})
+          </button>
+          {categories
+            .filter((c) => c !== "all")
+            .map((cat) => {
+              const count = products.filter((p) => p.category === cat).length;
+              const isSelected = selectedCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => {
+                    setSelectedCategory(cat);
+                    setVisibleCount(INITIAL_BATCH);
+                  }}
+                  className={cn(
+                    "px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all border flex items-center gap-1.5 shrink-0",
+                    isSelected
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                      : "bg-muted/50 text-muted-foreground border-border/60 hover:text-foreground hover:bg-muted",
+                  )}
+                >
+                  {cat === "Horizontal Strip & Ledgestone Panels" && <Layers className="h-3 w-3" />}
+                  <span>{cat}</span>
+                  <span
+                    className={cn(
+                      "text-[10px] px-1.5 py-0.2 rounded-full",
+                      isSelected
+                        ? "bg-primary-foreground/20 text-primary-foreground"
+                        : "bg-background/80 text-muted-foreground",
+                    )}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+        </div>
+
         {/* 3-Column Scrollable Box with Native Momentum — EXACT SAME SPEC as StoneGalleryFeed */}
         <div
           ref={scrollContainerRef}

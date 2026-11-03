@@ -59,10 +59,12 @@ export function getBenchmarkPrice(
   } else if (
     catLower.includes("interlock") ||
     catLower.includes("z-panel") ||
-    catLower.includes("finger")
+    catLower.includes("finger") ||
+    catLower.includes("strip") ||
+    catLower.includes("ledger")
   ) {
     basePrice = 520;
-    badge = "Interlocking Z-Panel";
+    badge = "Interlocking Ledger Panel";
   } else if (catLower.includes("ashlar")) {
     basePrice = 480;
     badge = "Coursed Ashlar Masonry";

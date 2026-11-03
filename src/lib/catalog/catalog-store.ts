@@ -21,6 +21,7 @@ import { DEFAULT_WEBSITE_CATALOG_ORDER, type SiteSettings } from "@/lib/site-set
 import { syncWebsiteProductToErpServerFn } from "@/lib/products/products.functions";
 
 export const OFFICIAL_PRODUCT_CATEGORIES = [
+  "Horizontal Strip & Ledgestone Panels",
   "Stone Wall Cladding",
   "Stone Wall Mural Artwork",
   "Artwork",
