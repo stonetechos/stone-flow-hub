@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { Fragment, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   History,
   Trash2,
+  Building2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -71,6 +72,11 @@ import {
 import { useRoles } from "@/hooks/use-roles";
 import { AccountingGuard } from "@/components/auth/AccountingGuard";
 import { useTranslation } from "react-i18next";
+import { OfficeRentRegisterView } from "@/components/liabilities/OfficeRentRegisterView";
+
+interface LiabilitiesSearch {
+  tab?: "liabilities" | "payments" | "office-rent";
+}
 
 /**
  * Liabilities (Task #44) — Rishi: "The business liabilities are also
@@ -80,11 +86,17 @@ import { useTranslation } from "react-i18next";
  * same message — the two ideas arrived together and share this page
  * rather than getting a separate settings screen.
  *
- * growthAdvisory.ts (Task #46) reads both listLiabilities() and
- * getAnnualNetMarginGoal() to fold into the margin/pricing/sales-target
- * analysis.
+ * Dedicated Tab for Office Rent & Tenancy Register:
+ * Handles advance office rent due by 5th of each month from Feb 2025 onwards,
+ * security deposit renewal cheque and shortfall mismatch, and unpaid AMC/maintenance.
  */
 export const Route = createFileRoute("/_authenticated/liabilities/")({
+  validateSearch: (s: Record<string, unknown>): LiabilitiesSearch => ({
+    tab:
+      s.tab === "payments" || s.tab === "office-rent" || s.tab === "liabilities"
+        ? (s.tab as "liabilities" | "payments" | "office-rent")
+        : undefined,
+  }),
   ssr: false,
   component: LiabilitiesPage,
 });
@@ -193,12 +205,17 @@ function LiabilitiesPage() {
     setEditing(row);
   };
 
+  const search = useSearch({ from: "/_authenticated/liabilities/" });
+  const navigate = useNavigate({ from: "/_authenticated/liabilities/" });
+
   const paymentsQuery = useQuery({
     queryKey: qk.liabilities.payments(),
     queryFn: () => listLiabilityPayments(),
   });
 
-  const [activeTab, setActiveTab] = useState<"liabilities" | "payments">("liabilities");
+  const [activeTab, setActiveTab] = useState<"liabilities" | "payments" | "office-rent">(
+    search.tab || "office-rent",
+  );
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [paymentToDelete, setPaymentToDelete] = useState<LiabilityPaymentRow | null>(null);
   const [paymentForm, setPaymentForm] = useState<LiabilityPaymentInput>({
@@ -408,19 +425,34 @@ function LiabilitiesPage() {
 
         <Tabs
           value={activeTab}
-          onValueChange={(v) => setActiveTab(v as "liabilities" | "payments")}
+          onValueChange={(v) => {
+            const nextTab = v as "liabilities" | "payments" | "office-rent";
+            setActiveTab(nextTab);
+            navigate({
+              search: (prev: Record<string, unknown>) => ({ ...prev, tab: nextTab }),
+              replace: true,
+            });
+          }}
           className="space-y-4"
         >
-          <TabsList>
+          <TabsList className="grid grid-cols-1 sm:grid-cols-3 w-full sm:w-auto h-auto p-1">
+            <TabsTrigger value="office-rent" className="gap-2">
+              <Building2 className="h-4 w-4 text-primary" />
+              Office Rent & Tenancy Register
+            </TabsTrigger>
             <TabsTrigger value="liabilities" className="gap-2">
               <Calendar className="h-4 w-4" />
-              Active Liabilities & Rent Accounts ({rows.length})
+              Active Liabilities ({rows.length})
             </TabsTrigger>
             <TabsTrigger value="payments" className="gap-2">
               <Receipt className="h-4 w-4" />
-              Monthly Payments Registry ({paymentRows.length})
+              Payments Registry ({paymentRows.length})
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="office-rent" className="space-y-6">
+            <OfficeRentRegisterView canWrite={roles.canWrite} />
+          </TabsContent>
 
           <TabsContent value="liabilities" className="space-y-6">
             {query.isLoading ? (

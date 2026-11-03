@@ -17,6 +17,8 @@ export type AppSettingKey =
   // (admin-only — this table's RLS only allows admin writes). Read by
   // growthAdvisory.ts (Task #46) to size the required revenue/price move.
   | "finance.annual_net_margin_goal"
+  // Office Rent, Deposit Mismatch & Maintenance/AMC Register
+  | "finance.office_rent_register"
   // Website Landing Page Matter & CMS Content
   | "website.landing_content";
 

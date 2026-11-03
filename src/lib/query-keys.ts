@@ -133,6 +133,7 @@ export const qk = {
       liabilityId
         ? (["liabilities", "payments", liabilityId] as const)
         : (["liabilities", "payments"] as const),
+    rentRegister: () => ["liabilities", "rentRegister"] as const,
   },
   businessExpenses: {
     list: (from?: string, to?: string) =>
