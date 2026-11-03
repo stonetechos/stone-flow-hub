@@ -1228,7 +1228,12 @@ export async function generatePdfBlob(doc: PdfDoc): Promise<Blob> {
       });
     }
 
-    const pdf = new JsPdf("p", "mm", "a4");
+    const pdf = new JsPdf({
+      orientation: "p",
+      unit: "mm",
+      format: "a4",
+      compress: true,
+    });
     const pdfWidth = 210;
     const pdfHeight = 297;
     // A4 height in canvas pixels based on current width aspect ratio
@@ -1236,9 +1241,10 @@ export async function generatePdfBlob(doc: PdfDoc): Promise<Blob> {
 
     // 1. Single Page Document (Fits within 1 A4 page with 2% tolerance)
     if (canvas.height <= pageCanvasHeight * 1.02) {
-      const imgData = canvas.toDataURL("image/png");
+      // Export as high-quality JPEG with compression to produce lightweight (<500KB) fast-upload PDFs
+      const imgData = canvas.toDataURL("image/jpeg", 0.88);
       const imgHeightMm = (canvas.height * pdfWidth) / canvas.width;
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, imgHeightMm);
+      pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, imgHeightMm, undefined, "FAST");
       const outputBlob = pdf.output("blob");
       if (outputBlob.size > 100) return outputBlob;
       return await generateVectorPdfFallback(doc);
@@ -1310,9 +1316,9 @@ export async function generatePdfBlob(doc: PdfDoc): Promise<Blob> {
         );
       }
 
-      const sliceData = pageCanvas.toDataURL("image/png");
+      const sliceData = pageCanvas.toDataURL("image/jpeg", 0.88);
       const sliceHeightMm = (sliceHeight * pdfWidth) / canvas.width;
-      pdf.addImage(sliceData, "PNG", 0, 0, pdfWidth, sliceHeightMm);
+      pdf.addImage(sliceData, "JPEG", 0, 0, pdfWidth, sliceHeightMm, undefined, "FAST");
 
       sliceTop = sliceBottom;
     }
