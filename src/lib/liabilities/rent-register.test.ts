@@ -1,112 +1,127 @@
 import { describe, expect, it } from "bun:test";
 import {
-  DEFAULT_OFFICE_RENT_REGISTER,
   generateMonthList,
-  computeRentScheduleAndReconciliation,
+  computeDiaryAndReconciliation,
   type OfficeRentRegisterData,
 } from "./rent-register.types";
 
-describe("Office Rent Register Engine", () => {
-  it("generates correct chronological month sequence from Feb 2025 onwards", () => {
-    const list = generateMonthList("2025-02", "2025-05");
-    expect(list).toEqual(["2025-02", "2025-03", "2025-04", "2025-05"]);
+describe("Tenancy Diary & Accurate Accounting Engine", () => {
+  it("generates 21 contract months from Mar 2025 to Nov 2026", () => {
+    // Feb 2025 is baseline, Mar 2025 to Nov 2026 is 21 months
+    const list = generateMonthList("2025-02", "2026-11");
+    expect(list.length).toBe(22); // includes Feb 2025 baseline
+    const contractMonths = list.filter((m) => m !== "2025-02");
+    expect(contractMonths.length).toBe(21);
+    expect(contractMonths[0]).toBe("2025-03");
+    expect(contractMonths[contractMonths.length - 1]).toBe("2026-11");
   });
 
-  it("handles year transition seamlessly (e.g. Nov 2025 to Feb 2026)", () => {
-    const list = generateMonthList("2025-11", "2026-02");
-    expect(list).toEqual(["2025-11", "2025-12", "2026-01", "2026-02"]);
-  });
-
-  it("computes clean reconciliation with advance rent and deposit shortfall", () => {
+  it("accurately computes multi-faceted diary with lumpsum, cash, deposit refund parts and stone material sale", () => {
     const mockData: OfficeRentRegisterData = {
       settings: {
         propertyName: "SG Business Hub, Gota",
         propertyAddress: "Gota, Ahmedabad",
         landlordName: "Test Landlord",
-        monthlyRent: 40000,
+        monthlyRent: 35000,
         dueDayOfMonth: 5,
         payableInAdvance: true,
         startMonth: "2025-02", // Feb 2025 baseline cleared
+        endMonth: "2026-11", // Up to Nov 2026 (21 chargeable months: 21 * 35,000 = 735,000)
       },
-      payments: [
+      entries: [
         {
-          id: "p1",
-          paymentDate: "2025-03-04",
-          monthFor: "2025-03",
-          amount: 40000,
+          id: "e1",
+          date: "2025-03-05",
+          category: "rent_payment_bank",
+          direction: "we_paid_or_charged",
+          impact: "we_owe_less",
+          amount: 50000, // Lumpsum bank transfer
           paymentMode: "Bank Transfer (NEFT/RTGS/IMPS)",
-          createdAt: "2025-03-04",
+          description: "Lumpsum RTGS transfer to landlord",
+          createdAt: "2025-03-05",
         },
         {
-          id: "p2",
-          paymentDate: "2025-04-03",
-          monthFor: "2025-04",
-          amount: 25000, // Partial payment for April
-          paymentMode: "Cheque",
-          createdAt: "2025-04-03",
+          id: "e2",
+          date: "2025-04-10",
+          category: "rent_payment_cash",
+          direction: "we_paid_or_charged",
+          impact: "we_owe_less",
+          amount: 20000, // Cash paid
+          paymentMode: "Cash",
+          description: "Handed over cash for rent at office",
+          createdAt: "2025-04-10",
+        },
+        {
+          id: "e3",
+          date: "2025-06-15",
+          category: "material_sale_to_landlord",
+          direction: "we_paid_or_charged",
+          impact: "we_owe_less",
+          amount: 45000, // Landlord bought material from Stone Tech
+          paymentMode: "Contra / Adjusted",
+          description: "Landlord bought Italian marble & sandstone slabs from us",
+          createdAt: "2025-06-15",
+        },
+        {
+          id: "e4",
+          date: "2025-07-02",
+          category: "landlord_payment_for_material",
+          direction: "landlord_paid_or_refunded",
+          impact: "we_owe_more",
+          amount: 15000, // Landlord paid 15k cash towards that material
+          paymentMode: "Cash",
+          description: "Landlord gave cash partially for stone material",
+          createdAt: "2025-07-02",
         },
       ],
       deposit: {
-        oldDepositAmount: 120000,
+        oldDepositAmount: 100000,
         newDepositAmount: 150000,
         newDepositPaidAmount: 150000,
-        oldDepositRefundReceived: 80000, // Landlord returned only 80k out of 120k! 40k shortfall
+        oldDepositRefundReceived: 60000, // Returned 60k out of 100k, 40k shortfall owed
         offsetAgainstRent: true,
       },
       maintenance: [
         {
           id: "m1",
           type: "Society Maintenance",
-          title: "Q1 Society Maintenance",
-          periodLabel: "Apr-Jun 2025",
-          amount: 15000,
-          paidAmount: 0,
+          title: "SG Business Hub Maintenance",
+          periodLabel: "2025-26",
+          amount: 25000,
+          paidAmount: 10000,
           isPaid: false,
           createdAt: "2025-04-01",
         },
       ],
-      updatedAt: "2025-05-10",
+      updatedAt: "2026-11-03",
     };
 
-    // Calculate as of May 10, 2025
-    const asOf = new Date(2025, 4, 10); // May 10, 2025
-    const { schedule, reconciliation } = computeRentScheduleAndReconciliation(mockData, asOf);
+    const { summary } = computeDiaryAndReconciliation(mockData);
 
-    // Months: 2025-02 (baseline), 2025-03, 2025-04, 2025-05
-    expect(schedule.length).toBe(4);
+    // Total contract months: 21 (Mar 2025 to Nov 2026)
+    expect(summary.totalRentContractMonths).toBe(21);
+    // Total contract rent: 21 * 35,000 = 735,000
+    expect(summary.totalRentContractAmount).toBe(735000);
 
-    // March: 40k due, 40k paid => status 'paid'
-    const mar = schedule.find((s) => s.monthKey === "2025-03");
-    expect(mar?.status).toBe("paid");
-    expect(mar?.balanceDue).toBe(0);
+    // Total rent paid by us (50,000 + 20,000) = 70,000
+    expect(summary.totalRentPaidByUs).toBe(70000);
 
-    // April: 40k due, 25k paid => status 'partial' (15k balance)
-    const apr = schedule.find((s) => s.monthKey === "2025-04");
-    expect(apr?.status).toBe("partial");
-    expect(apr?.balanceDue).toBe(15000);
+    // Material net owed by landlord: 45,000 (bought) - 15,000 (paid in cash) = 30,000
+    expect(summary.netMaterialOwedByLandlord).toBe(30000);
 
-    // May: 40k due, 0 paid, past 5th of May => status 'overdue'
-    const may = schedule.find((s) => s.monthKey === "2025-05");
-    expect(may?.status).toBe("overdue");
-    expect(may?.balanceDue).toBe(40000);
+    // Deposit shortfall owed by landlord: 100,000 - 60,000 = 40,000
+    expect(summary.depositShortfallOwedByLandlord).toBe(40000);
 
-    // Total rent accrued: Mar (40k) + Apr (40k) + May (40k) = 120,000
-    expect(reconciliation.totalRentAccrued).toBe(120000);
-    // Total rent paid: 40k + 25k = 65,000
-    expect(reconciliation.totalRentPaid).toBe(65000);
-    // Net rent outstanding: 120,000 - 65,000 = 55,000
-    expect(reconciliation.netRentOutstanding).toBe(55000);
+    // Unpaid maintenance: 25,000 - 10,000 = 15,000
+    expect(summary.unpaidMaintenanceBalance).toBe(15000);
 
-    // Deposit shortfall owed by landlord: 120,000 - 80,000 = 40,000
-    expect(reconciliation.depositShortfallOwedByLandlord).toBe(40000);
+    // Gross payable: Rent (735,000) + Maintenance (15,000) = 750,000
+    expect(summary.grossPayable).toBe(750000);
 
-    // Unpaid maintenance: 15,000
-    expect(reconciliation.netMaintenanceOutstanding).toBe(15000);
+    // Offsets: Rent paid (70,000) + Deposit shortfall (40,000) + Material balance (30,000) = 140,000
+    expect(summary.totalOffsetsAndCredits).toBe(140000);
 
-    // Gross payable: 55,000 (rent) + 15,000 (maintenance) = 70,000
-    expect(reconciliation.grossPayable).toBe(70000);
-
-    // Optimal Net Payable (after deducting 40,000 unreturned deposit): 70,000 - 40,000 = 30,000!
-    expect(reconciliation.optimalNetPayable).toBe(30000);
+    // Final Optimum Net Payable: 750,000 - 140,000 = 610,000!
+    expect(summary.finalOptimumNetPayable).toBe(610000);
   });
 });
