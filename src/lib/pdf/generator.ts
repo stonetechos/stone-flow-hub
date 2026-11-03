@@ -1198,7 +1198,7 @@ export async function generatePdfBlob(doc: PdfDoc): Promise<Blob> {
     let canvas: HTMLCanvasElement;
     try {
       canvas = await html2canvas(sheetEl, {
-        scale: 2.5,
+        scale: 1.6,
         useCORS: true,
         allowTaint: false,
         logging: false,
@@ -1215,7 +1215,7 @@ export async function generatePdfBlob(doc: PdfDoc): Promise<Blob> {
         (img as HTMLElement).style.display = "none";
       });
       canvas = await html2canvas(sheetEl, {
-        scale: 2.5,
+        scale: 1.6,
         useCORS: false,
         allowTaint: false,
         logging: false,
@@ -1241,8 +1241,8 @@ export async function generatePdfBlob(doc: PdfDoc): Promise<Blob> {
 
     // 1. Single Page Document (Fits within 1 A4 page with 2% tolerance)
     if (canvas.height <= pageCanvasHeight * 1.02) {
-      // Export as high-quality JPEG with compression to produce lightweight (<500KB) fast-upload PDFs
-      const imgData = canvas.toDataURL("image/jpeg", 0.88);
+      // Export as high-quality JPEG (0.78) with compression to produce lightweight (~180-250KB) instantaneous WhatsApp uploads
+      const imgData = canvas.toDataURL("image/jpeg", 0.78);
       const imgHeightMm = (canvas.height * pdfWidth) / canvas.width;
       pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, imgHeightMm, undefined, "FAST");
       const outputBlob = pdf.output("blob");
@@ -1316,7 +1316,7 @@ export async function generatePdfBlob(doc: PdfDoc): Promise<Blob> {
         );
       }
 
-      const sliceData = pageCanvas.toDataURL("image/jpeg", 0.88);
+      const sliceData = pageCanvas.toDataURL("image/jpeg", 0.78);
       const sliceHeightMm = (sliceHeight * pdfWidth) / canvas.width;
       pdf.addImage(sliceData, "JPEG", 0, 0, pdfWidth, sliceHeightMm, undefined, "FAST");
 
