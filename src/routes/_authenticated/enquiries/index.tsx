@@ -740,11 +740,48 @@ function NewEnquiryDialog({
               />
             </Field>
             <Field label="Requirement" required className="md:col-span-2">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <span className="text-[11px] text-muted-foreground mr-1">Scope:</span>
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded border border-border bg-muted/40 hover:bg-muted cursor-pointer transition-colors"
+                  onClick={() => {
+                    const prefix = "[Supply Only] ";
+                    set(
+                      "requirement",
+                      prefix +
+                        (form.requirement?.replace(
+                          /\[Supply \+ Installation\]\s*|\[Supply Only\]\s*/g,
+                          "",
+                        ) || ""),
+                    );
+                  }}
+                >
+                  📦 Supply Only
+                </button>
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded border border-border bg-muted/40 hover:bg-muted cursor-pointer transition-colors"
+                  onClick={() => {
+                    const prefix = "[Supply + Installation] ";
+                    set(
+                      "requirement",
+                      prefix +
+                        (form.requirement?.replace(
+                          /\[Supply \+ Installation\]\s*|\[Supply Only\]\s*/g,
+                          "",
+                        ) || ""),
+                    );
+                  }}
+                >
+                  🛠️ Supply + Installation
+                </button>
+              </div>
               <Textarea
                 rows={2}
                 value={form.requirement ?? ""}
                 onChange={(e) => set("requirement", e.target.value)}
-                placeholder="What is the customer looking for?"
+                placeholder="What is the customer looking for? (e.g. Wall Cladding with pictures of the wall)"
                 required
               />
             </Field>

@@ -24,6 +24,10 @@ export const publicInquiryInputSchema = z.object({
   customer_role: z.string().optional().default("Owner / Homeowner"),
   customer_type: z.string().optional().default("website"),
   space_type: z.string().trim().min(1, "Please select the type of space"),
+  service_scope: z
+    .enum(["supply_only", "supply_and_installation"])
+    .optional()
+    .default("supply_and_installation"),
   required_date: z.string().min(1, "Please select when you need this by"),
   selected_products: z.array(z.string()).min(1, "Please select at least one product"),
   plan_description: z.string().optional().default(""),
@@ -34,6 +38,7 @@ export const publicInquiryInputSchema = z.object({
         dataUrl: z.string(),
         size: z.number().optional(),
         type: z.string().optional(),
+        tag: z.string().optional().default("general"),
       }),
     )
     .max(10, "You can upload a maximum of 10 photos")
@@ -397,14 +402,27 @@ export const submitPublicEnquiryServerFn = createServerFn({ method: "POST" })
         ? input.selected_products.join(", ")
         : "General Stone Requirement";
 
+    const scopeLabel =
+      input.service_scope === "supply_only"
+        ? "Supply Only (Material Delivery)"
+        : "Supply + Installation (Turnkey)";
+
+    const wallPhotoCount = (input.photos || []).filter((p) => p.tag === "wall_photo").length;
+    const drawingCount = (input.photos || []).filter((p) => p.tag === "drawing").length;
+
     const requirementText = [
       input.customer_role ? `Customer Role: ${input.customer_role}` : "",
+      `Service Requirement: ${scopeLabel}`,
       `Products: ${formattedProducts}`,
       input.space_type ? `Space Type: ${input.space_type}` : "",
       `Required by: ${input.required_date}`,
       `Site Location: ${input.city.trim()}`,
       input.plan_description ? `Plan Details: ${input.plan_description.trim()}` : "",
-      uploadedPhotoUrls.length > 0 ? `Attached Photos: ${uploadedPhotoUrls.length} file(s)` : "",
+      wallPhotoCount > 0 ? `Wall Pictures: ${wallPhotoCount} photo(s) of the walls attached` : "",
+      drawingCount > 0 ? `CAD / Drawings: ${drawingCount} plan file(s) attached` : "",
+      uploadedPhotoUrls.length > 0 && wallPhotoCount === 0 && drawingCount === 0
+        ? `Attached Photos: ${uploadedPhotoUrls.length} file(s)`
+        : "",
     ]
       .filter(Boolean)
       .join("\n");
@@ -421,15 +439,18 @@ export const submitPublicEnquiryServerFn = createServerFn({ method: "POST" })
         source: "Shareable Web Link",
         requirement: requirementText,
         required_delivery_date: input.required_date,
-        notes: `Customer WhatsApp: ${normalizedPhone} | Role: ${input.customer_role || "Owner / Homeowner"} | City: ${input.city.trim()} | Delivery Required: ${input.required_date}`,
+        notes: `Customer WhatsApp: ${normalizedPhone} | Scope: ${scopeLabel} | Role: ${input.customer_role || "Owner / Homeowner"} | City: ${input.city.trim()} | Delivery Required: ${input.required_date}`,
         external_ref: {
           client_whatsapp: normalizedPhone,
           client_city: input.city.trim(),
           client_role: input.customer_role || "Owner / Homeowner",
           space_type: input.space_type || null,
+          service_scope: input.service_scope,
           selected_products: input.selected_products,
           photos: photoObjects,
           photo_urls: uploadedPhotoUrls,
+          wall_photos_count: wallPhotoCount,
+          drawings_count: drawingCount,
           submitted_at: new Date().toISOString(),
         },
       } as unknown as Database["public"]["Tables"]["enquiries"]["Insert"])
@@ -442,7 +463,10 @@ export const submitPublicEnquiryServerFn = createServerFn({ method: "POST" })
     }
 
     // 8. Register file objects in file_objects table for ERP attachment viewers
-    for (const po of photoObjects) {
+    for (let i = 0; i < photoObjects.length; i++) {
+      const po = photoObjects[i];
+      const origPhoto = input.photos?.[i];
+      const isWallPhoto = origPhoto?.tag === "wall_photo" || po.name.toLowerCase().includes("wall");
       try {
         await supabaseAdmin.from("file_objects").insert({
           bucket: FILES_BUCKET,
@@ -450,7 +474,7 @@ export const submitPublicEnquiryServerFn = createServerFn({ method: "POST" })
           entity_id: createdEnquiry.id,
           file_name: po.name,
           object_path: po.path,
-          folder: "site_image",
+          folder: isWallPhoto ? "site_image" : "drawing",
         });
       } catch (foErr) {
         console.warn("[public-inquiry] file_objects entry warning:", foErr);
@@ -459,7 +483,7 @@ export const submitPublicEnquiryServerFn = createServerFn({ method: "POST" })
 
     // 9. Prepare WhatsApp link for instant contact
     const encodedMsg = encodeURIComponent(
-      `Hello Stone Tech Team! I have submitted an inquiry on your website.\n\n*Reference:* ${createdEnquiry.enquiry_no}\n*Name:* ${input.name.trim()}\n*Products:* ${formattedProducts}\n*Required by:* ${input.required_date}\n*City:* ${input.city.trim()}`,
+      `Hello Stone Tech Team! I have submitted an inquiry on your website.\n\n*Reference:* ${createdEnquiry.enquiry_no}\n*Name:* ${input.name.trim()}\n*Scope:* ${scopeLabel}\n*Products:* ${formattedProducts}\n*Required by:* ${input.required_date}\n*City:* ${input.city.trim()}${wallPhotoCount > 0 ? `\n*Wall Pictures:* ${wallPhotoCount} attached` : ""}`,
     );
     // WhatsApp direct click link (using Stone Tech official number +91 77420 90866)
     const whatsappLink = `https://api.whatsapp.com/send?phone=917742090866&text=${encodedMsg}`;
@@ -470,7 +494,7 @@ export const submitPublicEnquiryServerFn = createServerFn({ method: "POST" })
       await notify({
         tier: "important",
         title: "New Website Lead",
-        body: `${input.name.trim()} from ${input.city.trim()} inquired about ${formattedProducts}. Required by ${input.required_date}.`,
+        body: `${input.name.trim()} from ${input.city.trim()} inquired for [${scopeLabel}]: ${formattedProducts}. Required by ${input.required_date}.`,
         linkPath: `/enquiries/${createdEnquiry.id}`,
         entityType: "enquiry",
         entityId: createdEnquiry.id,
@@ -482,7 +506,7 @@ export const submitPublicEnquiryServerFn = createServerFn({ method: "POST" })
 
     // 11. Dispatch automated WhatsApp to admins via message_queue
     try {
-      const msgBody = `🚨 *New Website Lead: ${createdEnquiry.enquiry_no}*\n\n*Name:* ${input.name.trim()}\n*Products:* ${formattedProducts}\n*Required by:* ${input.required_date}\n*City:* ${input.city.trim()}`;
+      const msgBody = `🚨 *New Website Lead: ${createdEnquiry.enquiry_no}*\n\n*Name:* ${input.name.trim()}\n*Scope:* ${scopeLabel}\n*Products:* ${formattedProducts}\n*Required by:* ${input.required_date}\n*City:* ${input.city.trim()}${wallPhotoCount > 0 ? `\n*Wall Photos:* ${wallPhotoCount} attached` : ""}`;
 
       const { error: mqErr } = await supabaseAdmin.from("message_queue").insert({
         channel: "whatsapp",

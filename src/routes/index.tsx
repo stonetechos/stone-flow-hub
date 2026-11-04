@@ -48,6 +48,8 @@ import {
   Briefcase,
   Tag,
   Camera,
+  Wrench,
+  FileUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -355,6 +357,8 @@ async function compressImage(file: File, maxDimension = 1600, quality = 0.8): Pr
 
 function HomePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const wallPhotoInputRef = useRef<HTMLInputElement>(null);
+  const cadFileInputRef = useRef<HTMLInputElement>(null);
   const siteSettings = useSiteSettingsValue();
   const { content: cmsContent } = useWebsiteContent();
   const { i18n } = useTranslation();
@@ -382,6 +386,9 @@ function HomePage() {
   const [showcaseTab, setShowcaseTab] = useState<"products" | "installations">("products");
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [spaceType, setSpaceType] = useState<string>("");
+  const [serviceScope, setServiceScope] = useState<"supply_and_installation" | "supply_only">(
+    "supply_and_installation",
+  );
   const [planDescription, setPlanDescription] = useState<string>("");
 
   // Customer contact states with country code
@@ -404,9 +411,15 @@ function HomePage() {
     return d.toISOString().split("T")[0];
   });
 
-  // Photo uploads (up to 10)
+  // Photo uploads (up to 10) with wall photo & CAD tagging
   const [photos, setPhotos] = useState<
-    Array<{ name: string; dataUrl: string; size: number; previewUrl: string }>
+    Array<{
+      name: string;
+      dataUrl: string;
+      size: number;
+      previewUrl: string;
+      tag: "wall_photo" | "drawing" | "general";
+    }>
   >([]);
   const [isProcessingPhotos, setIsProcessingPhotos] = useState(false);
 
@@ -602,6 +615,11 @@ function HomePage() {
   // Pre-calculated WhatsApp fallback URL in case of network timeout
   const fallbackWhatsappUrl = useMemo(() => {
     const prods = selectedProducts.length > 0 ? selectedProducts.join(", ") : "Architectural Stone";
+    const scopePart =
+      serviceScope === "supply_only"
+        ? "Supply Only (Material Delivery)"
+        : "Supply + Installation (Turnkey)";
+    const wallPhotosCount = photos.filter((p) => p.tag === "wall_photo").length;
     const discountLine = prepaymentDiscountSelected
       ? `*Prepayment Privilege:* 100% Advance Payment (5% Discount + Free Certified Shree Yantra worth ₹14,999 on stone product orders > ₹1L*)\n`
       : "";
@@ -609,10 +627,12 @@ function HomePage() {
       `Hello Stone Tech Team! I would like to request an estimate for:\n\n` +
         `*Name:* ${name || "Client"}\n` +
         `*WhatsApp:* ${whatsapp || "Not specified"}\n` +
+        `*Service Scope:* ${scopePart}\n` +
         `*Products:* ${prods}\n` +
         `*Space:* ${spaceType}\n` +
         `*City:* ${city || "Not specified"}\n` +
         `*Required by:* ${requiredDate}\n` +
+        (wallPhotosCount > 0 ? `*Wall Pictures:* ${wallPhotosCount} attached\n` : "") +
         discountLine +
         (planDescription ? `*Details:* ${planDescription}\n` : ""),
     );
@@ -620,6 +640,8 @@ function HomePage() {
   }, [
     name,
     whatsapp,
+    serviceScope,
+    photos,
     selectedProducts,
     spaceType,
     city,
@@ -629,7 +651,10 @@ function HomePage() {
     prepaymentDiscountSelected,
   ]);
 
-  const handlePhotoUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (
+    e: ChangeEvent<HTMLInputElement>,
+    tag: "wall_photo" | "drawing" | "general" = "general",
+  ) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
@@ -648,6 +673,7 @@ function HomePage() {
         dataUrl: string;
         size: number;
         previewUrl: string;
+        tag: "wall_photo" | "drawing" | "general";
       }> = [];
 
       for (const file of filesToProcess) {
@@ -663,6 +689,7 @@ function HomePage() {
             dataUrl,
             size: file.size,
             previewUrl: dataUrl,
+            tag,
           });
         } catch {
           toast.error(`Could not process ${file.name}`);
@@ -671,11 +698,15 @@ function HomePage() {
 
       setPhotos((prev) => [...prev, ...processed]);
       if (processed.length > 0) {
-        toast.success(`Added ${processed.length} photo(s).`);
+        toast.success(
+          tag === "wall_photo"
+            ? `Added ${processed.length} picture(s) of the walls.`
+            : `Added ${processed.length} file(s).`,
+        );
       }
     } finally {
       setIsProcessingPhotos(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      if (e.target) e.target.value = "";
     }
   };
 
@@ -755,6 +786,7 @@ function HomePage() {
           customer_role: customerRole,
           customer_type: "website",
           space_type: spaceType,
+          service_scope: serviceScope,
           required_date: requiredDate,
           selected_products: selectedProducts,
           plan_description: finalPlanDescription,
@@ -762,6 +794,7 @@ function HomePage() {
             name: p.name,
             dataUrl: p.dataUrl,
             size: p.size,
+            tag: p.tag,
           })),
         },
       });
@@ -1424,12 +1457,95 @@ function HomePage() {
                           </div>
                         </div>
 
-                        {/* STEP 3: PHOTO / CAD UPLOADER (UP TO 10) */}
-                        <div className="space-y-2 pt-2 border-t border-border/80">
+                        {/* STEP 3: SERVICE REQUIREMENT (SUPPLY ONLY vs SUPPLY + INSTALLATION) */}
+                        <div className="space-y-2.5 pt-2 border-t border-border/80">
                           <div className="flex items-center justify-between">
                             <label className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
                                 3
+                              </span>
+                              <span>
+                                {texts.form.serviceScope}{" "}
+                                <span className="text-destructive">*</span>:
+                              </span>
+                            </label>
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] font-bold px-1.5 py-0 border-teal-500/40 text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/50"
+                            >
+                              {serviceScope === "supply_and_installation"
+                                ? "Turnkey Execution"
+                                : "Material Delivery"}
+                            </Badge>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {/* Option 1: Supply Only */}
+                            <button
+                              type="button"
+                              onClick={() => setServiceScope("supply_only")}
+                              className={cn(
+                                "p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-1 select-none",
+                                serviceScope === "supply_only"
+                                  ? "border-teal-600 dark:border-teal-400 bg-teal-50/80 dark:bg-teal-950/60 ring-2 ring-teal-500/40 shadow-2xs"
+                                  : "border-border bg-background hover:bg-muted/60 text-muted-foreground",
+                              )}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-bold flex items-center gap-1.5 text-foreground">
+                                  <Truck className="h-3.5 w-3.5 text-teal-600 shrink-0" />
+                                  <span>{texts.form.supplyOnly}</span>
+                                </span>
+                                {serviceScope === "supply_only" ? (
+                                  <div className="h-4 w-4 rounded bg-teal-600 text-white flex items-center justify-center shrink-0">
+                                    <Check className="h-3 w-3 stroke-[3]" />
+                                  </div>
+                                ) : (
+                                  <div className="h-4 w-4 rounded border-2 border-stone-300 dark:border-stone-600 shrink-0" />
+                                )}
+                              </div>
+                              <p className="text-[11px] text-muted-foreground leading-snug">
+                                {texts.form.supplyOnlyDesc}
+                              </p>
+                            </button>
+
+                            {/* Option 2: Supply + Installation */}
+                            <button
+                              type="button"
+                              onClick={() => setServiceScope("supply_and_installation")}
+                              className={cn(
+                                "p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-1 select-none",
+                                serviceScope === "supply_and_installation"
+                                  ? "border-teal-600 dark:border-teal-400 bg-teal-50/80 dark:bg-teal-950/60 ring-2 ring-teal-500/40 shadow-2xs"
+                                  : "border-border bg-background hover:bg-muted/60 text-muted-foreground",
+                              )}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-bold flex items-center gap-1.5 text-foreground">
+                                  <Wrench className="h-3.5 w-3.5 text-teal-600 shrink-0" />
+                                  <span>{texts.form.supplyAndInstallation}</span>
+                                </span>
+                                {serviceScope === "supply_and_installation" ? (
+                                  <div className="h-4 w-4 rounded bg-teal-600 text-white flex items-center justify-center shrink-0">
+                                    <Check className="h-3 w-3 stroke-[3]" />
+                                  </div>
+                                ) : (
+                                  <div className="h-4 w-4 rounded border-2 border-stone-300 dark:border-stone-600 shrink-0" />
+                                )}
+                              </div>
+                              <p className="text-[11px] text-muted-foreground leading-snug">
+                                {texts.form.supplyAndInstallationDesc}
+                              </p>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* STEP 4: PICTURES OF THE WALLS & CAD UPLOADER (UP TO 10) */}
+                        <div className="space-y-2 pt-2 border-t border-border/80">
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
+                                4
                               </span>
                               <span>{texts.form.uploadLabel}</span>
                             </label>
@@ -1441,37 +1557,75 @@ function HomePage() {
                             </Badge>
                           </div>
 
-                          {/* Hidden File Input */}
+                          {/* Hidden File Inputs */}
+                          <input
+                            ref={wallPhotoInputRef}
+                            type="file"
+                            multiple
+                            accept="image/*,application/pdf"
+                            onChange={(e) => handlePhotoUpload(e, "wall_photo")}
+                            className="hidden"
+                          />
+                          <input
+                            ref={cadFileInputRef}
+                            type="file"
+                            multiple
+                            accept="image/*,application/pdf"
+                            onChange={(e) => handlePhotoUpload(e, "drawing")}
+                            className="hidden"
+                          />
                           <input
                             ref={fileInputRef}
                             type="file"
                             multiple
                             accept="image/*,application/pdf"
-                            onChange={handlePhotoUpload}
+                            onChange={(e) => handlePhotoUpload(e, "general")}
                             className="hidden"
                           />
 
                           {photos.length < 10 && (
-                            <div
-                              onClick={() => fileInputRef.current?.click()}
-                              className="rounded-xl border border-dashed border-primary/40 hover:border-primary bg-background/60 hover:bg-muted/40 p-3 text-center cursor-pointer transition-all flex items-center justify-center gap-2 text-xs text-muted-foreground hover:text-foreground"
-                            >
-                              {isProcessingPhotos ? (
-                                <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                              ) : (
-                                <Upload className="h-4 w-4 text-primary" />
-                              )}
-                              <span>
-                                {isProcessingPhotos
-                                  ? texts.form.compressing
-                                  : texts.form.uploadPrompt}
-                              </span>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              {/* Dedicated Wall Pictures Upload Trigger */}
+                              <div
+                                onClick={() => wallPhotoInputRef.current?.click()}
+                                className="rounded-xl border-2 border-dashed border-teal-500/50 hover:border-teal-600 bg-teal-50/40 hover:bg-teal-50/80 dark:bg-teal-950/20 dark:hover:bg-teal-950/40 p-3 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1 text-xs text-teal-950 dark:text-teal-200"
+                              >
+                                <div className="flex items-center gap-1.5 font-bold">
+                                  {isProcessingPhotos ? (
+                                    <Loader2 className="h-4 w-4 animate-spin text-teal-600" />
+                                  ) : (
+                                    <Camera className="h-4 w-4 text-teal-600" />
+                                  )}
+                                  <span>{texts.form.uploadWallPhotos}</span>
+                                </div>
+                                <span className="text-[10px] text-muted-foreground">
+                                  Living room, exterior elevation or feature walls
+                                </span>
+                              </div>
+
+                              {/* Architectural Plan / CAD / PDF Upload Trigger */}
+                              <div
+                                onClick={() => cadFileInputRef.current?.click()}
+                                className="rounded-xl border border-dashed border-primary/40 hover:border-primary bg-background/60 hover:bg-muted/40 p-3 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                              >
+                                <div className="flex items-center gap-1.5 font-semibold">
+                                  {isProcessingPhotos ? (
+                                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                                  ) : (
+                                    <FileUp className="h-4 w-4 text-primary" />
+                                  )}
+                                  <span>{texts.form.uploadCad}</span>
+                                </div>
+                                <span className="text-[10px] text-muted-foreground">
+                                  Architectural elevation or CAD drawing
+                                </span>
+                              </div>
                             </div>
                           )}
 
-                          {/* Photo Thumbnail Gallery */}
+                          {/* Photo Thumbnail Gallery with Tags */}
                           {photos.length > 0 && (
-                            <div className="grid grid-cols-4 gap-2 pt-1">
+                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-1">
                               {photos.map((photo, index) => (
                                 <div
                                   key={index}
@@ -1482,10 +1636,28 @@ function HomePage() {
                                     alt={photo.name}
                                     className="h-full w-full object-cover"
                                   />
+                                  <div className="absolute bottom-1 left-1 right-1">
+                                    <Badge
+                                      className={cn(
+                                        "text-[9px] px-1 py-0 font-medium truncate w-full text-center block",
+                                        photo.tag === "wall_photo"
+                                          ? "bg-teal-700/90 text-white"
+                                          : photo.tag === "drawing"
+                                            ? "bg-indigo-700/90 text-white"
+                                            : "bg-slate-800/90 text-white",
+                                      )}
+                                    >
+                                      {photo.tag === "wall_photo"
+                                        ? `📸 ${texts.form.wallPhotoTag}`
+                                        : photo.tag === "drawing"
+                                          ? `📐 ${texts.form.drawingTag}`
+                                          : "Attachment"}
+                                    </Badge>
+                                  </div>
                                   <button
                                     type="button"
                                     onClick={() => removePhoto(index)}
-                                    className="absolute top-1 right-1 h-5 w-5 rounded-full bg-black/80 hover:bg-destructive text-white flex items-center justify-center transition-colors"
+                                    className="absolute top-1 right-1 h-5 w-5 rounded-full bg-black/80 hover:bg-destructive text-white flex items-center justify-center transition-colors cursor-pointer"
                                     aria-label="Remove photo"
                                   >
                                     <X className="h-3 w-3" />
@@ -1531,7 +1703,7 @@ function HomePage() {
                       <div className="space-y-5 animate-in fade-in-50 duration-200">
                         {/* Quick Selection Summary */}
                         <div className="rounded-xl border border-border/80 bg-background/90 p-3 flex items-center justify-between text-xs">
-                          <div className="flex items-center gap-2 min-w-0">
+                          <div className="flex items-center gap-2 min-w-0 flex-wrap">
                             <span className="font-semibold text-muted-foreground shrink-0">
                               {texts.form.selectedLabel}
                             </span>
@@ -1540,22 +1712,38 @@ function HomePage() {
                                 .map((p) => getProductNameInLang(p, currentLang))
                                 .join(", ") || texts.form.noneSelected}
                             </span>
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] font-bold px-1.5 py-0 border-teal-500/40 text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/50 shrink-0"
+                            >
+                              {serviceScope === "supply_only"
+                                ? `📦 ${texts.form.supplyOnly}`
+                                : `🛠️ ${texts.form.supplyAndInstallation}`}
+                            </Badge>
+                            {photos.filter((p) => p.tag === "wall_photo").length > 0 && (
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] font-medium px-1.5 py-0 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 bg-emerald-50/50 shrink-0"
+                              >
+                                📸 {photos.filter((p) => p.tag === "wall_photo").length} Wall Pic(s)
+                              </Badge>
+                            )}
                           </div>
                           <button
                             type="button"
                             onClick={() => setFormStep(1)}
-                            className="text-[11px] font-bold text-primary hover:underline shrink-0 cursor-pointer"
+                            className="text-[11px] font-bold text-primary hover:underline shrink-0 cursor-pointer ml-2"
                           >
                             {texts.form.editStep1}
                           </button>
                         </div>
 
-                        {/* STEP 4: CONTACT & LIVE CALENDAR PICKER */}
+                        {/* STEP 5: CONTACT & LIVE CALENDAR PICKER */}
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
                             <label className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
-                                4
+                                5
                               </span>
                               <span>{texts.form.contactTitle}</span>
                             </label>

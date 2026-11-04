@@ -401,6 +401,24 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
     }
   }
 
+  // Broadcast new quotation floated to ring/vibrate on staff devices
+  try {
+    const { broadcastQuoteFloated } = await import("@/lib/notifications/broadcast");
+    const { data: custData } = await getDb()
+      .from("customers")
+      .select("name")
+      .eq("id", customerId)
+      .maybeSingle();
+    broadcastQuoteFloated({
+      id: quote.id,
+      quote_no: quote.quote_no,
+      customer_name: custData?.name ?? null,
+      total_amount: Number(quote.total ?? 0),
+    });
+  } catch (bErr) {
+    console.warn("[createQuote] broadcastQuoteFloated non-fatal error:", bErr);
+  }
+
   // Reload to reflect totals
   try {
     const { data: reloaded } = await getDb().from("quotes").select("*").eq("id", quote.id).single();

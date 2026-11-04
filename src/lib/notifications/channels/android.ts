@@ -1,5 +1,6 @@
 import { Capacitor } from "@capacitor/core";
 import { LocalNotifications } from "@capacitor/local-notifications";
+import { triggerNotificationVibration } from "../sound";
 import type { ChannelNotificationPayload, NotificationChannel } from "./types";
 
 let channelCreated = false;
@@ -20,6 +21,7 @@ async function ensureAndroidChannel(): Promise<void> {
       importance: 5, // High / Heads-up
       visibility: 1, // Public
       vibration: true,
+      sound: "default",
     });
     channelCreated = true;
   } catch (err) {
@@ -33,6 +35,7 @@ export const androidChannel: NotificationChannel = {
   isAvailable: () => Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android",
   async deliver(payload: ChannelNotificationPayload): Promise<void> {
     try {
+      triggerNotificationVibration(payload.tier);
       await ensureAndroidChannel();
       const notifId = Math.floor(Math.random() * 2000000000) + 1;
       await LocalNotifications.schedule({
@@ -42,6 +45,7 @@ export const androidChannel: NotificationChannel = {
             title: payload.title,
             body: payload.body ?? "",
             channelId: "stos_operations",
+            sound: "default",
             extra: {
               linkPath: payload.linkPath,
               entityType: payload.entityType,

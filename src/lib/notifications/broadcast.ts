@@ -67,16 +67,22 @@ export async function dispatchStosEvent(payload: BroadcastPayload): Promise<void
     entityId: payload.entityId,
   });
 
-  // 2. Realtime broadcast over Supabase channel
+  // 2. Realtime broadcast over Supabase channel (instant delivery to all open tabs & phones)
   try {
-    const channel = supabase.channel("notifications_banner_feed");
+    const channel = supabase.channel("notifications_feed");
     channel.send({
       type: "broadcast",
-      event: "stos_banner",
+      event: "new_notification",
       payload: {
-        ...payload,
-        id: `rt-${Date.now()}`,
-        createdAt: new Date().toISOString(),
+        id: `rt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        tier: payload.tier || "info",
+        title: payload.title,
+        body: payload.body ?? null,
+        entity_type: payload.entityType ?? null,
+        entity_id: payload.entityId ?? null,
+        link_path: payload.linkPath ?? null,
+        read_at: null,
+        created_at: new Date().toISOString(),
       },
     });
   } catch (err) {
@@ -117,7 +123,7 @@ export function broadcastCustomerCreated(customer: {
 }): void {
   const code = customer.customer_code || customer.primary_phone || "New";
   void dispatchStosEvent({
-    tier: "info",
+    tier: "important",
     title: "New Customer Added",
     body: `A new customer entry has been made: ${customer.name} (${code}).`,
     entityType: "customer",
@@ -258,15 +264,60 @@ export function notifyAdminPaymentReceived(payment: {
   const customerPart = payment.customer_name ? ` from ${payment.customer_name}` : "";
   const invoicePart = payment.invoice_no ? ` against ${payment.invoice_no}` : "";
 
-  void postNotificationFn({
-    data: {
-      tier: "critical",
-      title: "Payment Received",
-      body: `Received ${formatInr(payment.amount)} in ${methodLabel}${customerPart}${invoicePart}.`,
-      entityType: "receipt",
-      linkPath: "/money-flow/customer-payments",
-      targetRole: "all",
-    },
+  void dispatchStosEvent({
+    tier: "critical",
+    title: "Payment Received",
+    body: `Received ${formatInr(payment.amount)} in ${methodLabel}${customerPart}${invoicePart}.`,
+    entityType: "receipt",
+    linkPath: "/money-flow/customer-payments",
+    targetRole: "all",
+  });
+}
+
+/**
+ * 5b. Quotation Floated / Created (Organization-wide Ring & Vibration)
+ */
+export function broadcastQuoteFloated(quote: {
+  id: string;
+  quote_no: string;
+  customer_name?: string | null;
+  total_amount?: number | null;
+}): void {
+  const customerPart = quote.customer_name ? ` for ${quote.customer_name}` : "";
+  const totalPart =
+    quote.total_amount != null && quote.total_amount > 0
+      ? ` (${formatInr(quote.total_amount)})`
+      : "";
+  void dispatchStosEvent({
+    tier: "important",
+    title: "New Quotation Floated",
+    body: `Quotation ${quote.quote_no} has been floated${customerPart}${totalPart}.`,
+    entityType: "quote",
+    entityId: quote.id,
+    linkPath: `/quotes/${quote.id}`,
+    targetRole: "all",
+  });
+}
+
+/**
+ * 5c. Red Flag Operational Alert (Critical Alert Ring & Extended Vibration)
+ */
+export function broadcastRedFlag(flag: {
+  title: string;
+  body: string;
+  linkPath?: string;
+  entityType?: string;
+  entityId?: string;
+}): void {
+  const cleanTitle = flag.title.startsWith("🚩") ? flag.title : `🚩 Red Flag: ${flag.title}`;
+  void dispatchStosEvent({
+    tier: "critical",
+    title: cleanTitle,
+    body: flag.body,
+    linkPath: flag.linkPath,
+    entityType: flag.entityType,
+    entityId: flag.entityId,
+    targetRole: "all",
   });
 }
 

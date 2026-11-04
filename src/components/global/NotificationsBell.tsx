@@ -26,7 +26,7 @@
  * here when that happens.
  */
 import { useEffect, useMemo, useState } from "react";
-import { Bell, Check, Inbox } from "lucide-react";
+import { Bell, Check, Inbox, Volume2, Smartphone, BellRing } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -39,12 +39,18 @@ import {
   type CentreNotification,
 } from "@/lib/notifications/centre";
 import { dispatchToChannels } from "@/lib/notifications/channels/dispatch";
+import {
+  enableAndTestAlerts,
+  isSoundAlertEnabled,
+  isVibrationAlertEnabled,
+} from "@/lib/notifications/sound";
 import { TIER_TONE } from "@/lib/notifications/tiers";
 import { toneDot } from "@/lib/ui/tones";
 import { qk } from "@/lib/query-keys";
 import { formatRelative } from "@/lib/format";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 type BucketKey = "all" | "unread" | "today" | "yesterday";
 
@@ -181,6 +187,31 @@ export function NotificationsBell() {
               Mark all read
             </button>
           </div>
+        </div>
+
+        {/* Device Alert Bar (Sound Chime, Vibration & OS Push) */}
+        <div className="bg-slate-900 border-b border-slate-800 px-3 py-1.5 flex items-center justify-between text-[11px] text-slate-300">
+          <div className="flex items-center gap-1.5">
+            <Volume2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+            <Smartphone className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
+            <span className="font-semibold text-xs text-slate-200">Phone &amp; Laptop Alerts</span>
+          </div>
+          <button
+            type="button"
+            onClick={async () => {
+              const res = await enableAndTestAlerts();
+              if (res.permission === "granted") {
+                toast.success("Alert chime, vibration and push notifications are active!");
+              } else {
+                toast.success("Alert chime and vibration played!");
+              }
+            }}
+            className="flex items-center gap-1 text-[10px] font-bold text-cyan-300 hover:text-white bg-white/10 hover:bg-white/20 px-2 py-0.5 rounded cursor-pointer transition-colors"
+            title="Click to test notification chime and vibration"
+          >
+            <BellRing className="h-3 w-3" />
+            <span>Test Alert</span>
+          </button>
         </div>
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as BucketKey)}>

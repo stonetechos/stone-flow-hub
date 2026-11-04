@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { useExecutiveInsights } from "@/hooks/useExecutiveInsights";
 import { useInsightLifecycle, type InsightWithLifecycle } from "@/lib/insights/state/hooks";
 import { resolveTone } from "@/lib/ui/tones";
+import { playNotificationSound, triggerNotificationVibration } from "@/lib/notifications/sound";
 import { cn } from "@/lib/utils";
 
 const HIGH_CONFIDENCE_MIN = 0.9;
@@ -357,6 +358,18 @@ export function DangerNotifications() {
       return true;
     });
   }, [withLifecycle, dismissedKeys]);
+
+  const alertedIdsRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    activeDangerInsights.forEach((i) => {
+      const key = `${i.source}:${i.id}`;
+      if (!alertedIdsRef.current.has(key)) {
+        alertedIdsRef.current.add(key);
+        playNotificationSound("critical");
+        triggerNotificationVibration("critical");
+      }
+    });
+  }, [activeDangerInsights]);
 
   const handleDismiss = (insight: InsightWithLifecycle) => {
     const key = `${insight.source}:${insight.id}`;

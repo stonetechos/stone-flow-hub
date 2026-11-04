@@ -30,6 +30,14 @@ import {
   runWhatsappConnectionTest,
   getWhatsappHealth,
 } from "@/lib/notifications/dispatch.functions";
+import {
+  enableAndTestAlerts,
+  isSoundAlertEnabled,
+  isVibrationAlertEnabled,
+  setSoundAlertEnabled,
+  setVibrationAlertEnabled,
+} from "@/lib/notifications/sound";
+import { Volume2, Smartphone, BellRing } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/notification-settings")({
   ssr: false,
@@ -59,6 +67,7 @@ function NotificationSettingsPage() {
       )}
 
       <div className="grid gap-4">
+        <DeviceAlertsCard />
         <ModeCard />
         <EmailProviderCard />
         <WhatsAppProviderCard />
@@ -66,6 +75,133 @@ function NotificationSettingsPage() {
         <TemplatesLink />
       </div>
     </div>
+  );
+}
+
+function DeviceAlertsCard() {
+  const [soundEnabled, setSoundEnabledState] = useState(() => isSoundAlertEnabled());
+  const [vibrateEnabled, setVibrateEnabledState] = useState(() => isVibrationAlertEnabled());
+  const [notifPermission, setNotifPermission] = useState<string>(() => {
+    if (typeof window !== "undefined" && "Notification" in window) {
+      return Notification.permission;
+    }
+    return "unsupported";
+  });
+  const [isTesting, setIsTesting] = useState(false);
+
+  const toggleSound = (checked: boolean) => {
+    setSoundEnabledState(checked);
+    setSoundAlertEnabled(checked);
+    toast.success(checked ? "Chime audio alerts enabled" : "Chime audio alerts muted");
+  };
+
+  const toggleVibrate = (checked: boolean) => {
+    setVibrateEnabledState(checked);
+    setVibrationAlertEnabled(checked);
+    toast.success(checked ? "Phone vibration enabled" : "Phone vibration disabled");
+  };
+
+  const handleTestAlerts = async () => {
+    setIsTesting(true);
+    try {
+      const res = await enableAndTestAlerts();
+      setSoundEnabledState(true);
+      setVibrateEnabledState(true);
+      if (res.permission !== "unsupported") {
+        setNotifPermission(res.permission);
+      }
+      toast.success("Test alert dispatched: Audio chime played & phone vibrated!");
+    } catch {
+      toast.error("Could not trigger test alert.");
+    } finally {
+      setIsTesting(false);
+    }
+  };
+
+  return (
+    <Card className="shadow-1 border-primary/20 bg-card">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <BellRing className="h-4 w-4" />
+            </div>
+            <div>
+              <CardTitle className="text-sm font-bold">
+                Phone &amp; Laptop Real-time Alerts (Sound, Vibration &amp; Push)
+              </CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Rings audio chimes and vibrates devices for new customer additions, red flags, new
+                payments noted, and new quotations floated.
+              </p>
+            </div>
+          </div>
+          <Badge
+            variant={notifPermission === "granted" ? "default" : "outline"}
+            className={
+              notifPermission === "granted"
+                ? "bg-emerald-600 text-white font-bold text-xs"
+                : "text-amber-600 border-amber-300 dark:border-amber-800"
+            }
+          >
+            {notifPermission === "granted"
+              ? "Push Active"
+              : notifPermission === "denied"
+                ? "Push Blocked"
+                : "Permission Needed"}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4 pt-0">
+        <div className="grid gap-3 sm:grid-cols-2">
+          {/* Sound Chime Toggle */}
+          <div className="flex items-center justify-between rounded-xl border border-border/80 bg-muted/20 p-3.5">
+            <div className="space-y-0.5">
+              <Label className="text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+                <Volume2 className="h-3.5 w-3.5 text-emerald-500" />
+                <span>Audio Chime Ring</span>
+              </Label>
+              <p className="text-[11px] text-muted-foreground">
+                Synthesized melodic WhatsApp-style alert chime (no audio downloads required)
+              </p>
+            </div>
+            <Switch checked={soundEnabled} onCheckedChange={toggleSound} />
+          </div>
+
+          {/* Phone Vibration Toggle */}
+          <div className="flex items-center justify-between rounded-xl border border-border/80 bg-muted/20 p-3.5">
+            <div className="space-y-0.5">
+              <Label className="text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+                <Smartphone className="h-3.5 w-3.5 text-cyan-500" />
+                <span>Phone Vibration</span>
+              </Label>
+              <p className="text-[11px] text-muted-foreground">
+                Multi-pulse vibration on mobile browsers and Android Capacitor client
+              </p>
+            </div>
+            <Switch checked={vibrateEnabled} onCheckedChange={toggleVibrate} />
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t border-border/60">
+          <div className="text-xs text-muted-foreground">
+            <span className="font-semibold text-foreground">Trigger Events:</span> New Customer
+            Addition · 🚩 Red Flag Operational Alerts · Customer Payments Recorded · New Quotations
+            Floated
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            onClick={handleTestAlerts}
+            disabled={isTesting}
+            className="w-full sm:w-auto h-9 gap-1.5 font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer shrink-0"
+          >
+            <BellRing className="h-3.5 w-3.5" />
+            <span>{isTesting ? "Testing Alert..." : "Test Chime & Vibration Now"}</span>
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
