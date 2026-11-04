@@ -289,6 +289,22 @@ function isGroupAllowed(
   return group.allowedRoles.some((r) => userRoles.includes(r));
 }
 
+const ECD_STORAGE_SCRUBBED_KEY = "stos_ecd_scrubbed_state";
+
+export function isEcdScrubbed(): boolean {
+  if (typeof window === "undefined" || !window.localStorage) return false;
+  return localStorage.getItem(ECD_STORAGE_SCRUBBED_KEY) === "true";
+}
+
+export function setEcdScrubbedState(scrubbed: boolean): void {
+  if (typeof window === "undefined" || !window.localStorage) return;
+  if (scrubbed) {
+    localStorage.setItem(ECD_STORAGE_SCRUBBED_KEY, "true");
+  } else {
+    localStorage.removeItem(ECD_STORAGE_SCRUBBED_KEY);
+  }
+}
+
 function isItemAllowed(
   item: NavItemDef,
   isAdmin: boolean,
@@ -296,6 +312,10 @@ function isItemAllowed(
   userRoles: readonly AppRole[],
   userEmail?: string,
 ): boolean {
+  // When ECD (Erase Cash Data) is active, hide cashbook entirely
+  if (item.id === "ramans-cashbook" && isEcdScrubbed()) {
+    return false;
+  }
   if (item.id === "ramans-cashbook" && userEmail?.toLowerCase() === "raman.pupneja@gmail.com") {
     return true;
   }

@@ -61,6 +61,7 @@ import { Copilot } from "@/components/copilot/Copilot";
 import { DangerNotifications } from "@/components/insights/DangerNotifications";
 import { GrowthAdvisoryBroadcaster } from "@/components/insights/GrowthAdvisoryBroadcaster";
 import { NotificationBanner } from "@/components/global/NotificationBanner";
+import { StaffPermissionsPrompt } from "@/components/global/StaffPermissionsPrompt";
 import { DemoProvider, useDemoMode } from "@/lib/demo/context";
 
 import { DemoBadge, DemoBanner } from "@/components/global/DemoBadge";
@@ -1514,6 +1515,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <DangerNotifications />
         <GrowthAdvisoryBroadcaster />
         <NotificationBanner />
+        <StaffPermissionsPrompt />
       </div>
     </DemoProvider>
   );

@@ -42,6 +42,7 @@ import { projectCreateSchema, PROJECT_TYPES } from "@/lib/projects/schema";
 import { createProduct } from "@/lib/products/api";
 import { productCreateSchema, STONE_TYPES } from "@/lib/products/schema";
 import { EntityPicker } from "./EntityPicker";
+import { PhonebookPickerButton } from "@/components/customers/PhonebookPickerButton";
 import type { EntityType, EntitySourceRow } from "./EntityPicker";
 import type { DbEnum } from "@/lib/types";
 
@@ -130,8 +131,21 @@ function QuickCreateCustomer({
   return (
     <Dialog open={open} onOpenChange={(o) => (!o && mut.isPending ? undefined : onOpenChange(o))}>
       <DialogContent className="max-w-xl">
-        <DialogHeader>
+        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pr-8">
           <DialogTitle>New customer</DialogTitle>
+          <PhonebookPickerButton
+            size="xs"
+            onContactSelected={(contact) => {
+              setForm((prev) => ({
+                ...prev,
+                name: prev.name || contact.name || prev.name,
+                contact_person: contact.name || prev.contact_person,
+                mobile: contact.mobile || prev.mobile,
+                whatsapp: contact.mobile || prev.whatsapp,
+                email: contact.email || prev.email,
+              }));
+            }}
+          />
         </DialogHeader>
         <QuickForm
           onSubmit={(e) => {

@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { User, Building2, Palette, Shield, Bell, Compass, Info } from "lucide-react";
+import { User, Building2, Palette, Shield, Bell, Compass, Info, FolderLock } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ import { useGuidedEnabled } from "@/hooks/use-guided-enabled";
 import { NavigationPreferences } from "@/components/settings/NavigationPreferences";
 import { AiSettingsCard } from "@/components/settings/AiSettingsCard";
 import { CompanyProfileTab } from "@/components/settings/CompanyProfileTab";
+import { EcdManagerCard } from "@/components/admin/EcdManagerCard";
 import { deriveInitials, updateProfileFields } from "@/lib/admin/users";
 import { toUserMessage } from "@/lib/errors";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -156,6 +157,12 @@ function SettingsPage() {
             <Info className="mr-2 h-4 w-4" />
             {t("settings.tabs.about", "About")}
           </TabsTrigger>
+          {roles.isSuperAdmin && (
+            <TabsTrigger value="ecd">
+              <FolderLock className="mr-2 h-4 w-4" />
+              ECD
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="profile" className="mt-4">
@@ -460,6 +467,11 @@ function SettingsPage() {
             </CardContent>
           </Card>
         </TabsContent>
+        {roles.isSuperAdmin && (
+          <TabsContent value="ecd" className="mt-4">
+            <EcdManagerCard />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

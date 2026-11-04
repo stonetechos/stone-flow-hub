@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { StoreVoiceAssistantTab } from "@/components/customers/StoreVoiceAssistantTab";
+import { PhonebookPickerButton } from "@/components/customers/PhonebookPickerButton";
 import type { ParsedVoiceCustomer } from "@/lib/customers/voice-parser";
 
 import { CustomerResponseStatusSelect } from "@/components/customers/CustomerResponseStatusSelect";
@@ -1300,6 +1301,21 @@ function CustomerFormDialog({
           </DialogTitle>
           {!editing && (
             <div className="flex items-center gap-2">
+              <PhonebookPickerButton
+                size="xs"
+                onContactSelected={(contact) => {
+                  if (contact.name) {
+                    handleContactChange(contact.name);
+                  }
+                  if (contact.mobile) {
+                    set("mobile", contact.mobile);
+                    set("whatsapp", contact.mobile);
+                  }
+                  if (contact.email) {
+                    set("email", contact.email);
+                  }
+                }}
+              />
               <span className="text-[11px] text-muted-foreground hidden sm:inline">
                 Voice fill:
               </span>

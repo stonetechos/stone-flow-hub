@@ -189,16 +189,27 @@ function DeviceAlertsCard() {
             Addition · 🚩 Red Flag Operational Alerts · Customer Payments Recorded · New Quotations
             Floated
           </div>
-          <Button
-            type="button"
-            size="sm"
-            onClick={handleTestAlerts}
-            disabled={isTesting}
-            className="w-full sm:w-auto h-9 gap-1.5 font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer shrink-0"
-          >
-            <BellRing className="h-3.5 w-3.5" />
-            <span>{isTesting ? "Testing Alert..." : "Test Chime & Vibration Now"}</span>
-          </Button>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => window.dispatchEvent(new CustomEvent("stos:open-permissions-prompt"))}
+              className="w-full sm:w-auto h-9 gap-1.5 text-xs border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
+            >
+              <span>Review Device Permissions</span>
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleTestAlerts}
+              disabled={isTesting}
+              className="w-full sm:w-auto h-9 gap-1.5 font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer shrink-0"
+            >
+              <BellRing className="h-3.5 w-3.5" />
+              <span>{isTesting ? "Testing Alert..." : "Test Chime & Vibration Now"}</span>
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

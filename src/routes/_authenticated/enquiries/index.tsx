@@ -43,6 +43,7 @@ import { useTablePrefs } from "@/hooks/use-table-prefs";
 import { qk } from "@/lib/query-keys";
 import { LostReasonDialog } from "@/components/enquiry/LostReasonDialog";
 import { ShareInquiryDialog } from "@/components/enquiry/ShareInquiryDialog";
+import { PhonebookPickerButton } from "@/components/customers/PhonebookPickerButton";
 import { invalidateCustomer, invalidateEnquiry } from "@/lib/query-invalidation";
 import { toUserMessage } from "@/lib/errors";
 import {
@@ -688,8 +689,16 @@ function NewEnquiryDialog({
       }}
     >
       <DialogContent className="max-w-2xl">
-        <DialogHeader>
+        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pr-8">
           <DialogTitle>{t("enquiries.newEnquiry", "New enquiry")}</DialogTitle>
+          <PhonebookPickerButton
+            size="xs"
+            onContactSelected={(contact) => {
+              if (contact.name) set("customer_name", contact.name);
+              if (contact.mobile) set("mobile", contact.mobile);
+              if (contact.email) set("email", contact.email);
+            }}
+          />
         </DialogHeader>
         <QuickForm onSubmit={onSubmit} busy={mutation.isPending} dirty={dirty}>
           <QuickForm.QuickFill>
