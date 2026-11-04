@@ -11,6 +11,31 @@ export interface CustomNavRenames {
   [id: string]: string; // item.id or group.id -> custom label
 }
 
+let syncDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+function scheduleRemoteSync(renames: CustomNavRenames, delay = 400) {
+  if (syncDebounceTimer) {
+    clearTimeout(syncDebounceTimer);
+    syncDebounceTimer = null;
+  }
+  syncDebounceTimer = setTimeout(() => {
+    syncDebounceTimer = null;
+    upsertSiteSetting("sidebar_tab_renames", renames).catch((err) =>
+      console.warn("[nav-renames] remote sync error:", err),
+    );
+  }, delay);
+}
+
+export function flushRemoteSync(renames: CustomNavRenames) {
+  if (syncDebounceTimer) {
+    clearTimeout(syncDebounceTimer);
+    syncDebounceTimer = null;
+  }
+  return upsertSiteSetting("sidebar_tab_renames", renames).catch((err) =>
+    console.warn("[nav-renames] remote sync error:", err),
+  );
+}
+
 export function readCustomRenames(): CustomNavRenames {
   if (typeof window === "undefined" || !window.localStorage) return {};
   try {
@@ -21,15 +46,21 @@ export function readCustomRenames(): CustomNavRenames {
   }
 }
 
-export function saveCustomRenames(renames: CustomNavRenames, syncRemote = true): void {
+export function saveCustomRenames(
+  renames: CustomNavRenames,
+  syncRemote = true,
+  immediateRemote = false,
+): void {
   if (typeof window === "undefined" || !window.localStorage) return;
   try {
     window.localStorage.setItem(RENAMES_KEY, JSON.stringify(renames));
     window.dispatchEvent(new Event("st:nav-renames-changed"));
     if (syncRemote) {
-      upsertSiteSetting("sidebar_tab_renames", renames).catch((err) =>
-        console.warn("[nav-renames] remote sync error:", err),
-      );
+      if (immediateRemote) {
+        void flushRemoteSync(renames);
+      } else {
+        scheduleRemoteSync(renames, 400);
+      }
     }
   } catch {
     /* ignore */
@@ -63,12 +94,15 @@ export function useCustomNavRenames() {
   const [renames, setRenames] = useState<CustomNavRenames>(readCustomRenames);
 
   useEffect(() => {
+    let isMounted = true;
     // 1. Initial sync with remote site_settings if available
     fetchSiteSettings()
       .then((settings) => {
+        if (!isMounted) return;
         if (settings.sidebar_tab_renames && Object.keys(settings.sidebar_tab_renames).length > 0) {
           const local = readCustomRenames();
-          const merged = { ...local, ...settings.sidebar_tab_renames };
+          // Local edits take precedence over remote settings so local progress is preserved
+          const merged = { ...settings.sidebar_tab_renames, ...local };
           saveCustomRenames(merged, false);
           setRenames(merged);
         }
@@ -79,6 +113,7 @@ export function useCustomNavRenames() {
     window.addEventListener("st:nav-renames-changed", handler);
     window.addEventListener("storage", handler);
     return () => {
+      isMounted = false;
       window.removeEventListener("st:nav-renames-changed", handler);
       window.removeEventListener("storage", handler);
     };
@@ -87,22 +122,35 @@ export function useCustomNavRenames() {
   const rename = useCallback((id: string, newName: string | null) => {
     const current = readCustomRenames();
     const updated = { ...current };
-    if (!newName || !newName.trim()) {
+    if (newName === null || newName === undefined) {
       delete updated[id];
     } else {
-      updated[id] = newName.trim();
+      // Avoid leading whitespace only, preserve spaces while typing
+      const trimmedStart = newName.replace(/^\s+/, "");
+      if (!trimmedStart) {
+        delete updated[id];
+      } else {
+        updated[id] = trimmedStart;
+      }
     }
-    saveCustomRenames(updated, true);
+    saveCustomRenames(updated, true, false);
     setRenames(updated);
   }, []);
 
   const saveAll = useCallback((newRenames: CustomNavRenames) => {
-    saveCustomRenames(newRenames, true);
-    setRenames(newRenames);
+    const cleaned: CustomNavRenames = {};
+    for (const [k, v] of Object.entries(newRenames)) {
+      const trimmed = (v || "").trim();
+      if (trimmed) {
+        cleaned[k] = trimmed;
+      }
+    }
+    saveCustomRenames(cleaned, true, true);
+    setRenames(cleaned);
   }, []);
 
   const resetAll = useCallback(() => {
-    saveCustomRenames({}, true);
+    saveCustomRenames({}, true, true);
     setRenames({});
   }, []);
 

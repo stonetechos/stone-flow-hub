@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Sliders, Type, Search, RotateCcw, Check, PanelLeft, X, ExternalLink } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
@@ -38,14 +38,20 @@ const WIDTH_PRESETS = [
 
 export function CustomizeNavigationDialog({ open, onOpenChange }: CustomizeNavigationDialogProps) {
   const { t } = useTranslation();
-  const { renames, rename, resetAll } = useCustomNavRenames();
+  const { renames, rename, saveAll, resetAll } = useCustomNavRenames();
   const { width, updateWidth, resetWidth } = useSidebarWidth();
   const [activeTab, setActiveTab] = useState<"tabs" | "width">("tabs");
   const [search, setSearch] = useState("");
   const [selectedGroup, setSelectedGroup] = useState<string>("all");
 
-  // Local draft for tab renames to allow editing
+  // Local draft for tab renames to allow fluid editing with spaces
   const [draftRenames, setDraftRenames] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (open) {
+      setDraftRenames({ ...renames });
+    }
+  }, [open, renames]);
 
   const filteredItems = useMemo(() => {
     return NAV_ITEMS.filter((item) => {
@@ -53,11 +59,13 @@ export function CustomizeNavigationDialog({ open, onOpenChange }: CustomizeNavig
       if (!search.trim()) return true;
       const q = search.toLowerCase();
       const defaultLabel = t(`nav.items.${item.id}`, item.label).toLowerCase();
-      const customLabel = (renames[item.id] || "").toLowerCase();
+      const customLabel = (
+        draftRenames[item.id] !== undefined ? draftRenames[item.id] : renames[item.id] || ""
+      ).toLowerCase();
       const groupLabel = (NAV_GROUPS.find((g) => g.id === item.group)?.label || "").toLowerCase();
       return defaultLabel.includes(q) || customLabel.includes(q) || groupLabel.includes(q);
     });
-  }, [selectedGroup, search, renames, t]);
+  }, [selectedGroup, search, draftRenames, renames, t]);
 
   const filteredGroups = useMemo(() => {
     if (selectedGroup !== "all") return [];
@@ -65,10 +73,12 @@ export function CustomizeNavigationDialog({ open, onOpenChange }: CustomizeNavig
     const q = search.toLowerCase();
     return NAV_GROUPS.filter((g) => {
       const defaultLabel = t(`nav.groups.${g.id}`, g.label).toLowerCase();
-      const customLabel = (renames[g.id] || "").toLowerCase();
+      const customLabel = (
+        draftRenames[g.id] !== undefined ? draftRenames[g.id] : renames[g.id] || ""
+      ).toLowerCase();
       return defaultLabel.includes(q) || customLabel.includes(q);
     });
-  }, [selectedGroup, search, renames, t]);
+  }, [selectedGroup, search, draftRenames, renames, t]);
 
   const handleItemRenameChange = (id: string, val: string) => {
     setDraftRenames((prev) => ({ ...prev, [id]: val }));
@@ -102,10 +112,27 @@ export function CustomizeNavigationDialog({ open, onOpenChange }: CustomizeNavig
     }
   };
 
+  const handleDone = () => {
+    const cleaned: Record<string, string> = {};
+    const merged = { ...renames, ...draftRenames };
+    for (const [k, v] of Object.entries(merged)) {
+      const trimmed = (v || "").trim();
+      if (trimmed) {
+        cleaned[k] = trimmed;
+      }
+    }
+    saveAll(cleaned);
+    toast.success("Sidebar tabs updated successfully!");
+    onOpenChange(false);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden shadow-2xl border-border/80">
-        <DialogHeader className="p-4 pb-3 border-b border-border/60 bg-muted/30">
+      <DialogContent
+        noAutoScroll
+        className="max-w-2xl w-[95vw] h-[85vh] max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden shadow-2xl border-border/80 bg-background"
+      >
+        <DialogHeader className="p-4 pb-3 border-b border-border/60 bg-muted/30 shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
@@ -128,13 +155,13 @@ export function CustomizeNavigationDialog({ open, onOpenChange }: CustomizeNavig
           onValueChange={(v) => setActiveTab(v as "tabs" | "width")}
           className="flex-1 flex flex-col min-h-0"
         >
-          <div className="px-4 pt-2.5 pb-2 border-b border-border/50 bg-background/95">
+          <div className="px-4 pt-2.5 pb-2 border-b border-border/50 bg-background/95 shrink-0">
             <TabsList className="grid w-full grid-cols-2 h-9">
-              <TabsTrigger value="tabs" className="text-xs font-semibold gap-1.5">
+              <TabsTrigger value="tabs" className="text-xs font-semibold gap-1.5 cursor-pointer">
                 <Type className="h-3.5 w-3.5" />
                 <span>Rename Tabs ({NAV_ITEMS.length} modules)</span>
               </TabsTrigger>
-              <TabsTrigger value="width" className="text-xs font-semibold gap-1.5">
+              <TabsTrigger value="width" className="text-xs font-semibold gap-1.5 cursor-pointer">
                 <Sliders className="h-3.5 w-3.5" />
                 <span>Sidebar Width ({width}px)</span>
               </TabsTrigger>
@@ -144,7 +171,7 @@ export function CustomizeNavigationDialog({ open, onOpenChange }: CustomizeNavig
           {/* TAB 1: RENAME TABS */}
           <TabsContent value="tabs" className="flex-1 flex flex-col min-h-0 m-0 p-0">
             {/* Search & Filter Bar */}
-            <div className="p-3 border-b border-border/40 bg-muted/20 flex flex-wrap items-center gap-2">
+            <div className="p-3 border-b border-border/40 bg-muted/20 flex flex-wrap items-center gap-2 shrink-0">
               <div className="relative flex-1 min-w-[200px]">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 <Input
@@ -157,7 +184,7 @@ export function CustomizeNavigationDialog({ open, onOpenChange }: CustomizeNavig
                   <button
                     type="button"
                     onClick={() => setSearch("")}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
@@ -167,7 +194,7 @@ export function CustomizeNavigationDialog({ open, onOpenChange }: CustomizeNavig
               <select
                 value={selectedGroup}
                 onChange={(e) => setSelectedGroup(e.target.value)}
-                className="h-8 px-2.5 text-xs font-medium bg-background border border-input rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
+                className="h-8 px-2.5 text-xs font-medium bg-background border border-input rounded-md focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
               >
                 <option value="all">All Modules &amp; Groups</option>
                 {NAV_GROUPS.map((g) => (
@@ -177,22 +204,22 @@ export function CustomizeNavigationDialog({ open, onOpenChange }: CustomizeNavig
                 ))}
               </select>
 
-              {Object.keys(renames).length > 0 && (
+              {(Object.keys(renames).length > 0 || Object.keys(draftRenames).length > 0) && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleResetAll}
-                  className="h-8 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/30"
+                  className="h-8 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/30 cursor-pointer"
                   title="Reset all tab names back to defaults"
                 >
                   <RotateCcw className="h-3 w-3 mr-1" />
-                  Reset All ({Object.keys(renames).length})
+                  Reset All
                 </Button>
               )}
             </div>
 
             {/* List of Editable Tabs */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
+            <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-2.5">
               {/* Group section Headers if present */}
               {filteredGroups.length > 0 && (
                 <div className="mb-3 space-y-2">
@@ -202,8 +229,11 @@ export function CustomizeNavigationDialog({ open, onOpenChange }: CustomizeNavig
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {filteredGroups.map((g) => {
                       const defaultLabel = t(`nav.groups.${g.id}`, g.label);
-                      const currentVal = renames[g.id] ?? "";
-                      const hasCustom = Boolean(renames[g.id]);
+                      const currentVal =
+                        draftRenames[g.id] !== undefined
+                          ? draftRenames[g.id]
+                          : (renames[g.id] ?? "");
+                      const hasCustom = Boolean(currentVal.trim());
                       const GIcon = g.icon;
 
                       return (
@@ -238,7 +268,7 @@ export function CustomizeNavigationDialog({ open, onOpenChange }: CustomizeNavig
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => handleResetItem(g.id)}
-                                  className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
+                                  className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0 cursor-pointer"
                                   title="Reset to default group name"
                                 >
                                   <RotateCcw className="h-3 w-3" />
@@ -260,8 +290,11 @@ export function CustomizeNavigationDialog({ open, onOpenChange }: CustomizeNavig
               <div className="space-y-1.5">
                 {filteredItems.map((item) => {
                   const defaultLabel = t(`nav.items.${item.id}`, item.label);
-                  const currentVal = renames[item.id] ?? "";
-                  const hasCustom = Boolean(renames[item.id]);
+                  const currentVal =
+                    draftRenames[item.id] !== undefined
+                      ? draftRenames[item.id]
+                      : (renames[item.id] ?? "");
+                  const hasCustom = Boolean(currentVal.trim());
                   const parentGroup = NAV_GROUPS.find((g) => g.id === item.group);
                   const Icon = item.icon;
 
@@ -307,7 +340,7 @@ export function CustomizeNavigationDialog({ open, onOpenChange }: CustomizeNavig
                               variant="ghost"
                               size="icon"
                               onClick={() => handleResetItem(item.id)}
-                              className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
+                              className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0 cursor-pointer"
                               title="Reset tab name to original"
                             >
                               <RotateCcw className="h-3 w-3" />
@@ -329,7 +362,7 @@ export function CustomizeNavigationDialog({ open, onOpenChange }: CustomizeNavig
           </TabsContent>
 
           {/* TAB 2: SIDEBAR WIDTH */}
-          <TabsContent value="width" className="p-6 space-y-6 m-0">
+          <TabsContent value="width" className="flex-1 min-h-0 overflow-y-auto p-6 space-y-6 m-0">
             <div>
               <Label className="text-sm font-semibold text-foreground flex items-center justify-between mb-2">
                 <span>Manual Sidebar Width Adjustment</span>
@@ -408,18 +441,30 @@ export function CustomizeNavigationDialog({ open, onOpenChange }: CustomizeNavig
           </TabsContent>
         </Tabs>
 
-        <DialogFooter className="p-3 border-t border-border/60 bg-muted/20 flex items-center justify-between sm:justify-between">
+        <DialogFooter className="shrink-0 p-3 px-4 border-t border-border/60 bg-muted/30 flex items-center justify-between sm:justify-between z-10">
           <span className="text-[11px] text-muted-foreground">
-            Changes apply instantly and save automatically.
+            Changes preview live and sync automatically.
           </span>
-          <Button
-            type="button"
-            size="sm"
-            onClick={() => onOpenChange(false)}
-            className="text-xs font-semibold px-4"
-          >
-            Done
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              className="text-xs h-8 px-3 cursor-pointer"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleDone}
+              className="text-xs font-semibold h-8 px-5 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm cursor-pointer"
+            >
+              <Check className="h-3.5 w-3.5 mr-1" />
+              Done
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
