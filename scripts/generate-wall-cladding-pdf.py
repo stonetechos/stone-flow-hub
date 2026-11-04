@@ -801,13 +801,13 @@ def main():
     os.makedirs(output_dir, exist_ok=True)
     output_path = os.path.join(output_dir, "stos-wall-cladding-catalogue-2026.pdf")
 
-    print(f"Compiling {len(pages)} pages into {output_path} (High-res uncompressed Lanczos)...")
+    print(f"Compiling {len(pages)} pages into {output_path} (Optimized publication quality)...")
     pages[0].save(
         output_path,
         save_all=True,
         append_images=pages[1:],
-        quality=92,
-        subsampling=0,
+        quality=80,
+        subsampling=1,
         optimize=True,
     )
 

@@ -26,7 +26,7 @@ import { JobApplicationForm } from "@/components/careers/JobApplicationForm";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/careers")({
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): { role?: string; source?: string } => ({
     role: typeof search.role === "string" ? search.role : undefined,
     source: typeof search.source === "string" ? search.source : undefined,
   }),

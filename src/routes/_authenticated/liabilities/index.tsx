@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Fragment, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -205,8 +205,8 @@ function LiabilitiesPage() {
     setEditing(row);
   };
 
-  const search = useSearch({ from: "/_authenticated/liabilities/" });
-  const navigate = useNavigate({ from: "/_authenticated/liabilities/" });
+  const search = Route.useSearch();
+  const navigate = useNavigate();
 
   const paymentsQuery = useQuery({
     queryKey: qk.liabilities.payments(),
@@ -429,7 +429,8 @@ function LiabilitiesPage() {
             const nextTab = v as "liabilities" | "payments" | "office-rent";
             setActiveTab(nextTab);
             navigate({
-              search: (prev: Record<string, unknown>) => ({ ...prev, tab: nextTab }),
+              to: "/liabilities",
+              search: { tab: nextTab },
               replace: true,
             });
           }}
