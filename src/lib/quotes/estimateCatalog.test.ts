@@ -542,7 +542,56 @@ describe("estimateCatalog - rounding and wastage calculations", () => {
       expect(parsed.sceneDescription).toBe("Mandir Sanctum Backwall with Tree of Life");
     });
 
-    it("handles Base Stone Polishing Work and Dedicated Lump Sum Pasting in WhatsApp estimate", () => {
+    it("parses mural worksheet with optional designing charges", () => {
+      const parsed = estimateMuralWorksheetSchema.parse({
+        version: 1,
+        scenario: "stone_mural",
+        unit: "ft",
+        wall: { height: 8, length: 10, sqft: 80 },
+        slab: {
+          height: 4,
+          length: 5,
+          sqft: 20,
+          thicknessMm: 50,
+          stoneType: "Sandstone",
+          sourcing: "stone_tech",
+          slabsRequired: 4,
+          gridCols: 2,
+          gridRows: 2,
+          totalSlabSqft: 80,
+          pricePerSqft: 400,
+          amount: 32000,
+        },
+        cnc: {
+          selectedKey: "3d_relief_high",
+          label: "3D Relief High Carving",
+          ratePerSqft: 650,
+          amount: 52000,
+        },
+        rubbing: { enabled: true, ratePerSqft: 50, amount: 4000 },
+        polishing: { enabled: false, ratePerSqft: 40, amount: 0 },
+        installationLabour: { ratePerSqft: 100, amount: 8000 },
+        adhesives: [],
+        adhesivesAmount: 0,
+        touchUp: { enabled: false, ratePerSqft: 0, amount: 0 },
+        designing: {
+          enabled: true,
+          mode: "lump_sum",
+          amount: 5000,
+          notes: "3D Relief CAD Modeling & Architectural Shop Drawings",
+        },
+        carting: { location: "Udaipur", amount: 2500 },
+        subtotal: 101500,
+        total: 101500,
+      });
+
+      expect(parsed.designing?.enabled).toBe(true);
+      expect(parsed.designing?.mode).toBe("lump_sum");
+      expect(parsed.designing?.amount).toBe(5000);
+      expect(parsed.designing?.notes).toContain("3D Relief CAD Modeling");
+    });
+
+    it("handles Base Stone Polishing Work, Dedicated Lump Sum Pasting, and Designing Charges in WhatsApp estimate", () => {
       const msg = buildMuralEstimateWhatsappMessage(
         {
           greetingName: "Harish",
@@ -564,9 +613,11 @@ describe("estimateCatalog - rounding and wastage calculations", () => {
           adhesivesAmount: 1800,
           adhesivesSummary: "2 bag(s) Standard Cement Based Stone Adhesive White",
           touchUpAmount: 6400,
+          designingAmount: 5000,
+          designingSummary: "3D Relief CAD Modeling",
           cartingAmount: 2000,
           cartingLocation: "Ahmedabad Site",
-          totalEstimate: 64000,
+          totalEstimate: 69000,
           preparerName: "Stone Tech Atelier",
         },
         "Stone Tech",
@@ -581,7 +632,8 @@ describe("estimateCatalog - rounding and wastage calculations", () => {
       expect(msg).toContain(
         "• Stone Pasting Work: ₹5,000 (Specialized epoxy & artisan bonding, lump sum)",
       );
-      expect(msg).toContain("Total Estimate: ₹64,000");
+      expect(msg).toContain("• Designing Charges: ₹5,000 (3D Relief CAD Modeling)");
+      expect(msg).toContain("Total Estimate: ₹69,000");
     });
   });
 });

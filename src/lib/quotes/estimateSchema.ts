@@ -176,6 +176,15 @@ export const estimateMuralWorksheetSchema = z.object({
     ratePerSqft: z.number().nonnegative(),
     amount: z.number().nonnegative(),
   }),
+  designing: z
+    .object({
+      enabled: z.boolean(),
+      mode: z.enum(["lump_sum", "per_sqft"]).optional(),
+      amount: z.number().nonnegative(),
+      ratePerSqft: z.number().nonnegative().optional(),
+      notes: z.string().optional(),
+    })
+    .optional(),
   carting: z.object({
     location: z.string().optional(),
     amount: z.number().nonnegative(),

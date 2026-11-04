@@ -33,6 +33,7 @@ import {
   X,
   FileText,
   ShieldAlert,
+  PenTool,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -201,6 +202,13 @@ export function StoneMuralCalculator({
   const [cartingLocation, setCartingLocation] = useState<string>("");
   const [cartingAmount, setCartingAmount] = useState<string>("");
 
+  // 11) Optional Designing Charges (2D/3D CAD Drawing & Custom Relief Artwork)
+  const [designingEnabled, setDesigningEnabled] = useState<boolean>(false);
+  const [designingMode, setDesigningMode] = useState<"lump_sum" | "per_sqft">("lump_sum");
+  const [designingAmount, setDesigningAmount] = useState<string>("");
+  const [designingRate, setDesigningRate] = useState<string>("");
+  const [designingNotes, setDesigningNotes] = useState<string>("");
+
   // Design visual
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
   const [timeToComplete, setTimeToComplete] = useState<string>("");
@@ -364,6 +372,16 @@ export function StoneMuralCalculator({
   // 10) Carting Cost
   const cartingNum = Number(cartingAmount) || 0;
 
+  // 11) Optional Designing Charges (2D/3D CAD Drawing & Custom Relief Artwork)
+  const designingFixedNum = Number(designingAmount) || 0;
+  const designingRateNum = Number(designingRate) || 0;
+  const isDesigningActive = designingEnabled || designingFixedNum > 0 || designingRateNum > 0;
+  const effectiveDesigningAmount = isDesigningActive
+    ? designingMode === "per_sqft"
+      ? wallAreaSqft * designingRateNum
+      : designingFixedNum
+    : 0;
+
   const effectiveLabourAmount = includeInstallation ? labourAmount : 0;
   const effectiveAdhesivesAmount = includeInstallation ? adhesivesAmount : 0;
 
@@ -377,6 +395,7 @@ export function StoneMuralCalculator({
     effectiveLabourAmount +
     effectiveAdhesivesAmount +
     touchUpAmount +
+    effectiveDesigningAmount +
     cartingNum;
   const total = subtotal;
 
@@ -473,6 +492,16 @@ export function StoneMuralCalculator({
         ratePerSqft: touchRate,
         amount: touchUpAmount,
       },
+      designing:
+        isDesigningActive && effectiveDesigningAmount > 0
+          ? {
+              enabled: true,
+              mode: designingMode,
+              amount: effectiveDesigningAmount,
+              ratePerSqft: designingMode === "per_sqft" ? designingRateNum : undefined,
+              notes: designingNotes.trim() || undefined,
+            }
+          : undefined,
       carting: {
         location: cartingLocation.trim() || undefined,
         amount: cartingNum,
@@ -538,6 +567,11 @@ export function StoneMuralCalculator({
     touchUpEnabled,
     touchRate,
     touchUpAmount,
+    isDesigningActive,
+    effectiveDesigningAmount,
+    designingMode,
+    designingRateNum,
+    designingNotes,
     cartingLocation,
     cartingNum,
     sceneDescription,
@@ -730,6 +764,25 @@ export function StoneMuralCalculator({
       });
     }
 
+    // 11. Optional Designing Charges
+    if (isDesigningActive && effectiveDesigningAmount > 0) {
+      const desc = designingNotes.trim()
+        ? `Mural 3D CAD & Artwork Designing Charges — ${designingNotes.trim()}`
+        : designingMode === "per_sqft"
+          ? `Mural 3D CAD & Artwork Designing Charges (@ ${formatInr(designingRateNum)}/sq ft)`
+          : "Mural 3D CAD & Artwork Designing Charges (Lump Sum)";
+
+      out.push({
+        product_id: null,
+        description: desc,
+        quantity: designingMode === "per_sqft" ? Math.round(wallAreaSqft * 100) / 100 : 1,
+        unit: designingMode === "per_sqft" ? "sqft" : "job",
+        unit_price: designingMode === "per_sqft" ? designingRateNum : effectiveDesigningAmount,
+        tax_pct: 0,
+        fulfilment: null,
+      });
+    }
+
     return out;
   }, [
     wallAreaSqft,
@@ -779,6 +832,11 @@ export function StoneMuralCalculator({
     touchRate,
     cartingNum,
     cartingLocation,
+    isDesigningActive,
+    effectiveDesigningAmount,
+    designingMode,
+    designingRateNum,
+    designingNotes,
   ]);
 
   // Propagate to parent quote dialog
@@ -876,6 +934,14 @@ export function StoneMuralCalculator({
           adhesivesAmount: effectiveAdhesivesAmount,
           adhesivesSummary,
           touchUpAmount,
+          designingAmount: effectiveDesigningAmount,
+          designingSummary:
+            effectiveDesigningAmount > 0
+              ? designingNotes.trim() ||
+                (designingMode === "per_sqft"
+                  ? `@ ${formatInr(designingRateNum)}/sq ft`
+                  : "2D/3D CAD Drawing & Custom Relief Artwork")
+              : undefined,
           cartingAmount: cartingNum,
           cartingLocation: cartingLocation.trim() || undefined,
           totalEstimate: total,
@@ -2199,6 +2265,219 @@ export function StoneMuralCalculator({
           </CardContent>
         </Card>
       </div>
+
+      {/* 8) Optional Designing Charges */}
+      <Card
+        className={`shadow-sm transition-colors ${
+          isDesigningActive ? "border-primary/50 bg-primary/[0.015]" : "border-border"
+        }`}
+      >
+        <CardHeader className="p-4 pb-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <Checkbox
+                id="mural-designing-toggle"
+                checked={isDesigningActive}
+                onCheckedChange={(c) => {
+                  setDesigningEnabled(!!c);
+                  if (!c) {
+                    setDesigningAmount("");
+                    setDesigningRate("");
+                  }
+                }}
+              />
+              <div className="flex items-center gap-2">
+                <PenTool className="h-4 w-4 text-primary" />
+                <div>
+                  <label
+                    htmlFor="mural-designing-toggle"
+                    className="cursor-pointer text-sm font-semibold text-foreground flex items-center gap-1.5"
+                  >
+                    <span>8) Designing Charges (2D/3D CAD Drawing & Custom Relief Artwork)</span>
+                    <Badge variant="outline" className="text-[10px] py-0 px-1.5 font-medium">
+                      Optional
+                    </Badge>
+                  </label>
+                  <p className="text-[11px] text-muted-foreground">
+                    Optional 3D CAD modeling, architectural shop drawings, or custom relief drafting
+                    fee.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <span className="font-mono text-xs font-semibold text-foreground">
+              {effectiveDesigningAmount > 0 ? formatInr(effectiveDesigningAmount) : "₹0 (Optional)"}
+            </span>
+          </div>
+        </CardHeader>
+
+        {isDesigningActive && (
+          <CardContent className="p-4 pt-2 space-y-3 border-t border-border/60">
+            {/* Mode Selector */}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-xs font-medium text-muted-foreground">Charging Method:</span>
+              <div className="flex items-center rounded-lg border bg-muted/40 p-0.5">
+                <button
+                  type="button"
+                  onClick={() => setDesigningMode("lump_sum")}
+                  className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
+                    designingMode === "lump_sum"
+                      ? "bg-background text-foreground shadow-xs font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Fixed Lump Sum (₹)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDesigningMode("per_sqft")}
+                  className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
+                    designingMode === "per_sqft"
+                      ? "bg-background text-foreground shadow-xs font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Rate Per Sq Ft (₹/sq ft)
+                </button>
+              </div>
+            </div>
+
+            {/* Inputs based on Mode */}
+            {designingMode === "lump_sum" ? (
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-muted-foreground">
+                  Designing Charges (₹ Lump Sum)
+                </label>
+                <div className="relative">
+                  <span className="absolute left-2.5 top-2 text-xs text-muted-foreground font-mono">
+                    ₹
+                  </span>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={designingAmount}
+                    onChange={(e) => setDesigningAmount(e.target.value)}
+                    placeholder="e.g. 5000"
+                    className="pl-7 h-8 text-sm font-mono"
+                  />
+                </div>
+                {/* Quick Chips for Lump Sum */}
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  <span className="text-[10px] text-muted-foreground font-medium mr-1">
+                    Quick Amounts:
+                  </span>
+                  {["2500", "5000", "7500", "10000", "15000", "20000"].map((amt) => (
+                    <button
+                      key={amt}
+                      type="button"
+                      onClick={() => {
+                        setDesigningAmount(amt);
+                        setDesigningEnabled(true);
+                      }}
+                      className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors cursor-pointer ${
+                        designingAmount === amt
+                          ? "border-primary bg-primary/10 text-primary font-bold"
+                          : "border-border/80 bg-muted/30 hover:bg-muted text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      ₹{Number(amt).toLocaleString("en-IN")}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Designing Rate (₹ / sq ft)
+                  </label>
+                  {wallAreaSqft > 0 && designingRateNum > 0 && (
+                    <span className="text-xs text-muted-foreground font-mono">
+                      {wallAreaSqft.toFixed(1)} sq ft &times; ₹{designingRateNum} ={" "}
+                      <strong className="text-foreground">
+                        {formatInr(effectiveDesigningAmount)}
+                      </strong>
+                    </span>
+                  )}
+                </div>
+                <div className="relative">
+                  <span className="absolute left-2.5 top-2 text-xs text-muted-foreground font-mono">
+                    ₹
+                  </span>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={designingRate}
+                    onChange={(e) => setDesigningRate(e.target.value)}
+                    placeholder="e.g. 50"
+                    className="pl-7 h-8 text-sm font-mono"
+                  />
+                </div>
+                {/* Quick Chips for Per Sq Ft */}
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  <span className="text-[10px] text-muted-foreground font-medium mr-1">
+                    Quick Rates:
+                  </span>
+                  {["25", "50", "75", "100", "150"].map((rate) => (
+                    <button
+                      key={rate}
+                      type="button"
+                      onClick={() => {
+                        setDesigningRate(rate);
+                        setDesigningEnabled(true);
+                      }}
+                      className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors cursor-pointer ${
+                        designingRate === rate
+                          ? "border-primary bg-primary/10 text-primary font-bold"
+                          : "border-border/80 bg-muted/30 hover:bg-muted text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      ₹{rate}/sq ft
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Optional Description / Scope of Designing */}
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">
+                Design Scope / Notes (Optional)
+              </label>
+              <Input
+                value={designingNotes}
+                onChange={(e) => setDesigningNotes(e.target.value)}
+                placeholder="e.g. 3D high-relief CAD model creation & 2D architectural shop drawings"
+                className="mt-1 h-8 text-xs"
+              />
+              <div className="flex flex-wrap items-center gap-1.5 pt-1.5">
+                {[
+                  "3D Relief CAD Modeling",
+                  "2D Vector CAD Drawings",
+                  "3D CNC Toolpath Programming",
+                  "Visual Concept Artwork & Renders",
+                ].map((chip) => (
+                  <button
+                    key={chip}
+                    type="button"
+                    onClick={() => {
+                      setDesigningNotes((prev) => {
+                        const trimmed = prev.trim();
+                        if (!trimmed) return chip;
+                        if (trimmed.includes(chip)) return prev;
+                        return `${trimmed}; ${chip}`;
+                      });
+                    }}
+                    className="text-[10px] px-2 py-0.5 rounded-full border border-border/80 bg-muted/30 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                  >
+                    + {chip}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        )}
+      </Card>
 
       {/* Design Reference Attachment */}
       <Card className="shadow-sm border-border">

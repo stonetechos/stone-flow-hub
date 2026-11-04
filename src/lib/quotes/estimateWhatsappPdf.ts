@@ -268,6 +268,8 @@ export interface MuralEstimateWhatsappInput {
   adhesivesAmount: number;
   adhesivesSummary: string;
   touchUpAmount: number;
+  designingAmount?: number;
+  designingSummary?: string;
   cartingAmount: number;
   cartingLocation?: string;
   totalEstimate: number;
@@ -324,6 +326,9 @@ export function buildMuralEstimateWhatsappMessage(
       ? `• Adhesives: ${formatInr(input.adhesivesAmount)} (${input.adhesivesSummary})`
       : null,
     input.touchUpAmount > 0 ? `• Touch Up Work: ${formatInr(input.touchUpAmount)}` : null,
+    input.designingAmount && input.designingAmount > 0
+      ? `• Designing Charges: ${formatInr(input.designingAmount)}${input.designingSummary ? ` (${input.designingSummary})` : ""}`
+      : null,
     input.cartingAmount > 0
       ? `• Carting / Freight: ${formatInr(input.cartingAmount)}${input.cartingLocation ? ` (${input.cartingLocation})` : ""}`
       : `• Carting / Freight: To be confirmed with carting agency as per location`,
