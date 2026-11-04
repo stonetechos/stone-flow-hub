@@ -216,7 +216,7 @@ export function WallCladdingCatalog({
     const text = encodeURIComponent(
       `Hello Stone Tech Atelier,\n\nI am interested in your Natural Stone Wall Cladding pattern:\n*${item.name}* (Code: ${itemCode})\n*Category:* ${item.category}\n*Stone:* ${item.stoneType}\n*Standard Relief:* ${item.thickness}\n*Catalogue Price:* ${p.currency} ${p.price} / ${p.unit}\n\nPlease share availability, project discount, and freight estimate.\nReference URL: https://stonetech.in#cladding-${item.id}`,
     );
-    window.open(`https://wa.me/919414161129?text=${text}`, "_blank");
+    window.open(`https://wa.me/917742090866?text=${text}`, "_blank");
   };
 
   const handleBatchAdjustPrompt = () => {

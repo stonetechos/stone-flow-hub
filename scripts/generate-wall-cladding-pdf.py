@@ -6,7 +6,7 @@ Compiles a luxury, publication-quality 2026 Natural Stone Wall Cladding & Mosaic
 Architectural Catalogue PDF softcopy optimized for WhatsApp distribution.
 Includes all unique patterns with high-resolution, uncompressed, proportional
 photographs, pattern codes, stone geologies, relief dimensions, finishes,
-and attached factory quarry pricing.
+official brand logo, and architectural specifications without pricing.
 """
 
 import os
@@ -58,7 +58,6 @@ def get_fonts():
         "subheading": load(bold_path, 20),
         "card_title": load(bold_path, 17),
         "card_code": load(bold_path, 15),
-        "card_price": load(bold_path, 17),
         "card_text": load(regular_path, 13),
         "card_bold": load(bold_path, 13),
         "badge": load(bold_path, 11),
@@ -66,60 +65,68 @@ def get_fonts():
     }
 
 
-def get_benchmark_price(category, stone_type, index):
-    """Calculates benchmark quarry price."""
+def load_brand_assets():
+    """Loads and prepares the official Stone Tech branding assets."""
+    logo_path = "public/branding/stone-tech-logo-transparent.png"
+    if not os.path.exists(logo_path):
+        logo_path = "public/branding/stone-tech-logo.png"
+
+    logo = Image.open(logo_path)
+    if logo.mode != "RGBA":
+        logo = logo.convert("RGBA")
+
+    bbox = logo.getbbox()
+    if bbox:
+        logo_cropped = logo.crop(bbox)
+    else:
+        logo_cropped = logo
+
+    # Prepare small header icon (30x30 max, transparent)
+    icon_h = 28
+    scale = icon_h / logo_cropped.height
+    icon_w = max(1, int(logo_cropped.width * scale))
+    header_icon = logo_cropped.resize((icon_w, icon_h), Image.Resampling.LANCZOS)
+
+    return logo_cropped, header_icon
+
+
+def get_pattern_badge(category, stone_type):
+    """Returns architectural classification badge for the pattern."""
     cat_lower = category.lower()
-    stone_lower = stone_type.lower()
 
     if "inlay" in cat_lower or "geometric" in cat_lower:
-        base = 1250
-        badge = "Brass & Stone Inlay"
+        return "Brass & Stone Inlay"
     elif "mural" in cat_lower or "artwork" in cat_lower:
-        base = 950
-        badge = "Hand-Carved Stone Mural"
+        return "Hand-Carved Stone Mural"
     elif "strip" in cat_lower or "ledger" in cat_lower:
-        base = 490
-        badge = "Interlocking Ledger Panel"
+        return "Interlocking Ledger Panel"
     elif "3d" in cat_lower or "relief" in cat_lower:
-        base = 680
-        badge = "CNC Sculpted Relief"
+        return "CNC Sculpted Relief"
     elif "fluted" in cat_lower or "ribbed" in cat_lower:
-        base = 540
-        badge = "Precision Linear Ribbed"
+        return "Precision Linear Ribbed"
     elif "woven" in cat_lower or "basketweave" in cat_lower:
-        base = 620
-        badge = "Hand-Crafted Parquet"
+        return "Hand-Crafted Parquet"
     elif "mosaic" in cat_lower or "pebble" in cat_lower:
-        base = 590
-        badge = "Mesh-Mounted Mosaic"
+        return "Mesh-Mounted Mosaic"
     elif "ashlar" in cat_lower:
-        base = 480
-        badge = "Calibrated Interlocking"
+        return "Calibrated Interlocking"
     else:
-        base = 420
-        badge = "Natural Split Cleft"
-
-    if "marble" in stone_lower:
-        base += 120
-    elif "quartzite" in stone_lower:
-        base += 80
-    elif "basalt" in stone_lower:
-        base += 150
-    elif "travertine" in stone_lower:
-        base += 180
-
-    jitter = ((index * 37) % 9) * 10 - 40
-    price = max(320, base + jitter)
-    return price, badge
+        return "Natural Split Cleft"
 
 
-def draw_header_footer(draw, fonts, page_num, total_pages, category_name=""):
-    """Draws consistent luxury header and footer on catalog pages."""
+def draw_header_footer(draw, fonts, page_num, total_pages, category_name="", header_icon=None, img_canvas=None):
+    """Draws consistent luxury header and footer with brand logo on catalog pages."""
     # Top rule
     draw.line([(50, 45), (PAGE_WIDTH - 50, 45)], fill=(226, 232, 240), width=1)
-    draw.text((50, 25), "STONE TECH ATELIER", fill=(15, 23, 42), font=fonts["card_bold"])
+
+    text_x = 50
+    if header_icon and img_canvas:
+        img_canvas.paste(header_icon, (50, 11), header_icon)
+        text_x = 50 + header_icon.width + 10
+
+    draw.text((text_x, 25), "STONE TECH ATELIER", fill=(15, 23, 42), font=fonts["card_bold"])
     draw.text(
-        (230, 25),
+        (text_x + 165, 25),
         "·  NATURAL STONE WALL CLADDING 2026",
         fill=(100, 116, 139),
         font=fonts["footer"],
@@ -143,7 +150,7 @@ def draw_header_footer(draw, fonts, page_num, total_pages, category_name=""):
     )
     draw.text(
         (50, PAGE_HEIGHT - 35),
-        "WhatsApp / Direct Orders: +91 94141 61129   ·   Web: www.stonetech.in",
+        "WhatsApp / Direct Inquiries: +91 77420 90866 / +91 97844 52998   ·   Web: www.stonetech.in",
         fill=(71, 85, 105),
         font=fonts["footer"],
     )
@@ -158,8 +165,8 @@ def draw_header_footer(draw, fonts, page_num, total_pages, category_name=""):
     )
 
 
-def create_cover_page(fonts):
-    """Generates luxury dark gold cover page."""
+def create_cover_page(fonts, logo_img):
+    """Generates luxury dark gold cover page with prominent brand logo."""
     img = Image.new("RGB", (PAGE_WIDTH, PAGE_HEIGHT), color=(15, 23, 42))  # Slate 900
     draw = ImageDraw.Draw(img)
 
@@ -177,16 +184,42 @@ def create_cover_page(fonts):
         draw.line([(x, y), (x + 30 * dx, y)], fill=(251, 191, 36), width=2)
         draw.line([(x, y), (x, y + 30 * dy)], fill=(251, 191, 36), width=2)
 
-    # Top brand emblem
+    # Official Stone Tech Logo Medallion
+    card_w, card_h = 164, 154
+    card_x = (PAGE_WIDTH - card_w) // 2
+    card_y = 75
+    draw.rounded_rectangle(
+        [(card_x, card_y), (card_x + card_w, card_y + card_h)],
+        radius=20,
+        fill=(255, 255, 255),
+        outline=(217, 119, 6),
+        width=2,
+    )
+    draw.rounded_rectangle(
+        [(card_x + 3, card_y + 3), (card_x + card_w - 3, card_y + card_h - 3)],
+        radius=17,
+        outline=(245, 158, 11),
+        width=1,
+    )
+
+    logo_thumb = logo_img.copy()
+    logo_thumb.thumbnail((card_w - 24, card_h - 24), Image.Resampling.LANCZOS)
+    img.paste(
+        logo_thumb,
+        (card_x + (card_w - logo_thumb.width) // 2, card_y + (card_h - logo_thumb.height) // 2),
+        logo_thumb if logo_thumb.mode == "RGBA" else None,
+    )
+
+    # Top brand emblem titles
     draw.text(
-        (PAGE_WIDTH // 2, 220),
+        (PAGE_WIDTH // 2, 260),
         "STONE TECH ATELIER",
         fill=(245, 158, 11),
         font=fonts["heading"],
         anchor="mm",
     )
     draw.text(
-        (PAGE_WIDTH // 2, 260),
+        (PAGE_WIDTH // 2, 298),
         "ARCHITECTURAL QUARRY DIRECT FABRICATORS",
         fill=(148, 163, 184),
         font=fonts["card_bold"],
@@ -195,35 +228,35 @@ def create_cover_page(fonts):
 
     # Thin dividing line
     draw.line(
-        [(PAGE_WIDTH // 2 - 180, 310), (PAGE_WIDTH // 2 + 180, 310)],
+        [(PAGE_WIDTH // 2 - 180, 330), (PAGE_WIDTH // 2 + 180, 330)],
         fill=(217, 119, 6),
         width=2,
     )
 
     # Main Title
     draw.text(
-        (PAGE_WIDTH // 2, 430),
+        (PAGE_WIDTH // 2, 405),
         "NATURAL STONE",
         fill=(255, 255, 255),
         font=fonts["title"],
         anchor="mm",
     )
     draw.text(
-        (PAGE_WIDTH // 2, 490),
+        (PAGE_WIDTH // 2, 465),
         "WALL CLADDING & MOSAICS",
         fill=(251, 191, 36),
         font=fonts["title"],
         anchor="mm",
     )
     draw.text(
-        (PAGE_WIDTH // 2, 570),
+        (PAGE_WIDTH // 2, 535),
         "2026 ARCHITECTURAL SPECIFICATION & EXPORT CATALOGUE",
         fill=(203, 213, 225),
         font=fonts["subheading"],
         anchor="mm",
     )
     draw.text(
-        (PAGE_WIDTH // 2, 620),
+        (PAGE_WIDTH // 2, 580),
         "182 Precision Patterns · Horizontal Strip Ledgestone · 3D CNC Relief · Waterjet Inlay · Interlocking Ashlar",
         fill=(148, 163, 184),
         font=fonts["card_text"],
@@ -246,7 +279,7 @@ def create_cover_page(fonts):
                     simg = simg.convert("RGB")
                 simg_thumb = ImageOps.fit(simg, (montage_w, montage_h), Image.Resampling.LANCZOS)
                 px = start_x + i * (montage_w + 10)
-                py = 720
+                py = 665
                 img.paste(simg_thumb, (px, py))
                 draw.rectangle(
                     [(px, py), (px + montage_w, py + montage_h)],
@@ -254,8 +287,8 @@ def create_cover_page(fonts):
                     width=2,
                 )
 
-    # Key Highlights Box
-    box_top = 960
+    # Key Highlights Box (Specification & Quality Focus, No Prices)
+    box_top = 890
     draw.rectangle(
         [(120, box_top), (PAGE_WIDTH - 120, box_top + 280)],
         fill=(30, 41, 59),
@@ -268,37 +301,37 @@ def create_cover_page(fonts):
         "· Precision Calibrated Modules: 300x300mm / 600x300mm / Interlocking Ledger Strips",
         "· Surface Finishes: Hand-Split Cleft, Shot-Blasted, Honed, Flamed, Bush-Hammered, CNC Carved",
         "· Applications: Exterior Elevation Facades, Feature Walls, Waterbodies, Foyer & Mandir Murals",
-        "· Direct Quarry Pricing Attached to Every Pattern with Worldwide Export Packaging",
+        "· Architectural Specification Catalog · Custom Fabrication & Seaworthy Export Packaging",
     ]
     for idx, h in enumerate(highlights):
         draw.text((150, box_top + 30 + idx * 48), h, fill=(241, 245, 249), font=fonts["card_text"])
 
-    # Bottom Contact Bar
-    draw.line([(120, 1380), (PAGE_WIDTH - 120, 1380)], fill=(217, 119, 6), width=1)
+    # Bottom Contact Bar (Updated contact numbers: 7742090866 / 9784452998)
+    draw.line([(120, 1310), (PAGE_WIDTH - 120, 1310)], fill=(217, 119, 6), width=1)
     draw.text(
-        (PAGE_WIDTH // 2, 1430),
+        (PAGE_WIDTH // 2, 1360),
         "STONE TECH ATELIER · JAIPUR & MAKRANA, RAJASTHAN",
         fill=(251, 191, 36),
         font=fonts["subheading"],
         anchor="mm",
     )
     draw.text(
-        (PAGE_WIDTH // 2, 1475),
-        "Direct WhatsApp Catalog & Sample Orders: +91 94141 61129",
+        (PAGE_WIDTH // 2, 1405),
+        "Direct WhatsApp & Studio Inquiries: +91 77420 90866 / +91 97844 52998",
         fill=(255, 255, 255),
         font=fonts["card_title"],
         anchor="mm",
     )
     draw.text(
-        (PAGE_WIDTH // 2, 1515),
+        (PAGE_WIDTH // 2, 1445),
         "Email: info@stonetech.in   ·   Web: www.stonetech.in",
         fill=(148, 163, 184),
         font=fonts["card_text"],
         anchor="mm",
     )
     draw.text(
-        (PAGE_WIDTH // 2, 1560),
-        "WhatsApp Ready Softcopy · Instant Digital Inquiries & Estimation",
+        (PAGE_WIDTH // 2, 1490),
+        "WhatsApp Ready Softcopy · Architectural Specification Edition",
         fill=(100, 116, 139),
         font=fonts["badge"],
         anchor="mm",
@@ -307,12 +340,12 @@ def create_cover_page(fonts):
     return img
 
 
-def create_table_of_contents_page(fonts, items, total_pages=38):
+def create_table_of_contents_page(fonts, items, total_pages=49, logo_img=None, header_icon=None):
     """Generates Page 2: Table of Contents & Technical Guidelines."""
     img = Image.new("RGB", (PAGE_WIDTH, PAGE_HEIGHT), color=(255, 255, 255))
     draw = ImageDraw.Draw(img)
 
-    draw_header_footer(draw, fonts, 2, total_pages, "COLLECTIONS & SPECIFICATIONS")
+    draw_header_footer(draw, fonts, 2, total_pages, "COLLECTIONS & SPECIFICATIONS", header_icon, img)
 
     # Title
     draw.text((50, 75), "COLLECTIONS DIRECTORY", fill=(15, 23, 42), font=fonts["heading"])
@@ -322,6 +355,17 @@ def create_table_of_contents_page(fonts, items, total_pages=38):
         fill=(100, 116, 139),
         font=fonts["card_text"],
     )
+
+    # Brand Logo in top right
+    if logo_img:
+        toc_logo = logo_img.copy()
+        toc_logo.thumbnail((160, 68), Image.Resampling.LANCZOS)
+        img.paste(
+            toc_logo,
+            (PAGE_WIDTH - 50 - toc_logo.width, 68),
+            toc_logo if toc_logo.mode == "RGBA" else None,
+        )
+
     draw.line([(50, 145), (PAGE_WIDTH - 50, 145)], fill=(14, 116, 144), width=2)
 
     categories = [
@@ -384,7 +428,7 @@ def create_table_of_contents_page(fonts, items, total_pages=38):
     )
     draw.text(
         (PAGE_WIDTH // 2, 1520),
-        "Direct WhatsApp Studio Line: +91 94141 61129   ·   Email CAD: info@stonetech.in",
+        "WhatsApp Studio Lines: +91 77420 90866 / +91 97844 52998   ·   Email CAD: info@stonetech.in",
         fill=(255, 255, 255),
         font=fonts["card_title"],
         anchor="mm",
@@ -403,7 +447,7 @@ def create_table_of_contents_page(fonts, items, total_pages=38):
 def render_pattern_card(draw, fonts, item, img_canvas, x, y, card_w, card_h):
     """
     Renders a single high-resolution pattern card with authentic, uncompressed,
-    aspect-ratio-preserved stone photography.
+    aspect-ratio-preserved stone photography, architectural specs, and NO PRICING.
     """
     # Outer card border
     draw.rectangle(
@@ -474,10 +518,8 @@ def render_pattern_card(draw, fonts, item, img_canvas, x, y, card_w, card_h):
         font=fonts["card_code"],
     )
 
-    # Benchmark Price & Badge
-    price, badge = get_benchmark_price(item["category"], item["stoneType"], item["index"])
-
-    # Promotional Badge (Top Right of photo box)
+    # Architectural Badge (Top Right of photo box)
+    badge = get_pattern_badge(item["category"], item["stoneType"])
     bbox = draw.textbbox((0, 0), badge.upper(), font=fonts["badge"])
     bw = bbox[2] - bbox[0]
     draw.rectangle(
@@ -508,33 +550,28 @@ def render_pattern_card(draw, fonts, item, img_canvas, x, y, card_w, card_h):
     )
     cy += 30
 
-    # Luxury Price Strip
-    price_box_h = 38
+    # Architectural Specification Badge Strip (Replaces Price Strip)
+    spec_box_h = 34
     draw.rectangle(
-        [(x + 14, cy), (x + card_w - 14, cy + price_box_h)],
+        [(x + 14, cy), (x + card_w - 14, cy + spec_box_h)],
+        fill=(248, 250, 252),
+        outline=(226, 232, 240),
+        width=1,
+    )
+    draw.text(
+        (x + 24, cy + 9),
+        "ARCHITECTURAL SPECIFICATION",
         fill=(15, 23, 42),
-        outline=None,
+        font=fonts["badge"],
     )
     draw.text(
-        (x + 22, cy + 9),
-        f"₹ {price} / sq.ft",
-        fill=(52, 211, 153),
-        font=fonts["card_price"],
-    )
-    draw.text(
-        (x + 160, cy + 13),
-        f"MRP ₹ {int(price * 1.25)}",
-        fill=(148, 163, 184),
-        font=fonts["card_text"],
-    )
-    draw.text(
-        (x + card_w - 22, cy + 13),
-        "Direct Quarry Rate",
-        fill=(203, 213, 225),
-        font=fonts["card_text"],
+        (x + card_w - 24, cy + 9),
+        "EXPORT QUALITY · CUT-TO-SIZE",
+        fill=(14, 116, 144),
+        font=fonts["badge"],
         anchor="ra",
     )
-    cy += price_box_h + 16
+    cy += spec_box_h + 16
 
     # Specifications Grid
     draw.text(
@@ -566,19 +603,19 @@ def render_pattern_card(draw, fonts, item, img_canvas, x, y, card_w, card_h):
         font=fonts["card_text"],
     )
 
-    # Bottom action prompt
+    # Bottom action prompt (Updated contact numbers: 7742090866 / 9784452998)
     cy = y + card_h - 32
     draw.line([(x + 14, cy), (x + card_w - 14, cy)], fill=(241, 245, 249), width=1)
     draw.text(
         (x + 16, cy + 10),
-        "Inquire on WhatsApp: +91 94141 61129",
+        "Inquire on WhatsApp: +91 77420 90866 / +91 97844 52998",
         fill=(16, 185, 129),
         font=fonts["card_bold"],
     )
 
 
-def create_back_cover_page(fonts):
-    """Generates final contact, ordering & export packaging page."""
+def create_back_cover_page(fonts, logo_img):
+    """Generates final contact, ordering & export packaging page with brand logo."""
     img = Image.new("RGB", (PAGE_WIDTH, PAGE_HEIGHT), color=(15, 23, 42))
     draw = ImageDraw.Draw(img)
 
@@ -586,30 +623,56 @@ def create_back_cover_page(fonts):
     draw.rectangle([(35, 35), (PAGE_WIDTH - 35, PAGE_HEIGHT - 35)], outline=(217, 119, 6), width=2)
     draw.rectangle([(42, 42), (PAGE_WIDTH - 42, PAGE_HEIGHT - 42)], outline=(245, 158, 11), width=1)
 
+    # Brand Logo Medallion
+    card_w, card_h = 160, 150
+    card_x = (PAGE_WIDTH - card_w) // 2
+    card_y = 65
+    draw.rounded_rectangle(
+        [(card_x, card_y), (card_x + card_w, card_y + card_h)],
+        radius=20,
+        fill=(255, 255, 255),
+        outline=(217, 119, 6),
+        width=2,
+    )
+    draw.rounded_rectangle(
+        [(card_x + 3, card_y + 3), (card_x + card_w - 3, card_y + card_h - 3)],
+        radius=17,
+        outline=(245, 158, 11),
+        width=1,
+    )
+
+    logo_thumb = logo_img.copy()
+    logo_thumb.thumbnail((card_w - 24, card_h - 24), Image.Resampling.LANCZOS)
+    img.paste(
+        logo_thumb,
+        (card_x + (card_w - logo_thumb.width) // 2, card_y + (card_h - logo_thumb.height) // 2),
+        logo_thumb if logo_thumb.mode == "RGBA" else None,
+    )
+
     draw.text(
-        (PAGE_WIDTH // 2, 160),
+        (PAGE_WIDTH // 2, 245),
         "STONE TECH ATELIER",
         fill=(245, 158, 11),
         font=fonts["heading"],
         anchor="mm",
     )
     draw.text(
-        (PAGE_WIDTH // 2, 205),
+        (PAGE_WIDTH // 2, 280),
         "INDIA'S PREMIER NATURAL STONE FABRICATION HUB",
         fill=(148, 163, 184),
         font=fonts["card_bold"],
         anchor="mm",
     )
     draw.line(
-        [(PAGE_WIDTH // 2 - 160, 240), (PAGE_WIDTH // 2 + 160, 240)],
+        [(PAGE_WIDTH // 2 - 160, 305), (PAGE_WIDTH // 2 + 160, 305)],
         fill=(217, 119, 6),
         width=2,
     )
 
     # How to Order Box
     box_w = PAGE_WIDTH - 160
-    draw.rectangle([(80, 280), (80 + box_w, 640)], fill=(30, 41, 59), outline=(51, 65, 85), width=2)
-    draw.text((110, 310), "HOW TO PLACE AN ORDER / SAMPLE REQUEST", fill=(251, 191, 36), font=fonts["subheading"])
+    draw.rectangle([(80, 330), (80 + box_w, 650)], fill=(30, 41, 59), outline=(51, 65, 85), width=2)
+    draw.text((110, 355), "HOW TO PLACE AN ORDER / SAMPLE REQUEST", fill=(251, 191, 36), font=fonts["subheading"])
 
     steps = [
         "1. Select Pattern Code: Quote the ST-WC-XXX code shown on any catalog page.",
@@ -618,11 +681,11 @@ def create_back_cover_page(fonts):
         "4. Dispatch & Logistics: Dedicated road transport across India or seaworthy container crating for export.",
     ]
     for idx, s in enumerate(steps):
-        draw.text((110, 370 + idx * 60), s, fill=(241, 245, 249), font=fonts["card_title"])
+        draw.text((110, 415 + idx * 55), s, fill=(241, 245, 249), font=fonts["card_title"])
 
     # Packaging Specifications
-    draw.rectangle([(80, 680), (80 + box_w, 1040)], fill=(30, 41, 59), outline=(51, 65, 85), width=2)
-    draw.text((110, 710), "EXPORT PACKAGING & QUALITY ASSURANCE", fill=(251, 191, 36), font=fonts["subheading"])
+    draw.rectangle([(80, 680), (80 + box_w, 1020)], fill=(30, 41, 59), outline=(51, 65, 85), width=2)
+    draw.text((110, 705), "EXPORT PACKAGING & QUALITY ASSURANCE", fill=(251, 191, 36), font=fonts["subheading"])
 
     pack_info = [
         "· Fumigated Wooden Crates: ISPM-15 heat-treated solid pine / hardwood crates.",
@@ -632,12 +695,12 @@ def create_back_cover_page(fonts):
         "· Tolerances: Thickness calibrated within +/- 1.5mm; squareness checked by dial calipers.",
     ]
     for idx, p in enumerate(pack_info):
-        draw.text((110, 770 + idx * 50), p, fill=(226, 232, 240), font=fonts["card_text"])
+        draw.text((110, 760 + idx * 48), p, fill=(226, 232, 240), font=fonts["card_text"])
 
-    # Direct Contacts
-    draw.rectangle([(80, 1080), (80 + box_w, 1500)], fill=(15, 23, 42), outline=(217, 119, 6), width=2)
+    # Direct Contacts (Updated contact numbers: 7742090866 / 9784452998)
+    draw.rectangle([(80, 1050), (80 + box_w, 1490)], fill=(15, 23, 42), outline=(217, 119, 6), width=2)
     draw.text(
-        (PAGE_WIDTH // 2, 1140),
+        (PAGE_WIDTH // 2, 1105),
         "CONNECT WITH OUR STONE ARCHITECTS",
         fill=(251, 191, 36),
         font=fonts["heading"],
@@ -645,28 +708,28 @@ def create_back_cover_page(fonts):
     )
 
     draw.text(
-        (PAGE_WIDTH // 2, 1210),
-        "WhatsApp Direct Line: +91 94141 61129",
+        (PAGE_WIDTH // 2, 1175),
+        "WhatsApp Direct Lines: +91 77420 90866 / +91 97844 52998",
         fill=(255, 255, 255),
         font=fonts["card_title"],
         anchor="mm",
     )
     draw.text(
-        (PAGE_WIDTH // 2, 1260),
+        (PAGE_WIDTH // 2, 1225),
         "Direct Email: info@stonetech.in   ·   Website: www.stonetech.in",
         fill=(203, 213, 225),
         font=fonts["card_title"],
         anchor="mm",
     )
     draw.text(
-        (PAGE_WIDTH // 2, 1320),
+        (PAGE_WIDTH // 2, 1285),
         "Quarry & Fabrication Atelier: RIICO Industrial Area, Makrana & Kishangarh, Rajasthan, India",
         fill=(148, 163, 184),
         font=fonts["card_text"],
         anchor="mm",
     )
     draw.text(
-        (PAGE_WIDTH // 2, 1370),
+        (PAGE_WIDTH // 2, 1335),
         "Global Port of Dispatch: Mundra Port / JNPT, India",
         fill=(148, 163, 184),
         font=fonts["card_text"],
@@ -674,7 +737,7 @@ def create_back_cover_page(fonts):
     )
 
     draw.text(
-        (PAGE_WIDTH // 2, 1440),
+        (PAGE_WIDTH // 2, 1420),
         "© 2026 Stone Tech OS / Stone Tech Atelier. All Rights Reserved.",
         fill=(100, 116, 139),
         font=fonts["badge"],
@@ -691,6 +754,8 @@ def main():
 
     print(f"Loaded {len(items)} patterns.")
     fonts = get_fonts()
+    logo_img, header_icon = load_brand_assets()
+    print("Loaded official Stone Tech branding assets.")
 
     pages = []
 
@@ -699,15 +764,15 @@ def main():
     x_positions = [55, 640]
     y_positions = [75, 870]
 
-    total_pages = 2 + ((len(items) + 3) // 4) + 1  # 2 intro + 35 catalog + 1 back = 38 pages
+    total_pages = 2 + ((len(items) + 3) // 4) + 1  # 2 intro + 46 catalog + 1 back = 49 pages
 
     # Page 1: Cover
-    print("Generating Cover Page...")
-    pages.append(create_cover_page(fonts))
+    print("Generating Cover Page with Official Logo...")
+    pages.append(create_cover_page(fonts, logo_img))
 
     # Page 2: Table of Contents & Guidelines
     print("Generating Table of Contents Page...")
-    pages.append(create_table_of_contents_page(fonts, items, total_pages))
+    pages.append(create_table_of_contents_page(fonts, items, total_pages, logo_img, header_icon))
 
     # Pattern Catalog Pages (4 patterns per page: 2 columns x 2 rows, balanced across A4)
     for chunk_idx in range(0, len(items), 4):
@@ -717,7 +782,7 @@ def main():
 
         p_img = Image.new("RGB", (PAGE_WIDTH, PAGE_HEIGHT), color=(255, 255, 255))
         p_draw = ImageDraw.Draw(p_img)
-        draw_header_footer(p_draw, fonts, page_num, total_pages, cat_name)
+        draw_header_footer(p_draw, fonts, page_num, total_pages, cat_name, header_icon, p_img)
 
         for i, item in enumerate(chunk):
             gx = x_positions[i % 2]
@@ -729,8 +794,8 @@ def main():
             print(f"Rendered catalog page {page_num}/{total_pages}...")
 
     # Final Page: Back Cover
-    print("Generating Back Cover Page...")
-    pages.append(create_back_cover_page(fonts))
+    print("Generating Back Cover Page with Official Logo...")
+    pages.append(create_back_cover_page(fonts, logo_img))
 
     output_dir = "public/catalogues"
     os.makedirs(output_dir, exist_ok=True)
