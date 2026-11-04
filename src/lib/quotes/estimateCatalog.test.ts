@@ -580,18 +580,26 @@ describe("estimateCatalog - rounding and wastage calculations", () => {
           amount: 5000,
           notes: "3D Relief CAD Modeling & Architectural Shop Drawings",
         },
+        goldLeafing: {
+          enabled: true,
+          amount: 7500,
+          notes: "24K Real Gold Leafing & Hand-Painted Acrylic Artwork",
+        },
         carting: { location: "Udaipur", amount: 2500 },
-        subtotal: 101500,
-        total: 101500,
+        subtotal: 109000,
+        total: 109000,
       });
 
       expect(parsed.designing?.enabled).toBe(true);
       expect(parsed.designing?.mode).toBe("lump_sum");
       expect(parsed.designing?.amount).toBe(5000);
       expect(parsed.designing?.notes).toContain("3D Relief CAD Modeling");
+      expect(parsed.goldLeafing?.enabled).toBe(true);
+      expect(parsed.goldLeafing?.amount).toBe(7500);
+      expect(parsed.goldLeafing?.notes).toContain("24K Real Gold Leafing");
     });
 
-    it("handles Base Stone Polishing Work, Dedicated Lump Sum Pasting, and Designing Charges in WhatsApp estimate", () => {
+    it("handles Base Stone Polishing Work, Dedicated Lump Sum Pasting, Designing Charges, and Gold-leafing Artwork in WhatsApp estimate", () => {
       const msg = buildMuralEstimateWhatsappMessage(
         {
           greetingName: "Harish",
@@ -613,11 +621,13 @@ describe("estimateCatalog - rounding and wastage calculations", () => {
           adhesivesAmount: 1800,
           adhesivesSummary: "2 bag(s) Standard Cement Based Stone Adhesive White",
           touchUpAmount: 6400,
+          goldLeafingAmount: 7500,
+          goldLeafingSummary: "24K Real Gold Leafing on highlights",
           designingAmount: 5000,
           designingSummary: "3D Relief CAD Modeling",
           cartingAmount: 2000,
           cartingLocation: "Ahmedabad Site",
-          totalEstimate: 69000,
+          totalEstimate: 76500,
           preparerName: "Stone Tech Atelier",
         },
         "Stone Tech",
@@ -632,8 +642,11 @@ describe("estimateCatalog - rounding and wastage calculations", () => {
       expect(msg).toContain(
         "• Stone Pasting Work: ₹5,000 (Specialized epoxy & artisan bonding, lump sum)",
       );
+      expect(msg).toContain(
+        "• Gold-leafing & Paint Artwork: ₹7,500 (24K Real Gold Leafing on highlights)",
+      );
       expect(msg).toContain("• Designing Charges: ₹5,000 (3D Relief CAD Modeling)");
-      expect(msg).toContain("Total Estimate: ₹69,000");
+      expect(msg).toContain("Total Estimate: ₹76,500");
     });
   });
 });

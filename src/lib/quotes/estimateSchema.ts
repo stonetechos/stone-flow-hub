@@ -185,6 +185,13 @@ export const estimateMuralWorksheetSchema = z.object({
       notes: z.string().optional(),
     })
     .optional(),
+  goldLeafing: z
+    .object({
+      enabled: z.boolean(),
+      amount: z.number().nonnegative(),
+      notes: z.string().optional(),
+    })
+    .optional(),
   carting: z.object({
     location: z.string().optional(),
     amount: z.number().nonnegative(),

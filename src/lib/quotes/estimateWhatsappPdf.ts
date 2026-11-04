@@ -270,6 +270,8 @@ export interface MuralEstimateWhatsappInput {
   touchUpAmount: number;
   designingAmount?: number;
   designingSummary?: string;
+  goldLeafingAmount?: number;
+  goldLeafingSummary?: string;
   cartingAmount: number;
   cartingLocation?: string;
   totalEstimate: number;
@@ -326,6 +328,9 @@ export function buildMuralEstimateWhatsappMessage(
       ? `• Adhesives: ${formatInr(input.adhesivesAmount)} (${input.adhesivesSummary})`
       : null,
     input.touchUpAmount > 0 ? `• Touch Up Work: ${formatInr(input.touchUpAmount)}` : null,
+    input.goldLeafingAmount && input.goldLeafingAmount > 0
+      ? `• Gold-leafing & Paint Artwork: ${formatInr(input.goldLeafingAmount)}${input.goldLeafingSummary ? ` (${input.goldLeafingSummary})` : ""}`
+      : null,
     input.designingAmount && input.designingAmount > 0
       ? `• Designing Charges: ${formatInr(input.designingAmount)}${input.designingSummary ? ` (${input.designingSummary})` : ""}`
       : null,

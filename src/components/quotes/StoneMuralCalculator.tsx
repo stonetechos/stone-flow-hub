@@ -34,6 +34,7 @@ import {
   FileText,
   ShieldAlert,
   PenTool,
+  Palette,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -209,6 +210,11 @@ export function StoneMuralCalculator({
   const [designingRate, setDesigningRate] = useState<string>("");
   const [designingNotes, setDesigningNotes] = useState<string>("");
 
+  // 12) Optional Gold-leafing & Paint Artwork (Artisan Detailing - Always entered manually)
+  const [goldLeafingEnabled, setGoldLeafingEnabled] = useState<boolean>(false);
+  const [goldLeafingAmount, setGoldLeafingAmount] = useState<string>("");
+  const [goldLeafingNotes, setGoldLeafingNotes] = useState<string>("");
+
   // Design visual
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
   const [timeToComplete, setTimeToComplete] = useState<string>("");
@@ -382,6 +388,11 @@ export function StoneMuralCalculator({
       : designingFixedNum
     : 0;
 
+  // 12) Optional Gold-leafing & Paint Artwork (Always entered manually)
+  const goldLeafingFixedNum = Number(goldLeafingAmount) || 0;
+  const isGoldLeafingActive = goldLeafingEnabled || goldLeafingFixedNum > 0;
+  const effectiveGoldLeafingAmount = isGoldLeafingActive ? goldLeafingFixedNum : 0;
+
   const effectiveLabourAmount = includeInstallation ? labourAmount : 0;
   const effectiveAdhesivesAmount = includeInstallation ? adhesivesAmount : 0;
 
@@ -396,6 +407,7 @@ export function StoneMuralCalculator({
     effectiveAdhesivesAmount +
     touchUpAmount +
     effectiveDesigningAmount +
+    effectiveGoldLeafingAmount +
     cartingNum;
   const total = subtotal;
 
@@ -502,6 +514,14 @@ export function StoneMuralCalculator({
               notes: designingNotes.trim() || undefined,
             }
           : undefined,
+      goldLeafing:
+        isGoldLeafingActive && effectiveGoldLeafingAmount > 0
+          ? {
+              enabled: true,
+              amount: effectiveGoldLeafingAmount,
+              notes: goldLeafingNotes.trim() || undefined,
+            }
+          : undefined,
       carting: {
         location: cartingLocation.trim() || undefined,
         amount: cartingNum,
@@ -572,6 +592,9 @@ export function StoneMuralCalculator({
     designingMode,
     designingRateNum,
     designingNotes,
+    isGoldLeafingActive,
+    effectiveGoldLeafingAmount,
+    goldLeafingNotes,
     cartingLocation,
     cartingNum,
     sceneDescription,
@@ -783,6 +806,23 @@ export function StoneMuralCalculator({
       });
     }
 
+    // 12. Optional Gold-leafing & Paint Artwork (Artisan Detailing - Always entered manually)
+    if (isGoldLeafingActive && effectiveGoldLeafingAmount > 0) {
+      const desc = goldLeafingNotes.trim()
+        ? `Mural Gold-leafing & Paint Artwork — ${goldLeafingNotes.trim()}`
+        : "Mural Gold-leafing & Paint Artwork (Artisan Detailing)";
+
+      out.push({
+        product_id: null,
+        description: desc,
+        quantity: 1,
+        unit: "job",
+        unit_price: effectiveGoldLeafingAmount,
+        tax_pct: 0,
+        fulfilment: null,
+      });
+    }
+
     return out;
   }, [
     wallAreaSqft,
@@ -837,6 +877,9 @@ export function StoneMuralCalculator({
     designingMode,
     designingRateNum,
     designingNotes,
+    isGoldLeafingActive,
+    effectiveGoldLeafingAmount,
+    goldLeafingNotes,
   ]);
 
   // Propagate to parent quote dialog
@@ -934,6 +977,11 @@ export function StoneMuralCalculator({
           adhesivesAmount: effectiveAdhesivesAmount,
           adhesivesSummary,
           touchUpAmount,
+          goldLeafingAmount: effectiveGoldLeafingAmount,
+          goldLeafingSummary:
+            effectiveGoldLeafingAmount > 0
+              ? goldLeafingNotes.trim() || "Artisan Gold-leafing & Paint Artwork"
+              : undefined,
           designingAmount: effectiveDesigningAmount,
           designingSummary:
             effectiveDesigningAmount > 0
@@ -2462,6 +2510,166 @@ export function StoneMuralCalculator({
                     type="button"
                     onClick={() => {
                       setDesigningNotes((prev) => {
+                        const trimmed = prev.trim();
+                        if (!trimmed) return chip;
+                        if (trimmed.includes(chip)) return prev;
+                        return `${trimmed}; ${chip}`;
+                      });
+                    }}
+                    className="text-[10px] px-2 py-0.5 rounded-full border border-border/80 bg-muted/30 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                  >
+                    + {chip}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        )}
+      </Card>
+
+      {/* 9) Gold-leafing & Paint Artwork (Artisan Detailing - Always entered manually) */}
+      <Card
+        className={`shadow-sm transition-colors ${
+          isGoldLeafingActive
+            ? "border-amber-400/60 bg-amber-500/[0.02] dark:border-amber-500/50"
+            : "border-border"
+        }`}
+      >
+        <CardHeader className="p-4 pb-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <Checkbox
+                id="mural-gold-leafing-toggle"
+                checked={isGoldLeafingActive}
+                onCheckedChange={(c) => {
+                  setGoldLeafingEnabled(!!c);
+                  if (!c) {
+                    setGoldLeafingAmount("");
+                    setGoldLeafingNotes("");
+                  }
+                }}
+              />
+              <div className="flex items-center gap-2">
+                <Palette className="h-4 w-4 text-amber-500 dark:text-amber-400" />
+                <div>
+                  <label
+                    htmlFor="mural-gold-leafing-toggle"
+                    className="cursor-pointer text-sm font-semibold text-foreground flex items-center gap-1.5"
+                  >
+                    <span>9) Gold-leafing & Paint Artwork (Artisan Detailing)</span>
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] py-0 px-1.5 font-medium border-amber-400/60 text-amber-700 dark:text-amber-400 bg-amber-50/50 dark:bg-amber-950/30"
+                    >
+                      Manual Amount
+                    </Badge>
+                  </label>
+                  <p className="text-[11px] text-muted-foreground">
+                    24K real gold leaf gilding, imitation gold foil, stone relief color detailing,
+                    or hand-painted acrylic artwork. Always entered manually.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <span className="font-mono text-xs font-semibold text-foreground">
+              {effectiveGoldLeafingAmount > 0
+                ? formatInr(effectiveGoldLeafingAmount)
+                : "₹0 (Optional)"}
+            </span>
+          </div>
+        </CardHeader>
+
+        {isGoldLeafingActive && (
+          <CardContent className="p-4 pt-2 space-y-3 border-t border-border/60">
+            {/* Manual Amount Input */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                  <span>Artwork & Gold-leafing Amount (₹ Manual Entry)</span>
+                  <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold">
+                    *Enter quoted artisan amount
+                  </span>
+                </label>
+                {effectiveGoldLeafingAmount > 0 && (
+                  <span className="text-[11px] font-mono text-muted-foreground">
+                    Total:{" "}
+                    <strong className="text-foreground">
+                      {formatInr(effectiveGoldLeafingAmount)}
+                    </strong>
+                  </span>
+                )}
+              </div>
+              <div className="relative">
+                <span className="absolute left-2.5 top-2 text-xs text-muted-foreground font-mono">
+                  ₹
+                </span>
+                <Input
+                  type="number"
+                  min="0"
+                  value={goldLeafingAmount}
+                  onChange={(e) => {
+                    setGoldLeafingAmount(e.target.value);
+                    if (e.target.value) setGoldLeafingEnabled(true);
+                  }}
+                  placeholder="Enter manual amount quoted for gold-leafing & painting (e.g. 7500)"
+                  className="pl-7 h-8 text-sm font-mono font-medium"
+                />
+              </div>
+
+              {/* Quick Amount Suggestion Chips */}
+              <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                <span className="text-[10px] text-muted-foreground font-medium mr-1">
+                  Quick Amounts:
+                </span>
+                {["2500", "5000", "7500", "10000", "15000", "20000", "25000"].map((amt) => (
+                  <button
+                    key={amt}
+                    type="button"
+                    onClick={() => {
+                      setGoldLeafingAmount(amt);
+                      setGoldLeafingEnabled(true);
+                    }}
+                    className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors cursor-pointer ${
+                      goldLeafingAmount === amt
+                        ? "border-amber-500 bg-amber-100/70 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold"
+                        : "border-border/80 bg-muted/30 hover:bg-muted text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    ₹{Number(amt).toLocaleString("en-IN")}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground">
+                Artisan charges vary based on leaf micron grade (24K pure vs imitation) and painting
+                intricacy, hence always entered manually.
+              </p>
+            </div>
+
+            {/* Scope / Notes Input */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">
+                Artwork Scope & Specifications (Optional)
+              </label>
+              <Input
+                value={goldLeafingNotes}
+                onChange={(e) => setGoldLeafingNotes(e.target.value)}
+                placeholder="e.g. 24K pure gold leafing on sanctum border & hand-painted multi-color relief highlights"
+                className="h-8 text-xs"
+              />
+              <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                {[
+                  "24K Pure Gold Leafing",
+                  "Imitation / Metallic Gold Foil",
+                  "Hand-Painted Acrylic Artwork",
+                  "Stone Relief Enamel Detailing",
+                  "Antique Brass & Copper Gilding",
+                  "Protective PU Sealant Finish",
+                ].map((chip) => (
+                  <button
+                    key={chip}
+                    type="button"
+                    onClick={() => {
+                      setGoldLeafingNotes((prev) => {
                         const trimmed = prev.trim();
                         if (!trimmed) return chip;
                         if (trimmed.includes(chip)) return prev;
