@@ -170,6 +170,7 @@ function TransportPartnersDirectoryView() {
       qc.invalidateQueries({ queryKey: ["transport-partners"] });
       qc.invalidateQueries({ queryKey: ["work-and-supply-directory"] });
       qc.invalidateQueries({ queryKey: qk.cartingAgencies.list() });
+      qc.invalidateQueries({ queryKey: qk.installationAgencies.list() });
       qc.invalidateQueries({ queryKey: qk.vendors.all });
       setToDelete(null);
     },
@@ -317,12 +318,16 @@ function TransportPartnersDirectoryView() {
                           className={
                             p.sourceType === "carting_agency"
                               ? "bg-sky-50 text-sky-800 border-sky-200"
-                              : "bg-purple-50 text-purple-800 border-purple-200"
+                              : p.sourceType === "installation_agency"
+                                ? "bg-amber-50 text-amber-800 border-amber-200"
+                                : "bg-purple-50 text-purple-800 border-purple-200"
                           }
                         >
                           {p.sourceType === "carting_agency"
                             ? "Carting Agency"
-                            : "Logistics Vendor"}
+                            : p.sourceType === "installation_agency"
+                              ? "Transport Partner"
+                              : "Logistics Vendor"}
                         </Badge>
                       </TableCell>
                     )}

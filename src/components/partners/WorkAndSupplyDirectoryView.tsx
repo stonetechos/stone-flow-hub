@@ -19,6 +19,7 @@ import {
   List,
   Search,
   Check,
+  Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,7 @@ interface WorkAndSupplyDirectoryViewProps {
   people: AssociatedPerson[];
   isLoading: boolean;
   onAddPartner?: () => void;
+  onEditPartner?: (person: AssociatedPerson) => void;
   defaultCategory?: AssociatedPartnerCategory | "all";
 }
 
@@ -51,6 +53,7 @@ export function WorkAndSupplyDirectoryView({
   people,
   isLoading,
   onAddPartner,
+  onEditPartner,
   defaultCategory = "all",
 }: WorkAndSupplyDirectoryViewProps) {
   const [search, setSearch] = useState("");
@@ -357,6 +360,19 @@ export function WorkAndSupplyDirectoryView({
                   </div>
 
                   <div className="flex items-center gap-1.5 shrink-0">
+                    {onEditPartner && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onEditPartner(person)}
+                        className="h-7 w-7 p-0 text-slate-600 hover:text-slate-900 cursor-pointer"
+                        title={`Edit ${person.contactPerson || person.name}`}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+
                     {hasPhone && (
                       <>
                         <Button
@@ -443,27 +459,41 @@ export function WorkAndSupplyDirectoryView({
                   <TableCell className="text-xs text-muted-foreground">{person.city}</TableCell>
                   <TableCell className="font-mono text-xs">{person.phone || "—"}</TableCell>
                   <TableCell className="text-right">
-                    {person.phone && (
-                      <div className="inline-flex items-center gap-1 justify-end">
-                        <a
-                          href={`tel:${person.phone.replace(/[^0-9+]/g, "")}`}
-                          className="inline-flex h-6 w-6 items-center justify-center rounded hover:bg-slate-100 text-slate-700"
-                          title="Call"
-                        >
-                          <Phone className="h-3 w-3" />
-                        </a>
+                    <div className="inline-flex items-center gap-1 justify-end">
+                      {onEditPartner && (
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleOpenWhatsapp(person)}
-                          className="h-6 w-6 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
-                          title="WhatsApp"
+                          onClick={() => onEditPartner(person)}
+                          className="h-6 w-6 p-0 text-slate-600 hover:text-slate-900 cursor-pointer"
+                          title="Edit partner"
                         >
-                          <MessageCircle className="h-3.5 w-3.5" />
+                          <Pencil className="h-3 w-3" />
                         </Button>
-                      </div>
-                    )}
+                      )}
+                      {person.phone && (
+                        <>
+                          <a
+                            href={`tel:${person.phone.replace(/[^0-9+]/g, "")}`}
+                            className="inline-flex h-6 w-6 items-center justify-center rounded hover:bg-slate-100 text-slate-700"
+                            title="Call"
+                          >
+                            <Phone className="h-3 w-3" />
+                          </a>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleOpenWhatsapp(person)}
+                            className="h-6 w-6 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                            title="WhatsApp"
+                          >
+                            <MessageCircle className="h-3.5 w-3.5" />
+                          </Button>
+                        </>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

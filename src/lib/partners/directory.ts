@@ -263,10 +263,14 @@ export function detectVendorPartnerCategory(vendor: VendorRow): AssociatedPartne
   // 5. Transport check
   if (
     meta.work_types.includes("carting") ||
+    meta.work_types.includes("transport") ||
     companyLower.includes("transport") ||
     companyLower.includes("logistics") ||
     companyLower.includes("roadways") ||
-    companyLower.includes("freight")
+    companyLower.includes("freight") ||
+    companyLower.includes("carting") ||
+    notesLower.includes("transport") ||
+    notesLower.includes("carting")
   ) {
     return "transport_partner";
   }
@@ -341,28 +345,47 @@ export function vendorToAssociatedPerson(v: VendorRow): AssociatedPerson {
 export function installationAgencyToAssociatedPerson(
   agency: InstallationAgencyRow & { skills?: string[] },
 ): AssociatedPerson {
+  const decoded = decodeAgencyWorkTypes(agency.notes);
+  const effectiveWorkTypes =
+    Array.isArray(agency.work_types) && agency.work_types.length > 0
+      ? agency.work_types
+      : decoded.workTypes;
+
   let category: AssociatedPartnerCategory = "application_partner";
-  if (agency.work_types?.includes("artwork") || agency.agency_type === "artwork") {
+  if (
+    effectiveWorkTypes.includes("artwork") ||
+    agency.agency_type === "artwork" ||
+    (agency.name || "").toLowerCase().includes("mural") ||
+    (agency.name || "").toLowerCase().includes("carv")
+  ) {
     category = "artwork_partner";
-  } else if (agency.work_types?.includes("carting") || agency.agency_type === "carting") {
+  } else if (
+    effectiveWorkTypes.includes("carting") ||
+    agency.agency_type === "carting" ||
+    (agency.name || "").toLowerCase().includes("transport") ||
+    (agency.name || "").toLowerCase().includes("carting") ||
+    (agency.name || "").toLowerCase().includes("roadways")
+  ) {
     category = "transport_partner";
   }
   const config = PARTNER_CATEGORIES[category];
-  const decoded = decodeAgencyWorkTypes(agency.notes);
 
   const skills: string[] = [];
   if (Array.isArray(agency.skills) && agency.skills.length > 0) {
     skills.push(...agency.skills);
   }
-  const workTypes = agency.work_types?.length ? agency.work_types : decoded.workTypes;
-  if (Array.isArray(workTypes)) {
-    for (const wt of workTypes) {
+  if (category === "transport_partner") {
+    if (decoded.vehicleType) skills.push(decoded.vehicleType);
+    if (decoded.vehicleNo) skills.push(`Reg #${decoded.vehicleNo}`);
+    if (skills.length === 0) skills.push("Carting & Transport");
+  } else {
+    for (const wt of effectiveWorkTypes) {
       const found = AGENCY_WORK_TYPES.find((a) => a.value === wt);
       const label = found?.label || wt;
       if (!skills.includes(label)) skills.push(label);
     }
+    if (skills.length === 0) skills.push("Application & Fixing");
   }
-  if (skills.length === 0) skills.push("Application & Fixing");
 
   return {
     id: agency.id,
@@ -381,7 +404,10 @@ export function installationAgencyToAssociatedPerson(
     vehicleNo: agency.vehicle_no || decoded.vehicleNo || null,
     notes: decoded.cleanNotes || agency.notes || undefined,
     isActive: agency.is_active ?? true,
-    linkUrl: `/installation-ledger/${agency.id}`,
+    linkUrl:
+      category === "transport_partner"
+        ? "/purchase-transport"
+        : `/installation-ledger/${agency.id}`,
     raw: agency,
   };
 }
@@ -414,7 +440,7 @@ export function cartingAgencyToAssociatedPerson(
     vehicleNo: carting.vehicle_no || null,
     notes: carting.notes || undefined,
     isActive: carting.is_active ?? true,
-    linkUrl: "/local-carting",
+    linkUrl: "/purchase-transport",
     raw: carting,
   };
 }
@@ -539,17 +565,20 @@ export async function listApplicationPartners(query = ""): Promise<AssociatedPer
 }
 
 /**
- * Queries all registered Transportation Partners across vendors and carting agencies.
+ * Queries all registered Transportation Partners across vendors, carting agencies, and agencies.
  */
 export async function listTransportPartners(query = ""): Promise<AssociatedPerson[]> {
-  const [vendorsRes, cartingRes] = await Promise.allSettled([
+  const [vendorsRes, cartingRes, agenciesRes, teamsRes] = await Promise.allSettled([
     listVendors(query),
     listCartingAgencies(false, query),
+    listInstallationAgencies(false, query),
+    listInstallationTeams(query),
   ]);
 
   const partners: AssociatedPerson[] = [];
   const seenIds = new Set<string>();
 
+  // 1. Dedicated carting agencies (pure transport & carting)
   if (cartingRes.status === "fulfilled" && Array.isArray(cartingRes.value)) {
     for (const c of cartingRes.value) {
       const p = cartingAgencyToAssociatedPerson(c);
@@ -560,11 +589,44 @@ export async function listTransportPartners(query = ""): Promise<AssociatedPerso
     }
   }
 
+  // 2. Installation agencies registered with transport / carting capabilities
+  if (agenciesRes.status === "fulfilled" && Array.isArray(agenciesRes.value)) {
+    for (const a of agenciesRes.value) {
+      const p = installationAgencyToAssociatedPerson(a);
+      if (p.category === "transport_partner" && !seenIds.has(p.id)) {
+        seenIds.add(p.id);
+        partners.push(p);
+      }
+    }
+  }
+
+  // 3. Vendors categorized as transport partners
   if (vendorsRes.status === "fulfilled" && Array.isArray(vendorsRes.value)) {
     for (const v of vendorsRes.value) {
       const cat = detectVendorPartnerCategory(v);
       if (cat === "transport_partner") {
         const p = vendorToAssociatedPerson(v);
+        if (!seenIds.has(p.id)) {
+          seenIds.add(p.id);
+          partners.push(p);
+        }
+      }
+    }
+  }
+
+  // 4. Any installation teams with carting/transport skills
+  if (teamsRes.status === "fulfilled" && Array.isArray(teamsRes.value)) {
+    for (const t of teamsRes.value) {
+      const isCarting = t.skills?.some(
+        (s) => s.toLowerCase().includes("carting") || s.toLowerCase().includes("transport"),
+      );
+      if (isCarting) {
+        const p = installationTeamToAssociatedPerson(t);
+        p.category = "transport_partner";
+        p.categoryLabel = PARTNER_CATEGORIES.transport_partner.singular;
+        p.categoryBadgeTone = PARTNER_CATEGORIES.transport_partner.badgeTone;
+        p.dotColor = PARTNER_CATEGORIES.transport_partner.dotColor;
+        p.linkUrl = "/purchase-transport";
         if (!seenIds.has(p.id)) {
           seenIds.add(p.id);
           partners.push(p);
@@ -619,7 +681,17 @@ export async function updateAssociatedPartner(
       products_dealt: [],
     });
   } else if (person.sourceType === "installation_agency") {
-    const workTypes = (input.skills as AgencyWorkType[]) || ["installation"];
+    const rawAgency = person.raw as InstallationAgencyRow | undefined;
+    const isCarting =
+      person.category === "transport_partner" ||
+      rawAgency?.agency_type === "carting" ||
+      rawAgency?.work_types?.includes("carting");
+    const rawWorkTypes = (input.skills as AgencyWorkType[]) || [];
+    const workTypes: AgencyWorkType[] =
+      rawWorkTypes.length > 0 ? rawWorkTypes : isCarting ? ["carting"] : ["installation"];
+    if (isCarting && !workTypes.includes("carting")) {
+      workTypes.push("carting");
+    }
     const encoded = encodeAgencyNotes(
       input.notes,
       workTypes,

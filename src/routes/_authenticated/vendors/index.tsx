@@ -78,8 +78,10 @@ import {
   detectVendorPartnerCategory,
   listWorkAndSupplyDirectory,
   type AssociatedPartnerCategory,
+  type AssociatedPerson,
 } from "@/lib/partners/directory";
 import { WorkAndSupplyDirectoryView } from "@/components/partners/WorkAndSupplyDirectoryView";
+import { PartnerEditDialog } from "@/components/partners/PartnerEditDialog";
 
 export const Route = createFileRoute("/_authenticated/vendors/")({
   ssr: false,
@@ -110,6 +112,8 @@ function VendorsPage() {
   const dq = useDebouncedValue(q, 250);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<VendorRow | null>(null);
+  const [partnerEditing, setPartnerEditing] = useState<AssociatedPerson | null>(null);
+  const [partnerEditDialogOpen, setPartnerEditDialogOpen] = useState(false);
   const [toDelete, setToDelete] = useState<VendorRow | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
@@ -180,6 +184,21 @@ function VendorsPage() {
     setFormOpen(true);
   };
 
+  const handleEditDirectoryPerson = (person: AssociatedPerson) => {
+    if (person.sourceType === "vendor") {
+      const v =
+        (vendorsQuery.data ?? []).find((r) => r.id === person.id) ||
+        (person.raw as VendorRow | undefined);
+      if (v) {
+        setEditing(v);
+        setFormOpen(true);
+      }
+    } else {
+      setPartnerEditing(person);
+      setPartnerEditDialogOpen(true);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {/* Top Header & View Switcher */}
@@ -245,6 +264,7 @@ function VendorsPage() {
           people={directoryQuery.data ?? []}
           isLoading={directoryQuery.isLoading}
           onAddPartner={openCreate}
+          onEditPartner={handleEditDirectoryPerson}
           defaultCategory={
             category && category in PARTNER_CATEGORIES
               ? (category as AssociatedPartnerCategory)
@@ -483,6 +503,24 @@ function VendorsPage() {
       )}
 
       <VendorFormDialog open={formOpen} onOpenChange={setFormOpen} editing={editing} />
+      <PartnerEditDialog
+        open={partnerEditDialogOpen}
+        onOpenChange={(open) => {
+          setPartnerEditDialogOpen(open);
+          if (!open) setPartnerEditing(null);
+        }}
+        editing={partnerEditing}
+        partnerType={
+          partnerEditing?.category === "transport_partner"
+            ? "transport_partner"
+            : "application_partner"
+        }
+        onSuccess={() => {
+          qc.invalidateQueries({ queryKey: ["work-and-supply-directory"] });
+          qc.invalidateQueries({ queryKey: ["transport-partners"] });
+          qc.invalidateQueries({ queryKey: ["application-partners"] });
+        }}
+      />
       <SafeDeleteDialog
         open={!!toDelete}
         onOpenChange={(o) => !o && setToDelete(null)}

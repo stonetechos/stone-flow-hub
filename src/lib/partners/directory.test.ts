@@ -153,6 +153,28 @@ describe("Work & Supply Directory - Person Normalization", () => {
     expect(person.categoryLabel).toBe(PARTNER_CATEGORIES.transport_partner.singular);
     expect(person.skills).toContain("14-Wheeler Trailer");
     expect(person.skills).toContain("Reg #RJ27-GA-1234");
-    expect(person.linkUrl).toBe("/local-carting");
+    expect(person.linkUrl).toBe("/purchase-transport");
+  });
+
+  it("normalizes an agency with carting capability as a transport partner linking to purchase-transport", () => {
+    const transportAgency = {
+      id: "agency-trans-1",
+      code: "ANIL-BHARWAD",
+      name: "Anil Bharwad",
+      contact_person: "Anil Bharwad",
+      phone: "7069679867",
+      work_types: ["carting"],
+      notes: "Carting & Transport",
+      is_active: true,
+      sort_order: 1,
+    } as unknown as InstallationAgencyRow;
+
+    const person = installationAgencyToAssociatedPerson(transportAgency);
+    expect(person.id).toBe("agency-trans-1");
+    expect(person.code).toBe("ANIL-BHARWAD");
+    expect(person.category).toBe("transport_partner");
+    expect(person.categoryLabel).toBe(PARTNER_CATEGORIES.transport_partner.singular);
+    expect(person.linkUrl).toBe("/purchase-transport");
+    expect(person.skills).toContain("Carting & Transport");
   });
 });
