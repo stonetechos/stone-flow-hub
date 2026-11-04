@@ -32,3 +32,29 @@ export function formatDate(iso: string | Date | null | undefined): string {
   if (!Number.isFinite(d.getTime())) return "—";
   return d.toLocaleDateString();
 }
+
+/** Business date formatting in Indian standard (e.g. "20 Oct 2026"). Avoids MM/DD vs DD/MM ambiguity. */
+export function formatDisplayDate(iso: string | Date | null | undefined): string {
+  if (!iso) return "—";
+  if (typeof iso === "string") {
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+    if (m) {
+      const year = parseInt(m[1], 10);
+      const month = parseInt(m[2], 10) - 1;
+      const day = parseInt(m[3], 10);
+      const d = new Date(year, month, day);
+      return d.toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+    }
+  }
+  const d = typeof iso === "string" ? new Date(iso) : iso;
+  if (!Number.isFinite(d.getTime())) return typeof iso === "string" ? iso : "—";
+  return d.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}

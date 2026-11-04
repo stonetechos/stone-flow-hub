@@ -46,6 +46,7 @@ describe("renderDocWhatsAppText", () => {
 
     expect(text).toContain("*Payment Receipt — RCT-000015*");
     expect(text).toContain("Dear Designnbuy Webtoprint Private Ltd,");
+    expect(text).toContain("• Date: 16 Oct 2026");
     expect(text).toContain("• Method: Bank Transfer");
     expect(text).toContain("• Amount received: *₹27,567*");
     expect(text).toContain("*Invoices Settled:*");

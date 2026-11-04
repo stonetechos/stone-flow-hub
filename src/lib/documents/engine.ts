@@ -6,7 +6,7 @@
  *
  * DO NOT add per-module renderers elsewhere — extend the switch here.
  */
-import { formatInr } from "@/lib/format";
+import { formatInr, formatDisplayDate } from "@/lib/format";
 import type { PdfDoc, PdfLine, PdfMeta, PdfParty } from "@/lib/pdf/generator";
 import { loadBranding, DEFAULT_BRANDING, type BrandingConfig } from "@/lib/branding";
 
@@ -534,7 +534,10 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
           kind: "receipt",
           title: "Payment Receipt",
           number: r.receipt_no,
-          date: r.received_at?.slice(0, 10) ?? "",
+          date:
+            r.received_at?.slice(0, 10) ??
+            (r as { created_at?: string })?.created_at?.slice(0, 10) ??
+            "",
           from: companyFrom,
           to: customerParty(cust),
           balanceDue: currentBalance !== null ? currentBalance : undefined,
@@ -641,7 +644,7 @@ export function renderDocWhatsAppText(built: BuiltDocument): string {
     lines.push(`Dear ${doc.to.name},`);
     lines.push("");
     lines.push("Thank you for your payment! Here are the receipt details:");
-    if (doc.date) lines.push(`• Date: ${doc.date}`);
+    if (doc.date) lines.push(`• Date: ${formatDisplayDate(doc.date)}`);
     for (const m of doc.meta ?? []) {
       if (m.value && m.value !== "—" && m.value !== "₹0") {
         lines.push(`• ${m.label}: ${m.value}`);

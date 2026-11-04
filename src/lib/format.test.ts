@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { formatInr } from "./format";
+import { formatInr, formatDisplayDate } from "./format";
 
 describe("formatInr", () => {
   it("handles null and empty values", () => {
@@ -28,5 +28,18 @@ describe("formatInr", () => {
 
   it("formats zero correctly", () => {
     expect(formatInr(0)).toBe("₹0");
+  });
+});
+
+describe("formatDisplayDate", () => {
+  it("formats YYYY-MM-DD strings to Indian business format without timezone shifts", () => {
+    expect(formatDisplayDate("2026-10-20")).toBe("20 Oct 2026");
+    expect(formatDisplayDate("2026-01-05")).toBe("05 Jan 2026");
+  });
+
+  it("handles null, undefined, and empty string", () => {
+    expect(formatDisplayDate(null)).toBe("—");
+    expect(formatDisplayDate(undefined)).toBe("—");
+    expect(formatDisplayDate("")).toBe("—");
   });
 });

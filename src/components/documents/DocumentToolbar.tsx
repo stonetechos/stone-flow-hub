@@ -44,6 +44,7 @@ import {
   type WhatsappMode,
 } from "@/lib/whatsapp";
 import { enqueueMessage } from "@/lib/notifications/queue";
+import { formatDisplayDate } from "@/lib/format";
 import { SendDocumentEmailDialog } from "./SendDocumentEmailDialog";
 
 interface Props {
@@ -217,7 +218,19 @@ export function DocumentToolbar({ entity, entityId, hideEmail, hideWhatsapp, com
         (t) => t.label.toLowerCase().includes("tax") || t.label.toLowerCase().includes("gst"),
       );
 
+      const isReceipt =
+        entity === "receipt" || built.doc.kind === "receipt" || /receipt/i.test(docTitle);
+
+      const rawDate =
+        built.doc.date ||
+        (built.doc as { created_at?: string })?.created_at ||
+        (built.doc.meta?.find((m) => m.label.toLowerCase().includes("date"))?.value as string);
+      const formattedDate = formatDisplayDate(rawDate);
+
       const summaryLines: string[] = [];
+      if (formattedDate && formattedDate !== "—") {
+        summaryLines.push(`📅 *${isReceipt ? "Receipt Date" : "Date"}:* ${formattedDate}`);
+      }
       if (subtotalMeta && taxMeta && grandTotalMeta && subtotalMeta !== grandTotalMeta) {
         summaryLines.push(`📋 *Financial Details:*`);
         summaryLines.push(`• Subtotal: ${subtotalMeta.value}`);
