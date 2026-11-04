@@ -660,8 +660,8 @@ function VendorFormDialog({
                 required
               />
             </Field>
-            <Field label="Mobile / WhatsApp" required>
-              <PhoneInput value={form.mobile} onChange={(v) => set("mobile", v)} required />
+            <Field label="Mobile / WhatsApp">
+              <PhoneInput value={form.mobile ?? ""} onChange={(v) => set("mobile", v)} />
             </Field>
             <Field label="City / Location">
               <Input

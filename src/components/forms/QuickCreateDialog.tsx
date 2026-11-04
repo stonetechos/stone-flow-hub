@@ -316,11 +316,10 @@ function QuickCreateVendor({ open, onOpenChange, initialName, onCreated }: Quick
                 required
               />
             </Field>
-            <Field label="Mobile" required>
+            <Field label="Mobile">
               <PhoneInput
-                value={form.mobile}
+                value={form.mobile ?? ""}
                 onChange={(v) => setForm({ ...form, mobile: v })}
-                required
               />
             </Field>
             <Field label="Email">

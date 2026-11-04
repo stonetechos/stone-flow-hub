@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { zRequired, zOptional, zMobile, zEmail } from "@/lib/zod";
+import { zRequired, zOptional, zOptionalMobile, zEmail } from "@/lib/zod";
 
 export const VENDOR_WORK_TYPES = [
   { value: "supplying", label: "Stone Supply (Quarry/Slabs)" },
@@ -70,7 +70,7 @@ export const vendorCreateSchema = z.object({
   // Quick Fill
   company_name: zRequired("Vendor company"),
   contact_name: zRequired("Contact person"),
-  mobile: zMobile,
+  mobile: zOptionalMobile,
 
   // Partner Association
   partner_category: z.string().optional(),

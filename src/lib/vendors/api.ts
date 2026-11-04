@@ -328,7 +328,7 @@ export async function createVendor(input: VendorCreateInput): Promise<VendorRow>
     .insert({
       vendor_id: vendor.id,
       name: parsed.contact_name,
-      phone,
+      phone: phone || null,
       email: parsed.email ?? null,
       is_primary: true,
     });
@@ -405,7 +405,7 @@ export async function updateVendor(id: string, input: VendorCreateInput): Promis
   if (existingContact) {
     const { error: uErr } = await getDb()
       .from("vendor_contacts")
-      .update({ name: parsed.contact_name, phone, email: parsed.email ?? null })
+      .update({ name: parsed.contact_name, phone: phone || null, email: parsed.email ?? null })
       .eq("id", existingContact.id);
     if (uErr) throw new AppError(mapDbError(uErr));
   } else {
@@ -414,7 +414,7 @@ export async function updateVendor(id: string, input: VendorCreateInput): Promis
       .insert({
         vendor_id: id,
         name: parsed.contact_name,
-        phone,
+        phone: phone || null,
         email: parsed.email ?? null,
         is_primary: true,
       });
