@@ -822,6 +822,7 @@ export function EstimateStudioCalculator({
                 <LineField label={`Height (${unit})`} className="col-span-6 md:col-span-2">
                   <Input
                     type="number"
+                    step="any"
                     inputMode="decimal"
                     min="0"
                     value={w.height}
@@ -831,6 +832,7 @@ export function EstimateStudioCalculator({
                 <LineField label={`Length (${unit})`} className="col-span-6 md:col-span-2">
                   <Input
                     type="number"
+                    step="any"
                     inputMode="decimal"
                     min="0"
                     value={w.length}
@@ -1045,6 +1047,7 @@ export function EstimateStudioCalculator({
                   >
                     <Input
                       type="number"
+                      step="any"
                       inputMode="decimal"
                       min="0"
                       value={p.pricePerUnit}
@@ -1055,6 +1058,7 @@ export function EstimateStudioCalculator({
                     <LineField label="Quantity (units)" className="col-span-6 md:col-span-3">
                       <Input
                         type="number"
+                        step="any"
                         inputMode="decimal"
                         min="0"
                         value={p.manualQty}
@@ -1237,6 +1241,7 @@ export function EstimateStudioCalculator({
               >
                 <Input
                   type="number"
+                  step="any"
                   inputMode="decimal"
                   min="0"
                   value={labourRate}
@@ -1299,6 +1304,7 @@ export function EstimateStudioCalculator({
               >
                 <Input
                   type="number"
+                  step="any"
                   inputMode="decimal"
                   min="0"
                   value={
@@ -1367,6 +1373,7 @@ export function EstimateStudioCalculator({
                       >
                         <Input
                           type="number"
+                          step="any"
                           inputMode="decimal"
                           min="0"
                           disabled={!a.selected}
@@ -1407,6 +1414,7 @@ export function EstimateStudioCalculator({
                       >
                         <Input
                           type="number"
+                          step="any"
                           min="0"
                           disabled={!a.selected}
                           value={
@@ -1468,6 +1476,7 @@ export function EstimateStudioCalculator({
                     <Input
                       className="h-8"
                       type="number"
+                      step="any"
                       min="0"
                       disabled={!otherAdhesive.enabled}
                       value={otherAdhesive.units}
@@ -1480,6 +1489,7 @@ export function EstimateStudioCalculator({
                     <Input
                       className="h-8"
                       type="number"
+                      step="any"
                       min="0"
                       disabled={!otherAdhesive.enabled}
                       value={otherAdhesive.pricePerUnit}
@@ -1525,6 +1535,7 @@ export function EstimateStudioCalculator({
               <LineField label="Price / ltr (₹)" className="col-span-4 md:col-span-2">
                 <Input
                   type="number"
+                  step="any"
                   inputMode="decimal"
                   min="0"
                   disabled={sealerKey === "none"}
@@ -1560,6 +1571,7 @@ export function EstimateStudioCalculator({
               >
                 <Input
                   type="number"
+                  step="any"
                   min="0"
                   disabled={sealerKey === "none"}
                   value={
@@ -1593,6 +1605,7 @@ export function EstimateStudioCalculator({
               >
                 <Input
                   type="number"
+                  step="any"
                   inputMode="decimal"
                   min="0"
                   value={sealerAppRate}
@@ -1641,6 +1654,7 @@ export function EstimateStudioCalculator({
             <LineField label="Carting Amount (₹ Lump Sum)" className="col-span-12 md:col-span-4">
               <Input
                 type="number"
+                step="any"
                 inputMode="decimal"
                 min="0"
                 placeholder="1500"

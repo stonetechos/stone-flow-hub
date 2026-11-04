@@ -1121,6 +1121,7 @@ export function StoneMuralCalculator({
                 </label>
                 <Input
                   type="number"
+                  step="any"
                   inputMode="decimal"
                   min="0"
                   value={wallHeight}
@@ -1135,6 +1136,7 @@ export function StoneMuralCalculator({
                 </label>
                 <Input
                   type="number"
+                  step="any"
                   inputMode="decimal"
                   min="0"
                   value={wallLength}
@@ -1252,6 +1254,7 @@ export function StoneMuralCalculator({
                 </label>
                 <Input
                   type="number"
+                  step="any"
                   inputMode="decimal"
                   min="0"
                   value={slabLength}
@@ -1266,6 +1269,7 @@ export function StoneMuralCalculator({
                 </label>
                 <Input
                   type="number"
+                  step="any"
                   inputMode="decimal"
                   min="0"
                   value={slabHeight}
@@ -1278,6 +1282,7 @@ export function StoneMuralCalculator({
                 <label className="text-xs font-medium text-muted-foreground">Thickness (mm)</label>
                 <Input
                   type="number"
+                  step="any"
                   inputMode="decimal"
                   min="1"
                   value={slabThickness}
@@ -1330,6 +1335,7 @@ export function StoneMuralCalculator({
                 </label>
                 <Input
                   type="number"
+                  step="any"
                   inputMode="decimal"
                   min="0"
                   disabled={baseStoneSourcing === "client_provided"}
@@ -1370,6 +1376,7 @@ export function StoneMuralCalculator({
                   <span className="font-medium text-foreground">Total Slabs Required:</span>
                   <Input
                     type="number"
+                    step="any"
                     min="1"
                     placeholder={
                       hasSpecificSlabs
@@ -1521,6 +1528,7 @@ export function StoneMuralCalculator({
                   {cncKey === "custom" && (
                     <Input
                       type="number"
+                      step="any"
                       min="0"
                       value={cncCustomRate}
                       onChange={(e) => setCncCustomRate(e.target.value)}
@@ -1580,6 +1588,7 @@ export function StoneMuralCalculator({
                     <span className="text-xs text-muted-foreground">₹</span>
                     <Input
                       type="number"
+                      step="any"
                       min="0"
                       value={polishingRate}
                       onChange={(e) => setPolishingRate(e.target.value)}
@@ -1643,6 +1652,7 @@ export function StoneMuralCalculator({
                     <span className="text-xs text-muted-foreground">₹</span>
                     <Input
                       type="number"
+                      step="any"
                       min="0"
                       value={rubbingRate}
                       onChange={(e) => setRubbingRate(e.target.value)}
@@ -1739,6 +1749,7 @@ export function StoneMuralCalculator({
                   </span>
                   <Input
                     type="number"
+                    step="any"
                     min="0"
                     placeholder="e.g. 5000"
                     value={pastingLumpSum}
@@ -1888,6 +1899,7 @@ export function StoneMuralCalculator({
                     </label>
                     <Input
                       type="number"
+                      step="any"
                       inputMode="decimal"
                       min="1"
                       value={overlayThickness}
@@ -1908,6 +1920,7 @@ export function StoneMuralCalculator({
                     </label>
                     <Input
                       type="number"
+                      step="any"
                       inputMode="decimal"
                       min="0"
                       disabled={overlaySourcing === "client_provided"}
@@ -1938,6 +1951,7 @@ export function StoneMuralCalculator({
                       </label>
                       <Input
                         type="number"
+                        step="any"
                         inputMode="decimal"
                         min="0"
                         value={overlayLength}
@@ -1955,6 +1969,7 @@ export function StoneMuralCalculator({
                       </label>
                       <Input
                         type="number"
+                        step="any"
                         inputMode="decimal"
                         min="0"
                         value={overlayHeight}
@@ -1977,6 +1992,7 @@ export function StoneMuralCalculator({
                       </label>
                       <Input
                         type="number"
+                        step="any"
                         inputMode="decimal"
                         min="0"
                         value={overlayCustomSqft}
@@ -2048,6 +2064,7 @@ export function StoneMuralCalculator({
                         {overlayCncKey === "custom" ? (
                           <Input
                             type="number"
+                            step="any"
                             min="0"
                             value={overlayCncCustomRate}
                             onChange={(e) => setOverlayCncCustomRate(e.target.value)}
@@ -2115,6 +2132,7 @@ export function StoneMuralCalculator({
                 <span className="text-[11px] text-muted-foreground">₹</span>
                 <Input
                   type="number"
+                  step="any"
                   min="0"
                   disabled={!includeInstallation}
                   value={labourRate}
@@ -2154,6 +2172,7 @@ export function StoneMuralCalculator({
                 <span className="text-[11px] text-muted-foreground">₹</span>
                 <Input
                   type="number"
+                  step="any"
                   min="0"
                   value={touchUpRate}
                   onChange={(e) => setTouchUpRate(e.target.value)}
@@ -2231,6 +2250,7 @@ export function StoneMuralCalculator({
                 <div className="flex items-center gap-1">
                   <Input
                     type="number"
+                    step="any"
                     min="0"
                     placeholder={String(autoAdhesiveUnits)}
                     value={
@@ -2255,6 +2275,7 @@ export function StoneMuralCalculator({
                   <span className="text-[11px]">₹</span>
                   <Input
                     type="number"
+                    step="any"
                     min="0"
                     placeholder={String(activeAdhesiveCatalog?.defaultPricePerUnit || 0)}
                     value={adhesiveCustomPrice}
@@ -2303,6 +2324,7 @@ export function StoneMuralCalculator({
               </label>
               <Input
                 type="number"
+                step="any"
                 min="0"
                 value={cartingAmount}
                 onChange={(e) => setCartingAmount(e.target.value)}
@@ -2402,6 +2424,7 @@ export function StoneMuralCalculator({
                   </span>
                   <Input
                     type="number"
+                    step="any"
                     min="0"
                     value={designingAmount}
                     onChange={(e) => setDesigningAmount(e.target.value)}
@@ -2454,6 +2477,7 @@ export function StoneMuralCalculator({
                   </span>
                   <Input
                     type="number"
+                    step="any"
                     min="0"
                     value={designingRate}
                     onChange={(e) => setDesigningRate(e.target.value)}
@@ -2605,6 +2629,7 @@ export function StoneMuralCalculator({
                 </span>
                 <Input
                   type="number"
+                  step="any"
                   min="0"
                   value={goldLeafingAmount}
                   onChange={(e) => {

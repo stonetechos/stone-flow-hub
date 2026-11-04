@@ -100,6 +100,15 @@ describe("estimateCatalog - rounding and wastage calculations", () => {
       // 1m x 1m ~ 10.7639 sqft
       expect(wallSqft(1, 1, "m")).toBeCloseTo(10.7639, 3);
     });
+
+    it("supports decimal sizes and dimension values with high precision", () => {
+      // 4.6 ft x 4.035 ft = 18.561 sq ft (from user's real-world mural requirement)
+      expect(wallSqft(4.6, 4.035, "ft")).toBeCloseTo(18.561, 3);
+      // Decimal inches: 54.5 in x 48.25 in
+      expect(wallSqft(54.5, 48.25, "in")).toBeCloseTo((54.5 * 48.25) / 144, 4);
+      // Decimal meters: 2.35 m x 1.85 m
+      expect(wallSqft(2.35, 1.85, "m")).toBeCloseTo(2.35 * 1.85 * 10.7639104, 3);
+    });
   });
 
   describe("Stone Murals - getDefaultSlabPrice", () => {
@@ -164,6 +173,23 @@ describe("estimateCatalog - rounding and wastage calculations", () => {
 
       expect(res.slabsRequired).toBe(5);
       expect(res.totalSlabSqft).toBe(120); // 5 * 24
+    });
+
+    it("handles decimal wall and slab dimensions seamlessly (e.g. 4.6 ft x 4.035 ft)", () => {
+      const res = calculateMuralSlabs({
+        wallHeight: 4.6,
+        wallLength: 4.035,
+        slabHeight: 4,
+        slabLength: 6,
+        unit: "ft",
+      });
+
+      expect(res.wallSqft).toBeCloseTo(18.561, 3);
+      expect(res.slabSqft).toBe(24);
+      // wallLength 4.035 fits in 1 slab length (6ft)
+      // wallHeight 4.6 requires 2 slab heights (4ft x 2 = 8ft)
+      expect(res.slabsRequired).toBe(2);
+      expect(res.totalSlabSqft).toBe(48);
     });
 
     it("handles zero or empty values safely", () => {
