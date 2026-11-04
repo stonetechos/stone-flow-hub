@@ -15,14 +15,35 @@ import {
   getVendorPhone,
   getVendorContactName,
   extractVendorMetadata,
+  updateVendor,
+  deleteVendor,
   type VendorRow,
 } from "@/lib/vendors/api";
 import {
   listInstallationAgencies,
+  createInstallationAgency,
+  updateInstallationAgency,
+  deleteInstallationAgency,
+  decodeAgencyWorkTypes,
+  encodeAgencyNotes,
   AGENCY_WORK_TYPES,
+  type AgencyWorkType,
   type InstallationAgencyRow,
 } from "@/lib/installation-agencies/api";
-import { listCartingAgencies, type CartingAgencyRow } from "@/lib/purchase-transportation/api";
+import {
+  listCartingAgencies,
+  createCartingAgency,
+  updateCartingAgency,
+  deleteCartingAgency,
+  type CartingAgencyRow,
+} from "@/lib/purchase-transportation/api";
+import {
+  listInstallationTeams,
+  updateInstallationTeam,
+  deleteInstallationTeam,
+  createInstallationTeam,
+  type InstallationTeam,
+} from "@/lib/installation/teams";
 import { getVendorProductLabel } from "@/lib/vendors/schema";
 
 export type AssociatedPartnerCategory =
@@ -123,7 +144,7 @@ export const PARTNER_CATEGORIES: Record<AssociatedPartnerCategory, PartnerCatego
 
 export interface AssociatedPerson {
   id: string;
-  sourceType: "vendor" | "installation_agency" | "carting_agency";
+  sourceType: "vendor" | "installation_agency" | "carting_agency" | "installation_team";
   code: string;
   name: string; // Company / Entity Name
   contactPerson: string; // Person associated
@@ -134,10 +155,18 @@ export interface AssociatedPerson {
   dotColor: string;
   city: string;
   skills: string[];
+  vehicle?: string | null;
+  vehicleNo?: string | null;
+  capacity?: number | null;
+  email?: string | null;
+  address?: string | null;
+  state?: string | null;
+  gstNumber?: string | null;
   notes?: string;
   isActive: boolean;
   linkUrl: string;
   createdAt?: string;
+  raw?: unknown;
 }
 
 /**
@@ -279,6 +308,8 @@ export function vendorToAssociatedPerson(v: VendorRow): AssociatedPerson {
     if (!skills.includes(label)) skills.push(label);
   }
 
+  const primary = v.vendor_contacts?.find((c) => c.is_primary) ?? v.vendor_contacts?.[0];
+
   return {
     id: v.id,
     sourceType: "vendor",
@@ -286,6 +317,10 @@ export function vendorToAssociatedPerson(v: VendorRow): AssociatedPerson {
     name: v.company_name,
     contactPerson: contact || v.company_name,
     phone,
+    email: primary?.email ?? v.email ?? null,
+    address: v.address ?? null,
+    state: v.state ?? null,
+    gstNumber: v.gst_number ?? null,
     category,
     categoryLabel: config.singular,
     categoryBadgeTone: config.badgeTone,
@@ -296,6 +331,7 @@ export function vendorToAssociatedPerson(v: VendorRow): AssociatedPerson {
     isActive: v.is_active ?? true,
     linkUrl: `/vendors/${v.id}`,
     createdAt: v.created_at,
+    raw: v,
   };
 }
 
@@ -312,13 +348,15 @@ export function installationAgencyToAssociatedPerson(
     category = "transport_partner";
   }
   const config = PARTNER_CATEGORIES[category];
+  const decoded = decodeAgencyWorkTypes(agency.notes);
 
   const skills: string[] = [];
   if (Array.isArray(agency.skills) && agency.skills.length > 0) {
     skills.push(...agency.skills);
   }
-  if (Array.isArray(agency.work_types)) {
-    for (const wt of agency.work_types) {
+  const workTypes = agency.work_types?.length ? agency.work_types : decoded.workTypes;
+  if (Array.isArray(workTypes)) {
+    for (const wt of workTypes) {
       const found = AGENCY_WORK_TYPES.find((a) => a.value === wt);
       const label = found?.label || wt;
       if (!skills.includes(label)) skills.push(label);
@@ -339,9 +377,12 @@ export function installationAgencyToAssociatedPerson(
     dotColor: config.dotColor,
     city: "On-site / Regional",
     skills,
-    notes: agency.notes || undefined,
+    vehicle: agency.vehicle_type || decoded.vehicleType || null,
+    vehicleNo: agency.vehicle_no || decoded.vehicleNo || null,
+    notes: decoded.cleanNotes || agency.notes || undefined,
     isActive: agency.is_active ?? true,
     linkUrl: `/installation-ledger/${agency.id}`,
+    raw: agency,
   };
 }
 
@@ -369,9 +410,41 @@ export function cartingAgencyToAssociatedPerson(
     dotColor: config.dotColor,
     city: "Transport Hub",
     skills,
+    vehicle: carting.vehicle_type || null,
+    vehicleNo: carting.vehicle_no || null,
     notes: carting.notes || undefined,
     isActive: carting.is_active ?? true,
     linkUrl: "/local-carting",
+    raw: carting,
+  };
+}
+
+/**
+ * Normalizes an installation team row into an AssociatedPerson representation.
+ */
+export function installationTeamToAssociatedPerson(team: InstallationTeam): AssociatedPerson {
+  const config = PARTNER_CATEGORIES.application_partner;
+  const skills = team.skills?.length > 0 ? [...team.skills] : ["Site Execution & Cladding"];
+  return {
+    id: team.id,
+    sourceType: "installation_team",
+    code: team.team_code || "TEAM",
+    name: team.name,
+    contactPerson: team.supervisor_name || team.name,
+    phone: team.supervisor_phone || "",
+    category: "application_partner",
+    categoryLabel: config.singular,
+    categoryBadgeTone: config.badgeTone,
+    dotColor: config.dotColor,
+    city: "On-site Team",
+    skills,
+    vehicle: team.vehicle || null,
+    capacity: team.daily_capacity_sqft || null,
+    notes: team.notes || undefined,
+    isActive: team.is_active ?? true,
+    linkUrl: "/installation-teams",
+    createdAt: team.created_at,
+    raw: team,
   };
 }
 
@@ -379,10 +452,11 @@ export function cartingAgencyToAssociatedPerson(
  * Queries all people and entities associated with Stone Tech across work and supply.
  */
 export async function listWorkAndSupplyDirectory(query = ""): Promise<AssociatedPerson[]> {
-  const [vendorsRes, agenciesRes, cartingRes] = await Promise.allSettled([
+  const [vendorsRes, agenciesRes, cartingRes, teamsRes] = await Promise.allSettled([
     listVendors(query),
     listInstallationAgencies(false, query),
-    listCartingAgencies(false),
+    listCartingAgencies(false, query),
+    listInstallationTeams(query),
   ]);
 
   const people: AssociatedPerson[] = [];
@@ -401,19 +475,243 @@ export async function listWorkAndSupplyDirectory(query = ""): Promise<Associated
 
   if (cartingRes.status === "fulfilled" && Array.isArray(cartingRes.value)) {
     for (const c of cartingRes.value) {
-      // If query provided, check if matches carting agency
-      if (query) {
-        const ql = query.toLowerCase();
-        const matches =
-          (c.name || "").toLowerCase().includes(ql) ||
-          (c.contact_person || "").toLowerCase().includes(ql) ||
-          (c.phone || "").includes(query);
-        if (!matches) continue;
-      }
       people.push(cartingAgencyToAssociatedPerson(c));
+    }
+  }
+
+  if (teamsRes.status === "fulfilled" && Array.isArray(teamsRes.value)) {
+    for (const t of teamsRes.value) {
+      people.push(installationTeamToAssociatedPerson(t));
     }
   }
 
   // Sort alphabetically by contact person or entity name
   return people.sort((a, b) => a.contactPerson.localeCompare(b.contactPerson));
+}
+
+/**
+ * Queries all registered Application Partners across vendors, agencies, and teams.
+ */
+export async function listApplicationPartners(query = ""): Promise<AssociatedPerson[]> {
+  const [vendorsRes, agenciesRes, teamsRes] = await Promise.allSettled([
+    listVendors(query),
+    listInstallationAgencies(false, query),
+    listInstallationTeams(query),
+  ]);
+
+  const partners: AssociatedPerson[] = [];
+  const seenIds = new Set<string>();
+
+  if (vendorsRes.status === "fulfilled" && Array.isArray(vendorsRes.value)) {
+    for (const v of vendorsRes.value) {
+      const cat = detectVendorPartnerCategory(v);
+      if (cat === "application_partner") {
+        const p = vendorToAssociatedPerson(v);
+        if (!seenIds.has(p.id)) {
+          seenIds.add(p.id);
+          partners.push(p);
+        }
+      }
+    }
+  }
+
+  if (agenciesRes.status === "fulfilled" && Array.isArray(agenciesRes.value)) {
+    for (const a of agenciesRes.value) {
+      const p = installationAgencyToAssociatedPerson(a);
+      if (p.category === "application_partner" && !seenIds.has(p.id)) {
+        seenIds.add(p.id);
+        partners.push(p);
+      }
+    }
+  }
+
+  if (teamsRes.status === "fulfilled" && Array.isArray(teamsRes.value)) {
+    for (const t of teamsRes.value) {
+      const p = installationTeamToAssociatedPerson(t);
+      if (!seenIds.has(p.id)) {
+        seenIds.add(p.id);
+        partners.push(p);
+      }
+    }
+  }
+
+  return partners.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/**
+ * Queries all registered Transportation Partners across vendors and carting agencies.
+ */
+export async function listTransportPartners(query = ""): Promise<AssociatedPerson[]> {
+  const [vendorsRes, cartingRes] = await Promise.allSettled([
+    listVendors(query),
+    listCartingAgencies(false, query),
+  ]);
+
+  const partners: AssociatedPerson[] = [];
+  const seenIds = new Set<string>();
+
+  if (cartingRes.status === "fulfilled" && Array.isArray(cartingRes.value)) {
+    for (const c of cartingRes.value) {
+      const p = cartingAgencyToAssociatedPerson(c);
+      if (!seenIds.has(p.id)) {
+        seenIds.add(p.id);
+        partners.push(p);
+      }
+    }
+  }
+
+  if (vendorsRes.status === "fulfilled" && Array.isArray(vendorsRes.value)) {
+    for (const v of vendorsRes.value) {
+      const cat = detectVendorPartnerCategory(v);
+      if (cat === "transport_partner") {
+        const p = vendorToAssociatedPerson(v);
+        if (!seenIds.has(p.id)) {
+          seenIds.add(p.id);
+          partners.push(p);
+        }
+      }
+    }
+  }
+
+  return partners.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export interface EditPartnerInput {
+  name: string;
+  contactPerson: string;
+  phone?: string | null;
+  email?: string | null;
+  city?: string | null;
+  address?: string | null;
+  state?: string | null;
+  gstNumber?: string | null;
+  skills?: string[];
+  vehicle?: string | null;
+  vehicleNo?: string | null;
+  capacity?: number | null;
+  dailyRate?: number | null;
+  notes?: string | null;
+  isActive?: boolean;
+}
+
+/**
+ * Updates an associated partner across any underlying data source (vendor, agency, carting, team).
+ */
+export async function updateAssociatedPartner(
+  person: AssociatedPerson,
+  input: EditPartnerInput,
+): Promise<void> {
+  const phoneVal = input.phone?.trim() || "";
+
+  if (person.sourceType === "vendor") {
+    await updateVendor(person.id, {
+      company_name: input.name,
+      contact_name: input.contactPerson,
+      mobile: phoneVal || null,
+      email: input.email ?? null,
+      city: input.city ?? null,
+      address: input.address ?? null,
+      state: input.state ?? null,
+      gst_number: input.gstNumber ?? null,
+      notes: input.notes ?? null,
+      partner_category: person.category,
+      work_types: input.skills ?? person.skills,
+      products_dealt: [],
+    });
+  } else if (person.sourceType === "installation_agency") {
+    const workTypes = (input.skills as AgencyWorkType[]) || ["installation"];
+    const encoded = encodeAgencyNotes(
+      input.notes,
+      workTypes,
+      input.vehicle,
+      input.vehicleNo,
+      "individual",
+    );
+    await updateInstallationAgency(person.id, {
+      name: input.name,
+      contact_person: input.contactPerson || null,
+      phone: phoneVal || null,
+      vehicle_type: input.vehicle || null,
+      vehicle_no: input.vehicleNo || null,
+      notes: encoded,
+      is_active: input.isActive ?? true,
+      work_types: workTypes,
+    });
+  } else if (person.sourceType === "carting_agency") {
+    await updateCartingAgency(person.id, {
+      name: input.name,
+      contact_person: input.contactPerson || null,
+      phone: phoneVal || null,
+      vehicle_type: input.vehicle || null,
+      notes: input.notes || null,
+      is_active: input.isActive ?? true,
+    });
+  } else if (person.sourceType === "installation_team") {
+    await updateInstallationTeam(person.id, {
+      name: input.name,
+      supervisor_name: input.contactPerson || null,
+      supervisor_phone: phoneVal || null,
+      vehicle: input.vehicle || null,
+      daily_capacity_sqft: input.capacity || null,
+      skills: input.skills || [],
+      notes: input.notes || null,
+    });
+  }
+}
+
+/**
+ * Deletes or removes an associated partner from its respective table.
+ */
+export async function deleteAssociatedPartner(person: AssociatedPerson): Promise<void> {
+  if (person.sourceType === "vendor") {
+    await deleteVendor(person.id);
+  } else if (person.sourceType === "installation_agency") {
+    await deleteInstallationAgency(person.id);
+  } else if (person.sourceType === "carting_agency") {
+    await deleteCartingAgency(person.id);
+  } else if (person.sourceType === "installation_team") {
+    await deleteInstallationTeam(person.id);
+  }
+}
+
+/**
+ * Creates a new Application Partner in the system.
+ */
+export async function createApplicationPartner(input: EditPartnerInput): Promise<AssociatedPerson> {
+  const phoneVal = input.phone?.trim() || "";
+  const workTypes = (input.skills as AgencyWorkType[]) || ["installation"];
+  const encoded = encodeAgencyNotes(
+    input.notes,
+    workTypes,
+    input.vehicle,
+    input.vehicleNo,
+    "individual",
+  );
+  const agency = await createInstallationAgency({
+    name: input.name.trim(),
+    contact_person: input.contactPerson.trim() || null,
+    phone: phoneVal || null,
+    vehicle_type: input.vehicle || null,
+    vehicle_no: input.vehicleNo || null,
+    work_types: workTypes,
+    notes: encoded,
+    is_active: true,
+  });
+  return installationAgencyToAssociatedPerson(agency);
+}
+
+/**
+ * Creates a new Transport Partner in the system.
+ */
+export async function createTransportPartner(input: EditPartnerInput): Promise<AssociatedPerson> {
+  const phoneVal = input.phone?.trim() || "";
+  const carting = await createCartingAgency({
+    name: input.name.trim(),
+    contact_person: input.contactPerson.trim() || null,
+    phone: phoneVal || null,
+    vehicle_type: input.vehicle || null,
+    notes: input.notes || null,
+    is_active: true,
+  });
+  return cartingAgencyToAssociatedPerson(carting);
 }
