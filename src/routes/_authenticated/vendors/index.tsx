@@ -75,7 +75,10 @@ import {
 } from "@/lib/vendors/schema";
 import {
   PARTNER_CATEGORIES,
+  SUPPLIER_PARTNER_CATEGORIES,
+  isSupplierCategory,
   detectVendorPartnerCategory,
+  listSupplyingPartners,
   listWorkAndSupplyDirectory,
   type AssociatedPartnerCategory,
   type AssociatedPerson,
@@ -106,7 +109,7 @@ function VendorsPage() {
   const qc = useQueryClient();
   const nav = useNavigate();
   const { edit, create, view, category } = Route.useSearch();
-  const activeView = view === "table" ? "table" : "directory";
+  const activeView = view === "directory" ? "directory" : "table";
 
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
@@ -140,10 +143,10 @@ function VendorsPage() {
     queryFn: () => listVendors(dq),
   });
 
-  // Directory view query (all associated people across suppliers, artwork, installation, chemicals, transport)
+  // Directory view query (supplying partners only — excludes transport partners and application agencies)
   const directoryQuery = useQuery({
-    queryKey: ["work-and-supply-directory", dq],
-    queryFn: () => listWorkAndSupplyDirectory(dq),
+    queryKey: ["supplying-partners-directory", dq],
+    queryFn: () => listSupplyingPartners(dq),
   });
 
   useEffect(() => setPage(1), [dq]);
@@ -171,13 +174,23 @@ function VendorsPage() {
     onSuccess: () => {
       toast.success("Partner removed");
       invalidateVendor(qc);
+      qc.invalidateQueries({ queryKey: ["supplying-partners-directory"] });
       qc.invalidateQueries({ queryKey: ["work-and-supply-directory"] });
+      qc.invalidateQueries({ queryKey: ["transport-partners"] });
+      qc.invalidateQueries({ queryKey: ["application-partners"] });
       setToDelete(null);
     },
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
-  const rows = vendorsQuery.data ?? [];
+  // Only keep vendors that are actual suppliers (exclude transport and agencies)
+  const rows = useMemo(() => {
+    const raw = vendorsQuery.data ?? [];
+    return raw.filter((v) => {
+      const cat = detectVendorPartnerCategory(v);
+      return isSupplierCategory(cat);
+    });
+  }, [vendorsQuery.data]);
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
   const openCreate = () => {
     setEditing(null);
@@ -204,39 +217,16 @@ function VendorsPage() {
       {/* Top Header & View Switcher */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <PageHeader
-          title={
-            activeView === "directory"
-              ? t("vendors.directoryTitle", "Work & Supply Directory")
-              : t("vendors.title", "Supplying Partners")
-          }
-          subtitle={
-            activeView === "directory"
-              ? t(
-                  "vendors.directorySubtitle",
-                  "Unified directory of people and partners associated with Stone Tech for work and supply.",
-                )
-              : t(
-                  "vendors.subtitle",
-                  "Our quarry, processing, fabrication, and material supplying partners.",
-                )
-          }
+          title={t("vendors.title", "Supplying Partners")}
+          subtitle={t(
+            "vendors.subtitle",
+            "Our quarry, processing, fabrication, and material supplying partners.",
+          )}
         />
 
         {/* View Mode Switcher Pills */}
         <div className="flex items-center gap-2 self-start sm:self-auto">
           <div className="flex items-center rounded-lg border border-border/80 bg-muted/40 p-0.5">
-            <button
-              type="button"
-              onClick={() => nav({ to: "/vendors", search: { view: "directory" } })}
-              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
-                activeView === "directory"
-                  ? "bg-background text-foreground shadow-xs ring-1 ring-border/50"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Users2 className="h-3.5 w-3.5 text-primary" />
-              <span>{t("vendors.views.directory", "Directory Cards")}</span>
-            </button>
             <button
               type="button"
               onClick={() => nav({ to: "/vendors", search: { view: "table" } })}
@@ -249,11 +239,23 @@ function VendorsPage() {
               <TableIcon className="h-3.5 w-3.5 text-primary" />
               <span>{t("vendors.views.table", "Suppliers Table")}</span>
             </button>
+            <button
+              type="button"
+              onClick={() => nav({ to: "/vendors", search: { view: "directory" } })}
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
+                activeView === "directory"
+                  ? "bg-background text-foreground shadow-xs ring-1 ring-border/50"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Users2 className="h-3.5 w-3.5 text-primary" />
+              <span>{t("vendors.views.directory", "Directory Cards")}</span>
+            </button>
           </div>
 
           <Button size="sm" onClick={openCreate} className="h-8 shadow-xs">
             <Plus className="mr-1.5 h-3.5 w-3.5" />
-            {t("vendors.actions.newPartner", "Add Partner")}
+            {t("vendors.actions.newPartner", "Add Supplying Partner")}
           </Button>
         </div>
       </div>
@@ -265,8 +267,12 @@ function VendorsPage() {
           isLoading={directoryQuery.isLoading}
           onAddPartner={openCreate}
           onEditPartner={handleEditDirectoryPerson}
+          allowedCategories={SUPPLIER_PARTNER_CATEGORIES}
+          allLabel={t("vendors.allSuppliers", "All Suppliers")}
           defaultCategory={
-            category && category in PARTNER_CATEGORIES
+            category &&
+            category in PARTNER_CATEGORIES &&
+            isSupplierCategory(category as AssociatedPartnerCategory)
               ? (category as AssociatedPartnerCategory)
               : "all"
           }
@@ -614,7 +620,10 @@ function VendorFormDialog({
       toast.success(editing ? "Partner updated" : `Partner ${row.vendor_code} added`);
       if (!editing) seedPickerCache(qc, "vendor", row);
       invalidateVendor(qc, row.id);
+      qc.invalidateQueries({ queryKey: ["supplying-partners-directory"] });
       qc.invalidateQueries({ queryKey: ["work-and-supply-directory"] });
+      qc.invalidateQueries({ queryKey: ["transport-partners"] });
+      qc.invalidateQueries({ queryKey: ["application-partners"] });
       onOpenChange(false);
     },
     onError: (err) => toast.error(toUserMessage(err)),
@@ -640,18 +649,24 @@ function VendorFormDialog({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {editing ? `Edit Partner: ${editing.company_name}` : "Add Work & Supply Partner"}
+            {editing ? `Edit Supplying Partner: ${editing.company_name}` : "Add Supplying Partner"}
           </DialogTitle>
         </DialogHeader>
         <QuickForm onSubmit={onSubmit} busy={mutation.isPending} dirty={dirty}>
           <QuickForm.QuickFill>
-            {/* Partner Association Category Selector */}
+            {/* Supplier Category Selector */}
             <div className="md:col-span-2 space-y-2 rounded-lg border border-border/80 bg-muted/20 p-3">
-              <label className="text-xs font-semibold uppercase tracking-wider text-foreground">
-                Partner Association Category
-              </label>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {Object.values(PARTNER_CATEGORIES).map((cat) => {
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                  Supplier Category
+                </label>
+                <span className="text-[11px] text-muted-foreground">
+                  Quarry, artwork, chemicals, tooling
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-2">
+                {SUPPLIER_PARTNER_CATEGORIES.map((catKey) => {
+                  const cat = PARTNER_CATEGORIES[catKey];
                   const active = (form.partner_category || "supplying_partner") === cat.key;
                   return (
                     <button

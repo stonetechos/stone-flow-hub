@@ -142,6 +142,17 @@ export const PARTNER_CATEGORIES: Record<AssociatedPartnerCategory, PartnerCatego
   },
 };
 
+export const SUPPLIER_PARTNER_CATEGORIES: AssociatedPartnerCategory[] = [
+  "supplying_partner",
+  "artwork_partner",
+  "chemical_partner",
+  "tooling_partner",
+];
+
+export function isSupplierCategory(category: AssociatedPartnerCategory): boolean {
+  return category !== "transport_partner" && category !== "application_partner";
+}
+
 export interface AssociatedPerson {
   id: string;
   sourceType: "vendor" | "installation_agency" | "carting_agency" | "installation_team";
@@ -253,9 +264,11 @@ export function detectVendorPartnerCategory(vendor: VendorRow): AssociatedPartne
     companyLower.includes("fixing") ||
     companyLower.includes("cladding") ||
     companyLower.includes("flooring") ||
+    companyLower.includes("contractor") ||
     notesLower.includes("install") ||
     notesLower.includes("cladding") ||
-    notesLower.includes("flooring")
+    notesLower.includes("flooring") ||
+    notesLower.includes("contractor")
   ) {
     return "application_partner";
   }
@@ -269,8 +282,12 @@ export function detectVendorPartnerCategory(vendor: VendorRow): AssociatedPartne
     companyLower.includes("roadways") ||
     companyLower.includes("freight") ||
     companyLower.includes("carting") ||
+    companyLower.includes("pickup") ||
+    companyLower.includes("tempo") ||
     notesLower.includes("transport") ||
-    notesLower.includes("carting")
+    notesLower.includes("carting") ||
+    notesLower.includes("pickup") ||
+    notesLower.includes("freight")
   ) {
     return "transport_partner";
   }
@@ -472,6 +489,24 @@ export function installationTeamToAssociatedPerson(team: InstallationTeam): Asso
     createdAt: team.created_at,
     raw: team,
   };
+}
+
+/**
+ * Queries exclusively supplying partners (quarries, stone, artwork, chemicals, tooling),
+ * explicitly filtering out transport providers/carting and application agencies.
+ */
+export async function listSupplyingPartners(query = ""): Promise<AssociatedPerson[]> {
+  const vendors = await listVendors(query);
+  const partners: AssociatedPerson[] = [];
+
+  for (const v of vendors) {
+    const category = detectVendorPartnerCategory(v);
+    if (isSupplierCategory(category)) {
+      partners.push(vendorToAssociatedPerson(v));
+    }
+  }
+
+  return partners.sort((a, b) => a.contactPerson.localeCompare(b.contactPerson));
 }
 
 /**

@@ -5,6 +5,8 @@ import {
   installationAgencyToAssociatedPerson,
   cartingAgencyToAssociatedPerson,
   PARTNER_CATEGORIES,
+  SUPPLIER_PARTNER_CATEGORIES,
+  isSupplierCategory,
 } from "./directory";
 import type { VendorRow } from "@/lib/vendors/api";
 import type { InstallationAgencyRow } from "@/lib/installation-agencies/api";
@@ -176,5 +178,38 @@ describe("Work & Supply Directory - Person Normalization", () => {
     expect(person.categoryLabel).toBe(PARTNER_CATEGORIES.transport_partner.singular);
     expect(person.linkUrl).toBe("/purchase-transport");
     expect(person.skills).toContain("Carting & Transport");
+  });
+
+  it("detects transport vendor with pickup or tempo in company name or notes", () => {
+    const pickupVendor = {
+      id: "v-trans-1",
+      vendor_code: "VEN-000047",
+      company_name: "Rakesh Darji Pickup",
+      contact_person: "Rakesh",
+      mobile_number: "9956992067",
+      notes: "carting",
+    } as unknown as VendorRow;
+
+    expect(detectVendorPartnerCategory(pickupVendor)).toBe("transport_partner");
+  });
+});
+
+describe("Supplying Partners Filtering", () => {
+  it("correctly identifies supplier categories vs transport / agency categories", () => {
+    expect(isSupplierCategory("supplying_partner")).toBe(true);
+    expect(isSupplierCategory("artwork_partner")).toBe(true);
+    expect(isSupplierCategory("chemical_partner")).toBe(true);
+    expect(isSupplierCategory("tooling_partner")).toBe(true);
+
+    // Transport and Application agencies must return false
+    expect(isSupplierCategory("transport_partner")).toBe(false);
+    expect(isSupplierCategory("application_partner")).toBe(false);
+
+    expect(SUPPLIER_PARTNER_CATEGORIES).toEqual([
+      "supplying_partner",
+      "artwork_partner",
+      "chemical_partner",
+      "tooling_partner",
+    ]);
   });
 });

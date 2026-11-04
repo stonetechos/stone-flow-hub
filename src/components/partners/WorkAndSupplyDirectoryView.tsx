@@ -47,6 +47,10 @@ interface WorkAndSupplyDirectoryViewProps {
   onAddPartner?: () => void;
   onEditPartner?: (person: AssociatedPerson) => void;
   defaultCategory?: AssociatedPartnerCategory | "all";
+  allowedCategories?: AssociatedPartnerCategory[];
+  allLabel?: string;
+  emptyTitle?: string;
+  emptySubtitle?: string;
 }
 
 export function WorkAndSupplyDirectoryView({
@@ -55,6 +59,10 @@ export function WorkAndSupplyDirectoryView({
   onAddPartner,
   onEditPartner,
   defaultCategory = "all",
+  allowedCategories,
+  allLabel,
+  emptyTitle,
+  emptySubtitle,
 }: WorkAndSupplyDirectoryViewProps) {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<AssociatedPartnerCategory | "all">(
@@ -63,10 +71,18 @@ export function WorkAndSupplyDirectoryView({
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
+  const displayCategories = useMemo(() => {
+    const all = Object.keys(PARTNER_CATEGORIES) as AssociatedPartnerCategory[];
+    if (allowedCategories && allowedCategories.length > 0) {
+      return all.filter((cat) => allowedCategories.includes(cat));
+    }
+    return all;
+  }, [allowedCategories]);
+
   // Compute counts per category
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = { all: people.length };
-    for (const key of Object.keys(PARTNER_CATEGORIES)) {
+    for (const key of displayCategories) {
       counts[key] = 0;
     }
     for (const p of people) {
@@ -75,11 +91,15 @@ export function WorkAndSupplyDirectoryView({
       }
     }
     return counts;
-  }, [people]);
+  }, [people, displayCategories]);
 
   // Filter people by category and search
   const filtered = useMemo(() => {
     return people.filter((p) => {
+      // If allowedCategories specified, enforce it
+      if (allowedCategories && !allowedCategories.includes(p.category)) {
+        return false;
+      }
       // Category filter
       if (selectedCategory !== "all" && p.category !== selectedCategory) {
         return false;
@@ -96,7 +116,7 @@ export function WorkAndSupplyDirectoryView({
         p.skills.some((s) => s.toLowerCase().includes(q))
       );
     });
-  }, [people, selectedCategory, search]);
+  }, [people, selectedCategory, search, allowedCategories]);
 
   const handleCopyPhone = async (phone: string, id: string) => {
     if (!phone) return;
@@ -150,13 +170,13 @@ export function WorkAndSupplyDirectoryView({
             onClick={() => setSelectedCategory("all")}
             className="h-8 rounded-full text-xs font-semibold px-3 gap-1.5"
           >
-            <span>All Associates</span>
+            <span>{allLabel ?? "All Associates"}</span>
             <span className="ml-1 rounded-full bg-black/10 dark:bg-white/20 px-1.5 py-0.2 text-[10px]">
               {categoryCounts.all ?? 0}
             </span>
           </Button>
 
-          {(Object.keys(PARTNER_CATEGORIES) as AssociatedPartnerCategory[]).map((catKey) => {
+          {displayCategories.map((catKey) => {
             const config = PARTNER_CATEGORIES[catKey];
             const isSelected = selectedCategory === catKey;
             const count = categoryCounts[catKey] ?? 0;
@@ -214,7 +234,7 @@ export function WorkAndSupplyDirectoryView({
               className="h-8 gap-1.5 text-xs font-semibold shadow-2xs"
             >
               <Plus className="h-3.5 w-3.5" />
-              <span>Add Partner</span>
+              <span>{allowedCategories ? "Add Partner" : "Add Associate"}</span>
             </Button>
           )}
         </div>
@@ -227,13 +247,17 @@ export function WorkAndSupplyDirectoryView({
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search associates by person, company, phone, city, skills…"
+            placeholder={
+              allowedCategories
+                ? "Search suppliers by person, company, phone, city, products…"
+                : "Search associates by person, company, phone, city, skills…"
+            }
             className="pl-8 text-xs h-9"
           />
         </div>
         <p className="text-xs text-muted-foreground self-start sm:self-center">
-          Showing <span className="font-semibold text-foreground">{filtered.length}</span> people &
-          partners
+          Showing <span className="font-semibold text-foreground">{filtered.length}</span>{" "}
+          {allowedCategories ? "suppliers & partners" : "people & partners"}
         </p>
       </div>
 
@@ -243,16 +267,21 @@ export function WorkAndSupplyDirectoryView({
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-500 mb-3">
             <User className="h-6 w-6" />
           </div>
-          <h3 className="text-sm font-semibold text-foreground">No associates found</h3>
+          <h3 className="text-sm font-semibold text-foreground">
+            {emptyTitle ?? (allowedCategories ? "No suppliers found" : "No associates found")}
+          </h3>
           <p className="text-xs text-muted-foreground mt-1 max-w-sm">
             {search
-              ? "No people or partners matched your search query. Try clearing the filter."
-              : "No associates have been registered in this category yet."}
+              ? "No partners matched your search query. Try clearing the filter."
+              : (emptySubtitle ??
+                (allowedCategories
+                  ? "No supplying partners have been registered in this category yet."
+                  : "No associates have been registered in this category yet."))}
           </p>
           {onAddPartner && (
             <Button size="sm" onClick={onAddPartner} className="mt-4 h-8 gap-1.5 text-xs">
               <Plus className="h-3.5 w-3.5" />
-              <span>Add First Associate</span>
+              <span>{allowedCategories ? "Add Supplying Partner" : "Add First Associate"}</span>
             </Button>
           )}
         </div>

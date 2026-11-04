@@ -36,6 +36,7 @@ import { TablePagination } from "@/components/data/Pagination";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { listVendors } from "@/lib/vendors/api";
+import { detectVendorPartnerCategory, isSupplierCategory } from "@/lib/partners/directory";
 import { listVendorLedgerSummaries } from "@/lib/vendors/ledger";
 import { compareVendorLedgerRows } from "@/lib/ledger-sorting";
 import { formatInr, formatDate } from "@/lib/format";
@@ -69,6 +70,7 @@ function PurchaseLedgerIndexPage() {
     const summaries = summariesQ.data;
     if (!vendorsQ.data || !summaries) return [];
     return vendorsQ.data
+      .filter((v) => isSupplierCategory(detectVendorPartnerCategory(v)))
       .map((v) => ({ vendor: v, summary: summaries.get(v.id) }))
       .sort(compareVendorLedgerRows);
   }, [vendorsQ.data, summariesQ.data]);
