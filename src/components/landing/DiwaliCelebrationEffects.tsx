@@ -9,19 +9,19 @@ function DiyaSvg({ className, glowIntensity = 1 }: { className?: string; glowInt
     <div className={cn("relative inline-block select-none pointer-events-none", className)}>
       {/* Outer ambient warm halo glow */}
       <div
-        className="absolute -top-3 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-amber-500/30 blur-md pointer-events-none animate-pulse"
-        style={{ opacity: 0.7 * glowIntensity }}
+        className="absolute -top-3 left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-amber-500/35 blur-md pointer-events-none animate-pulse"
+        style={{ opacity: 0.75 * glowIntensity }}
       />
 
       <svg
         viewBox="0 0 64 64"
-        className="w-full h-full drop-shadow-[0_2px_10px_rgba(245,158,11,0.6)] overflow-visible"
+        className="w-full h-full drop-shadow-[0_2px_12px_rgba(245,158,11,0.7)] overflow-visible"
         aria-hidden="true"
       >
         <defs>
           <radialGradient id="diyaFlameAura" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#FEF08A" stopOpacity="0.85" />
-            <stop offset="45%" stopColor="#F59E0B" stopOpacity="0.5" />
+            <stop offset="0%" stopColor="#FEF08A" stopOpacity="0.9" />
+            <stop offset="45%" stopColor="#F59E0B" stopOpacity="0.55" />
             <stop offset="100%" stopColor="#EF4444" stopOpacity="0" />
           </radialGradient>
           <linearGradient id="diyaOuterFlame" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -47,7 +47,7 @@ function DiyaSvg({ className, glowIntensity = 1 }: { className?: string; glowInt
         </defs>
 
         {/* Ambient Flame Aura */}
-        <circle cx="32" cy="18" r="16" fill="url(#diyaFlameAura)" />
+        <circle cx="32" cy="18" r="17" fill="url(#diyaFlameAura)" />
 
         {/* Animated Flickering Flame */}
         <g className="diya-flame-flicker origin-bottom" style={{ transformOrigin: "32px 30px" }}>
@@ -105,19 +105,24 @@ function DiyaSvg({ className, glowIntensity = 1 }: { className?: string; glowInt
  */
 function ChakriFirecracker({ className }: { className?: string }) {
   return (
-    <div className={cn("relative inline-block select-none pointer-events-none", className)}>
+    <div
+      className={cn(
+        "relative inline-block select-none pointer-events-none animate-chakri-bob",
+        className,
+      )}
+    >
       {/* Outer ambient whirling glow */}
-      <div className="absolute -inset-2 rounded-full bg-amber-500/25 blur-md pointer-events-none animate-pulse" />
+      <div className="absolute -inset-3 rounded-full bg-amber-500/30 blur-md pointer-events-none animate-pulse" />
 
       {/* Orbiting Spark Trail Ring */}
       <div
-        className="absolute -inset-2 rounded-full border border-dashed border-amber-300/60 animate-spin pointer-events-none"
-        style={{ animationDuration: "1.2s" }}
+        className="absolute -inset-2.5 rounded-full border border-dashed border-amber-300/70 animate-spin pointer-events-none"
+        style={{ animationDuration: "0.8s" }}
       />
 
       <svg
         viewBox="0 0 100 100"
-        className="w-full h-full animate-chakri-spin drop-shadow-[0_0_14px_rgba(245,158,11,0.85)] overflow-visible"
+        className="w-full h-full animate-chakri-spin drop-shadow-[0_0_16px_rgba(245,158,11,0.9)] overflow-visible"
         aria-hidden="true"
       >
         <defs>
@@ -170,14 +175,19 @@ function ChakriFirecracker({ className }: { className?: string }) {
  */
 function AnaarFirecracker({ className }: { className?: string }) {
   return (
-    <div className={cn("relative inline-block select-none pointer-events-none", className)}>
+    <div
+      className={cn(
+        "relative inline-block select-none pointer-events-none animate-anaar-pulse",
+        className,
+      )}
+    >
       {/* Intense apex glow aura */}
-      <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-amber-400/40 blur-lg pointer-events-none animate-pulse" />
+      <div className="absolute -top-7 left-1/2 -translate-x-1/2 w-16 h-16 rounded-full bg-amber-400/50 blur-lg pointer-events-none animate-pulse" />
 
       {/* SVG Conical Flowerpot Body */}
       <svg
         viewBox="0 0 60 70"
-        className="w-full h-full drop-shadow-[0_4px_14px_rgba(245,158,11,0.65)] overflow-visible"
+        className="w-full h-full drop-shadow-[0_4px_16px_rgba(245,158,11,0.75)] overflow-visible"
         aria-hidden="true"
       >
         <defs>
@@ -235,9 +245,9 @@ function AnaarFirecracker({ className }: { className?: string }) {
           rx="8"
           ry="4.5"
           fill="#FBBF24"
-          opacity="0.7"
+          opacity="0.8"
           className="animate-ping"
-          style={{ animationDuration: "0.9s" }}
+          style={{ animationDuration: "0.8s" }}
         />
       </svg>
     </div>
@@ -249,13 +259,18 @@ function AnaarFirecracker({ className }: { className?: string }) {
  */
 function PhuljhadiSparkler({ className }: { className?: string }) {
   return (
-    <div className={cn("relative inline-block select-none pointer-events-none", className)}>
+    <div
+      className={cn(
+        "relative inline-block select-none pointer-events-none animate-phuljhadi-float",
+        className,
+      )}
+    >
       {/* Sizzling light aura */}
-      <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-amber-400/40 blur-md animate-pulse" />
+      <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-amber-400/45 blur-md animate-pulse" />
 
       <svg
         viewBox="0 0 40 90"
-        className="w-full h-full drop-shadow-[0_0_12px_rgba(251,191,36,0.9)] overflow-visible"
+        className="w-full h-full drop-shadow-[0_0_14px_rgba(251,191,36,0.95)] overflow-visible"
         aria-hidden="true"
       >
         {/* Metal Wire Handle */}
@@ -292,7 +307,7 @@ function PhuljhadiSparkler({ className }: { className?: string }) {
 
         {/* Burning White-Hot Spark Core */}
         <circle cx="20" cy="18" r="4.5" fill="#FFFFFF" />
-        <circle cx="20" cy="18" r="7" fill="#FBBF24" opacity="0.8" />
+        <circle cx="20" cy="18" r="7.5" fill="#FBBF24" opacity="0.85" />
 
         {/* Animated Sizzling Spark Rays */}
         <g
@@ -305,61 +320,61 @@ function PhuljhadiSparkler({ className }: { className?: string }) {
             x2="20"
             y2="1"
             stroke="#FFF"
-            strokeWidth="1.4"
+            strokeWidth="1.6"
             strokeLinecap="round"
           />
           <line
             x1="28"
             y1="10"
-            x2="35"
-            y2="6"
+            x2="36"
+            y2="5"
             stroke="#FDE047"
-            strokeWidth="1.2"
+            strokeWidth="1.4"
             strokeLinecap="round"
           />
           <line
             x1="32"
             y1="18"
-            x2="39"
+            x2="40"
             y2="18"
             stroke="#F59E0B"
-            strokeWidth="1.4"
+            strokeWidth="1.6"
             strokeLinecap="round"
           />
           <line
             x1="28"
             y1="26"
-            x2="35"
-            y2="30"
+            x2="36"
+            y2="31"
             stroke="#FFF"
-            strokeWidth="1.2"
+            strokeWidth="1.4"
             strokeLinecap="round"
           />
           <line
             x1="12"
             y1="10"
-            x2="5"
-            y2="6"
+            x2="4"
+            y2="5"
             stroke="#FDE047"
-            strokeWidth="1.4"
+            strokeWidth="1.6"
             strokeLinecap="round"
           />
           <line
             x1="8"
             y1="18"
-            x2="1"
+            x2="0"
             y2="18"
             stroke="#F59E0B"
-            strokeWidth="1.2"
+            strokeWidth="1.4"
             strokeLinecap="round"
           />
           <line
             x1="12"
             y1="26"
-            x2="5"
-            y2="30"
+            x2="4"
+            y2="31"
             stroke="#FFF"
-            strokeWidth="1.4"
+            strokeWidth="1.6"
             strokeLinecap="round"
           />
         </g>
@@ -380,7 +395,7 @@ interface Particle {
   size: number;
   flickerSpeed: number;
   flickerOffset: number;
-  type: "ember" | "burst" | "sparkler" | "anaar_fountain";
+  type: "ember" | "burst" | "sparkler" | "anaar_fountain" | "willow";
   gravity: number;
   drag: number;
 }
@@ -392,6 +407,7 @@ interface SkyRocket {
   vy: number;
   targetY: number;
   color: string;
+  burstType: "standard" | "willow" | "ring" | "multi";
   trail: { x: number; y: number; alpha: number; size: number }[];
   exploded: boolean;
 }
@@ -400,7 +416,7 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Read initial preference from localStorage so user preference persists
-  const [isEnabled, setIsEnabled] = useState<boolean>(() => {
+  const [isEnabled] = useState<boolean>(() => {
     if (typeof window === "undefined") return true;
     try {
       const stored = localStorage.getItem("stos_diwali_celebration");
@@ -438,7 +454,7 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
 
     const particles: Particle[] = [];
     const rockets: SkyRocket[] = [];
-    const maxParticles = 90; // Strictly capped to guarantee 60 FPS
+    const maxParticles = 360; // High particle cap for rich festive atmosphere while maintaining 60 FPS
 
     const festiveColors = [
       "#FBBF24", // Golden amber
@@ -448,6 +464,7 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
       "#10B981", // Emerald sparkle
       "#EC4899", // Rose gold / Pink
       "#38BDF8", // Sky blue spark
+      "#A855F7", // Royal purple spark
       "#FFFFFF", // Diamond white
     ];
 
@@ -459,62 +476,82 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
       particles.push({
         x,
         y,
-        vx: (Math.random() - 0.5) * 0.8,
-        vy: -(0.6 + Math.random() * 1.3),
-        alpha: 0.35 + Math.random() * 0.45,
-        decay: 0.003 + Math.random() * 0.005,
+        vx: (Math.random() - 0.5) * 1.0,
+        vy: -(0.8 + Math.random() * 1.6),
+        alpha: 0.45 + Math.random() * 0.45,
+        decay: 0.003 + Math.random() * 0.004,
         color: festiveColors[Math.floor(Math.random() * festiveColors.length)],
-        size: 1.5 + Math.random() * 2,
-        flickerSpeed: 0.08 + Math.random() * 0.12,
+        size: 1.6 + Math.random() * 2.2,
+        flickerSpeed: 0.09 + Math.random() * 0.14,
         flickerOffset: Math.random() * Math.PI * 2,
         type: "ember",
-        gravity: -0.004,
+        gravity: -0.005,
         drag: 0.995,
       });
     };
 
-    // Spawn high-velocity golden spark from the Anaar flowerpot located at bottom-right
-    const spawnAnaarFountain = () => {
+    // Spawn high-velocity golden spark from Anaar flowerpots (both left & right sides)
+    const spawnAnaarFountain = (side: "left" | "right") => {
       if (particles.length >= maxParticles - 10) return;
       const isMobile = width < 640;
-      const anaarX = isMobile ? width - 24 : width > 768 ? width - 150 : width - 120;
-      const anaarY = isMobile ? height - 90 : height - 42;
+      let anaarX: number;
+      if (side === "left") {
+        anaarX = isMobile ? 42 : width > 768 ? 130 : 90;
+      } else {
+        anaarX = isMobile ? width - 42 : width > 768 ? width - 130 : width - 90;
+      }
+      const anaarY = isMobile ? height - 60 : height - 48;
 
-      for (let i = 0; i < 2; i++) {
-        const spreadAngle = -Math.PI / 2 + (Math.random() - 0.5) * 0.45;
-        const speed = 3.5 + Math.random() * 4.5;
+      // Double spark emission per burst
+      for (let i = 0; i < 3; i++) {
+        const spreadAngle = -Math.PI / 2 + (Math.random() - 0.5) * 0.55;
+        const speed = 4.2 + Math.random() * 5.5;
         particles.push({
-          x: anaarX + (Math.random() - 0.5) * 4,
+          x: anaarX + (Math.random() - 0.5) * 6,
           y: anaarY,
           vx: Math.cos(spreadAngle) * speed,
           vy: Math.sin(spreadAngle) * speed,
-          alpha: 0.9,
-          decay: 0.02 + Math.random() * 0.015,
+          alpha: 0.95,
+          decay: 0.016 + Math.random() * 0.014,
           color:
-            Math.random() > 0.4
+            Math.random() > 0.35
               ? "#FEF08A"
               : festiveColors[Math.floor(Math.random() * festiveColors.length)],
-          size: 1.8 + Math.random() * 2.2,
-          flickerSpeed: 0.3,
+          size: 2.0 + Math.random() * 2.5,
+          flickerSpeed: 0.35,
           flickerOffset: Math.random() * Math.PI,
           type: "anaar_fountain",
-          gravity: 0.14, // Gravitational arc
+          gravity: 0.13, // Gravitational arc
           drag: 0.98,
         });
       }
     };
 
     // Launch a live visual Sky Rocket
-    const launchSkyRocket = () => {
-      if (rockets.length >= 2) return;
-      // Launch from side margins (avoiding center content)
-      const launchX =
-        Math.random() > 0.5
-          ? width * (0.05 + Math.random() * 0.2)
-          : width * (0.75 + Math.random() * 0.18);
-      const targetY = height * (0.15 + Math.random() * 0.25);
-      const angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.2;
-      const speed = 7.5 + Math.random() * 2.5;
+    const launchSkyRocket = (forcedSide?: "left" | "right" | "center") => {
+      if (rockets.length >= 4) return;
+      let launchX: number;
+      if (forcedSide === "left") {
+        launchX = width * (0.06 + Math.random() * 0.22);
+      } else if (forcedSide === "right") {
+        launchX = width * (0.72 + Math.random() * 0.22);
+      } else {
+        launchX =
+          Math.random() > 0.5
+            ? width * (0.05 + Math.random() * 0.25)
+            : width * (0.7 + Math.random() * 0.25);
+      }
+      const targetY = height * (0.12 + Math.random() * 0.28);
+      const angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.22;
+      const speed = 8.5 + Math.random() * 3.2;
+
+      const burstTypes: ("standard" | "willow" | "ring" | "multi")[] = [
+        "standard",
+        "willow",
+        "ring",
+        "multi",
+      ];
+      const burstType = burstTypes[Math.floor(Math.random() * burstTypes.length)];
 
       rockets.push({
         x: launchX,
@@ -523,6 +560,7 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
         vy: Math.sin(angle) * speed,
         targetY,
         color: festiveColors[Math.floor(Math.random() * festiveColors.length)],
+        burstType,
         trail: [],
         exploded: false,
       });
@@ -530,25 +568,41 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
 
     // Detonate rocket into spectacular multi-colored starburst
     const explodeRocket = (rocket: SkyRocket) => {
-      const burstCount = 28 + Math.floor(Math.random() * 14);
+      const isWillow = rocket.burstType === "willow";
+      const isRing = rocket.burstType === "ring";
+      const isMulti = rocket.burstType === "multi";
+
+      const burstCount = isWillow ? 48 : isRing ? 42 : isMulti ? 54 : 38;
+
       for (let i = 0; i < burstCount; i++) {
         if (particles.length >= maxParticles) break;
-        const angle = (Math.PI * 2 * i) / burstCount + (Math.random() - 0.5) * 0.3;
-        const speed = 1.5 + Math.random() * 3.8;
+        const angle = (Math.PI * 2 * i) / burstCount + (Math.random() - 0.5) * 0.25;
+        let speed = 2.0 + Math.random() * 4.2;
+        if (isRing) speed = 3.6 + Math.random() * 0.8;
+
+        let pColor = rocket.color;
+        if (isMulti) {
+          pColor = festiveColors[Math.floor(Math.random() * festiveColors.length)];
+        } else if (isWillow) {
+          pColor = Math.random() > 0.4 ? "#FBBF24" : "#FEF08A";
+        } else if (Math.random() > 0.6) {
+          pColor = "#FFFFFF";
+        }
+
         particles.push({
           x: rocket.x,
           y: rocket.y,
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
-          alpha: 0.95,
-          decay: 0.015 + Math.random() * 0.012,
-          color: Math.random() > 0.3 ? rocket.color : "#FEF08A",
-          size: 2 + Math.random() * 2.5,
-          flickerSpeed: 0.25,
+          alpha: 0.98,
+          decay: isWillow ? 0.008 + Math.random() * 0.008 : 0.014 + Math.random() * 0.012,
+          color: pColor,
+          size: isWillow ? 2.4 + Math.random() * 2.2 : 2.2 + Math.random() * 2.8,
+          flickerSpeed: 0.3,
           flickerOffset: Math.random() * Math.PI,
-          type: "burst",
-          gravity: 0.05,
-          drag: 0.97,
+          type: isWillow ? "willow" : "burst",
+          gravity: isWillow ? 0.035 : 0.055,
+          drag: isWillow ? 0.975 : 0.965,
         });
       }
     };
@@ -560,17 +614,17 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
       const clientY = "touches" in e ? e.touches[0]?.clientY : e.clientY;
       if (clientX === undefined || clientY === undefined) return;
 
-      if (Math.random() > 0.45) {
+      if (Math.random() > 0.35) {
         particles.push({
-          x: clientX + (Math.random() - 0.5) * 8,
-          y: clientY + (Math.random() - 0.5) * 8,
-          vx: (Math.random() - 0.5) * 1.5,
-          vy: (Math.random() - 0.5) * 1.5 - 0.5,
-          alpha: 0.75,
-          decay: 0.03 + Math.random() * 0.02,
+          x: clientX + (Math.random() - 0.5) * 10,
+          y: clientY + (Math.random() - 0.5) * 10,
+          vx: (Math.random() - 0.5) * 1.8,
+          vy: (Math.random() - 0.5) * 1.8 - 0.6,
+          alpha: 0.85,
+          decay: 0.025 + Math.random() * 0.02,
           color: festiveColors[Math.floor(Math.random() * festiveColors.length)],
-          size: 1.5 + Math.random() * 2,
-          flickerSpeed: 0.3,
+          size: 1.8 + Math.random() * 2.2,
+          flickerSpeed: 0.35,
           flickerOffset: Math.random() * Math.PI,
           type: "sparkler",
           gravity: 0.03,
@@ -580,27 +634,26 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
     };
 
     const handleClick = (e: MouseEvent) => {
-      // Don't fire if user clicked on an interactive form control or link
       const target = e.target as HTMLElement | null;
       if (target?.closest("button, a, input, select, textarea, [role='button']")) {
         return;
       }
-      // Mini cheerful cracker pop on click
+      // Cheerful multi-colored firecracker burst on click
       const burstColor = festiveColors[Math.floor(Math.random() * festiveColors.length)];
-      for (let i = 0; i < 12; i++) {
+      for (let i = 0; i < 22; i++) {
         if (particles.length >= maxParticles) break;
-        const angle = (Math.PI * 2 * i) / 12 + (Math.random() - 0.5) * 0.3;
-        const speed = 1.2 + Math.random() * 2.2;
+        const angle = (Math.PI * 2 * i) / 22 + (Math.random() - 0.5) * 0.3;
+        const speed = 1.6 + Math.random() * 3.2;
         particles.push({
           x: e.clientX,
           y: e.clientY,
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
-          alpha: 0.85,
-          decay: 0.025 + Math.random() * 0.015,
-          color: Math.random() > 0.3 ? burstColor : "#FFFFFF",
-          size: 1.8 + Math.random() * 1.8,
-          flickerSpeed: 0.25,
+          alpha: 0.95,
+          decay: 0.02 + Math.random() * 0.015,
+          color: Math.random() > 0.4 ? burstColor : "#FFFFFF",
+          size: 2.2 + Math.random() * 2.2,
+          flickerSpeed: 0.3,
           flickerOffset: Math.random() * Math.PI,
           type: "sparkler",
           gravity: 0.04,
@@ -624,7 +677,7 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     // Initial batch of ambient embers
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 25; i++) {
       spawnEmber(Math.random() * width, Math.random() * height);
     }
 
@@ -633,21 +686,26 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
         ctx.clearRect(0, 0, width, height);
         ctx.globalCompositeOperation = "lighter";
 
-        // 1. Periodically spawn embers
-        if (time - lastEmberSpawn > 400) {
+        // 1. Periodically spawn warm floating golden embers
+        if (time - lastEmberSpawn > 250) {
           spawnEmber();
           lastEmberSpawn = time;
         }
 
-        // 2. Periodically spawn Anaar fountain sparks
-        if (time - lastAnaarSpawn > 80) {
-          spawnAnaarFountain();
+        // 2. Periodically spawn Anaar fountain sparks (alternating left & right)
+        if (time - lastAnaarSpawn > 60) {
+          spawnAnaarFountain("left");
+          spawnAnaarFountain("right");
           lastAnaarSpawn = time;
         }
 
-        // 3. Periodically launch a Sky Rocket (every 3.8 to 5s)
-        if (time - lastRocketLaunch > 3800) {
+        // 3. Sky Rockets: Launched every 1.4 to 1.8 seconds for continuous fireworks!
+        if (time - lastRocketLaunch > 1400) {
           launchSkyRocket();
+          // 30% chance for dual celebratory rockets from opposite sides
+          if (Math.random() > 0.68) {
+            launchSkyRocket(Math.random() > 0.5 ? "right" : "left");
+          }
           lastRocketLaunch = time;
         }
 
@@ -656,21 +714,21 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
           const rocket = rockets[rIdx];
           rocket.x += rocket.vx;
           rocket.y += rocket.vy;
-          rocket.vy += 0.04; // Gentle upward deceleration
+          rocket.vy += 0.045; // Gentle upward deceleration
 
-          // Add trail spark
+          // Add radiant trail spark
           rocket.trail.push({
-            x: rocket.x + (Math.random() - 0.5) * 3,
+            x: rocket.x + (Math.random() - 0.5) * 4,
             y: rocket.y + 6,
-            alpha: 0.8,
-            size: 1.5 + Math.random() * 1.5,
+            alpha: 0.9,
+            size: 1.8 + Math.random() * 1.8,
           });
 
           // Draw trail
           for (let tIdx = rocket.trail.length - 1; tIdx >= 0; tIdx--) {
             const t = rocket.trail[tIdx];
-            t.alpha -= 0.05;
-            t.y += 0.5;
+            t.alpha -= 0.055;
+            t.y += 0.6;
             if (t.alpha <= 0) {
               rocket.trail.splice(tIdx, 1);
               continue;
@@ -691,35 +749,35 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
 
           // Wooden stick
           ctx.strokeStyle = "#78350F";
-          ctx.lineWidth = 1.2;
+          ctx.lineWidth = 1.3;
           ctx.beginPath();
           ctx.moveTo(0, 0);
-          ctx.lineTo(0, 16);
+          ctx.lineTo(0, 18);
           ctx.stroke();
 
           // Red rocket body
           ctx.fillStyle = "#DC2626";
-          ctx.fillRect(-2, -8, 4, 10);
+          ctx.fillRect(-2.5, -9, 5, 11);
 
           // Golden nosecone
           ctx.fillStyle = "#FBBF24";
           ctx.beginPath();
-          ctx.moveTo(0, -14);
-          ctx.lineTo(3, -8);
-          ctx.lineTo(-3, -8);
+          ctx.moveTo(0, -16);
+          ctx.lineTo(3.5, -9);
+          ctx.lineTo(-3.5, -9);
           ctx.closePath();
           ctx.fill();
 
           // Burning fuse sparks at bottom
           ctx.fillStyle = "#FEF08A";
           ctx.beginPath();
-          ctx.arc(0, 2, 2.5, 0, Math.PI * 2);
+          ctx.arc(0, 2, 3, 0, Math.PI * 2);
           ctx.fill();
 
           ctx.restore();
 
           // Check if rocket reached apex
-          if (rocket.y <= rocket.targetY || rocket.vy >= -1) {
+          if (rocket.y <= rocket.targetY || rocket.vy >= -0.8) {
             explodeRocket(rocket);
             rockets.splice(rIdx, 1);
           }
@@ -750,8 +808,8 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
           ctx.fill();
 
           // 4-point star cross-glint on bright firecracker particles
-          if (p.size > 2.2 && currentAlpha > 0.45) {
-            ctx.lineWidth = 0.8;
+          if (p.size > 2.0 && currentAlpha > 0.4) {
+            ctx.lineWidth = 0.9;
             ctx.strokeStyle = p.color;
             ctx.beginPath();
             ctx.moveTo(p.x - p.size * 2, p.y);
@@ -781,44 +839,150 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
 
   return (
     <>
-      {/* 1. Fullscreen Non-Intrusive Canvas (Live Rockets, Anaar Fountain Sparks & Golden Embers) */}
+      {/* 1. Fullscreen Canvas Layer: Live Sky Rockets, Anaar Fountain Showers, & Golden Embers */}
       {isEnabled && (
         <canvas
           ref={canvasRef}
           className="fixed inset-0 pointer-events-none z-20 w-full h-full mix-blend-screen"
-          style={{ opacity: 0.88 }}
+          style={{ opacity: 0.94 }}
           aria-hidden="true"
         />
       )}
 
-      {/* 2. Visual Animated Moving Diyas & Firecrackers Layer — Fully Responsive Across All Mobile & Desktop Screens */}
+      {/* 2. Visual Animated Diyas & Live Firecrackers Layer — Fully Responsive Across All Screens */}
       {isEnabled && (
         <div
           className="fixed inset-0 pointer-events-none z-25 overflow-hidden w-full h-full max-w-[100vw]"
           aria-hidden="true"
         >
-          {/* Diya 1: Left Margin Gentle Wave Drifter (Kept inside screen bounds) */}
-          <div className="absolute top-[22%] sm:top-[26%] left-1.5 sm:left-4 animate-diya-drift-left opacity-90 drop-shadow-[0_4px_16px_rgba(245,158,11,0.6)]">
+          {/* ================= TOP HEADER DIYAS ================= */}
+          {/* Top Left Diya */}
+          <div className="absolute top-2.5 sm:top-4 left-3 sm:left-6 animate-diya-subtle-sway opacity-95 drop-shadow-[0_4px_18px_rgba(245,158,11,0.7)]">
+            <DiyaSvg className="w-7 h-7 sm:w-9 sm:h-9 md:w-11 md:h-11" glowIntensity={1.3} />
+          </div>
+
+          {/* Top Right Diya */}
+          <div className="absolute top-2.5 sm:top-4 right-3 sm:right-6 animate-diya-subtle-sway opacity-95 drop-shadow-[0_4px_18px_rgba(245,158,11,0.7)]">
+            <DiyaSvg className="w-7 h-7 sm:w-9 sm:h-9 md:w-11 md:h-11" glowIntensity={1.3} />
+          </div>
+
+          {/* Top Center-Left Floating Diya (Desktop & Tablet) */}
+          <div className="hidden md:block absolute top-3 left-[28%] animate-diya-drift-left opacity-90 drop-shadow-[0_4px_16px_rgba(245,158,11,0.6)]">
+            <DiyaSvg className="w-8 h-8 lg:w-9 lg:h-9" glowIntensity={1.2} />
+          </div>
+
+          {/* Top Center-Right Floating Diya (Desktop & Tablet) */}
+          <div className="hidden md:block absolute top-3 right-[28%] animate-diya-drift-right opacity-90 drop-shadow-[0_4px_16px_rgba(245,158,11,0.6)]">
+            <DiyaSvg className="w-8 h-8 lg:w-9 lg:h-9" glowIntensity={1.2} />
+          </div>
+
+          {/* ================= LEFT FLANK FLOATING DIYAS ================= */}
+          {/* Left Diya 1 (Upper) */}
+          <div className="absolute top-[18%] left-1.5 sm:left-4 animate-diya-drift-left opacity-95 drop-shadow-[0_4px_18px_rgba(245,158,11,0.7)]">
             <DiyaSvg
-              className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 transform -rotate-6"
-              glowIntensity={1.1}
+              className="w-7 h-7 sm:w-9 sm:h-9 md:w-11 md:h-11 transform -rotate-6"
+              glowIntensity={1.25}
             />
           </div>
 
-          {/* Diya 2: Right Margin Gentle Wave Drifter (Kept inside screen bounds) */}
-          <div className="absolute top-[44%] sm:top-[48%] right-1.5 sm:right-4 animate-diya-drift-right opacity-90 drop-shadow-[0_4px_16px_rgba(245,158,11,0.6)]">
+          {/* Left Diya 2 (Mid-Upper) */}
+          <div className="absolute top-[38%] left-1.5 sm:left-4 animate-diya-drift-right opacity-95 drop-shadow-[0_4px_18px_rgba(245,158,11,0.7)]">
             <DiyaSvg
-              className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 transform rotate-6"
-              glowIntensity={1.1}
+              className="w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 transform rotate-3"
+              glowIntensity={1.2}
             />
           </div>
 
-          {/* Diya 3: Ambient Corner Diya at Bottom Left (Lifted safely above mobile bottom bar) */}
-          <div className="absolute bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] sm:bottom-4 left-2 sm:left-6 animate-diya-subtle-sway opacity-95 drop-shadow-[0_4px_20px_rgba(245,158,11,0.7)]">
-            <DiyaSvg className="w-7 h-7 sm:w-9 sm:h-9 md:w-11 md:h-11" glowIntensity={1.2} />
+          {/* Left Diya 3 (Mid-Lower) */}
+          <div className="absolute top-[58%] left-1.5 sm:left-4 animate-diya-drift-left opacity-95 drop-shadow-[0_4px_18px_rgba(245,158,11,0.7)]">
+            <DiyaSvg
+              className="w-7 h-7 sm:w-9 sm:h-9 md:w-11 md:h-11 transform -rotate-4"
+              glowIntensity={1.25}
+            />
           </div>
 
-          {/* Clean, elegant Diwali ambience: Subtle drifting golden diyas */}
+          {/* Left Diya 4 (Lower) */}
+          <div className="absolute top-[76%] left-1.5 sm:left-4 animate-diya-subtle-sway opacity-95 drop-shadow-[0_4px_18px_rgba(245,158,11,0.7)]">
+            <DiyaSvg
+              className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 transform rotate-6"
+              glowIntensity={1.2}
+            />
+          </div>
+
+          {/* ================= RIGHT FLANK FLOATING DIYAS ================= */}
+          {/* Right Diya 1 (Upper) */}
+          <div className="absolute top-[22%] right-1.5 sm:right-4 animate-diya-drift-right opacity-95 drop-shadow-[0_4px_18px_rgba(245,158,11,0.7)]">
+            <DiyaSvg
+              className="w-7 h-7 sm:w-9 sm:h-9 md:w-11 md:h-11 transform rotate-6"
+              glowIntensity={1.25}
+            />
+          </div>
+
+          {/* Right Diya 2 (Mid-Upper) */}
+          <div className="absolute top-[42%] right-1.5 sm:right-4 animate-diya-drift-left opacity-95 drop-shadow-[0_4px_18px_rgba(245,158,11,0.7)]">
+            <DiyaSvg
+              className="w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 transform -rotate-3"
+              glowIntensity={1.2}
+            />
+          </div>
+
+          {/* Right Diya 3 (Mid-Lower) */}
+          <div className="absolute top-[62%] right-1.5 sm:right-4 animate-diya-drift-right opacity-95 drop-shadow-[0_4px_18px_rgba(245,158,11,0.7)]">
+            <DiyaSvg
+              className="w-7 h-7 sm:w-9 sm:h-9 md:w-11 md:h-11 transform rotate-4"
+              glowIntensity={1.25}
+            />
+          </div>
+
+          {/* Right Diya 4 (Lower) */}
+          <div className="absolute top-[80%] right-1.5 sm:right-4 animate-diya-subtle-sway opacity-95 drop-shadow-[0_4px_18px_rgba(245,158,11,0.7)]">
+            <DiyaSvg
+              className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 transform -rotate-6"
+              glowIntensity={1.2}
+            />
+          </div>
+
+          {/* ================= BOTTOM CORNER CEREMONIAL DIYAS ================= */}
+          {/* Bottom Left Corner Diya (Raised safely above mobile bottom bar) */}
+          <div className="absolute bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] sm:bottom-4 left-3 sm:left-6 animate-diya-subtle-sway opacity-95 drop-shadow-[0_6px_22px_rgba(245,158,11,0.85)]">
+            <DiyaSvg className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12" glowIntensity={1.4} />
+          </div>
+
+          {/* Bottom Right Corner Diya */}
+          <div className="absolute bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] sm:bottom-4 right-3 sm:right-6 animate-diya-subtle-sway opacity-95 drop-shadow-[0_6px_22px_rgba(245,158,11,0.85)]">
+            <DiyaSvg className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12" glowIntensity={1.4} />
+          </div>
+
+          {/* ================= LIVE FIRECRACKERS (CHAKRI, ANAAR, PHULJHADI) ================= */}
+          {/* Left Anaar Flowerpot Fountain */}
+          <div className="absolute bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] sm:bottom-3 left-14 sm:left-24 drop-shadow-[0_4px_18px_rgba(245,158,11,0.8)]">
+            <AnaarFirecracker className="w-9 h-11 sm:w-12 sm:h-14 md:w-14 md:h-16" />
+          </div>
+
+          {/* Right Anaar Flowerpot Fountain */}
+          <div className="absolute bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] sm:bottom-3 right-14 sm:right-24 drop-shadow-[0_4px_18px_rgba(245,158,11,0.8)]">
+            <AnaarFirecracker className="w-9 h-11 sm:w-12 sm:h-14 md:w-14 md:h-16" />
+          </div>
+
+          {/* Left Whirling Ground Chakri */}
+          <div className="hidden sm:block absolute bottom-14 left-4 md:left-8 drop-shadow-[0_0_20px_rgba(245,158,11,0.85)]">
+            <ChakriFirecracker className="w-10 h-10 md:w-12 md:h-12" />
+          </div>
+
+          {/* Right Whirling Ground Chakri */}
+          <div className="hidden sm:block absolute bottom-14 right-4 md:right-8 drop-shadow-[0_0_20px_rgba(245,158,11,0.85)]">
+            <ChakriFirecracker className="w-10 h-10 md:w-12 md:h-12" />
+          </div>
+
+          {/* Left Sizzling Phuljhadi Sparkler */}
+          <div className="absolute top-[48%] left-1.5 sm:left-4 drop-shadow-[0_0_16px_rgba(251,191,36,0.9)]">
+            <PhuljhadiSparkler className="w-6 h-14 sm:w-8 sm:h-16 md:w-9 md:h-18" />
+          </div>
+
+          {/* Right Sizzling Phuljhadi Sparkler */}
+          <div className="absolute top-[48%] right-1.5 sm:right-4 drop-shadow-[0_0_16px_rgba(251,191,36,0.9)]">
+            <PhuljhadiSparkler className="w-6 h-14 sm:w-8 sm:h-16 md:w-9 md:h-18" />
+          </div>
         </div>
       )}
 
@@ -830,25 +994,25 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
             opacity: 0.95;
           }
           20% {
-            transform: scaleY(1.12) scaleX(0.94) rotate(-2deg);
+            transform: scaleY(1.14) scaleX(0.93) rotate(-2deg);
             opacity: 1;
           }
           40% {
-            transform: scaleY(0.92) scaleX(1.05) rotate(1.5deg);
+            transform: scaleY(0.90) scaleX(1.06) rotate(1.8deg);
             opacity: 0.88;
           }
           60% {
-            transform: scaleY(1.08) scaleX(0.96) rotate(-1deg);
+            transform: scaleY(1.10) scaleX(0.95) rotate(-1.2deg);
             opacity: 0.98;
           }
           80% {
-            transform: scaleY(0.96) scaleX(1.02) rotate(1deg);
+            transform: scaleY(0.95) scaleX(1.03) rotate(1.2deg);
             opacity: 0.92;
           }
         }
 
         .diya-flame-flicker {
-          animation: flameFlicker 1.4s ease-in-out infinite alternate;
+          animation: flameFlicker 1.3s ease-in-out infinite alternate;
         }
 
         @keyframes chakriSpinFast {
@@ -861,7 +1025,7 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
         }
 
         .animate-chakri-spin {
-          animation: chakriSpinFast 0.32s linear infinite;
+          animation: chakriSpinFast 0.28s linear infinite;
         }
 
         @keyframes chakriBob {
@@ -869,12 +1033,12 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
             transform: translateY(0px) scale(1);
           }
           50% {
-            transform: translateY(-4px) scale(1.03);
+            transform: translateY(-5px) scale(1.04);
           }
         }
 
         .animate-chakri-bob {
-          animation: chakriBob 2.5s ease-in-out infinite;
+          animation: chakriBob 2.2s ease-in-out infinite;
         }
 
         @keyframes anaarPulse {
@@ -882,12 +1046,12 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
             transform: scale(1);
           }
           50% {
-            transform: scale(1.02);
+            transform: scale(1.03);
           }
         }
 
         .animate-anaar-pulse {
-          animation: anaarPulse 1.8s ease-in-out infinite;
+          animation: anaarPulse 1.6s ease-in-out infinite;
         }
 
         @keyframes phuljhadiSparks {
@@ -896,21 +1060,21 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
             opacity: 0.95;
           }
           25% {
-            transform: scale(1.2) rotate(25deg);
+            transform: scale(1.25) rotate(25deg);
             opacity: 1;
           }
           50% {
-            transform: scale(0.9) rotate(-15deg);
+            transform: scale(0.88) rotate(-15deg);
             opacity: 0.85;
           }
           75% {
-            transform: scale(1.25) rotate(40deg);
+            transform: scale(1.3) rotate(40deg);
             opacity: 1;
           }
         }
 
         .animate-phuljhadi-sparks {
-          animation: phuljhadiSparks 0.22s ease-in-out infinite;
+          animation: phuljhadiSparks 0.20s ease-in-out infinite;
         }
 
         @keyframes phuljhadiFloat {
@@ -918,12 +1082,12 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
             transform: translateY(0px) rotate(12deg);
           }
           50% {
-            transform: translateY(-14px) rotate(6deg);
+            transform: translateY(-16px) rotate(5deg);
           }
         }
 
         .animate-phuljhadi-float {
-          animation: phuljhadiFloat 5.2s ease-in-out infinite;
+          animation: phuljhadiFloat 4.8s ease-in-out infinite;
         }
 
         @keyframes diyaDriftLeft {
@@ -931,16 +1095,16 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
             transform: translateY(0px) rotate(-4deg);
           }
           50% {
-            transform: translateY(-22px) rotate(3deg);
+            transform: translateY(-24px) rotate(4deg);
           }
         }
 
         @keyframes diyaDriftRight {
           0%, 100% {
-            transform: translateY(-16px) rotate(4deg);
+            transform: translateY(-18px) rotate(4deg);
           }
           50% {
-            transform: translateY(12px) rotate(-3deg);
+            transform: translateY(14px) rotate(-4deg);
           }
         }
 
@@ -949,20 +1113,20 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
             transform: translateY(0px) rotate(0deg);
           }
           50% {
-            transform: translateY(-8px) rotate(1.5deg);
+            transform: translateY(-10px) rotate(2deg);
           }
         }
 
         .animate-diya-drift-left {
-          animation: diyaDriftLeft 6.5s ease-in-out infinite;
+          animation: diyaDriftLeft 6.0s ease-in-out infinite;
         }
 
         .animate-diya-drift-right {
-          animation: diyaDriftRight 7.2s ease-in-out infinite;
+          animation: diyaDriftRight 6.8s ease-in-out infinite;
         }
 
         .animate-diya-subtle-sway {
-          animation: diyaSubtleSway 4.8s ease-in-out infinite;
+          animation: diyaSubtleSway 4.5s ease-in-out infinite;
         }
       `}</style>
     </>
