@@ -14,6 +14,7 @@ import {
   Building2,
   Phone,
   FileText,
+  Pencil,
 } from "lucide-react";
 import {
   Sheet,
@@ -55,6 +56,8 @@ import {
   routeForLedgerRow,
   createVendorLedgerEntry,
 } from "@/lib/vendors/ledger";
+import { EditVendorPaymentDialog } from "@/components/vendor-payments/EditVendorPaymentDialog";
+import { getVendorPayment } from "@/lib/vendor-payments/api";
 import { ShareStatementDialog } from "@/components/statements/ShareStatementDialog";
 import {
   getCurrentStatementTimestamp,
@@ -71,6 +74,13 @@ export function SupplierLedgerDrawer({ vendor, open, onOpenChange }: SupplierLed
   const qc = useQueryClient();
   const [statementOpen, setStatementOpen] = useState(false);
   const [recordEntryOpen, setRecordEntryOpen] = useState(false);
+  const [editPaymentId, setEditPaymentId] = useState<string | null>(null);
+
+  const editPaymentQ = useQuery({
+    queryKey: qk.vendorPayments.byId(editPaymentId ?? ""),
+    queryFn: () => (editPaymentId ? getVendorPayment(editPaymentId) : null),
+    enabled: !!editPaymentId,
+  });
 
   // Form state for manual entry
   const [entryType, setEntryType] = useState<
@@ -420,11 +430,15 @@ export function SupplierLedgerDrawer({ vendor, open, onOpenChange }: SupplierLed
                         <TableHead className="py-2 text-right">Debit</TableHead>
                         <TableHead className="py-2 text-right">Credit</TableHead>
                         <TableHead className="py-2 text-right">Balance</TableHead>
+                        <TableHead className="py-2 text-right">Action</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody className="text-xs">
                       {ledgerQ.data!.map((row) => {
                         const route = routeForLedgerRow(row);
+                        const isPayment = row.source_type === "vendor_payment";
+                        const paymentLookupId = row.source_id || row.ref_no;
+
                         return (
                           <TableRow key={row.id} className="hover:bg-muted/40">
                             <TableCell className="py-2.5 tabular-nums text-muted-foreground text-[11px]">
@@ -437,8 +451,13 @@ export function SupplierLedgerDrawer({ vendor, open, onOpenChange }: SupplierLed
                             </TableCell>
                             <TableCell className="py-2.5 font-mono text-[11px]">
                               {route ? (
-                                <Link to={route} className="text-primary hover:underline">
-                                  {row.ref_no || "—"}
+                                <Link
+                                  to={route}
+                                  className="text-primary hover:underline font-semibold inline-flex items-center gap-1"
+                                  title="View complete document details"
+                                >
+                                  <span>{row.ref_no || "—"}</span>
+                                  <ExternalLink className="h-2.5 w-2.5 opacity-60" />
                                 </Link>
                               ) : (
                                 row.ref_no || "—"
@@ -461,6 +480,28 @@ export function SupplierLedgerDrawer({ vendor, open, onOpenChange }: SupplierLed
                                 {formatInr(row.running_balance)}
                               </span>
                             </TableCell>
+                            <TableCell className="py-2 text-right">
+                              {isPayment && paymentLookupId ? (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-6 px-1.5 text-[11px] font-medium gap-1 text-primary hover:text-primary hover:bg-primary/10"
+                                  onClick={() => setEditPaymentId(paymentLookupId)}
+                                  title="Edit payment amount, date, method, or notes"
+                                >
+                                  <Pencil className="h-3 w-3" />
+                                  <span>Edit</span>
+                                </Button>
+                              ) : route ? (
+                                <Link
+                                  to={route}
+                                  className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground font-medium p-1 hover:bg-muted rounded"
+                                  title="Open details"
+                                >
+                                  <ExternalLink className="h-3 w-3" />
+                                </Link>
+                              ) : null}
+                            </TableCell>
                           </TableRow>
                         );
                       })}
@@ -478,6 +519,20 @@ export function SupplierLedgerDrawer({ vendor, open, onOpenChange }: SupplierLed
         open={statementOpen}
         onOpenChange={setStatementOpen}
         data={statementData}
+      />
+
+      {/* Edit Vendor Payment Dialog */}
+      <EditVendorPaymentDialog
+        open={!!editPaymentId}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) setEditPaymentId(null);
+        }}
+        payment={editPaymentQ.data ?? null}
+        onSuccess={() => {
+          void qc.invalidateQueries({ queryKey: qk.vendorLedger.byVendor(vendorId) });
+          void qc.invalidateQueries({ queryKey: qk.vendorLedger.allSummaries });
+          setEditPaymentId(null);
+        }}
       />
     </>
   );

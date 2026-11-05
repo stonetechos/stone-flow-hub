@@ -348,6 +348,18 @@ export function summariseLedger(rows: VendorLedgerRow[]): VendorLedgerSummary {
 
 function normaliseRow(r: unknown): VendorLedgerRow {
   const item = r as Record<string, unknown>;
+  const rawRoute = item.route ? String(item.route).trim() : null;
+  // Legacy DB triggers stored category keywords like "payment" or "grn" instead of actual URLs.
+  // Only accept paths that begin with a valid leading slash.
+  const cleanRoute =
+    rawRoute &&
+    rawRoute.startsWith("/") &&
+    !rawRoute.includes("undefined") &&
+    rawRoute !== "/payment" &&
+    rawRoute !== "/grn"
+      ? rawRoute
+      : null;
+
   return {
     id: String(item.id ?? ""),
     vendor_id: String(item.vendor_id ?? ""),
@@ -360,7 +372,7 @@ function normaliseRow(r: unknown): VendorLedgerRow {
     credit: Number(item.credit) || 0,
     currency_code: String(item.currency_code ?? "INR"),
     status: item.status ? String(item.status) : null,
-    route: item.route ? String(item.route) : null,
+    route: cleanRoute,
     metadata: (item.metadata as Record<string, unknown>) ?? {},
     created_at: String(item.created_at ?? ""),
     running_balance: Number(item.running_balance) || 0,
@@ -373,13 +385,40 @@ function normaliseRows(data: unknown): VendorLedgerRow[] {
 
 /** Deep-link for a ledger row when the source document has a UI surface. */
 export function routeForLedgerRow(row: VendorLedgerRow): string | null {
-  if (row.route) return row.route;
-  if (row.source_type === "purchase_order" && row.source_id) return `/purchase-orders`;
-  if (row.source_type === "purchase_invoice" && row.source_id)
-    return `/purchase-invoices/${row.source_id}`;
-  if (row.source_type === "vendor_payment" && row.source_id)
-    return `/vendor-payments/${row.source_id}`;
-  if (row.source_type === "vendor_quote" && row.source_id) return `/rfqs`;
+  if (
+    row.route &&
+    row.route.startsWith("/") &&
+    !row.route.includes("undefined") &&
+    row.route !== "/payment" &&
+    row.route !== "/grn"
+  ) {
+    return row.route;
+  }
+
+  if (row.source_type === "vendor_payment") {
+    if (row.source_id) return `/vendor-payments/${row.source_id}`;
+    if (row.ref_no) return `/vendor-payments/${encodeURIComponent(row.ref_no)}`;
+    return `/vendor-payments`;
+  }
+
+  if (row.source_type === "purchase_invoice") {
+    if (row.source_id) return `/purchase-invoices/${row.source_id}`;
+    if (row.ref_no) return `/purchase-invoices/${encodeURIComponent(row.ref_no)}`;
+    return `/purchase-invoices`;
+  }
+
+  if (row.source_type === "purchase_order") {
+    return row.source_id ? `/purchase-orders/${row.source_id}` : `/purchase-orders`;
+  }
+
+  if (row.source_type === "vendor_quote") {
+    return row.source_id ? `/rfqs/${row.source_id}` : `/rfqs`;
+  }
+
+  if (row.source_type === "grn" || row.source_type === "grn_item") {
+    return `/purchase-orders`;
+  }
+
   return null;
 }
 

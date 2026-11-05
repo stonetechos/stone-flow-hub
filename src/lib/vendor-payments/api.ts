@@ -48,12 +48,16 @@ export async function listVendorPayments(query = ""): Promise<VendorPaymentListI
   return (data ?? []) as unknown as VendorPaymentListItem[];
 }
 
-export async function getVendorPayment(id: string): Promise<VendorPaymentListItem | null> {
-  const { data, error } = await supabase
-    .from("vendor_payments" as never)
-    .select(SELECT)
-    .eq("id", id)
-    .maybeSingle();
+export async function getVendorPayment(idOrNo: string): Promise<VendorPaymentListItem | null> {
+  const trimmed = idOrNo.trim();
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(trimmed);
+  let query = supabase.from("vendor_payments" as never).select(SELECT);
+  if (isUuid) {
+    query = query.eq("id", trimmed);
+  } else {
+    query = query.eq("payment_no", trimmed);
+  }
+  const { data, error } = await query.maybeSingle();
   if (error) throw new AppError(mapDbError(error));
   return (data as VendorPaymentListItem | null) ?? null;
 }

@@ -183,7 +183,7 @@ describe("routeForLedgerRow", () => {
         source_type: "purchase_order",
         source_id: "po-77",
       }),
-    ).toBe("/purchase-orders");
+    ).toBe("/purchase-orders/po-77");
 
     expect(
       routeForLedgerRow({
@@ -191,7 +191,7 @@ describe("routeForLedgerRow", () => {
         source_type: "vendor_quote",
         source_id: "quote-66",
       }),
-    ).toBe("/rfqs");
+    ).toBe("/rfqs/quote-66");
 
     expect(
       routeForLedgerRow({
@@ -200,5 +200,50 @@ describe("routeForLedgerRow", () => {
         source_id: null,
       }),
     ).toBeNull();
+  });
+
+  it("ignores legacy shorthand relative strings like 'payment' or 'grn'", () => {
+    const legacyRow = {
+      id: "1",
+      vendor_id: "v1",
+      entry_date: "2026-10-21",
+      source_type: "vendor_payment",
+      source_id: "pay-12345",
+      ref_no: "VPAY-20261021-10283",
+      description: "Payment entry",
+      debit: 0,
+      credit: 15000,
+      currency_code: "INR",
+      status: "posted",
+      route: "payment", // legacy category word from old SQL trigger
+      metadata: {},
+      created_at: "2026-10-21T00:00:00Z",
+      running_balance: 15000,
+    };
+
+    // Must resolve to the actual full path instead of the 404-causing relative 'payment'
+    expect(routeForLedgerRow(legacyRow)).toBe("/vendor-payments/pay-12345");
+  });
+
+  it("falls back to ref_no when source_id is missing for vendor payments", () => {
+    const rowWithoutSourceId = {
+      id: "1",
+      vendor_id: "v1",
+      entry_date: "2026-10-21",
+      source_type: "vendor_payment",
+      source_id: null,
+      ref_no: "VPAY-20261021-10283",
+      description: "Payment entry",
+      debit: 0,
+      credit: 15000,
+      currency_code: "INR",
+      status: "posted",
+      route: null,
+      metadata: {},
+      created_at: "2026-10-21T00:00:00Z",
+      running_balance: 15000,
+    };
+
+    expect(routeForLedgerRow(rowWithoutSourceId)).toBe("/vendor-payments/VPAY-20261021-10283");
   });
 });

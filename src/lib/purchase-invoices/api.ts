@@ -77,12 +77,18 @@ export async function listPurchaseInvoicesForVendor(
   return (data ?? []) as unknown as PurchaseInvoiceListItem[];
 }
 
-export async function getPurchaseInvoice(id: string): Promise<PurchaseInvoiceListItem | null> {
-  const { data, error } = await getDb()
+export async function getPurchaseInvoice(idOrNo: string): Promise<PurchaseInvoiceListItem | null> {
+  const trimmed = idOrNo.trim();
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(trimmed);
+  let query = getDb()
     .from("purchase_invoices" as never)
-    .select(SELECT)
-    .eq("id" as never, id as never)
-    .maybeSingle();
+    .select(SELECT);
+  if (isUuid) {
+    query = query.eq("id" as never, trimmed as never);
+  } else {
+    query = query.or(`invoice_no.eq.${trimmed},vendor_invoice_no.eq.${trimmed}` as never);
+  }
+  const { data, error } = await query.maybeSingle();
   if (error) throw new AppError(mapDbError(error));
   return (data as unknown as PurchaseInvoiceListItem | null) ?? null;
 }

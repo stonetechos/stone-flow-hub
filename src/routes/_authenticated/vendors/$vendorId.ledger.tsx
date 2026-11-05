@@ -154,7 +154,7 @@ function VendorLedgerPage() {
                     </TableCell>
                     <TableCell className="font-mono text-xs">
                       {route ? (
-                        <Link to={route} className="hover:underline">
+                        <Link to={route} className="text-primary hover:underline font-medium">
                           {row.ref_no ?? "—"}
                         </Link>
                       ) : (
