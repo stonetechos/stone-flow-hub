@@ -114,6 +114,40 @@ function brandParty(brand: BrandingConfig): PdfParty {
   };
 }
 
+export function resolveInvoicePaymentTerm(
+  rawTerms?: string | null,
+  docDate?: string | null,
+  dueDate?: string | null,
+): string {
+  if (rawTerms) {
+    const trimmed = rawTerms.trim();
+    // Payment term in the header bar must be a concise phrase (<= 30 chars, single line, no quote clauses)
+    const isQuotationOrContractBlock =
+      trimmed.includes("\n") ||
+      trimmed.length > 30 ||
+      /timeline|quotation|shree yantra|advance taken|booking|variation|evolution|returnable/i.test(
+        trimmed,
+      );
+    if (!isQuotationOrContractBlock) {
+      return trimmed;
+    }
+  }
+
+  if (docDate && dueDate && docDate !== dueDate) {
+    try {
+      const d1 = new Date(docDate);
+      const d2 = new Date(dueDate);
+      const diffDays = Math.round((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
+      if (diffDays > 0) {
+        return `Net ${diffDays} Days`;
+      }
+    } catch {
+      // fallback
+    }
+  }
+  return "Due on Receipt";
+}
+
 function formatDocDate(d: string): string {
   if (!d) return "";
   const parts = d.split("T")[0].split("-");
@@ -171,7 +205,9 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
 
   const dueMeta = doc.meta?.find((m) => m.label.toLowerCase().includes("due date"));
   const dueDate = dueMeta ? String(dueMeta.value) : doc.date;
-  const termsText = doc.terms || "Due on Receipt";
+  const termsText = isInvoice
+    ? resolveInvoicePaymentTerm(doc.terms, doc.date, dueDate)
+    : doc.terms || "Due on Receipt";
 
   const showHsn = (doc.lines ?? []).some((l) => l.hsn);
   const showPhoto = (doc.lines ?? []).some((l) =>
@@ -538,7 +574,7 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
           </div>
           <div class="avoid-break" style="background:#ffffff;border:1px solid #cbd5e1;border-top:none;border-radius:0 0 2px 2px;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;padding:5px 12px;box-sizing:border-box;font-size:9.5px;color:#0f172a;margin-bottom:8px;line-height:14px;">
             <div style="text-align:center;font-weight:500;">${formatDocDate(doc.date)}</div>
-            <div style="text-align:center;">${esc(termsText)}</div>
+            <div style="text-align:center;font-weight:600;color:${deepTurquoise};">${esc(termsText)}</div>
             <div style="text-align:center;font-weight:500;">${formatDocDate(dueDate)}</div>
           </div>`
         : ""

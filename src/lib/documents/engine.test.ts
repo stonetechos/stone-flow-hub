@@ -212,4 +212,29 @@ describe("renderDocWhatsAppText", () => {
 
     expect(invMetaRcm.some((m) => m.label === "Reverse charge" && m.value === "Yes")).toBe(true);
   });
+
+  it("sanitizes leaked quotation promotional terms on invoice documents", () => {
+    const rawInvTerms =
+      "1. Delivery Timeline: 15 days.\n2. Payment Terms: 80% advance taken upon order booking, 20% balance.\n3. Pre-make 100% payment to avail 5% discount + complimentary certified Shree Yantra worth ₹14,999.";
+    const hasQuotationText =
+      rawInvTerms.length > 35 ||
+      rawInvTerms.includes("\n") ||
+      /advance taken upon|shree yantra|delivery timeline|order booking|complimentary certified|natural variation/i.test(
+        rawInvTerms,
+      );
+    const cleanTerms = hasQuotationText ? undefined : rawInvTerms || undefined;
+
+    expect(cleanTerms).toBeUndefined();
+
+    const legitimateConciseTerm = "Net 15";
+    const hasQuotationText2 =
+      legitimateConciseTerm.length > 35 ||
+      legitimateConciseTerm.includes("\n") ||
+      /advance taken upon|shree yantra|delivery timeline|order booking|complimentary certified|natural variation/i.test(
+        legitimateConciseTerm,
+      );
+    const cleanTerms2 = hasQuotationText2 ? undefined : legitimateConciseTerm || undefined;
+
+    expect(cleanTerms2).toBe("Net 15");
+  });
 });

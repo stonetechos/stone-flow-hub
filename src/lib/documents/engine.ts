@@ -459,6 +459,16 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
           : []),
         ...(invAny.reverse_charge ? [{ label: "Reverse charge", value: "Yes" }] : []),
       ];
+      // Invoices must never carry multi-clause quotation terms (e.g. advance upon booking, Shree Yantra, 15-day timeline)
+      const rawTerms = (i.terms || "").trim();
+      const hasQuotationText =
+        rawTerms.length > 35 ||
+        rawTerms.includes("\n") ||
+        /advance taken upon|shree yantra|delivery timeline|order booking|complimentary certified|natural variation/i.test(
+          rawTerms,
+        );
+      const cleanTerms = hasQuotationText ? undefined : rawTerms || undefined;
+
       return {
         doc: {
           kind: "invoice",
@@ -471,7 +481,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
           totals,
           meta: invMeta,
           notes: i.notes ?? undefined,
-          terms: i.terms ?? undefined,
+          terms: cleanTerms,
         },
         meta: {
           toName: cust?.name ?? "—",

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "bun:test";
-import { generatePdfBlob, renderDocHtml, type PdfDoc } from "./generator";
+import {
+  generatePdfBlob,
+  renderDocHtml,
+  resolveInvoicePaymentTerm,
+  type PdfDoc,
+} from "./generator";
 
 const sampleDoc: PdfDoc = {
   kind: "quotation",
@@ -202,10 +207,50 @@ describe("PDF Generator", () => {
     };
     const html = renderDocHtml(invoiceDoc);
     // Invoice metadata block displays "Due on Receipt" in the central terms column
-    expect(html).toContain('<div style="text-align:center;">Due on Receipt</div>');
+    expect(html).toContain("Due on Receipt");
     // But never the multi-line quotation legal terms section
     expect(html).not.toContain("Terms &amp; Conditions");
     expect(html).not.toContain('class="terms');
+  });
+
+  it("sanitizes leaked quotation promotional terms on invoices into concise Net payment terms", () => {
+    const leakedQuoteTerms =
+      "1. Delivery Timeline: The time duration to deliver is 15 days.\n2. Payment Terms: 80% advance taken upon order booking, 20% balance.\n3. Pre-make 100% payment to avail 5% discount + complimentary certified Shree Yantra worth ₹14,999.";
+    const invoiceDoc: PdfDoc = {
+      ...sampleDoc,
+      kind: "invoice",
+      title: "Tax Invoice",
+      number: "INV-000008",
+      date: "2026-11-05",
+      meta: [{ label: "Due date", value: "2026-11-20" }],
+      terms: leakedQuoteTerms,
+    };
+    const html = renderDocHtml(invoiceDoc);
+    // Leaked quotation marketing essay must NEVER appear in the header or anywhere in the invoice
+    expect(html).not.toContain("Shree Yantra");
+    expect(html).not.toContain("80% advance taken upon order booking");
+    expect(html).not.toContain("Delivery Timeline");
+    // Instead it cleanly resolves to Net 15 Days
+    expect(html).toContain("Net 15 Days");
+    // And never renders quotation legal terms section
+    expect(html).not.toContain("Terms &amp; Conditions");
+  });
+
+  it("resolveInvoicePaymentTerm correctly identifies concise terms and calculates net days", () => {
+    expect(resolveInvoicePaymentTerm("Net 30", "2026-11-01", "2026-12-01")).toBe("Net 30");
+    expect(resolveInvoicePaymentTerm("Due on Receipt", "2026-11-05", "2026-11-05")).toBe(
+      "Due on Receipt",
+    );
+    expect(resolveInvoicePaymentTerm(undefined, "2026-11-05", "2026-11-20")).toBe("Net 15 Days");
+    expect(resolveInvoicePaymentTerm(null, "2026-11-05", "2026-11-05")).toBe("Due on Receipt");
+    // Quotation contract blocks are rejected in favor of calculated Net days
+    expect(
+      resolveInvoicePaymentTerm(
+        "1. Delivery Timeline: 15 days. 2. 80% advance taken upon order booking.",
+        "2026-11-05",
+        "2026-11-20",
+      ),
+    ).toBe("Net 15 Days");
   });
 
   it("renders line item photos preserving rectangular natural stone proportions", () => {

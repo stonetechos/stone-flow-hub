@@ -482,7 +482,10 @@ export async function convertQuoteToInvoice(input: ConvertQuoteInput) {
   if (error) throw new AppError(mapDbError(error));
   const invoice = data as DbTable<"invoices">;
   if (invoice?.id) {
-    const invUpdate: Record<string, unknown> = {};
+    const invUpdate: Record<string, unknown> = {
+      // Invoices must never inherit quotation booking/discount terms
+      terms: "Due on Receipt",
+    };
     if (parsed.issue_date) {
       invUpdate.issue_date = parsed.issue_date;
     }
