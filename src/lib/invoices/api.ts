@@ -4,9 +4,11 @@ import { AppError, mapDbError } from "@/lib/errors";
 import type { DbTable } from "@/lib/types";
 import { sanitizeSearch } from "@/lib/zod";
 import {
+  invoiceCreateSchema,
   invoiceUpdateSchema,
   recordPaymentSchema,
   setInvoiceStatusSchema,
+  type InvoiceCreateInput,
   type InvoiceUpdateInput,
   type RecordPaymentInput,
   type SetInvoiceStatusInput,
@@ -213,6 +215,171 @@ export async function deleteInvoice(id: string): Promise<DeleteOrVoidResult> {
   );
   if (error) throw new AppError(mapDbError(error));
   return data as unknown as DeleteOrVoidResult;
+}
+
+export async function createInvoice(input: InvoiceCreateInput): Promise<InvoiceRow> {
+  const parsed = invoiceCreateSchema.parse(input);
+
+  let projectId: string;
+  let customerId: string;
+
+  if (parsed.project_id) {
+    const { getProject } = await import("@/lib/projects/api");
+    const project = await getProject(parsed.project_id);
+    if (!project) throw new AppError("Selected project not found", "NOT_FOUND", 404);
+    projectId = project.id;
+    customerId = project.customer_id;
+  } else {
+    const { getCustomer } = await import("@/lib/customers/api");
+    const customer = await getCustomer(parsed.customer_id!);
+    if (!customer) throw new AppError("Selected customer not found", "NOT_FOUND", 404);
+
+    const { data: existingProjects } = await getDb()
+      .from("projects")
+      .select("id")
+      .eq("customer_id", customer.id)
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    if (existingProjects && existingProjects.length > 0 && existingProjects[0]?.id) {
+      projectId = existingProjects[0].id;
+    } else {
+      const { createProject } = await import("@/lib/projects/api");
+      const project = await createProject({
+        customer_id: customer.id,
+        name: customer.name?.trim() || "General Project",
+        city: customer.city?.trim() || "Not specified",
+        project_type: "other",
+      });
+      projectId = project.id;
+    }
+    customerId = customer.id;
+  }
+
+  const wfObj: Record<string, unknown> = {};
+  if (parsed.dispatch_remarks) wfObj.dispatch_remarks = parsed.dispatch_remarks;
+  if (parsed.lr_no) wfObj.lr_no = parsed.lr_no;
+
+  let invoice: InvoiceRow;
+
+  if (parsed.reuse_invoice_id) {
+    const { data: vInv, error: vErr } = await getDb()
+      .from("invoices")
+      .select("*")
+      .eq("id", parsed.reuse_invoice_id)
+      .maybeSingle();
+
+    if (vErr || !vInv) throw new AppError("Void invoice not found", "NOT_FOUND", 404);
+    if (vInv.status !== "void" && vInv.status !== "cancelled") {
+      throw new AppError(
+        `Only void or cancelled invoices can be reused (current status: ${vInv.status})`,
+        "BAD_REQUEST",
+        400,
+      );
+    }
+
+    const { error: delErr } = await getDb()
+      .from("invoice_items")
+      .delete()
+      .eq("invoice_id", vInv.id);
+    if (delErr) throw new AppError(mapDbError(delErr));
+
+    const curWf = (vInv.workflow_state as Record<string, unknown> | null) ?? {};
+    const { data: updatedInv, error: upErr } = await getDb()
+      .from("invoices")
+      .update({
+        customer_id: customerId,
+        project_id: projectId,
+        quote_id: parsed.quote_id ?? null,
+        status: "draft",
+        issue_date: parsed.issue_date || new Date().toISOString().slice(0, 10),
+        due_date: parsed.due_date || null,
+        notes: parsed.notes || null,
+        terms: parsed.terms || null,
+        workflow_state: {
+          ...curWf,
+          ...wfObj,
+        },
+      } as never)
+      .eq("id", vInv.id)
+      .select("*")
+      .single();
+
+    if (upErr) throw new AppError(mapDbError(upErr));
+    invoice = updatedInv;
+  } else {
+    const { data: newInv, error: insErr } = await getDb()
+      .from("invoices")
+      .insert({
+        invoice_no: "",
+        customer_id: customerId,
+        project_id: projectId,
+        quote_id: parsed.quote_id ?? null,
+        status: "draft",
+        issue_date: parsed.issue_date || new Date().toISOString().slice(0, 10),
+        due_date: parsed.due_date || null,
+        notes: parsed.notes || null,
+        terms: parsed.terms || null,
+        workflow_state: wfObj,
+      } as never)
+      .select("*")
+      .single();
+
+    if (insErr) throw new AppError(mapDbError(insErr));
+    invoice = newInv;
+  }
+
+  const rows = parsed.items.map((it, idx) => ({
+    invoice_id: invoice.id,
+    product_id: it.product_id ?? null,
+    description: it.description,
+    quantity: Math.round(Number(it.quantity) * 1000) / 1000,
+    unit: it.unit ?? null,
+    unit_price: it.unit_price,
+    tax_pct: it.tax_pct ?? 0,
+    hsn_sac: it.hsn_sac ?? null,
+    sort_order: it.sort_order ?? idx,
+  }));
+
+  const { data: insertedItems, error: itemsErr } = await getDb()
+    .from("invoice_items")
+    .insert(rows as never)
+    .select("id, sort_order");
+  if (itemsErr) throw new AppError(mapDbError(itemsErr));
+
+  const notesMap: Record<string, string> = {};
+  parsed.items.forEach((it, idx) => {
+    if (it.notes && it.notes.trim()) {
+      const ins = insertedItems?.[idx];
+      if (ins?.id) notesMap[ins.id] = it.notes.trim();
+      notesMap[String(idx)] = it.notes.trim();
+    }
+  });
+
+  if (Object.keys(notesMap).length > 0) {
+    const curWf = (invoice.workflow_state as Record<string, unknown> | null) ?? {};
+    const existingNotes = (curWf.line_item_notes as Record<string, string> | null) ?? {};
+    await getDb()
+      .from("invoices")
+      .update({
+        workflow_state: {
+          ...curWf,
+          line_item_notes: { ...existingNotes, ...notesMap },
+        },
+      } as never)
+      .eq("id", invoice.id);
+  }
+
+  try {
+    const { data: reloaded } = await getDb()
+      .from("invoices")
+      .select("*")
+      .eq("id", invoice.id)
+      .single();
+    return reloaded ?? invoice;
+  } catch {
+    return invoice;
+  }
 }
 
 export async function reuseVoidInvoice(input: {

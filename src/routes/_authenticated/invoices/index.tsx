@@ -175,7 +175,7 @@ function InvoicesPage() {
         <EmptyState
           icon={<Receipt className="h-6 w-6" />}
           title="No invoices yet"
-          message="Convert an accepted quote to create your first invoice."
+          message="Create a direct sales invoice or convert an accepted quote to get started."
           action={
             <Button onClick={() => nav({ to: "/invoices/new" })}>
               <Plus className="mr-2 h-4 w-4" /> {t("invoices.newInvoice", "New invoice")}
