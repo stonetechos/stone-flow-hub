@@ -147,9 +147,15 @@ export function invalidateQuote(qc: QueryClient, id?: string): void {
   if (id) {
     bump(qc, qk.quotes.byId(id));
     bump(qc, qk.quotes.items(id));
+    qc.invalidateQueries({ queryKey: ["quotes", "images", id] });
+    qc.invalidateQueries({ queryKey: ["quotes", "linkedSalesOrder", id] });
+    qc.invalidateQueries({ queryKey: ["quotes", "dispatches", id] });
   }
   bump(qc, qk.dashboard);
   bump(qc, qk.activity.recent);
+  qc.invalidateQueries({ queryKey: ["dash"] });
+  qc.invalidateQueries({ queryKey: ["profitability"] });
+  qc.invalidateQueries({ queryKey: ["salesperson-profitability"] });
 }
 
 export function invalidateEstimate(qc: QueryClient, id?: string): void {

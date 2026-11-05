@@ -225,7 +225,32 @@ function QuoteDetailPage() {
       );
       const mergedUrls = Array.from(new Set([...processedUrls, ...existing]));
 
-      await updateQuoteItemImage(quoteId, rowId, mergedUrls, currentRow?.description);
+      const res = await updateQuoteItemImage(quoteId, rowId, mergedUrls, currentRow?.description);
+
+      // Immediately set the image into the quoteImages cache so it displays without refreshing
+      qc.setQueryData(["quotes", "images", quoteId], (prev: Map<string, string> | undefined) => {
+        const next = new Map(prev ?? []);
+        if (mergedUrls.length > 0) {
+          next.set(rowId, mergedUrls[0]);
+          next.set(`${rowId}_all`, JSON.stringify(mergedUrls));
+          if (currentRow?.description) {
+            next.set(currentRow.description.trim().toLowerCase(), mergedUrls[0]);
+            next.set(
+              `${currentRow.description.trim().toLowerCase()}_all`,
+              JSON.stringify(mergedUrls),
+            );
+          }
+        }
+        return next;
+      });
+
+      if (res?.workflow_state) {
+        qc.setQueryData(qk.quotes.byId(quoteId), (old: unknown) => {
+          if (!old || typeof old !== "object") return old;
+          return { ...old, workflow_state: res.workflow_state };
+        });
+      }
+
       invalidateQuote(qc, quoteId);
       qc.invalidateQueries({ queryKey: qk.quotes.items(quoteId) });
       qc.invalidateQueries({ queryKey: ["quotes", "images", quoteId] });
@@ -242,7 +267,23 @@ function QuoteDetailPage() {
 
   const handleRemovePhoto = async (rowId: string, desc?: string) => {
     try {
-      await updateQuoteItemImage(quoteId, rowId, null, desc);
+      const res = await updateQuoteItemImage(quoteId, rowId, null, desc);
+      qc.setQueryData(["quotes", "images", quoteId], (prev: Map<string, string> | undefined) => {
+        const next = new Map(prev ?? []);
+        next.delete(rowId);
+        next.delete(`${rowId}_all`);
+        if (desc) {
+          next.delete(desc.trim().toLowerCase());
+          next.delete(`${desc.trim().toLowerCase()}_all`);
+        }
+        return next;
+      });
+      if (res?.workflow_state) {
+        qc.setQueryData(qk.quotes.byId(quoteId), (old: unknown) => {
+          if (!old || typeof old !== "object") return old;
+          return { ...old, workflow_state: res.workflow_state };
+        });
+      }
       invalidateQuote(qc, quoteId);
       qc.invalidateQueries({ queryKey: qk.quotes.items(quoteId) });
       qc.invalidateQueries({ queryKey: ["quotes", "images", quoteId] });
@@ -278,7 +319,18 @@ function QuoteDetailPage() {
   };
 
   const quoteImages = useQuery({
-    queryKey: ["quotes", "images", quoteId],
+    queryKey: [
+      "quotes",
+      "images",
+      quoteId,
+      JSON.stringify(
+        (q.data?.workflow_state as Record<string, unknown> | null)?.line_item_images ?? {},
+      ),
+      JSON.stringify(
+        (q.data?.workflow_state as Record<string, unknown> | null)?.line_item_multi_images ?? {},
+      ),
+      items.data?.length,
+    ],
     queryFn: () => resolveAllQuoteImages(q.data, items.data ?? []),
     enabled: Boolean(q.data && items.data),
   });

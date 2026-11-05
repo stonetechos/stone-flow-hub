@@ -461,7 +461,19 @@ function LineItemsEditor({
     queryFn: () => getQuoteItems(quoteId),
   });
   const quoteImages = useQuery({
-    queryKey: ["quotes", "images", quoteId],
+    queryKey: [
+      "quotes",
+      "images",
+      quoteId,
+      JSON.stringify(
+        (quoteQuery.data?.workflow_state as Record<string, unknown> | null)?.line_item_images ?? {},
+      ),
+      JSON.stringify(
+        (quoteQuery.data?.workflow_state as Record<string, unknown> | null)
+          ?.line_item_multi_images ?? {},
+      ),
+      itemsQuery.data?.length,
+    ],
     queryFn: () => resolveAllQuoteImages(quoteQuery.data, itemsQuery.data ?? []),
     enabled: Boolean(quoteQuery.data && itemsQuery.data),
   });
@@ -492,9 +504,25 @@ function LineItemsEditor({
 
   const updateImgMut = useMutation({
     mutationFn: async ({ id, url, desc }: { id: string; url: string | null; desc?: string }) => {
-      await updateQuoteItemImage(quoteId, id, url, desc);
+      return updateQuoteItemImage(quoteId, id, url, desc);
     },
-    onSuccess: (_, vars) => {
+    onSuccess: (res, vars) => {
+      qc.setQueryData(["quotes", "images", quoteId], (prev: Map<string, string> | undefined) => {
+        const next = new Map(prev ?? []);
+        next.delete(vars.id);
+        next.delete(`${vars.id}_all`);
+        if (vars.desc) {
+          next.delete(vars.desc.trim().toLowerCase());
+          next.delete(`${vars.desc.trim().toLowerCase()}_all`);
+        }
+        return next;
+      });
+      if (res?.workflow_state) {
+        qc.setQueryData(qk.quotes.byId(quoteId), (old: unknown) => {
+          if (!old || typeof old !== "object") return old;
+          return { ...old, workflow_state: res.workflow_state };
+        });
+      }
       invalidate();
       if (!vars.url) {
         toast.success("Photo removed from line item");
@@ -558,7 +586,32 @@ function LineItemsEditor({
       );
       const mergedUrls = Array.from(new Set([...processedUrls, ...existing]));
 
-      await updateQuoteItemImage(quoteId, rowId, mergedUrls, currentRow?.description);
+      const res = await updateQuoteItemImage(quoteId, rowId, mergedUrls, currentRow?.description);
+
+      // Immediately set the image into the quoteImages cache so it displays without refreshing
+      qc.setQueryData(["quotes", "images", quoteId], (prev: Map<string, string> | undefined) => {
+        const next = new Map(prev ?? []);
+        if (mergedUrls.length > 0) {
+          next.set(rowId, mergedUrls[0]);
+          next.set(`${rowId}_all`, JSON.stringify(mergedUrls));
+          if (currentRow?.description) {
+            next.set(currentRow.description.trim().toLowerCase(), mergedUrls[0]);
+            next.set(
+              `${currentRow.description.trim().toLowerCase()}_all`,
+              JSON.stringify(mergedUrls),
+            );
+          }
+        }
+        return next;
+      });
+
+      if (res?.workflow_state) {
+        qc.setQueryData(qk.quotes.byId(quoteId), (old: unknown) => {
+          if (!old || typeof old !== "object") return old;
+          return { ...old, workflow_state: res.workflow_state };
+        });
+      }
+
       invalidate();
       toast.success(
         `Attached ${validFiles.length} photo${validFiles.length > 1 ? "s" : ""} to item`,
@@ -618,7 +671,12 @@ function LineItemsEditor({
       id: string;
       patch: Parameters<typeof updateQuoteItem>[1];
     }) => updateQuoteItem(id, patch),
-    onSuccess: () => invalidate(),
+    onSuccess: (updated) => {
+      invalidate();
+      if (updated) {
+        setRows((current) => current.map((r) => (r.id === updated.id ? toDraft(updated) : r)));
+      }
+    },
     onError: (e) => toast.error(toUserMessage(e)),
   });
 

@@ -816,7 +816,7 @@ export async function updateQuoteItemNote(
   quoteId: string,
   itemId: string,
   notes: string | null,
-): Promise<void> {
+): Promise<{ workflow_state: Record<string, unknown> } | void> {
   const { data: q, error: fetchErr } = await getDb()
     .from("quotes")
     .select("id, workflow_state")
@@ -839,6 +839,7 @@ export async function updateQuoteItemNote(
     .update({ workflow_state: updatedWf } as never)
     .eq("id", quoteId);
   if (error) throw new AppError(mapDbError(error));
+  return { workflow_state: updatedWf };
 }
 
 export async function deleteQuoteItem(itemId: string): Promise<void> {
@@ -934,7 +935,7 @@ export async function updateQuoteItemImage(
   itemKeyOrDesc: string,
   imageUrl: string | string[] | null,
   descriptionHint?: string | null,
-): Promise<void> {
+): Promise<{ workflow_state: Record<string, unknown> }> {
   const { data: q, error: fetchErr } = await getDb()
     .from("quotes")
     .select("id, workflow_state")
@@ -987,4 +988,5 @@ export async function updateQuoteItemImage(
     .update({ workflow_state: updatedWf } as never)
     .eq("id", quoteId);
   if (error) throw new AppError(mapDbError(error));
+  return { workflow_state: updatedWf };
 }

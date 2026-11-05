@@ -8,11 +8,12 @@ export const getRouter = () => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
-        // Avoid refetching every navigation for lists/details. Mutations
-        // explicitly invalidate their query keys, so 30s is a safe default.
-        staleTime: 30_000,
+        // Stale time 0 ensures instant background revalidation so changes
+        // made across forms, dialogs, uploads, and sub-pages immediately reflect
+        // in parent and list views without requiring manual browser refresh.
+        staleTime: 0,
         gcTime: 5 * 60_000,
-        refetchOnWindowFocus: false,
+        refetchOnWindowFocus: true,
         // Explicit (was implicit default): refetch active queries when the
         // browser regains connectivity after an interruption, per Phase
         // G.8.9 Task A3/A5 (reconnect-after-network-interruption). Safe
