@@ -44,6 +44,31 @@ export async function listReceipts(query = ""): Promise<ReceiptListItem[]> {
 export async function getReceipt(id: string): Promise<ReceiptListItem | null> {
   const { data, error } = await getDb().from("receipts").select(JOINS).eq("id", id).maybeSingle();
   if (error) throw new AppError(mapDbError(error));
+  if (!data) return null;
+
+  // Auto-sync allocated_amount and unallocated_amount if database trigger didn't run
+  try {
+    const { data: allocs } = await getDb()
+      .from("receipt_allocations")
+      .select("amount")
+      .eq("receipt_id", id);
+    const sumAlloc = (allocs ?? []).reduce((acc, a) => acc + (Number(a.amount) || 0), 0);
+    const net =
+      Number(data.amount || 0) - Number(data.tds_amount || 0) - Number(data.bank_charges || 0);
+    const unalloc = Math.max(0, net - sumAlloc);
+
+    if (Math.abs(Number(data.allocated_amount || 0) - sumAlloc) > 0.01) {
+      await getDb()
+        .from("receipts")
+        .update({ allocated_amount: sumAlloc } as never)
+        .eq("id", id);
+      data.allocated_amount = sumAlloc;
+      data.unallocated_amount = unalloc;
+    }
+  } catch (syncErr) {
+    console.warn("[getReceipt] auto-sync error:", syncErr);
+  }
+
   return (data as ReceiptListItem | null) ?? null;
 }
 
@@ -186,6 +211,18 @@ export async function createReceipt(input: ReceiptCreateInput): Promise<ReceiptR
       await getDb().from("receipts").delete().eq("id", rcpt.id);
       throw new AppError(mapDbError(aErr));
     }
+
+    // Explicitly update receipt allocated_amount and recalculate each allocated invoice
+    const totalAllocated = parsed.allocations.reduce((s, a) => s + (Number(a.amount) || 0), 0);
+    await getDb()
+      .from("receipts")
+      .update({ allocated_amount: totalAllocated } as never)
+      .eq("id", rcpt.id);
+
+    const { recalcInvoiceBalances } = await import("@/lib/invoices/api");
+    for (const a of parsed.allocations) {
+      await recalcInvoiceBalances(a.invoice_id);
+    }
   }
 
   try {
@@ -261,11 +298,28 @@ export async function updateReceipt(id: string, input: ReceiptUpdateInput): Prom
 }
 
 export async function voidReceipt(id: string) {
+  const { data: prevAllocs } = await getDb()
+    .from("receipt_allocations")
+    .select("invoice_id")
+    .eq("receipt_id", id);
+  const affected = (prevAllocs ?? []).map((a) => a.invoice_id).filter(Boolean);
+
   const { error } = await getDb().from("receipts").update({ status: "void" }).eq("id", id);
   if (error) throw new AppError(mapDbError(error));
+
+  const { recalcInvoiceBalances } = await import("@/lib/invoices/api");
+  for (const invId of affected) {
+    await recalcInvoiceBalances(invId);
+  }
 }
 
 export async function deleteReceipt(id: string): Promise<void> {
+  const { data: prevAllocs } = await getDb()
+    .from("receipt_allocations")
+    .select("invoice_id")
+    .eq("receipt_id", id);
+  const affected = (prevAllocs ?? []).map((a) => a.invoice_id).filter(Boolean);
+
   // First delete allocations so linked invoices are recalculated
   const { error: aErr } = await getDb().from("receipt_allocations").delete().eq("receipt_id", id);
   if (aErr) throw new AppError(mapDbError(aErr));
@@ -273,23 +327,64 @@ export async function deleteReceipt(id: string): Promise<void> {
   // Then delete the receipt record
   const { error: rErr } = await getDb().from("receipts").delete().eq("id", id);
   if (rErr) throw new AppError(mapDbError(rErr));
+
+  const { recalcInvoiceBalances } = await import("@/lib/invoices/api");
+  for (const invId of affected) {
+    await recalcInvoiceBalances(invId);
+  }
 }
 
 export async function replaceAllocations(
   receiptId: string,
   allocations: Array<{ invoice_id: string; amount: number }>,
 ) {
-  // Same over-allocation guard as createReceipt; the receipt's own existing
-  // allocations are freed by the delete below, so they count as available.
   await assertAllocationsFitInvoices(allocations, receiptId);
+
+  // Collect previous invoice IDs for this receipt
+  const { data: prevAllocs } = await getDb()
+    .from("receipt_allocations")
+    .select("invoice_id")
+    .eq("receipt_id", receiptId);
+  const affectedInvoiceIds = new Set<string>(
+    (prevAllocs ?? []).map((a) => a.invoice_id).filter(Boolean),
+  );
+  allocations.forEach((a) => affectedInvoiceIds.add(a.invoice_id));
+
   const { error: dErr } = await getDb()
     .from("receipt_allocations")
     .delete()
     .eq("receipt_id", receiptId);
   if (dErr) throw new AppError(mapDbError(dErr));
-  if (!allocations.length) return;
-  const { error } = await getDb()
-    .from("receipt_allocations")
-    .insert(allocations.map((a) => ({ receipt_id: receiptId, ...a })));
+
+  if (allocations.length) {
+    const { error } = await getDb()
+      .from("receipt_allocations")
+      .insert(allocations.map((a) => ({ receipt_id: receiptId, ...a })));
+    if (error) throw new AppError(mapDbError(error));
+  }
+
+  // Update receipt's allocated_amount explicitly
+  const totalAllocated = allocations.reduce((sum, a) => sum + (Number(a.amount) || 0), 0);
+  await getDb()
+    .from("receipts")
+    .update({ allocated_amount: totalAllocated } as never)
+    .eq("id", receiptId);
+
+  // Recalculate every affected invoice explicitly!
+  const { recalcInvoiceBalances } = await import("@/lib/invoices/api");
+  for (const invId of affectedInvoiceIds) {
+    await recalcInvoiceBalances(invId);
+  }
+}
+
+export async function listUnallocatedReceiptsForCustomer(customerId: string) {
+  const { data, error } = await getDb()
+    .from("receipts")
+    .select(JOINS)
+    .eq("customer_id", customerId)
+    .eq("status", "active")
+    .gt("unallocated_amount", 0)
+    .order("received_at", { ascending: true });
   if (error) throw new AppError(mapDbError(error));
+  return (data ?? []) as ReceiptListItem[];
 }

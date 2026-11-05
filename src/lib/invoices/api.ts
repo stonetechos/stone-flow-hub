@@ -50,6 +50,101 @@ export async function listInvoicesForProject(projectId: string): Promise<Invoice
   return (data ?? []) as InvoiceListItem[];
 }
 
+export type InvoicePaymentRecord = {
+  id: string;
+  source: "receipt" | "payment";
+  payment_no: string;
+  paid_at: string;
+  method: string;
+  reference_no: string | null;
+  amount: number;
+  receipt_id?: string;
+};
+
+export async function recalcInvoiceBalances(invoiceId: string): Promise<InvoiceRow | null> {
+  const { data: inv } = await getDb()
+    .from("invoices")
+    .select("id, status, total")
+    .eq("id", invoiceId)
+    .maybeSingle();
+  if (!inv) return null;
+
+  // 1. Calculate items subtotal and tax
+  const { data: items } = await getDb()
+    .from("invoice_items")
+    .select("quantity, unit_price, tax_pct")
+    .eq("invoice_id", invoiceId);
+
+  let subtotal = 0;
+  let taxAmount = 0;
+  (items ?? []).forEach((it) => {
+    const q = Number(it.quantity) || 0;
+    const p = Number(it.unit_price) || 0;
+    const lineSub = q * p;
+    subtotal += lineSub;
+    taxAmount += lineSub * ((Number(it.tax_pct) || 0) / 100);
+  });
+  subtotal = Math.round(subtotal * 100) / 100;
+  taxAmount = Math.round(taxAmount * 100) / 100;
+  const calculatedTotal = subtotal + taxAmount;
+  const total = calculatedTotal > 0 ? calculatedTotal : Number(inv.total || 0);
+
+  // 2. Sum legacy payments
+  const { data: pymts } = await getDb()
+    .from("payments")
+    .select("amount")
+    .eq("invoice_id", invoiceId);
+  const paymentsSum = (pymts ?? []).reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
+
+  // 3. Sum active receipt allocations
+  const { data: allocs } = await getDb()
+    .from("receipt_allocations")
+    .select("amount, receipt:receipts(status)")
+    .eq("invoice_id", invoiceId);
+
+  const receiptsSum = (allocs ?? [])
+    .filter((a) => {
+      const r = (a as unknown as { receipt?: { status?: string } | null })?.receipt;
+      return !r?.status || r.status === "active";
+    })
+    .reduce((acc, a) => acc + (Number(a.amount) || 0), 0);
+
+  const totalPaid = Math.round((paymentsSum + receiptsSum) * 100) / 100;
+  const balanceDue = Math.max(0, Math.round((total - totalPaid) * 100) / 100);
+
+  // 4. Update status if appropriate
+  let nextStatus = inv.status;
+  if (nextStatus !== "cancelled" && nextStatus !== "void") {
+    if (totalPaid >= total && total > 0) {
+      nextStatus = "paid";
+    } else if (totalPaid > 0) {
+      nextStatus = "partially_paid";
+    } else if (nextStatus === "paid" || nextStatus === "partially_paid") {
+      nextStatus = "sent";
+    }
+  }
+
+  const { data: updated, error } = await getDb()
+    .from("invoices")
+    .update({
+      subtotal,
+      tax_amount: taxAmount,
+      total,
+      amount_paid: totalPaid,
+      balance_due: balanceDue,
+      status: nextStatus,
+    } as never)
+    .eq("id", invoiceId)
+    .select("*")
+    .maybeSingle();
+
+  if (error) {
+    console.warn("[recalcInvoiceBalances] Failed to update invoice:", error);
+    return null;
+  }
+  return updated;
+}
+
 export async function getInvoice(id: string): Promise<InvoiceListItem | null> {
   const { data, error } = await getDb()
     .from("invoices")
@@ -57,6 +152,25 @@ export async function getInvoice(id: string): Promise<InvoiceListItem | null> {
     .eq("id", id)
     .maybeSingle();
   if (error) throw new AppError(mapDbError(error));
+  if (!data) return null;
+
+  try {
+    const synced = await recalcInvoiceBalances(id);
+    if (synced) {
+      return {
+        ...data,
+        subtotal: synced.subtotal,
+        tax_amount: synced.tax_amount,
+        total: synced.total,
+        amount_paid: synced.amount_paid,
+        balance_due: synced.balance_due,
+        status: synced.status,
+      } as InvoiceListItem;
+    }
+  } catch (syncErr) {
+    console.warn("[getInvoice] auto-sync error:", syncErr);
+  }
+
   return (data as InvoiceListItem | null) ?? null;
 }
 
@@ -100,14 +214,68 @@ export async function getInvoiceItems(invoiceId: string): Promise<InvoiceItemRow
   }));
 }
 
-export async function getInvoicePayments(invoiceId: string): Promise<PaymentRow[]> {
-  const { data, error } = await getDb()
-    .from("payments")
-    .select("*")
-    .eq("invoice_id", invoiceId)
-    .order("paid_at", { ascending: false });
-  if (error) throw new AppError(mapDbError(error));
-  return data ?? [];
+export async function getInvoicePayments(invoiceId: string): Promise<InvoicePaymentRecord[]> {
+  const [paymentsRes, allocsRes] = await Promise.all([
+    getDb()
+      .from("payments")
+      .select("*")
+      .eq("invoice_id", invoiceId)
+      .order("paid_at", { ascending: false }),
+    getDb()
+      .from("receipt_allocations")
+      .select(
+        "id, amount, created_at, receipt:receipts(id, receipt_no, received_at, method, reference_no, status)",
+      )
+      .eq("invoice_id", invoiceId),
+  ]);
+
+  const list: InvoicePaymentRecord[] = [];
+
+  (paymentsRes.data ?? []).forEach((p) => {
+    list.push({
+      id: p.id,
+      source: "payment",
+      payment_no: p.payment_no || "Payment",
+      paid_at: p.paid_at,
+      method: p.method,
+      reference_no:
+        p.reference_no ??
+        (p as { razorpay_payment_id?: string | null }).razorpay_payment_id ??
+        null,
+      amount: Number(p.amount) || 0,
+    });
+  });
+
+  (allocsRes.data ?? []).forEach((ra) => {
+    const rcpt = (
+      ra as unknown as {
+        receipt?: {
+          id: string;
+          receipt_no: string;
+          received_at: string;
+          method: string;
+          reference_no: string | null;
+          status: string;
+        } | null;
+      }
+    )?.receipt;
+
+    if (!rcpt?.status || rcpt.status === "active") {
+      list.push({
+        id: ra.id,
+        source: "receipt",
+        payment_no: rcpt?.receipt_no || "Receipt",
+        paid_at: rcpt?.received_at || ra.created_at,
+        method: rcpt?.method || "bank_transfer",
+        reference_no: rcpt?.reference_no || null,
+        amount: Number(ra.amount) || 0,
+        receipt_id: rcpt?.id,
+      });
+    }
+  });
+
+  list.sort((a, b) => new Date(b.paid_at).getTime() - new Date(a.paid_at).getTime());
+  return list;
 }
 
 export async function getInvoicePaymentLinks(invoiceId: string): Promise<PaymentLinkRow[]> {
@@ -207,14 +375,95 @@ export type DeleteOrVoidResult = {
 };
 
 export async function deleteInvoice(id: string): Promise<DeleteOrVoidResult> {
-  const { data, error } = await getDb().rpc(
-    "delete_or_void_invoice" as never,
-    {
-      p_invoice_id: id,
-    } as never,
-  );
-  if (error) throw new AppError(mapDbError(error));
-  return data as unknown as DeleteOrVoidResult;
+  // 1. Fetch invoice info
+  const { data: inv, error: fErr } = await getDb()
+    .from("invoices")
+    .select("id, invoice_no, quote_id")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (fErr) throw new AppError(mapDbError(fErr));
+  if (!inv) throw new AppError("Invoice not found", "NOT_FOUND", 404);
+
+  const invoiceNo = inv.invoice_no;
+
+  // 2. Try the delete_or_void_invoice RPC if available
+  try {
+    const { data, error } = await getDb().rpc(
+      "delete_or_void_invoice" as never,
+      {
+        p_invoice_id: id,
+      } as never,
+    );
+    if (!error && data) {
+      return data as unknown as DeleteOrVoidResult;
+    }
+  } catch (rpcErr) {
+    console.warn("[deleteInvoice] RPC failed, falling back to direct safe deletion:", rpcErr);
+  }
+
+  // 3. Fallback: Direct safe deletion
+  // A. Collect affected receipt IDs so we can recalculate their allocated amounts
+  const { data: allocs } = await getDb()
+    .from("receipt_allocations")
+    .select("receipt_id")
+    .eq("invoice_id", id);
+  const affectedReceiptIds = [...new Set((allocs ?? []).map((a) => a.receipt_id).filter(Boolean))];
+
+  // B. Clean up child relations
+  await getDb().from("receipt_allocations").delete().eq("invoice_id", id);
+  await getDb().from("payment_links").delete().eq("invoice_id", id);
+  await getDb().from("payments").delete().eq("invoice_id", id);
+  await getDb()
+    .from("credit_notes")
+    .update({ invoice_id: null } as never)
+    .eq("invoice_id", id);
+  await getDb().from("invoice_items").delete().eq("invoice_id", id);
+
+  // C. Delete invoice
+  const { error: delErr } = await getDb().from("invoices").delete().eq("id", id);
+  if (delErr) throw new AppError(mapDbError(delErr));
+
+  // D. Revert quote to 'accepted' if no other active invoice exists
+  if (inv.quote_id) {
+    try {
+      const { data: remaining } = await getDb()
+        .from("invoices")
+        .select("id")
+        .eq("quote_id", inv.quote_id)
+        .neq("status", "cancelled");
+
+      if (!remaining || remaining.length === 0) {
+        await getDb().from("quotes").update({ status: "accepted" }).eq("id", inv.quote_id);
+      }
+    } catch (qErr) {
+      console.warn("[deleteInvoice] Failed to revert quote status:", qErr);
+    }
+  }
+
+  // E. Sync affected receipts so allocated and unallocated amounts update immediately
+  for (const rId of affectedReceiptIds) {
+    try {
+      const { data: rAllocs } = await getDb()
+        .from("receipt_allocations")
+        .select("amount")
+        .eq("receipt_id", rId);
+      const sumAlloc = (rAllocs ?? []).reduce((acc, a) => acc + (Number(a.amount) || 0), 0);
+      await getDb()
+        .from("receipts")
+        .update({ allocated_amount: sumAlloc } as never)
+        .eq("id", rId);
+    } catch (rErr) {
+      console.warn("[deleteInvoice] Failed to sync receipt totals:", rErr);
+    }
+  }
+
+  return {
+    action: "deleted",
+    invoice_id: id,
+    invoice_no: invoiceNo,
+    message: `Invoice ${invoiceNo} deleted successfully.`,
+  };
 }
 
 export async function createInvoice(input: InvoiceCreateInput): Promise<InvoiceRow> {

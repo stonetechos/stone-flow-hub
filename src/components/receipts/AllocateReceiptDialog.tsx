@@ -162,16 +162,32 @@ export function AllocateReceiptDialog({
     );
   }, [open, openInvoicesQuery.data, allocationsQuery.data]);
 
-  // Sync initial allocation amounts from existing allocations
+  // Sync initial allocation amounts: from existing allocations, or auto-prefill FIFO if none exist
   useEffect(() => {
-    if (open && allocationsQuery.data) {
+    if (open && (allocationsQuery.data || invoiceList.length > 0)) {
       const initial: Record<string, number> = {};
-      allocationsQuery.data.forEach((a) => {
+      const currentAllocs = allocationsQuery.data ?? [];
+      currentAllocs.forEach((a) => {
         initial[a.invoice_id] = Number(a.amount) || 0;
       });
+
+      // If no allocations exist yet, auto-prefill FIFO so the user doesn't have to manually click Max
+      if (Object.keys(initial).length === 0 && invoiceList.length > 0 && netReceiptAmount > 0) {
+        let remaining = netReceiptAmount;
+        for (const inv of invoiceList) {
+          if (remaining <= 0) break;
+          if (inv.maxAvailable <= 0) continue;
+          const take = Math.min(inv.maxAvailable, remaining);
+          if (take > 0) {
+            initial[inv.id] = take;
+            remaining -= take;
+          }
+        }
+      }
+
       setAllocations(initial);
     }
-  }, [open, allocationsQuery.data]);
+  }, [open, allocationsQuery.data, invoiceList, netReceiptAmount]);
 
   const totalAllocated = useMemo(() => {
     return Object.values(allocations).reduce((sum, v) => sum + (Number(v) || 0), 0);

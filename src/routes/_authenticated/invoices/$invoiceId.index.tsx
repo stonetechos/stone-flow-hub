@@ -20,6 +20,9 @@ import {
   Eye,
   ImageIcon,
   Sparkles,
+  Receipt as ReceiptIcon,
+  RefreshCw,
+  Link2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
@@ -65,9 +68,11 @@ import {
   getInvoiceItems,
   getInvoicePaymentLinks,
   getInvoicePayments,
+  recalcInvoiceBalances,
   recordManualPayment,
   setInvoiceStatus,
 } from "@/lib/invoices/api";
+import { replaceAllocations, listUnallocatedReceiptsForCustomer } from "@/lib/receipts/api";
 import { formatInr } from "@/lib/format";
 import type { RecordPaymentInput } from "@/lib/invoices/schema";
 import type { DbTable } from "@/lib/types";
@@ -185,6 +190,61 @@ function InvoiceDetailPage() {
       }
     },
     onError: (err) => toast.error(toUserMessage(err)),
+  });
+
+  const invoiceData = inv.data;
+  const customerId = invoiceData?.customer_id;
+  const invoiceBalance = Number(invoiceData?.balance_due ?? 0);
+
+  const unallocatedReceiptsQ = useQuery({
+    queryKey: ["receipts", "unallocated-for-customer", customerId],
+    queryFn: () => (customerId ? listUnallocatedReceiptsForCustomer(customerId) : []),
+    enabled: !!customerId && invoiceBalance > 0,
+  });
+
+  const unallocatedReceipts = unallocatedReceiptsQ.data ?? [];
+  const totalUnallocatedAdvance = unallocatedReceipts.reduce(
+    (sum, r) => sum + Number(r.unallocated_amount || 0),
+    0,
+  );
+
+  const applyAdvanceMut = useMutation({
+    mutationFn: async (targetReceiptId: string) => {
+      const currentInvoice = inv.data;
+      if (!currentInvoice) throw new Error("Invoice not loaded");
+      const currentBal = Number(currentInvoice.balance_due ?? 0);
+      const rcpt = unallocatedReceipts.find((r) => r.id === targetReceiptId);
+      if (!rcpt) throw new Error("Receipt not found");
+      const unalloc = Number(rcpt.unallocated_amount || 0);
+      const applyAmt = Math.min(unalloc, currentBal);
+      if (applyAmt <= 0) throw new Error("No balance or advance to apply");
+
+      const { data: existingAllocs } = await supabase
+        .from("receipt_allocations")
+        .select("invoice_id, amount")
+        .eq("receipt_id", targetReceiptId);
+
+      const existingForThisInv = (existingAllocs ?? []).find((a) => a.invoice_id === invoiceId);
+      const newAllocs = (existingAllocs ?? [])
+        .filter((a) => a.invoice_id !== invoiceId)
+        .map((a) => ({ invoice_id: a.invoice_id, amount: Number(a.amount) }));
+
+      newAllocs.push({
+        invoice_id: invoiceId,
+        amount:
+          Math.round(
+            ((existingForThisInv ? Number(existingForThisInv.amount) : 0) + applyAmt) * 100,
+          ) / 100,
+      });
+
+      await replaceAllocations(targetReceiptId, newAllocs);
+    },
+    onSuccess: () => {
+      toast.success("Customer advance applied to invoice successfully!");
+      invalidateAll();
+      qc.invalidateQueries({ queryKey: qk.receipts.all });
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
   });
 
   if (inv.isLoading) return <LoadingBlock />;
@@ -336,6 +396,19 @@ function InvoiceDetailPage() {
                     },
                   ]),
               {
+                label: "Sync & Recalculate Balance",
+                icon: <RefreshCw className="h-4 w-4" />,
+                onSelect: async () => {
+                  try {
+                    await recalcInvoiceBalances(invoiceId);
+                    invalidateAll();
+                    toast.success("Invoice balances and payment allocations synchronized");
+                  } catch (e) {
+                    toast.error(toUserMessage(e));
+                  }
+                },
+              },
+              {
                 label: "Delete invoice",
                 icon: <Trash2 className="h-4 w-4" />,
                 onSelect: () => setConfirmDel(true),
@@ -376,6 +449,51 @@ function InvoiceDetailPage() {
               <Plus className="mr-1.5 h-3.5 w-3.5" />
               Reuse {invoice.invoice_no}
             </Link>
+          </Button>
+        </div>
+      )}
+
+      {/* Customer Unallocated Advance Alert & 1-Click Apply */}
+      {balance > 0 && totalUnallocatedAdvance > 0 && (
+        <div className="mb-4 rounded-xl border border-emerald-300 bg-emerald-50/80 p-4 dark:border-emerald-900/60 dark:bg-emerald-950/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-emerald-950 dark:text-emerald-200 text-sm">
+                  Customer Advance Available: {formatInr(totalUnallocatedAdvance)}
+                </span>
+                <Badge
+                  variant="outline"
+                  className="border-emerald-500 text-emerald-700 bg-emerald-100 dark:bg-emerald-900/50 dark:text-emerald-300 text-[10px]"
+                >
+                  {unallocatedReceipts.length} Advance Receipt
+                  {unallocatedReceipts.length > 1 ? "s" : ""}
+                </Badge>
+              </div>
+              <p className="text-xs text-emerald-800 dark:text-emerald-300 mt-0.5">
+                {invoice.customer?.name} has {formatInr(totalUnallocatedAdvance)} in unallocated
+                receipts (e.g. {unallocatedReceipts[0]?.receipt_no}). You can apply this advance to
+                clear the invoice balance of {formatInr(balance)}.
+              </p>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shrink-0 text-xs h-8"
+            disabled={applyAdvanceMut.isPending}
+            onClick={() => {
+              if (unallocatedReceipts[0]?.id) {
+                applyAdvanceMut.mutate(unallocatedReceipts[0].id);
+              }
+            }}
+          >
+            {applyAdvanceMut.isPending ? (
+              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Link2 className="mr-1.5 h-3.5 w-3.5" />
+            )}
+            Apply {formatInr(Math.min(balance, totalUnallocatedAdvance))} Advance
           </Button>
         </div>
       )}
@@ -891,11 +1009,24 @@ function InvoiceDetailPage() {
                 <TableBody>
                   {payments.data!.map((p) => (
                     <TableRow key={p.id}>
-                      <TableCell className="font-mono text-xs">{p.payment_no}</TableCell>
+                      <TableCell className="font-mono text-xs">
+                        {p.source === "receipt" && p.receipt_id ? (
+                          <Link
+                            to="/receipts/$receiptId"
+                            params={{ receiptId: p.receipt_id }}
+                            className="text-primary hover:underline font-semibold flex items-center gap-1.5"
+                          >
+                            <ReceiptIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                            {p.payment_no}
+                          </Link>
+                        ) : (
+                          p.payment_no
+                        )}
+                      </TableCell>
                       <TableCell>{new Date(p.paid_at).toLocaleDateString("en-IN")}</TableCell>
                       <TableCell className="capitalize">{p.method.replace("_", " ")}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">
-                        {p.reference_no ?? p.razorpay_payment_id ?? "—"}
+                        {p.reference_no ?? "—"}
                       </TableCell>
                       <TableCell className="text-right font-medium">
                         {formatInr(p.amount)}

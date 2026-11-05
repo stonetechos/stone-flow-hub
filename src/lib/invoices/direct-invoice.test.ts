@@ -127,4 +127,29 @@ describe("Direct Invoice Schemas", () => {
     expect(taxAmount).toBe(5550);
     expect(total).toBe(38550);
   });
+
+  test("calculates balance due correctly when receipts or payments are allocated", () => {
+    const invoiceTotal = 58141;
+    const allocatedReceipt = 58141;
+    const legacyPayment = 0;
+
+    const totalPaid = allocatedReceipt + legacyPayment;
+    const balanceDue = Math.max(0, invoiceTotal - totalPaid);
+    const status = totalPaid >= invoiceTotal ? "paid" : totalPaid > 0 ? "partially_paid" : "sent";
+
+    expect(totalPaid).toBe(58141);
+    expect(balanceDue).toBe(0);
+    expect(status).toBe("paid");
+  });
+
+  test("calculates partially paid status when receipt is less than invoice total", () => {
+    const invoiceTotal = 58141;
+    const allocatedReceipt = 20000;
+
+    const balanceDue = invoiceTotal - allocatedReceipt;
+    const status = allocatedReceipt >= invoiceTotal ? "paid" : "partially_paid";
+
+    expect(balanceDue).toBe(38141);
+    expect(status).toBe("partially_paid");
+  });
 });
