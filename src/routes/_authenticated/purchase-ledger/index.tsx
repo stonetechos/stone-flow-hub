@@ -150,6 +150,7 @@ function PurchaseLedgerIndexPage() {
   return (
     <div className="space-y-4">
       <PageHeader
+        navId="vendor-ledger"
         title={t("purchaseLedger.title", "Suppliers Ledger")}
         subtitle={t(
           "purchaseLedger.subtitle",

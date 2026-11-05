@@ -113,6 +113,7 @@ function VendorPaymentsPage() {
   return (
     <div>
       <PageHeader
+        navId="vendor-payments"
         title={t("vendorPayments.title", "Supplier Payments")}
         subtitle={t(
           "vendorPayments.subtitle",

@@ -115,6 +115,7 @@ function PurchaseInvoicesPage() {
   return (
     <div className="space-y-6">
       <PageHeader
+        navId="purchase-invoices"
         title={t("Purchase Invoices & Logistics", "Purchase Invoices & Logistics")}
         subtitle={t(
           "Vendor bills recorded against purchase orders, attachments, and inbound freight transportation.",
