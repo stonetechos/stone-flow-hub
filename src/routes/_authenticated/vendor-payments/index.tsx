@@ -33,6 +33,7 @@ import {
   listVendorPayments,
   type VendorPaymentListItem,
 } from "@/lib/vendor-payments/api";
+import { generateSearchTokens } from "@/lib/search-tokens";
 import { invalidateVendorPayment } from "@/lib/query-invalidation";
 import { useRoles } from "@/hooks/use-roles";
 
@@ -82,7 +83,31 @@ function VendorPaymentsPage() {
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
-  const rows = query.data ?? [];
+  const rows = useMemo(() => {
+    const data = query.data ?? [];
+    if (!q.trim()) return data;
+
+    const tokens = generateSearchTokens(q);
+    if (tokens.length === 0) return data;
+
+    return data.filter((item) => {
+      const text = [
+        item.payment_no,
+        item.reference_no,
+        item.notes,
+        item.vendor?.company_name,
+        item.purchase_order?.po_no,
+        item.payment_type,
+        item.method,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return tokens.some((token) => text.includes(token));
+    });
+  }, [query.data, q]);
+
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
 
   return (
@@ -99,7 +124,10 @@ function VendorPaymentsPage() {
         count={rows.length}
         search={q}
         onSearchChange={setQ}
-        searchPlaceholder={t("vendorPayments.searchPlaceholder", "Search payment no or reference…")}
+        searchPlaceholder={t(
+          "vendorPayments.searchPlaceholder",
+          "Search supplier name, payment no, reference, notes…",
+        )}
         columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
         action={

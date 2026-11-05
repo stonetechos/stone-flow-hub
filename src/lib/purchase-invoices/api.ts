@@ -13,6 +13,7 @@
 import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
 import { sanitizeSearch } from "@/lib/zod";
+import { generateSearchTokens } from "@/lib/search-tokens";
 import {
   purchaseInvoiceCreateSchema,
   type PurchaseInvoiceCreateInput,
@@ -57,8 +58,50 @@ export async function listPurchaseInvoices(
     .select(SELECT)
     .order("invoice_date", { ascending: false })
     .limit(200);
-  const s = sanitizeSearch(query);
-  if (s) q = q.or(`invoice_no.ilike.%${s}%,vendor_invoice_no.ilike.%${s}%,notes.ilike.%${s}%`);
+
+  const tokens = generateSearchTokens(query);
+
+  if (tokens.length > 0) {
+    // 1. Resolve vendors matching search tokens/variants
+    const vendorOrClauses = tokens.flatMap((tok) => [
+      `company_name.ilike.%${tok}%`,
+      `contact_person.ilike.%${tok}%`,
+      `vendor_code.ilike.%${tok}%`,
+      `mobile_number.ilike.%${tok}%`,
+    ]);
+
+    let matchedVendorIds: string[] = [];
+    if (vendorOrClauses.length > 0) {
+      try {
+        const { data: vendorMatches } = await getDb()
+          .from("vendors" as never)
+          .select("id")
+          .or(vendorOrClauses.join(","))
+          .limit(50);
+        if (vendorMatches && Array.isArray(vendorMatches)) {
+          matchedVendorIds = (vendorMatches as { id: string }[]).map((v) => v.id);
+        }
+      } catch (err) {
+        console.warn("[listPurchaseInvoices] vendor search note:", err);
+      }
+    }
+
+    // 2. Build invoice search filter across invoice numbers, notes, and matched vendors
+    const invoiceOrClauses: string[] = tokens.flatMap((tok) => [
+      `invoice_no.ilike.%${tok}%`,
+      `vendor_invoice_no.ilike.%${tok}%`,
+      `notes.ilike.%${tok}%`,
+    ]);
+
+    if (matchedVendorIds.length > 0) {
+      invoiceOrClauses.push(`vendor_id.in.(${matchedVendorIds.join(",")})`);
+    }
+
+    if (invoiceOrClauses.length > 0) {
+      q = q.or(invoiceOrClauses.join(","));
+    }
+  }
+
   if (status) q = q.eq("status", status as PurchaseInvoiceStatus);
   const { data, error } = await q;
   if (error) throw new AppError(mapDbError(error));

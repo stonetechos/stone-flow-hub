@@ -2,6 +2,7 @@
 import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
 import { extractPhoneDigits, normalizeMobile, sanitizeSearch } from "@/lib/zod";
+import { generateSearchTokens } from "@/lib/search-tokens";
 import type { DbTable } from "@/lib/types";
 import { vendorCreateSchema, type VendorCreateInput } from "./schema";
 
@@ -182,7 +183,8 @@ async function getContactVendorIds(s: string, digits: string): Promise<string[]>
 }
 
 function buildVendorSearchClauses(s: string, digits: string, contactVendorIds: string[]): string {
-  const clauses = [
+  const tokens = generateSearchTokens(s);
+  const clauses: string[] = [
     `company_name.ilike.%${s}%`,
     `vendor_code.ilike.%${s}%`,
     `gst_number.ilike.%${s}%`,
@@ -192,6 +194,16 @@ function buildVendorSearchClauses(s: string, digits: string, contactVendorIds: s
     `email.ilike.%${s}%`,
     `external_ref->>contact_person.ilike.%${s}%`,
   ];
+
+  for (const tok of tokens) {
+    if (tok !== s) {
+      clauses.push(
+        `company_name.ilike.%${tok}%`,
+        `contact_person.ilike.%${tok}%`,
+        `vendor_code.ilike.%${tok}%`,
+      );
+    }
+  }
 
   if (digits.length >= 4) {
     clauses.push(

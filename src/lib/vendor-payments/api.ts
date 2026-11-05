@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
 import { sanitizeSearch } from "@/lib/zod";
+import { generateSearchTokens } from "@/lib/search-tokens";
 import {
   vendorPaymentCreateSchema,
   vendorPaymentUpdateSchema,
@@ -40,9 +41,51 @@ export async function listVendorPayments(query = ""): Promise<VendorPaymentListI
     .from("vendor_payments" as never)
     .select(SELECT)
     .order("paid_at", { ascending: false })
-    .limit(200);
-  const s = sanitizeSearch(query);
-  if (s) q = q.or(`payment_no.ilike.%${s}%,reference_no.ilike.%${s}%`);
+    .limit(300);
+
+  const tokens = generateSearchTokens(query);
+
+  if (tokens.length > 0) {
+    // 1. Resolve vendors matching any of the search tokens/variants
+    const vendorOrClauses = tokens.flatMap((tok) => [
+      `company_name.ilike.%${tok}%`,
+      `contact_person.ilike.%${tok}%`,
+      `vendor_code.ilike.%${tok}%`,
+      `mobile_number.ilike.%${tok}%`,
+    ]);
+
+    let matchedVendorIds: string[] = [];
+    if (vendorOrClauses.length > 0) {
+      try {
+        const { data: vendorMatches } = await supabase
+          .from("vendors" as never)
+          .select("id")
+          .or(vendorOrClauses.join(","))
+          .limit(50);
+        if (vendorMatches && Array.isArray(vendorMatches)) {
+          matchedVendorIds = (vendorMatches as { id: string }[]).map((v) => v.id);
+        }
+      } catch (err) {
+        console.warn("[listVendorPayments] vendor search note:", err);
+      }
+    }
+
+    // 2. Build payment search filter across payment number, ref #, notes, and matched vendors
+    const paymentOrClauses: string[] = tokens.flatMap((tok) => [
+      `payment_no.ilike.%${tok}%`,
+      `reference_no.ilike.%${tok}%`,
+      `notes.ilike.%${tok}%`,
+    ]);
+
+    if (matchedVendorIds.length > 0) {
+      paymentOrClauses.push(`vendor_id.in.(${matchedVendorIds.join(",")})`);
+    }
+
+    if (paymentOrClauses.length > 0) {
+      q = q.or(paymentOrClauses.join(","));
+    }
+  }
+
   const { data, error } = await q;
   if (error) throw new AppError(mapDbError(error));
   return (data ?? []) as unknown as VendorPaymentListItem[];
