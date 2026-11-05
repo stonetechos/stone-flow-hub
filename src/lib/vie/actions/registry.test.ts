@@ -40,8 +40,8 @@ describe("Action Registry", () => {
       linkedRecordType: "test",
       linkedRecordId: "id-1",
     });
-    registerVieAction("log_enquiry", handler);
-    expect(getVieAction("log_enquiry")).toBe(handler);
+    registerVieAction("__test_register_get__" as VieIntent, handler);
+    expect(getVieAction("__test_register_get__" as VieIntent)).toBe(handler);
   });
 
   test("re-registering the same intent overwrites the previous handler", () => {
@@ -53,8 +53,8 @@ describe("Action Registry", () => {
       linkedRecordType: "b",
       linkedRecordId: "2",
     });
-    registerVieAction("create_customer", first);
-    registerVieAction("create_customer", second);
-    expect(getVieAction("create_customer")).toBe(second);
+    registerVieAction("__test_overwrite__" as VieIntent, first);
+    registerVieAction("__test_overwrite__" as VieIntent, second);
+    expect(getVieAction("__test_overwrite__" as VieIntent)).toBe(second);
   });
 });
