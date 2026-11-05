@@ -198,10 +198,17 @@ export async function getCompanyProfitabilityAndTargets(customTargets?: {
     if (rawSp.includes("rishi")) spKey = "rishi";
     else if (rawSp.includes("raman")) spKey = "raman";
 
-    // Quotes for this project
+    // Quotes for this project (exclude declined or expired quotes)
     const pQuotes = quotesByProj.get(p.id) || [];
     const approvedQ = pQuotes.find((q) => q.status === "accepted" || q.status === "converted");
-    const quotedValue = approvedQ ? approvedQ.total : pQuotes.length > 0 ? pQuotes[0].total : 0;
+    const activeNonApprovedQ = pQuotes.find(
+      (q) => q.status !== "rejected" && q.status !== "expired",
+    );
+    const quotedValue = approvedQ
+      ? approvedQ.total
+      : activeNonApprovedQ
+        ? activeNonApprovedQ.total
+        : 0;
 
     // Check if there are active pipeline quotes
     const openQuotes = pQuotes.filter((q) => q.status === "sent" || q.status === "draft");

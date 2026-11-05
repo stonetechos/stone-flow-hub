@@ -19,6 +19,9 @@ import {
   Sparkles,
   Layers,
   Receipt,
+  XCircle,
+  RefreshCw,
+  ChevronDown,
 } from "lucide-react";
 import { parseQuoteVendorAssignment, assignVendorToQuote } from "@/lib/quotes/vendor-assignment";
 import { AssignQuoteVendorDialog } from "@/components/quotes/AssignQuoteVendorDialog";
@@ -32,7 +35,15 @@ import {
   type DealScope,
 } from "@/lib/quotes/terms";
 import { cn } from "@/lib/utils";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import type { DbTable } from "@/lib/types";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
@@ -80,7 +91,13 @@ import { DensityMenu } from "@/components/data/DensityMenu";
 import { useTablePrefs } from "@/hooks/use-table-prefs";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
-import { createQuote, deleteQuote, listQuotes, type QuoteListItem } from "@/lib/quotes/api";
+import {
+  createQuote,
+  deleteQuote,
+  listQuotes,
+  setQuoteStatus,
+  type QuoteListItem,
+} from "@/lib/quotes/api";
 import {
   quoteItemInputSchema,
   QUOTE_CATEGORIES,
@@ -185,6 +202,25 @@ function QuotesPage() {
     onError: (err) => {
       toast.error(toUserMessage(err));
     },
+  });
+
+  const changeStatusMut = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: DbTable<"quotes">["status"] }) =>
+      setQuoteStatus(id, status),
+    onSuccess: (_, { status }) => {
+      const label =
+        status === "rejected"
+          ? "marked as Declined"
+          : status === "accepted"
+            ? "marked as Accepted"
+            : `status updated to ${status}`;
+      toast.success(`Quotation ${label}`);
+      invalidateQuote(qc);
+      qc.invalidateQueries({ queryKey: ["dash"] });
+      qc.invalidateQueries({ queryKey: ["profitability"] });
+      qc.invalidateQueries({ queryKey: ["salesperson-profitability"] });
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
   });
 
   const quoteCounts = useMemo(() => {
@@ -457,7 +493,7 @@ function QuotesPage() {
               <SelectItem value="draft">Draft</SelectItem>
               <SelectItem value="sent">Sent</SelectItem>
               <SelectItem value="accepted">Accepted</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
+              <SelectItem value="rejected">Declined</SelectItem>
               <SelectItem value="expired">Expired</SelectItem>
               <SelectItem value="cancelled">Cancelled</SelectItem>
               <SelectItem value="converted">Converted</SelectItem>
@@ -656,19 +692,73 @@ function QuotesPage() {
                     )}
                     {!isHidden("status") && (
                       <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            "capitalize font-medium",
-                            r.status === "accepted" &&
-                              "bg-emerald-50 text-emerald-700 border-emerald-200",
-                            r.status === "sent" && "bg-sky-50 text-sky-700 border-sky-200",
-                            r.status === "draft" && "bg-slate-50 text-slate-700 border-slate-200",
-                            r.status === "rejected" && "bg-rose-50 text-rose-700 border-rose-200",
-                          )}
-                        >
-                          {r.status}
-                        </Badge>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              type="button"
+                              className="inline-flex items-center gap-1 cursor-pointer focus:outline-hidden group"
+                              title="Click to change quotation status"
+                            >
+                              <Badge
+                                variant="outline"
+                                className={cn(
+                                  "capitalize font-medium transition-all group-hover:ring-1 group-hover:ring-slate-300",
+                                  r.status === "accepted" &&
+                                    "bg-emerald-50 text-emerald-700 border-emerald-200",
+                                  r.status === "sent" && "bg-sky-50 text-sky-700 border-sky-200",
+                                  r.status === "draft" &&
+                                    "bg-slate-50 text-slate-700 border-slate-200",
+                                  r.status === "rejected" &&
+                                    "bg-rose-50 text-rose-700 border-rose-200",
+                                  r.status === "converted" &&
+                                    "bg-indigo-50 text-indigo-700 border-indigo-200",
+                                  r.status === "expired" &&
+                                    "bg-amber-50 text-amber-700 border-amber-200",
+                                )}
+                              >
+                                {r.status === "rejected" ? "Declined" : r.status}
+                                <ChevronDown className="ml-1 h-3 w-3 opacity-50 group-hover:opacity-100" />
+                              </Badge>
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="start" className="w-44">
+                            <DropdownMenuLabel className="text-xs text-muted-foreground">
+                              Change Status
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              disabled={r.status === "draft"}
+                              onClick={() => changeStatusMut.mutate({ id: r.id, status: "draft" })}
+                            >
+                              Draft
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              disabled={r.status === "sent"}
+                              onClick={() => changeStatusMut.mutate({ id: r.id, status: "sent" })}
+                            >
+                              Sent
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              disabled={r.status === "accepted"}
+                              onClick={() =>
+                                changeStatusMut.mutate({ id: r.id, status: "accepted" })
+                              }
+                            >
+                              <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-600" />
+                              Accepted
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              disabled={r.status === "rejected"}
+                              className="text-rose-600 focus:text-rose-600 focus:bg-rose-50"
+                              onClick={() =>
+                                changeStatusMut.mutate({ id: r.id, status: "rejected" })
+                              }
+                            >
+                              <XCircle className="mr-2 h-4 w-4 text-rose-600" />
+                              Declined
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     )}
                     {!isHidden("vendor") && (
@@ -851,6 +941,37 @@ function QuotesPage() {
                               <Building2 className="mr-2 h-4 w-4" />
                               Assign Vendor / Delivery Date
                             </DropdownMenuItem>
+                            {r.status !== "rejected" && r.status !== "converted" && (
+                              <DropdownMenuItem
+                                className="text-rose-600 focus:text-rose-600 focus:bg-rose-50"
+                                onClick={() =>
+                                  changeStatusMut.mutate({ id: r.id, status: "rejected" })
+                                }
+                              >
+                                <XCircle className="mr-2 h-4 w-4 text-rose-600" />
+                                Mark as Declined
+                              </DropdownMenuItem>
+                            )}
+                            {r.status === "rejected" && (
+                              <DropdownMenuItem
+                                className="text-sky-600 focus:text-sky-600 focus:bg-sky-50"
+                                onClick={() => changeStatusMut.mutate({ id: r.id, status: "sent" })}
+                              >
+                                <RefreshCw className="mr-2 h-4 w-4 text-sky-600" />
+                                Reopen (Mark as Sent)
+                              </DropdownMenuItem>
+                            )}
+                            {r.status !== "accepted" && r.status !== "converted" && (
+                              <DropdownMenuItem
+                                className="text-emerald-600 focus:text-emerald-600 focus:bg-emerald-50"
+                                onClick={() =>
+                                  changeStatusMut.mutate({ id: r.id, status: "accepted" })
+                                }
+                              >
+                                <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-600" />
+                                Mark as Accepted
+                              </DropdownMenuItem>
+                            )}
                           </>
                         }
                         onEdit={() =>

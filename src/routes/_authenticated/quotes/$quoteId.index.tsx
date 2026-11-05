@@ -29,6 +29,8 @@ import {
   AlertTriangle,
   ShieldCheck,
   FileText,
+  XCircle,
+  RefreshCw,
 } from "lucide-react";
 
 import { QuoteTermsManager } from "@/components/quotes/QuoteTermsManager";
@@ -284,7 +286,13 @@ function QuoteDetailPage() {
   const statusMut = useMutation({
     mutationFn: (s: QuoteStatus) => setQuoteStatus(quoteId, s),
     onSuccess: (_, s) => {
-      toast.success("Status updated");
+      const label =
+        s === "rejected"
+          ? "Quotation marked as Declined"
+          : s === "accepted"
+            ? "Quotation approved"
+            : `Status updated to ${s}`;
+      toast.success(label);
       if (s === "accepted") {
         void dispatchSystemNotification({
           scope: "broadcast",
@@ -297,6 +305,9 @@ function QuoteDetailPage() {
         });
       }
       invalidateQuote(qc, quoteId);
+      qc.invalidateQueries({ queryKey: ["dash"] });
+      qc.invalidateQueries({ queryKey: ["profitability"] });
+      qc.invalidateQueries({ queryKey: ["salesperson-profitability"] });
     },
     onError: (err) => toast.error(toUserMessage(err)),
   });
@@ -431,6 +442,32 @@ function QuoteDetailPage() {
                       <CheckCircle2 className="mr-1.5 h-4 w-4" />
                     )}
                     Approve
+                  </Button>
+                )}
+
+                {!isAccepted && quote.status !== "rejected" && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800 shadow-xs"
+                    onClick={() => statusMut.mutate("rejected")}
+                    disabled={statusMut.isPending}
+                  >
+                    <XCircle className="mr-1.5 h-4 w-4 text-rose-600" />
+                    Decline
+                  </Button>
+                )}
+
+                {quote.status === "rejected" && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-sky-200 text-sky-700 hover:bg-sky-50 shadow-xs"
+                    onClick={() => statusMut.mutate("sent")}
+                    disabled={statusMut.isPending}
+                  >
+                    <RefreshCw className="mr-1.5 h-4 w-4 text-sky-600" />
+                    Reopen Quote
                   </Button>
                 )}
 
@@ -598,6 +635,21 @@ function QuoteDetailPage() {
                     },
                   ]
                 : []),
+              ...(quote.status !== "rejected"
+                ? [
+                    {
+                      label: "Decline Quote",
+                      icon: <XCircle className="h-4 w-4 text-rose-600" />,
+                      onSelect: () => statusMut.mutate("rejected"),
+                    },
+                  ]
+                : [
+                    {
+                      label: "Reopen (Mark as Sent)",
+                      icon: <RefreshCw className="h-4 w-4 text-sky-600" />,
+                      onSelect: () => statusMut.mutate("sent"),
+                    },
+                  ]),
               {
                 label: assignment.isAssigned
                   ? `Partner: ${assignment.vendorName}`
@@ -1212,8 +1264,17 @@ function QuoteDetailPage() {
             <CardTitle className="text-sm">Status</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Badge variant="outline" className="capitalize">
-              {quote.status}
+            <Badge
+              variant="outline"
+              className={
+                quote.status === "rejected"
+                  ? "border-rose-200 bg-rose-50 text-rose-700 font-medium"
+                  : quote.status === "accepted"
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-700 font-medium"
+                    : "capitalize"
+              }
+            >
+              {quote.status === "rejected" ? "Declined" : quote.status}
             </Badge>
             <div>
               <label className="text-xs font-medium text-muted-foreground">Change status</label>
@@ -1228,7 +1289,7 @@ function QuoteDetailPage() {
                   <SelectItem value="draft">Draft</SelectItem>
                   <SelectItem value="sent">Sent</SelectItem>
                   <SelectItem value="accepted">Accepted</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
+                  <SelectItem value="rejected">Declined</SelectItem>
                   <SelectItem value="expired">Expired</SelectItem>
                   <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>

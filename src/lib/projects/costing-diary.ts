@@ -184,8 +184,10 @@ export async function getProjectFinancialRollup(
   if (rawSp.includes("rishi")) salesperson = "rishi";
   else if (rawSp.includes("raman")) salesperson = "raman";
 
-  // Quoted Revenue
-  const quotes = quotesRes.data || [];
+  // Quoted Revenue (exclude declined and expired quotes)
+  const quotes = (quotesRes.data || []).filter(
+    (q) => q.status !== "rejected" && q.status !== "expired",
+  );
   const approvedQuote = quotes.find((q) => q.status === "accepted" || q.status === "converted");
   const quotedValue = approvedQuote
     ? Number(approvedQuote.total || 0)

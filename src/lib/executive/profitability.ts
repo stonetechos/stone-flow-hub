@@ -32,7 +32,7 @@ export async function getProjectProfitability(): Promise<ProjectProfitability[]>
       .select(
         "id,total,material_cost,manufacturing_cost,installation_cost,freight_cost,other_cost,enquiries(project_id)",
       ),
-    supabase.from("quotes").select("total,project_id"),
+    supabase.from("quotes").select("total,project_id,status"),
     supabase.from("invoices").select("total,project_id"),
     supabase.from("vendor_payments").select("amount,grns(project_id)"),
     supabase.from("purchase_orders").select("id,project_id,status"),
@@ -62,7 +62,9 @@ export async function getProjectProfitability(): Promise<ProjectProfitability[]>
     return m;
   };
   const quoteTotal = sumBy(
-    (quoteRes.data ?? []) as Array<{ project_id: string; total: number }>,
+    ((quoteRes.data ?? []) as Array<{ project_id: string; total: number; status?: string }>).filter(
+      (r) => r.status !== "rejected" && r.status !== "expired",
+    ),
     (r) => Number(r.total ?? 0),
   );
   const invTotal = sumBy((invRes.data ?? []) as Array<{ project_id: string; total: number }>, (r) =>

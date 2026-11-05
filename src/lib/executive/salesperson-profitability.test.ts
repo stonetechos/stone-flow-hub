@@ -26,4 +26,41 @@ describe("Salesperson Profitability & Target Configuration", () => {
     const weeklyDeals = Math.ceil(dealsNeeded / 4);
     expect(weeklyDeals).toBe(5);
   });
+
+  it("excludes declined (rejected) and expired quotes from active quoted values", () => {
+    interface TestQuote {
+      total: number;
+      status: string;
+    }
+
+    function resolveQuotedValue(pQuotes: TestQuote[]): number {
+      const approvedQ = pQuotes.find((q) => q.status === "accepted" || q.status === "converted");
+      const activeNonApprovedQ = pQuotes.find(
+        (q) => q.status !== "rejected" && q.status !== "expired",
+      );
+      return approvedQ ? approvedQ.total : activeNonApprovedQ ? activeNonApprovedQ.total : 0;
+    }
+
+    // A project having only a declined quote should NOT count in quoted value
+    const declinedQuotes: TestQuote[] = [{ total: 101640, status: "rejected" }];
+    expect(resolveQuotedValue(declinedQuotes)).toBe(0);
+
+    // Expired quotes should also yield 0
+    const deadQuotes: TestQuote[] = [{ total: 60000, status: "expired" }];
+    expect(resolveQuotedValue(deadQuotes)).toBe(0);
+
+    // If an approved quote exists, it should be chosen
+    const mixedQuotesWithApproved: TestQuote[] = [
+      { total: 101640, status: "rejected" },
+      { total: 85000, status: "accepted" },
+    ];
+    expect(resolveQuotedValue(mixedQuotesWithApproved)).toBe(85000);
+
+    // If only an active sent/draft quote exists, it should be chosen
+    const activePipelineQuote: TestQuote[] = [
+      { total: 101640, status: "rejected" },
+      { total: 85300, status: "sent" },
+    ];
+    expect(resolveQuotedValue(activePipelineQuote)).toBe(85300);
+  });
 });

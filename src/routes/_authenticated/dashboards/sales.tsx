@@ -26,7 +26,9 @@ function SalesDashboard() {
         enquiries: enq.data?.length ?? 0,
         quotes_open: quotes.filter((q) => q.status !== "converted" && q.status !== "rejected")
           .length,
-        quote_value: quotes.reduce((s, q) => s + Number(q.total ?? 0), 0),
+        quote_value: quotes
+          .filter((q) => q.status !== "rejected" && q.status !== "expired")
+          .reduce((s, q) => s + Number(q.total ?? 0), 0),
         followups: foll.data?.length ?? 0,
         revenue: invoices.reduce((s, i) => s + Number(i.total ?? 0), 0),
         outstanding: invoices.reduce((s, i) => s + Number(i.balance_due ?? 0), 0),
