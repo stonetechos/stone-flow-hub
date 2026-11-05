@@ -1123,7 +1123,14 @@ function CreateQuoteDialog({
       quantity: String(it.quantity),
       unit: it.unit || "sqft",
       unit_price: String(it.unit_price),
-      tax_pct: saleMode === "cash" ? "0" : it.tax_pct !== undefined ? String(it.tax_pct) : "18",
+      tax_pct:
+        saleMode === "cash"
+          ? "0"
+          : it.tax_pct !== undefined && Number(it.tax_pct) > 0
+            ? String(it.tax_pct)
+            : saleMode === "invoiced"
+              ? "18"
+              : "0",
       notes: it.notes || "",
       hsn_sac: it.hsn_sac || "",
       fulfilment: it.fulfilment || "",
@@ -1198,7 +1205,14 @@ function CreateQuoteDialog({
         items: calcResult.items.map((it) => ({
           ...it,
           quantity: Math.round(Number(it.quantity) * 100) / 100,
-          tax_pct: saleMode === "cash" ? 0 : it.tax_pct,
+          tax_pct:
+            saleMode === "cash"
+              ? 0
+              : it.tax_pct && Number(it.tax_pct) > 0
+                ? Number(it.tax_pct)
+                : saleMode === "invoiced"
+                  ? 18
+                  : 0,
         })),
         wall_estimate: calcResult.worksheet as Record<string, unknown>,
       });

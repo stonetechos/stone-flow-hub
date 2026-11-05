@@ -587,13 +587,49 @@ export function EstimateStudioCalculator({
     const out: QuoteItemInput[] = [];
     if (category !== "installation_only") {
       for (const p of productsComputed) {
-        if (!p.productName || p.amount <= 0) continue;
+        // Skip completely unconfigured / blank rows (no quantity and no price and no amount and no custom name)
+        const hasQty = p.quantityToOrder > 0;
+        const hasPrice = p.pricePerUnit > 0;
+        const hasAmount = p.amount > 0;
+        const hasCustomName = Boolean(p.productName && p.productName.trim().length > 0);
+
+        if (!hasCustomName && !hasAmount && !(hasQty && hasPrice)) {
+          continue;
+        }
+
         const materialLabel =
-          MATERIAL_OPTIONS.find((m) => m.value === p.materialCategory)?.label ?? p.materialCategory;
+          MATERIAL_OPTIONS.find((m) => m.value === p.materialCategory)?.label ??
+          (p.materialCategory ? p.materialCategory.replace(/_/g, " ") : "Natural Stone");
         const wallName = wallsComputed.find((w) => w.id === p.wallId)?.name ?? "";
+        const cleanProdName = p.productName ? p.productName.trim() : "";
+
+        let description: string;
+        if (cleanProdName) {
+          if (cleanProdName.toLowerCase() === materialLabel.toLowerCase()) {
+            description = `${materialLabel}${wallName ? ` (${wallName})` : ""}`;
+          } else {
+            description = `${materialLabel} — ${cleanProdName}${wallName ? ` (${wallName})` : ""}`;
+          }
+        } else {
+          description = `${materialLabel}${wallName ? ` (${wallName})` : ""}`;
+        }
+
+        // Try matching product_id from website products catalog
+        let matchedProductId: string | null = null;
+        if (cleanProdName) {
+          const matched = websiteProducts.find(
+            (wp) =>
+              wp.name.toLowerCase() === cleanProdName.toLowerCase() ||
+              wp.id.toLowerCase() === cleanProdName.toLowerCase(),
+          );
+          if (matched?.id) {
+            matchedProductId = matched.id;
+          }
+        }
+
         out.push({
-          product_id: null,
-          description: `${materialLabel} — ${p.productName}${wallName ? ` (${wallName})` : ""}`,
+          product_id: matchedProductId,
+          description,
           quantity: p.quantityToOrder,
           unit: p.priceUnit === "sqft" ? "sqft" : "unit",
           unit_price: p.pricePerUnit,
@@ -678,6 +714,7 @@ export function EstimateStudioCalculator({
     cartingNum,
     cartingLocation,
     totalWallSqft,
+    websiteProducts,
   ]);
 
   useEffect(() => {
@@ -707,17 +744,30 @@ export function EstimateStudioCalculator({
     setSending(true);
     try {
       const materialSummary = productsComputed
-        .filter((p) => p.productName)
+        .filter(
+          (p) =>
+            (p.productName && p.productName.trim().length > 0) ||
+            p.amount > 0 ||
+            p.quantityToOrder > 0,
+        )
         .map((p) => {
           const materialLabel =
             MATERIAL_OPTIONS.find((m) => m.value === p.materialCategory)?.label ??
             p.materialCategory;
           const wallName = wallsComputed.find((w) => w.id === p.wallId)?.name ?? "";
-          return `${materialLabel} - ${p.productName}${wallName ? ` (${wallName})` : ""}`;
+          const prodTitle = p.productName?.trim()
+            ? `${materialLabel} - ${p.productName.trim()}`
+            : materialLabel;
+          return `${prodTitle}${wallName ? ` (${wallName})` : ""}`;
         })
         .join("; ");
       const materialToOrderSummary = productsComputed
-        .filter((p) => p.productName)
+        .filter(
+          (p) =>
+            (p.productName && p.productName.trim().length > 0) ||
+            p.amount > 0 ||
+            p.quantityToOrder > 0,
+        )
         .map((p) => {
           const wallName = wallsComputed.find((w) => w.id === p.wallId)?.name ?? "";
           const wastageNote =

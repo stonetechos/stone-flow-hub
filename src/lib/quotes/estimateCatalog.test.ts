@@ -675,4 +675,135 @@ describe("estimateCatalog - rounding and wastage calculations", () => {
       expect(msg).toContain("Total Estimate: ₹76,500");
     });
   });
+
+  describe("EstimateStudioCalculator product item generation", () => {
+    function extractQuoteProductItems(
+      products: Array<{
+        materialCategory: string;
+        productName: string;
+        pricePerUnit: number;
+        priceUnit: "sqft" | "unit";
+        quantityToOrder: number;
+        amount: number;
+        wallId: string;
+        imageDataUrl?: string | null;
+      }>,
+      walls: Array<{ id: string; name: string }>,
+      materialOptions: Array<{ value: string; label: string }>,
+    ) {
+      const out = [];
+      for (const p of products) {
+        const hasQty = p.quantityToOrder > 0;
+        const hasPrice = p.pricePerUnit > 0;
+        const hasAmount = p.amount > 0;
+        const hasCustomName = Boolean(p.productName && p.productName.trim().length > 0);
+
+        if (!hasCustomName && !hasAmount && !(hasQty && hasPrice)) {
+          continue;
+        }
+
+        const materialLabel =
+          materialOptions.find((m) => m.value === p.materialCategory)?.label ??
+          p.materialCategory.replace(/_/g, " ");
+        const wallName = walls.find((w) => w.id === p.wallId)?.name ?? "";
+        const cleanProdName = p.productName ? p.productName.trim() : "";
+
+        let description: string;
+        if (cleanProdName) {
+          if (cleanProdName.toLowerCase() === materialLabel.toLowerCase()) {
+            description = `${materialLabel}${wallName ? ` (${wallName})` : ""}`;
+          } else {
+            description = `${materialLabel} — ${cleanProdName}${wallName ? ` (${wallName})` : ""}`;
+          }
+        } else {
+          description = `${materialLabel}${wallName ? ` (${wallName})` : ""}`;
+        }
+
+        out.push({
+          description,
+          quantity: p.quantityToOrder,
+          unit: p.priceUnit,
+          unit_price: p.pricePerUnit,
+          image_url: p.imageDataUrl || null,
+        });
+      }
+      return out;
+    }
+
+    const MATERIAL_OPTIONS = [
+      { value: "natural_stone_mosaics", label: "Natural Stone Mosaics" },
+      { value: "sandstone_cladding", label: "Sandstone Cladding" },
+      { value: "limestone_cladding", label: "Limestone Cladding" },
+    ];
+
+    it("registers product item when specific product name is blank but material and price are entered", () => {
+      const items = extractQuoteProductItems(
+        [
+          {
+            materialCategory: "natural_stone_mosaics",
+            productName: "", // left blank in calculator
+            pricePerUnit: 320,
+            priceUnit: "sqft",
+            quantityToOrder: 57,
+            amount: 18240,
+            wallId: "w1",
+            imageDataUrl: "data:image/jpeg;base64,samplephoto",
+          },
+        ],
+        [{ id: "w1", name: "Wall Living Area" }],
+        MATERIAL_OPTIONS,
+      );
+
+      expect(items.length).toBe(1);
+      expect(items[0].description).toBe("Natural Stone Mosaics (Wall Living Area)");
+      expect(items[0].quantity).toBe(57);
+      expect(items[0].unit_price).toBe(320);
+      expect(items[0].image_url).toBe("data:image/jpeg;base64,samplephoto");
+    });
+
+    it("registers product item with custom specific product name when provided", () => {
+      const items = extractQuoteProductItems(
+        [
+          {
+            materialCategory: "sandstone_cladding",
+            productName: "White Mint Sandstone 3D Origami Relief",
+            pricePerUnit: 420,
+            priceUnit: "sqft",
+            quantityToOrder: 100,
+            amount: 42000,
+            wallId: "w1",
+          },
+        ],
+        [{ id: "w1", name: "Facade Wall" }],
+        MATERIAL_OPTIONS,
+      );
+
+      expect(items.length).toBe(1);
+      expect(items[0].description).toBe(
+        "Sandstone Cladding — White Mint Sandstone 3D Origami Relief (Facade Wall)",
+      );
+      expect(items[0].quantity).toBe(100);
+      expect(items[0].unit_price).toBe(420);
+    });
+
+    it("skips completely blank product rows with no quantity, price, or custom name", () => {
+      const items = extractQuoteProductItems(
+        [
+          {
+            materialCategory: "natural_stone_mosaics",
+            productName: "",
+            pricePerUnit: 0,
+            priceUnit: "sqft",
+            quantityToOrder: 0,
+            amount: 0,
+            wallId: "w1",
+          },
+        ],
+        [{ id: "w1", name: "Wall" }],
+        MATERIAL_OPTIONS,
+      );
+
+      expect(items.length).toBe(0);
+    });
+  });
 });
