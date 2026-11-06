@@ -71,16 +71,16 @@ export const DEFAULT_LANDING_CONTENT: WebsiteLandingContent = {
   heroTitlePart1: "Direct-from-Quarry",
   heroTitleHighlight: "Natural Stone Panels & Slabs",
   heroDescription:
-    "We cut, polish, dry-lay, and crate natural stone wall cladding, Italian & Makrana marble, fluted panels, and elevation murals directly from our Rajasthan quarries & fabrication atelier.",
+    "From handcrafted stone veneers to CNC-carved murals, custom flooring and luxury facades—we transform natural stone into timeless architectural statements.",
   heroCustomersServed: "1500+",
-  heroWarranty: "10-Year Warranty",
-  heroPricingBadge: "Direct Workshop Pricing",
+  heroWarranty: "3 Years",
+  heroPricingBadge: "Direct Quarry Pricing",
   heroGoogleRating: "4.6",
 
-  heroBenefit1: "Direct Quarry Source",
-  heroBenefit2: "CNC & Hand-carved",
-  heroBenefit3: "Pan-India Crated Dispatch",
-  heroBenefit4: "Architect WhatsApp Support",
+  heroBenefit1: "Design Understanding",
+  heroBenefit2: "Own CNC & Inlay Workshops",
+  heroBenefit3: "Pan India Delivery",
+  heroBenefit4: "Design-to-Installation Support",
 
   showcaseSectionTitle: "Architectural Products & Live Executed Works",
   showcaseSectionSubtitle:

@@ -1133,24 +1133,6 @@ function HomePage() {
                 </div>
               </div>
 
-              {/* Scaled Sacred Shree Yantra & Prepayment Privilege Showcase (Single Exclusive Ad) */}
-              <ShreeYantraHeroShowcase
-                isClaimed={prepaymentDiscountSelected}
-                onToggleClaim={() => {
-                  const next = !prepaymentDiscountSelected;
-                  setPrepaymentDiscountSelected(next);
-                  if (next) {
-                    toast.success(texts.prepaymentOffer.appliedToast);
-                    const formEl = document.getElementById("lead-form");
-                    if (formEl) {
-                      formEl.scrollIntoView({ behavior: "smooth", block: "start" });
-                    }
-                  } else {
-                    toast.info("Prepayment privilege unselected.");
-                  }
-                }}
-              />
-
               {/* Supporting Copy */}
               <div className="space-y-4 pt-1">
                 <p className="text-sm sm:text-[15px] text-[#5F6368] dark:text-stone-300 leading-relaxed max-w-xl font-normal">
@@ -1176,20 +1158,38 @@ function HomePage() {
                     <span>{cmsContent.heroBenefit4 || texts.hero.benefits.support}</span>
                   </div>
                 </div>
+              </div>
 
-                {/* CTA */}
-                <div className="pt-2 flex flex-wrap items-center gap-4">
-                  <a
-                    href="#gallery-feed"
-                    className="group inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-[#0D7A7B] dark:text-[#2dd4bf] transition-colors relative cursor-pointer"
-                  >
-                    <span className="relative pb-0.5">
-                      {texts.hero.exploreProjects}
-                      <span className="absolute bottom-0 left-0 w-0 h-[1.5px] bg-[#0D7A7B] dark:bg-[#2dd4bf] transition-all duration-300 ease-out group-hover:w-full" />
-                    </span>
-                    <ArrowDown className="h-3.5 w-3.5 transition-transform duration-250 ease-out group-hover:translate-y-1" />
-                  </a>
-                </div>
+              {/* Scaled Sacred Shree Yantra & Prepayment Privilege Showcase (Single Exclusive Ad) */}
+              <ShreeYantraHeroShowcase
+                isClaimed={prepaymentDiscountSelected}
+                onToggleClaim={() => {
+                  const next = !prepaymentDiscountSelected;
+                  setPrepaymentDiscountSelected(next);
+                  if (next) {
+                    toast.success(texts.prepaymentOffer.appliedToast);
+                    const formEl = document.getElementById("lead-form");
+                    if (formEl) {
+                      formEl.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
+                  } else {
+                    toast.info("Prepayment privilege unselected.");
+                  }
+                }}
+              />
+
+              {/* CTA */}
+              <div className="pt-1 flex flex-wrap items-center gap-4">
+                <a
+                  href="#gallery-feed"
+                  className="group inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-[#0D7A7B] dark:text-[#2dd4bf] transition-colors relative cursor-pointer"
+                >
+                  <span className="relative pb-0.5">
+                    {texts.hero.exploreProjects}
+                    <span className="absolute bottom-0 left-0 w-0 h-[1.5px] bg-[#0D7A7B] dark:bg-[#2dd4bf] transition-all duration-300 ease-out group-hover:w-full" />
+                  </span>
+                  <ArrowDown className="h-3.5 w-3.5 transition-transform duration-250 ease-out group-hover:translate-y-1" />
+                </a>
               </div>
             </div>
 

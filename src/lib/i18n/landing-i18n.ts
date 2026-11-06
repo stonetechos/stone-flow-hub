@@ -69,9 +69,9 @@ export const LANDING_UI_TRANSLATIONS = {
       description:
         "From handcrafted stone veneers to CNC-carved murals, custom flooring and luxury facades—we transform natural stone into timeless architectural statements.",
       benefits: {
-        quarry: "Direct Quarry Sourcing",
-        cnc: "CNC & Waterjet Precision",
-        panIndia: "Pan India Installation",
+        quarry: "Design Understanding",
+        cnc: "Own CNC & Inlay Workshops",
+        panIndia: "Pan India Delivery",
         support: "Design-to-Installation Support",
       },
       exploreProjects: "Explore a few of our completed projects",
