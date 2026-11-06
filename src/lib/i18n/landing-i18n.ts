@@ -167,19 +167,19 @@ export const LANDING_UI_TRANSLATIONS = {
       },
     },
     whyUs: {
-      title: "Built on Precision, Lineage & Transparency",
-      p1Title: "Quarry Direct Sourcing",
+      title: "Why Architectural Leaders Choose Stone Tech",
+      p1Title: "AI-to-ArtCAM Custom Fabrication",
       p1Desc:
-        "No middleman or distributor markups. We source raw blocks straight from certified mines in Rajasthan and global stone centers.",
-      p2Title: "Sub-Millimeter CNC Cutting",
+        "We translate AI-generated designs and concepts into proprietary 3D ArtCAM files, crafting bespoke architectural stone reliefs tailored to your custom specifications—fabricated for the very first time.",
+      p2Title: "Stone Geology & Surface Performance Mastery",
       p2Desc:
-        "High-pressure 5-axis CNC waterjet routers ensure under 0.5mm joint tolerances for flawless seamless installation.",
-      p3Title: "WhatsApp Progress Updates",
+        "In-depth expertise in stone character, weathering resistance, surface friction (anti-slip), and specialized treatments to preserve structural beauty even when demanding conditions require nuanced stone selection.",
+      p3Title: "In-House Ahmedabad Workshops & Transparency",
       p3Desc:
-        "Get high-resolution photo and video proofs of your stone blocks, dry-lay matching, and packaging sent to WhatsApp in real-time.",
-      p4Title: "Export Zero-Damage Crating",
+        "Our dedicated CNC cutting and stone inlay workshops in Ahmedabad offer real-time progress tracking and an open-door policy for customer visits, providing complete transparency into our workmanship.",
+      p4Title: "Curated Artist & Multi-Discipline Collaborations",
       p4Desc:
-        "Every shipment is cushioned in EPE shock foam and sealed within export-grade wooden crates with 100% transit replacement coverage.",
+        "Active collaborations with fine artists across varied disciplines give us access to specialized tooling and cross-medium mastery to realize one-of-a-kind stone artpieces matching your distinct architectural theme.",
     },
     contact: {
       title: "How to reach Us?",
@@ -189,7 +189,7 @@ export const LANDING_UI_TRANSLATIONS = {
       connectWhatsapp: "Connect Directly on WhatsApp",
       chatAtelier: "Direct chat with our atelier team",
       tapToChat: "Tap to chat on WhatsApp",
-      showroomTitle: "Showroom & Studio Location",
+      showroomTitle: "Experience Center's Location",
       experienceCenter: "Ahmedabad Experience Center",
       experienceCenterAddress:
         "E-02, Ground Floor, in front of The Festival Residency, SG Business Hub, Vasant Nagar, Gota, Ahmedabad, Gujarat, Pin Code: 380060",
@@ -384,19 +384,19 @@ export const LANDING_UI_TRANSLATIONS = {
       },
     },
     whyUs: {
-      title: "सटीकता, विरासत और पारदर्शिता पर आधारित",
-      p1Title: "सीधी खदान सोर्सिंग",
+      title: "आर्किटेक्चरल लीडर्स स्टोन टेक को क्यों चुनते हैं",
+      p1Title: "एआई से आर्टकैम कस्टम फैब्रिकेशन",
       p1Desc:
-        "कोई बिचौलिया या डीलर कमीशन नहीं। हम राजस्थान और वैश्विक खनन केंद्रों से सीधे कच्चे ब्लॉक सोर्स करते हैं।",
-      p2Title: "सब-मिलीमीटर सीएनसी कटिंग",
+        "हम एआई-जनरेटेड डिज़ाइनों को विशेष 3D आर्टकैम फाइलों में बदलते हैं, जिससे आपके कस्टमाइजेशन के अनुसार पहली बार अद्वितीय स्टोन नक्काशी तैयार की जा सके।",
+      p2Title: "भूविज्ञान और सतह प्रदर्शन में विशेषज्ञता",
       p2Desc:
-        "हाई-प्रेशर 5-एक्सिस सीएनसी वॉटरजेट राउटर 0.5 मिमी से कम जॉइंट टॉलरेंस सुनिश्चित करते हैं।",
-      p3Title: "व्हाट्सएप प्रगति अपडेट",
+        "पत्थर की प्रकृति, मौसमी प्रभाव, सतह घर्षण (एंटी-स्लिप) और विशेष फिनिश का गहन ज्ञान, ताकि विशिष्ट परिस्थितियों में भी पत्थर का सौंदर्य व टिकाऊपन बना रहे।",
+      p3Title: "अहमदाबाद में अपनी सीएनसी व इनले वर्कशॉप्स",
       p3Desc:
-        "अपने पत्थर के ब्लॉक, ड्राई-ले मैचिंग और पैकेजिंग के हाई-डेफिनिशन फोटो और वीडियो रियल-टाइम में व्हाट्सएप पर प्राप्त करें।",
-      p4Title: "निर्यात-गुणवत्ता शून्य-नुकसान क्रेटिंग",
+        "अहमदाबाद में हमारी अपनी सीएनसी और इनले वर्कशॉप्स जहां लाइव ट्रैकिंग संभव है; ग्राहकों के लिए खुली वर्कशॉप्स ताकि कारीगरी में पूरी पारदर्शिता मिले।",
+      p4Title: "कलाकारों के साथ रचनात्मक सहयोग",
       p4Desc:
-        "प्रत्येक खेप को ईपीई शॉक फोम में सुरक्षित कर एक्सपोर्ट-ग्रेड लकड़ी के बक्सों में 100% ट्रांजिट रिप्लेसमेंट गारंटी के साथ भेजा जाता है।",
+        "विभिन्न कला विधाओं के कलाकारों के साथ सहयोग, जिससे विशेष टूल्स और तकनीकों के माध्यम से आपकी थीम के अनुसार अनूठी स्टोन कलाकृतियां गढ़ी जा सकें।",
     },
     contact: {
       title: "हमसे कैसे संपर्क करें?",
@@ -406,7 +406,7 @@ export const LANDING_UI_TRANSLATIONS = {
       connectWhatsapp: "सीधे व्हाट्सएप पर संपर्क करें",
       chatAtelier: "हमारी एटलियर टीम से सीधी बातचीत",
       tapToChat: "व्हाट्सएप पर चैट करने के लिए टैप करें",
-      showroomTitle: "शोरूम और स्टूडियो का पता",
+      showroomTitle: "एक्सपीरियंस सेंटर का पता",
       experienceCenter: "अहमदाबाद एक्सपीरियंस सेंटर",
       experienceCenterAddress:
         "E-02, ग्राउंड फ्लोर, द फेस्टिवल रेसिडेंसी के सामने, एसजी बिजनेस हब, वसंत नगर, गोटा, अहमदाबाद, गुजरात, पिन कोड: 380060",
@@ -601,19 +601,19 @@ export const LANDING_UI_TRANSLATIONS = {
       },
     },
     whyUs: {
-      title: "ચોકસાઈ, વારસો અને પારદર્શિતા પર આધારિત",
-      p1Title: "સીધા ક્વોરી સોર્સિંગ",
+      title: "આર્કિટેક્ચરલ લીડર્સ સ્ટોન ટેક કેમ પસંદ કરે છે",
+      p1Title: "AI થી આર્ટકેમ કસ્ટમ ફેબ્રિકેશન",
       p1Desc:
-        "કોઈ વચેટિયા કે ડીલર કમિશન નહીં. અમે રાજસ્થાન અને વૈશ્વિક કેન્દ્રોથી સીધા બ્લોક્સ મેળવીએ છીએ.",
-      p2Title: "સબ-મિલીમીટર સીએનસી કટીંગ",
+        "અમે AI દ્વારા બનાવેલી ડિઝાઇનોને વિશિષ્ટ 3D આર્ટકેમ ફાઇલોમાં રૂપાંતરિત કરીએ છીએ, જેથી તમારા કસ્ટમાઇઝેશન મુજબ પ્રથમ વખત અનોખી સ્ટોન કોતરણી તૈયાર કરી શકાય.",
+      p2Title: "જીઓલોજી અને સરફેસ પરફોર્મન્સ માસ્ટરી",
       p2Desc:
-        "હાઇ-પ્રેશર 5-એક્સિસ સીએનસી વોટરજેટ 0.5 મીમી કરતાં ઓછી જોઈન્ટ ટોલરન્સ સુનિશ્ચિત કરે છે.",
-      p3Title: "વોટ્સએપ પ્રોગ્રેસ અપડેટ્સ",
+        "પથ્થરના ગુણધર્મો, હવામાનની અસરો, ઘર્ષણ (એન્ટી-સ્લિપ) અને ખાસ ફિનિશનું ઊંડું જ્ઞાન, જેથી દરેક સ્થાપત્ય જરૂરિયાત મુજબ ઉત્કૃષ્ટ સુંદરતા જળવાઈ રહે.",
+      p3Title: "અમદાવાદમાં પોતાની CNC અને ઇનલે વર્કશોપ્સ",
       p3Desc:
-        "તમારા સ્ટોન બ્લોક્સ, ડ્રાય-લે મેચિંગ અને પેકિંગના ફોટા અને વીડિયો રીઅલ-ટાઇમમાં વોટ્સએપ પર મેળવો.",
-      p4Title: "નિકાસ-ગુણવત્તા શૂન્ય-નુકસાન ક્રેટિંગ",
+        "અમદાવાદમાં અમારી પોતાની CNC અને ઇનલે વર્કશોપ્સ જ્યાં લાઈવ કામ ટ્રેક કરી શકાય છે; ગ્રાહકોની મુલાકાત માટે ખુલ્લી વર્કશોપ્સ જેથી કારીગરીમાં સંપૂર્ણ પારદર્શિતા મળે.",
+      p4Title: "કલાકારો સાથે બહુવિધ ક્ષેત્રીય સહયોગ",
       p4Desc:
-        "દરેક શિપમેન્ટને ઇપીઇ શોક ફોમમાં પેક કરી 100% ટ્રાન્ઝિટ કવરેજ સાથે એક્સપોર્ટ વુડન ક્રેટ્સમાં મોકલવામાં આવે છે.",
+        "વિવિધ કલા ક્ષેત્રના કલાકારો સાથે જોડાણ, જેનાથી વિશેષ ટૂલ્સ અને પદ્ધતિઓ દ્વારા તમારા વિઝન અને થીમ મુજબ અનન્ય સ્ટોન આર્ટપીસનું નિર્માણ થાય છે.",
     },
     contact: {
       title: "અમારો સંપર્ક કેવી રીતે કરવો?",
@@ -623,7 +623,7 @@ export const LANDING_UI_TRANSLATIONS = {
       connectWhatsapp: "સીધા વોટ્સએપ પર જોડાઓ",
       chatAtelier: "અમારી એટલિયર ટીમ સાથે સીધી વાતચીત",
       tapToChat: "વોટ્સએપ પર ચેટ કરવા માટે ટેપ કરો",
-      showroomTitle: "શોરૂમ અને સ્ટુડિયોનું સરનામું",
+      showroomTitle: "એક્સપિરિયન્સ સેન્ટરનું સરનામું",
       experienceCenter: "અમદાવાદ એક્સપિરિયન્સ સેન્ટર",
       experienceCenterAddress:
         "E-02, ગ્રાઉન્ડ ફ્લોર, ધ ફેસ્ટિવલ રેસિડેન્સી સામે, એસજી બિઝનેસ હબ, વસંત નગર, ગોટા, અમદાવાદ, ગુજરાત, પિન કોડ: 380060",

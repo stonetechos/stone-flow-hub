@@ -5,7 +5,7 @@
  * - "How to reach Us?"
  * - WhatsApp direct chat buttons (+91 77420 90866 & +91 97844 52998)
  * - Email us at info@stonetech.in
- * - Showroom Location: E-02, Ground Floor, in front of The Festival Residency,
+ * - Experience Center's Location: E-02, Ground Floor, in front of The Festival Residency,
  *   SG Business Hub, Vasant Nagar, Gota, Ahmedabad, Gujarat, Pin Code: 380060
  * - Google Business direct link: https://share.google/0J6h6joQLwo1hVTWJ
  * - Real 4.9 Google Verified Rating

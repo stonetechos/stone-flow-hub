@@ -88,22 +88,22 @@ export const DEFAULT_LANDING_CONTENT: WebsiteLandingContent = {
   productsTabTitle: "Natural Stone Products & Catalogue",
   installationsTabTitle: "Live Installations & Executed Works (Instagram)",
 
-  whyUsSectionTitle: "Why Luxury Architects Choose Stone Tech Atelier",
-  pillar1Title: "Direct Quarry Sourcing",
+  whyUsSectionTitle: "Why Architectural Leaders Choose Stone Tech",
+  pillar1Title: "AI-to-ArtCAM Custom Fabrication",
   pillar1Desc:
-    "Zero middlemen markups. We source blocks directly from our Makrana, Jodhpur, and Udaipur quarries for unmatched stone density and natural vein integrity.",
-  pillar2Title: "5-Axis CNC & Artisan Carving",
+    "We translate AI-generated designs and concepts into proprietary 3D ArtCAM files, crafting bespoke architectural stone reliefs tailored to your custom specifications—fabricated for the very first time.",
+  pillar2Title: "Stone Geology & Surface Performance Mastery",
   pillar2Desc:
-    "Sub-millimeter calibrated finishes combined with generation-old Rajasthani stone chiselling artistry for intricate relief patterns.",
-  pillar3Title: "Dry-Lay & Numbered Panels",
+    "In-depth expertise in stone character, weathering resistance, surface friction (anti-slip), and specialized treatments to preserve structural beauty even when demanding conditions require nuanced stone selection.",
+  pillar3Title: "In-House Ahmedabad Workshops & Transparency",
   pillar3Desc:
-    "Every mosaic, veneer, and cladding order is pre-assembled on factory floors and high-resolution photo-approved on WhatsApp before crating.",
-  pillar4Title: "Zero-Breakage Export Crating",
+    "Our dedicated CNC cutting and stone inlay workshops in Ahmedabad offer real-time progress tracking and an open-door policy for customer visits, providing complete transparency into our workmanship.",
+  pillar4Title: "Curated Artist & Multi-Discipline Collaborations",
   pillar4Desc:
-    "Foam-lined fumigated wooden crates with reinforced corners delivered securely across all Indian states and overseas destinations.",
+    "Active collaborations with fine artists across varied disciplines give us access to specialized tooling and cross-medium mastery to realize one-of-a-kind stone artpieces matching your distinct architectural theme.",
 
-  contactPhone1: "+91 97844 52998",
-  contactPhone2: "+91 77420 90866",
+  contactPhone1: "+91 77420 90866",
+  contactPhone2: "+91 97844 52998",
   contactEmail: "info@stonetech.in",
   contactAddressJaipur: "RIICO Industrial Area, Mansarovar & Sitapura, Jaipur, Rajasthan",
   contactAddressMakrana: "Gunawati Road, Makrana, Didwana-Kuchaman District, Rajasthan 341505",

@@ -43,6 +43,8 @@ import {
   Lock,
   Gem,
   Compass,
+  Eye,
+  Palette,
   Truck,
   Search,
   Briefcase,
@@ -2112,7 +2114,7 @@ function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="p-5 rounded-xl border border-border bg-card space-y-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <Gem className="h-5 w-5" />
+                <Sparkles className="h-5 w-5" />
               </div>
               <h3 className="text-base font-bold">
                 {cmsContent.pillar1Title || texts.whyUs.p1Title}
@@ -2136,7 +2138,7 @@ function HomePage() {
 
             <div className="p-5 rounded-xl border border-border bg-card space-y-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600">
-                <Phone className="h-5 w-5" />
+                <Eye className="h-5 w-5" />
               </div>
               <h3 className="text-base font-bold">
                 {cmsContent.pillar3Title || texts.whyUs.p3Title}
@@ -2148,7 +2150,7 @@ function HomePage() {
 
             <div className="p-5 rounded-xl border border-border bg-card space-y-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10 text-purple-600">
-                <Truck className="h-5 w-5" />
+                <Palette className="h-5 w-5" />
               </div>
               <h3 className="text-base font-bold">
                 {cmsContent.pillar4Title || texts.whyUs.p4Title}
