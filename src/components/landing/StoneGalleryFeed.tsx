@@ -147,7 +147,7 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
         {/* 3-Column Scrollable Feed with Native Momentum & Offscreen Culling */}
         <div
           ref={scrollContainerRef}
-          className="max-h-[640px] sm:max-h-[700px] lg:max-h-[750px] overflow-y-auto overscroll-y-contain pr-1 rounded-2xl scrollbar-thin scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/40 [touch-action:pan-y] [-webkit-overflow-scrolling:touch]"
+          className="max-h-[640px] sm:max-h-[700px] lg:max-h-[750px] overflow-y-auto overscroll-y-auto pr-1 rounded-2xl scrollbar-thin scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/40 [touch-action:pan-y] [-webkit-overflow-scrolling:touch]"
         >
           <div className="grid grid-cols-3 gap-1.5 sm:gap-2 pb-2">
             {visiblePosts.map((post, idx) => {

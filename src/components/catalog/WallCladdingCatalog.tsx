@@ -499,7 +499,7 @@ export function WallCladdingCatalog({
         {/* 3-Column Scrollable Box with Native Momentum — EXACT SAME SPEC as StoneGalleryFeed */}
         <div
           ref={scrollContainerRef}
-          className="max-h-[640px] sm:max-h-[700px] lg:max-h-[750px] overflow-y-auto overscroll-y-contain pr-1 rounded-2xl scrollbar-thin scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/40 [touch-action:pan-y] [-webkit-overflow-scrolling:touch]"
+          className="max-h-[640px] sm:max-h-[700px] lg:max-h-[750px] overflow-y-auto overscroll-y-auto pr-1 rounded-2xl scrollbar-thin scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/40 [touch-action:pan-y] [-webkit-overflow-scrolling:touch]"
         >
           {filteredItems.length === 0 ? (
             <div className="text-center py-16 border rounded-2xl bg-muted/20 space-y-3">
