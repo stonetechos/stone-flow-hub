@@ -60,7 +60,8 @@ export function ShreeYantraHeroShowcase({
             <p className="text-xs text-muted-foreground leading-relaxed">
               At Stone Tech, we believe timeless stone craftsmanship and sacred geometry share the
               same eternal soul. To honor patrons creating extraordinary homes, villas, and mandirs,
-              we present this certified 3D multi-layered Shree Yantra as an auspicious gift.
+              we present this certified 3D multi-layered Shree Yantra as an auspicious gift on stone
+              product orders of ₹1 Lakh and above.
             </p>
           </div>
 
@@ -112,13 +113,18 @@ export function ShreeYantraHeroShowcase({
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2 bg-white/80 dark:bg-stone-900/80 p-2 rounded-lg border border-amber-500/20 shadow-2xs">
-                    <div className="h-5 w-5 rounded-full bg-amber-500 text-stone-950 flex items-center justify-center shrink-0 font-black text-[10px]">
+                  <div className="flex items-start gap-2 bg-white/80 dark:bg-stone-900/80 p-2 rounded-lg border border-amber-500/20 shadow-2xs">
+                    <div className="h-5 w-5 rounded-full bg-amber-500 text-stone-950 flex items-center justify-center shrink-0 font-black text-[10px] mt-0.5">
                       2
                     </div>
-                    <span className="text-xs font-bold text-foreground">
-                      FREE Certified 3D Shree Yantra (Worth ₹14,999)*
-                    </span>
+                    <div className="flex flex-col text-left">
+                      <span className="text-xs font-bold text-foreground">
+                        FREE Certified 3D Shree Yantra (Worth ₹14,999)
+                      </span>
+                      <span className="text-[10.5px] font-semibold text-amber-800 dark:text-amber-300 leading-tight mt-0.5">
+                        Gifted on stone product purchases exceeding ₹1,00,000 (₹1 Lakh+)
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -147,6 +153,14 @@ export function ShreeYantraHeroShowcase({
                   </>
                 )}
               </Button>
+
+              {/* Value Threshold Note (prominently before Read More) */}
+              <div className="flex items-center justify-center sm:justify-start gap-1.5 text-[11px] text-muted-foreground font-medium pt-0.5">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
+                <span>
+                  Shree Yantra unlocked on ordered stone product value &gt; ₹1,00,000 (₹1 Lakh+)
+                </span>
+              </div>
             </div>
           </div>
 
