@@ -8,7 +8,7 @@
  * - Experience Center's Location: E-02, Ground Floor, in front of The Festival Residency,
  *   SG Business Hub, Vasant Nagar, Gota, Ahmedabad, Gujarat, Pin Code: 380060
  * - Google Business direct link: https://share.google/0J6h6joQLwo1hVTWJ
- * - Real 4.9 Google Verified Rating
+ * - Real 4.6 Google Verified Rating
  * - Highlighted 5-star customer and architect feedback cards
  */
 

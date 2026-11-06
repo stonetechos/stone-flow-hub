@@ -14,7 +14,7 @@
  * - Live interactive calendar date picker starting strictly from current date
  * - Curated Stone Collections grid with 1-tap "Select & Estimate" triggers
  * - 4 core value pillars (Quarry Direct, CNC Cutting, WhatsApp proofs, Export crating)
- * - Broad "How to reach Us?" section with Google 4.9 rating & direct Maps directions
+ * - Broad "How to reach Us?" section with Google 4.6 rating & direct Maps directions
  * - Returning customer inquiry tracking modal
  * - Separate Staff / Employee ERP portal login in footer
  * - Sticky mobile bottom action bar
@@ -1124,7 +1124,7 @@ function HomePage() {
 
                 <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-[#E9E6E1] dark:border-stone-800 bg-white dark:bg-stone-900/90 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-sm cursor-default">
                   <div className="text-xl sm:text-2xl font-bold tracking-tight text-[#111111] dark:text-stone-100 flex items-center gap-1">
-                    <span>{cmsContent.heroGoogleRating || "4.9"}</span>
+                    <span>{cmsContent.heroGoogleRating || "4.6"}</span>
                     <span className="text-[#0D7A7B] text-base sm:text-lg">★</span>
                   </div>
                   <div className="text-[11px] sm:text-xs text-[#5F6368] dark:text-stone-400 font-medium mt-1">

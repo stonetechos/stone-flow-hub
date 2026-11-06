@@ -233,7 +233,7 @@ export const DEFAULT_WEBSITE_CATALOG_ORDER: string[] = [
 
 /** Hard-coded defaults — used as fallback when the DB is unavailable. */
 export const SITE_SETTINGS_DEFAULTS: SiteSettings = {
-  google_rating: "4.9",
+  google_rating: "4.6",
   sidebar_tab_renames: {},
   website_catalog_items: [],
   website_catalog_prices: {},
