@@ -192,11 +192,9 @@ def get_luxury_fonts():
 
         # Product Card
         "card_code": load(avenir_path, 13, index=0),
-        "card_stone_badge": load(avenir_path, 10, index=2),
-        "card_name": load(avenir_path, 14, index=0),
-        "card_category": load(avenir_path, 11, index=5),
-        "card_inquire_label": load(avenir_path, 10, index=5),
-        "card_inquire_phone": load(avenir_path, 12, index=0),
+        "card_footer_label": load(avenir_path, 12, index=5),
+        "card_footer_code": load(avenir_path, 16, index=0),
+        "card_footer_phone": load(avenir_path, 14, index=0),
 
         # Back Cover
         "back_title": load(optima_path, 30, index=1),
@@ -342,36 +340,10 @@ def render_pattern_card(draw, fonts, item, img_canvas, x, y, card_w, card_h):
         width=1,
     )
 
-    # 1. Top Header Strip inside Card (height = 36)
-    code_text = item.get("code") or item.get("id", "ST-WC-001")
-    bbox = draw.textbbox((0, 0), code_text, font=fonts["card_code"])
-    tag_w = (bbox[2] - bbox[0]) + 18
-    tag_h = 24
-    draw.rounded_rectangle(
-        [(x + 12, y + 10), (x + 12 + tag_w, y + 10 + tag_h)],
-        radius=5,
-        fill=(15, 23, 42),
-    )
-    draw.text((x + 21, y + 14), code_text, fill=(251, 191, 36), font=fonts["card_code"])
-
-    # Stone Type Pill on Top-Right
-    stone_text = (item.get("stoneType") or "Natural Stone").upper()
-    s_bbox = draw.textbbox((0, 0), stone_text, font=fonts["card_stone_badge"])
-    s_w = (s_bbox[2] - s_bbox[0]) + 16
-    draw.rounded_rectangle(
-        [(x + card_w - 12 - s_w, y + 10), (x + card_w - 12, y + 10 + tag_h)],
-        radius=5,
-        fill=(241, 245, 249),
-        outline=(203, 213, 225),
-        width=1,
-    )
-    draw.text((x + card_w - 12 - s_w + 8, y + 15), stone_text, fill=(71, 85, 105), font=fonts["card_stone_badge"])
-
-    # 2. Photo Display Box (~80% of card height, perfectly framed)
     box_x = x + 12
-    box_y = y + 42
+    box_y = y + 12
     box_w = card_w - 24  # 521 px
-    box_h = 625          # 625 px
+    box_h = card_h - 76  # 714 px, gives maximum prominence to stone artwork
 
     draw.rounded_rectangle(
         [(box_x, box_y), (box_x + box_w, box_y + box_h)],
@@ -407,31 +379,40 @@ def render_pattern_card(draw, fonts, item, img_canvas, x, y, card_w, card_h):
                 paste_y = box_y + (box_h - new_h) // 2
                 img_canvas.paste(thumb, (paste_x, paste_y))
         except Exception:
-            draw.text((box_x + 20, box_y + 100), f"Pattern: {code_text}", fill=(100, 116, 139), font=fonts["card_category"])
-    else:
-        draw.text((box_x + 20, box_y + 100), f"Pattern: {code_text}", fill=(100, 116, 139), font=fonts["card_category"])
+            pass
 
-    # 3. Bottom Architectural Details Panel
-    panel_y = box_y + box_h + 10
+    # Top-Left Code Tag Capsule over photo
+    code_text = item.get("code") or item.get("id", "ST-WC-001")
+    bbox = draw.textbbox((0, 0), code_text, font=fonts["card_code"])
+    tag_w = (bbox[2] - bbox[0]) + 20
+    tag_h = 26
+    draw.rounded_rectangle(
+        [(box_x + 12, box_y + 12), (box_x + 12 + tag_w, box_y + 12 + tag_h)],
+        radius=5,
+        fill=(15, 23, 42),
+    )
+    draw.text((box_x + 22, box_y + 16), code_text, fill=(251, 191, 36), font=fonts["card_code"])
 
-    # Line 1: Product Title (wrapped if long)
-    p_name = item.get("name") or "Architectural Natural Stone Cladding"
-    while len(p_name) > 46:
-        p_name = p_name.rsplit(" ", 1)[0]
-    draw.text((box_x, panel_y), p_name, fill=(15, 23, 42), font=fonts["card_name"])
+    # Bottom Footer Strip: Minimal luxury with only code and inquiry line
+    footer_y = y + card_h - 52
+    draw.line([(box_x, footer_y), (box_x + box_w, footer_y)], fill=(226, 232, 240), width=1)
 
-    # Line 2: Pattern Category & Calibration
-    cat_text = item.get("category") or item.get("patternCategory") or "Wall Cladding"
-    cat_spec = f"{cat_text} · 20-30mm Calibrated · Precision Dry-Lay"
-    draw.text((box_x, panel_y + 24), cat_spec, fill=(100, 116, 139), font=fonts["card_category"])
+    # Left: CODE: ST-WC-XXX
+    draw.text((box_x + 4, footer_y + 15), "CODE:", fill=(100, 116, 139), font=fonts["card_footer_label"])
+    c_bbox = draw.textbbox((0, 0), "CODE:", font=fonts["card_footer_label"])
+    c_w = c_bbox[2] - c_bbox[0]
+    draw.text((box_x + 4 + c_w + 8, footer_y + 13), code_text, fill=(15, 23, 42), font=fonts["card_footer_code"])
 
-    # Line 3: Hairline Separator
-    draw.line([(box_x, panel_y + 48), (box_x + box_w, panel_y + 48)], fill=(226, 232, 240), width=1)
+    # Right: Inquire: +91 77420 90866
+    inq_phone = "+91 77420 90866"
+    p_bbox = draw.textbbox((0, 0), inq_phone, font=fonts["card_footer_phone"])
+    p_w = p_bbox[2] - p_bbox[0]
+    i_bbox = draw.textbbox((0, 0), "Inquire: ", font=fonts["card_footer_label"])
+    i_w = i_bbox[2] - i_bbox[0]
 
-    # Line 4: Inquiries & WhatsApp
-    draw.text((box_x, panel_y + 58), "Studio Inquiries & Dry-Lay Approval", fill=(71, 85, 105), font=fonts["card_inquire_label"])
-    phone_str = "WhatsApp: +91 77420 90866"
-    draw.text((box_x + box_w, panel_y + 57), phone_str, fill=(13, 148, 136), font=fonts["card_inquire_phone"], anchor="ra")
+    right_x = box_x + box_w - p_w
+    draw.text((right_x, footer_y + 14), inq_phone, fill=(13, 148, 136), font=fonts["card_footer_phone"])
+    draw.text((right_x - i_w, footer_y + 15), "Inquire: ", fill=(100, 116, 139), font=fonts["card_footer_label"])
 
 
 def create_back_cover_page(fonts, logo_img):
