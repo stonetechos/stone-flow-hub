@@ -19,6 +19,7 @@ import {
   GripVertical,
   ArrowUpDown,
   RotateCcw,
+  RotateCw,
   ZoomIn,
   ImageIcon,
 } from "lucide-react";
@@ -58,11 +59,15 @@ function ProductImageZoomPreview({
   src,
   alt,
   id,
+  rotation = 0,
+  onRotate,
   className,
 }: {
   src: string;
   alt: string;
   id?: string;
+  rotation?: number;
+  onRotate?: (newRotation: number) => void;
   className?: string;
 }) {
   const [zoom, setZoom] = useState({ active: false, x: 50, y: 50 });
@@ -79,20 +84,27 @@ function ProductImageZoomPreview({
   };
 
   return (
-    <div className={cn("space-y-1.5", className)}>
+    <div className={cn("space-y-2", className)}>
       <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground">
         <span className="flex items-center gap-1.5 text-cyan-600 dark:text-cyan-400 font-semibold">
           <ZoomIn className="h-3.5 w-3.5" />
           Product Photo &amp; Relief Inspector
         </span>
-        <span className="text-[10px] bg-muted/80 border border-border px-2 py-0.5 rounded-full font-mono">
-          Hover over image to zoom 2.5× into stone relief
-        </span>
+        <div className="flex items-center gap-2">
+          {rotation ? (
+            <span className="text-[10px] bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full font-mono font-bold">
+              Rotated: {rotation}°
+            </span>
+          ) : null}
+          <span className="text-[10px] bg-muted/80 border border-border px-2 py-0.5 rounded-full font-mono">
+            Hover to zoom 2.5×
+          </span>
+        </div>
       </div>
       <div
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        className="relative h-60 sm:h-72 w-full rounded-2xl overflow-hidden border-2 border-border/80 bg-stone-950 shadow-inner cursor-crosshair group select-none flex items-center justify-center"
+        className="relative h-60 sm:h-72 w-full rounded-2xl overflow-hidden border-2 border-border/80 bg-stone-950 shadow-inner cursor-crosshair group select-none flex items-center justify-center p-2"
       >
         {src ? (
           <>
@@ -101,9 +113,11 @@ function ProductImageZoomPreview({
               alt={alt}
               style={{
                 transformOrigin: `${zoom.x}% ${zoom.y}%`,
-                transform: zoom.active ? "scale(2.5)" : "scale(1)",
+                transform: zoom.active
+                  ? `scale(2.5) rotate(${rotation}deg)`
+                  : `rotate(${rotation}deg)`,
               }}
-              className="max-h-full max-w-full object-contain transition-transform duration-100 ease-out pointer-events-none"
+              className="max-h-full max-w-full object-contain transition-transform duration-200 ease-out pointer-events-none"
             />
             {zoom.active ? (
               <div className="absolute bottom-2.5 right-2.5 bg-black/85 backdrop-blur-md text-amber-300 text-[10px] font-mono px-2 py-0.5 rounded-md border border-amber-400/30 flex items-center gap-1 pointer-events-none shadow-md">
@@ -130,6 +144,65 @@ function ProductImageZoomPreview({
           </div>
         )}
       </div>
+
+      {/* Lossless Rotation Controls */}
+      {onRotate && (
+        <div className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-muted/40 border border-border">
+          <div className="flex items-center gap-1.5 text-xs">
+            <RotateCw className="h-3.5 w-3.5 text-amber-500" />
+            <span className="font-semibold text-foreground">Lossless Image Rotation:</span>
+            <span className="font-mono text-xs font-bold text-cyan-600 dark:text-cyan-400">
+              {rotation ? `${rotation}° Clockwise` : "0° (Upright Default)"}
+            </span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onRotate((rotation - 90 + 360) % 360)}
+              className="h-7 px-2 text-[11px] gap-1 hover:text-cyan-600"
+              title="Rotate 90° Counter-Clockwise (Lossless)"
+            >
+              <RotateCcw className="h-3 w-3" />
+              <span>-90°</span>
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onRotate((rotation + 90) % 360)}
+              className="h-7 px-2 text-[11px] gap-1 hover:text-cyan-600"
+              title="Rotate 90° Clockwise (Lossless)"
+            >
+              <RotateCw className="h-3 w-3" />
+              <span>+90°</span>
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onRotate((rotation + 180) % 360)}
+              className="h-7 px-2 text-[11px] gap-1 hover:text-cyan-600"
+              title="Rotate 180° Flip (Lossless)"
+            >
+              <span>180° Flip</span>
+            </Button>
+            {rotation !== 0 && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => onRotate(0)}
+                className="h-7 px-2 text-[11px] text-muted-foreground hover:text-foreground"
+                title="Reset orientation to original 0°"
+              >
+                Reset (0°)
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -308,6 +381,8 @@ export function WebsiteProductsBackend() {
     addProduct,
     deleteProduct,
     reorderProducts,
+    moveToPosition,
+    rotateProduct,
     resetOrder,
   } = useWebsiteCatalog();
 
@@ -320,6 +395,9 @@ export function WebsiteProductsBackend() {
   // Drag and drop state
   const [draggedProductId, setDraggedProductId] = useState<string | null>(null);
   const [dragOverProductId, setDragOverProductId] = useState<string | null>(null);
+
+  // Direct sequence rank inputs: productId -> string
+  const [positionInputs, setPositionInputs] = useState<Record<string, string>>({});
 
   // Modals state
   const [createOpen, setCreateOpen] = useState(false);
@@ -339,6 +417,8 @@ export function WebsiteProductsBackend() {
   const [formLeadTime, setFormLeadTime] = useState("Ready to Ship");
   const [formImage, setFormImage] = useState("");
   const [formImages, setFormImages] = useState<string[]>([]);
+  const [formRotation, setFormRotation] = useState<number>(0);
+  const [formPosition, setFormPosition] = useState<number>(1);
   const [formDescription, setFormDescription] = useState("");
 
   // Floating Hover Image Inspector
@@ -411,7 +491,48 @@ export function WebsiteProductsBackend() {
     setFormImage(p.image || "");
     const initialImages = p.images && p.images.length > 0 ? p.images : p.image ? [p.image] : [];
     setFormImages(initialImages);
+    setFormRotation(p.rotation || 0);
+    setFormPosition(p.index || 1);
     setFormDescription(p.notes || `${p.name} - ${p.stoneType}`);
+  };
+
+  // Direct sequence rank jump: move product instantly to targetRank (e.g. 184 -> 34)
+  const handleDirectMove = async (productId: string, targetRank: number, productName: string) => {
+    if (isNaN(targetRank) || targetRank < 1) {
+      toast.error("Please enter a valid rank number (1 or higher)");
+      return;
+    }
+    try {
+      const finalRank = await moveToPosition(productId, targetRank);
+      toast.success(
+        `Moved "${productName}" to position #${finalRank}. Subsequent products shifted automatically.`,
+      );
+      setPositionInputs((prev) => {
+        const next = { ...prev };
+        delete next[productId];
+        return next;
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`Failed to move: ${msg}`);
+    }
+  };
+
+  // Lossless rotation: rotate product picture by delta (+90° CW, -90° CCW, or 180°)
+  const handleRotateProduct = async (
+    productId: string,
+    delta: number = 90,
+    productName: string,
+  ) => {
+    try {
+      const newRot = await rotateProduct(productId, delta);
+      toast.success(
+        `Rotated "${productName}" to ${newRot}° (lossless, saved to web catalog & PDF)`,
+      );
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`Rotation failed: ${msg}`);
+    }
   };
 
   // Submit Create
@@ -489,6 +610,7 @@ export function WebsiteProductsBackend() {
         thickness: formThickness,
         image: primaryImg,
         images: allImgs,
+        rotation: formRotation,
         price: priceNum,
         unit: formUnit,
         mrp: mrpNum,
@@ -496,6 +618,10 @@ export function WebsiteProductsBackend() {
         leadTime: formLeadTime.trim(),
         notes: formDescription.trim(),
       });
+
+      if (formPosition && formPosition !== editTarget.index) {
+        await moveToPosition(editTarget.id, formPosition);
+      }
 
       toast.success(
         `Updated "${formName}" (${editTarget.code || editTarget.id}) — synchronized with website and ERP quotes/inventory!`,
@@ -700,10 +826,10 @@ export function WebsiteProductsBackend() {
               <tr>
                 {isSuperAdmin && (
                   <th
-                    className="py-2.5 px-2 w-14 text-center font-mono text-[11px] text-muted-foreground"
-                    title="Drag and drop sequence rank"
+                    className="py-2.5 px-2 w-20 text-center font-mono text-[11px] text-muted-foreground"
+                    title="Direct Sequence Rank # (Type number to jump or drag to reorder)"
                   >
-                    #
+                    Seq #
                   </th>
                 )}
                 <th className="py-2.5 px-3 w-16">Image</th>
@@ -783,15 +909,53 @@ export function WebsiteProductsBackend() {
                       }`}
                     >
                       {isSuperAdmin && (
-                        <td className="py-2 px-1 text-center align-middle cursor-grab active:cursor-grabbing text-muted-foreground hover:text-cyan-600">
+                        <td className="py-2 px-1 text-center align-middle text-muted-foreground">
                           <div
                             className="flex items-center justify-center gap-1 h-full px-1"
-                            title={`Sequence Rank #${globalIndex} — Click & hold to drag up or down`}
+                            title={`Sequence Rank #${globalIndex} — Drag grip or type a new position number and press Enter to instantly move`}
                           >
-                            <GripVertical className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0" />
-                            <span className="text-[11px] font-mono text-muted-foreground font-semibold w-5 text-center select-none">
-                              {globalIndex}
-                            </span>
+                            <div className="cursor-grab active:cursor-grabbing text-muted-foreground/60 hover:text-cyan-600">
+                              <GripVertical className="h-3.5 w-3.5 shrink-0" />
+                            </div>
+                            <input
+                              type="number"
+                              min={1}
+                              max={products.length}
+                              value={
+                                positionInputs[p.id] !== undefined
+                                  ? positionInputs[p.id]
+                                  : String(globalIndex)
+                              }
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setPositionInputs((prev) => ({ ...prev, [p.id]: val }));
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.currentTarget.blur();
+                                } else if (e.key === "Escape") {
+                                  setPositionInputs((prev) => {
+                                    const next = { ...prev };
+                                    delete next[p.id];
+                                    return next;
+                                  });
+                                }
+                              }}
+                              onBlur={(e) => {
+                                const val = parseInt(e.target.value, 10);
+                                if (!isNaN(val) && val !== globalIndex) {
+                                  handleDirectMove(p.id, val, p.name);
+                                } else {
+                                  setPositionInputs((prev) => {
+                                    const next = { ...prev };
+                                    delete next[p.id];
+                                    return next;
+                                  });
+                                }
+                              }}
+                              className="w-11 h-6 text-center font-mono text-[11px] font-bold px-1 py-0 rounded border border-border/70 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 bg-background text-foreground shadow-xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none cursor-text"
+                              title="Type target position (e.g. 34) and press Enter to jump"
+                            />
                           </div>
                         </td>
                       )}
@@ -809,14 +973,35 @@ export function WebsiteProductsBackend() {
                             });
                           }}
                           onMouseLeave={() => setHoveredProduct(null)}
-                          className="relative group/thumb h-11 w-14 rounded-lg overflow-hidden border border-border bg-stone-900 shrink-0 cursor-zoom-in hover:ring-2 hover:ring-cyan-500 transition-all"
+                          className="relative group/thumb h-11 w-14 rounded-lg overflow-hidden border border-border bg-stone-900 shrink-0 cursor-zoom-in hover:ring-2 hover:ring-cyan-500 transition-all flex items-center justify-center p-0.5"
                         >
                           <img
                             src={p.image}
                             alt={p.name}
-                            className="h-full w-full object-cover rounded-lg pointer-events-none transition-transform duration-200 group-hover/thumb:scale-110"
+                            style={
+                              p.rotation ? { transform: `rotate(${p.rotation}deg)` } : undefined
+                            }
+                            className="max-h-full max-w-full object-contain rounded pointer-events-none transition-transform duration-200 group-hover/thumb:scale-105"
                             loading="lazy"
                           />
+                          {p.rotation ? (
+                            <span className="absolute bottom-0.5 left-0.5 bg-amber-500/90 text-stone-950 text-[8px] font-mono font-black px-1 rounded shadow-xs pointer-events-none">
+                              {p.rotation}°
+                            </span>
+                          ) : null}
+                          {isSuperAdmin && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRotateProduct(p.id, 90, p.name);
+                              }}
+                              className="absolute top-0.5 right-0.5 bg-black/80 hover:bg-amber-600 text-white p-1 rounded opacity-0 group-hover/thumb:opacity-100 transition-opacity z-10 cursor-pointer shadow-xs"
+                              title="Rotate +90° clockwise losslessly"
+                            >
+                              <RotateCw className="h-3 w-3" />
+                            </button>
+                          )}
                         </div>
                       </td>
                       <td className="py-2 px-3">
@@ -852,6 +1037,16 @@ export function WebsiteProductsBackend() {
                         <div className="flex items-center justify-end gap-1">
                           {isSuperAdmin ? (
                             <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleRotateProduct(p.id, 90, p.name)}
+                                className="h-7 px-2 text-xs text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30"
+                                title="Rotate picture 90° clockwise losslessly"
+                              >
+                                <RotateCw className="h-3.5 w-3.5 mr-1" />
+                                {p.rotation ? `${p.rotation}°` : "Rotate"}
+                              </Button>
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -1155,11 +1350,13 @@ export function WebsiteProductsBackend() {
                 </DialogDescription>
               </DialogHeader>
 
-              {/* Product Photo & Texture Inspector with 2.5x Zoom on Hover */}
+              {/* Product Photo & Texture Inspector with 2.5x Zoom on Hover & Lossless Rotation */}
               <ProductImageZoomPreview
                 src={formImage.trim() || editTarget.image}
                 alt={formName || editTarget.name}
                 id={editTarget.code || editTarget.id}
+                rotation={formRotation}
+                onRotate={setFormRotation}
               />
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
@@ -1195,6 +1392,23 @@ export function WebsiteProductsBackend() {
                     value={formStoneType}
                     onChange={(e) => setFormStoneType(e.target.value)}
                     className="h-9 text-xs"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold flex items-center justify-between">
+                    <span>Catalogue Position (Rank #)</span>
+                    <span className="text-[10px] text-muted-foreground font-mono">
+                      1 to {products.length}
+                    </span>
+                  </Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={products.length}
+                    value={formPosition}
+                    onChange={(e) => setFormPosition(parseInt(e.target.value, 10) || 1)}
+                    className="h-9 text-xs font-mono font-bold"
                   />
                 </div>
 
@@ -1311,7 +1525,12 @@ export function WebsiteProductsBackend() {
             <img
               src={hoveredProduct.product.image}
               alt={hoveredProduct.product.name}
-              className="max-h-full max-w-full object-contain"
+              style={
+                hoveredProduct.product.rotation
+                  ? { transform: `rotate(${hoveredProduct.product.rotation}deg)` }
+                  : undefined
+              }
+              className="max-h-full max-w-full object-contain transition-transform duration-200"
             />
           </div>
           <div className="mt-2.5 text-white">

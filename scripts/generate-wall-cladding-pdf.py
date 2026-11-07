@@ -358,6 +358,15 @@ def render_pattern_card(draw, fonts, item, img_canvas, x, y, card_w, card_h):
                 if pimg.mode != "RGB":
                     pimg = pimg.convert("RGB")
 
+                # Apply lossless rotation from catalog metadata (0, 90, 180, 270)
+                rotation = item.get("rotation", 0) % 360
+                if rotation == 90:
+                    pimg = pimg.transpose(Image.Transpose.ROTATE_270)
+                elif rotation == 180:
+                    pimg = pimg.transpose(Image.Transpose.ROTATE_180)
+                elif rotation == 270:
+                    pimg = pimg.transpose(Image.Transpose.ROTATE_90)
+
                 # Exact proportional fit: never distorted, never squished
                 img_w, img_h = pimg.size
                 scale = min(box_w / img_w, box_h / img_h)

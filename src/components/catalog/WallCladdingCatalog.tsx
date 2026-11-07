@@ -25,6 +25,7 @@ import {
   Layers,
   ShieldCheck,
   RotateCcw,
+  RotateCw,
   ArrowUpDown,
   FileDown,
   X,
@@ -543,7 +544,10 @@ export function WallCladdingCatalog({
                       alt={item.name}
                       loading="lazy"
                       decoding="async"
-                      className="h-full w-full object-contain drop-shadow-sm select-none transition-opacity duration-300"
+                      className="h-full w-full object-contain drop-shadow-sm select-none transition-all duration-300"
+                      style={
+                        item.rotation ? { transform: `rotate(${item.rotation}deg)` } : undefined
+                      }
                     />
 
                     {/* Subtle Top-Right Code Badge */}
@@ -663,11 +667,39 @@ export function WallCladdingCatalog({
                     <img
                       src={lightboxTarget.image}
                       alt={lightboxTarget.name}
-                      className="max-h-[72vh] w-auto h-auto max-w-full object-contain rounded-xl shadow-2xl select-none"
+                      className="max-h-[72vh] w-auto h-auto max-w-full object-contain rounded-xl shadow-2xl select-none transition-all duration-300"
+                      style={
+                        lightboxTarget.rotation
+                          ? { transform: `rotate(${lightboxTarget.rotation}deg)` }
+                          : undefined
+                      }
                     />
                     <div className="absolute bottom-3 left-3 bg-black/75 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/15 text-[10.5px] font-mono text-cyan-300 font-bold pointer-events-none">
                       {lightboxTarget.code || lightboxTarget.id}
                     </div>
+
+                    {isSuperAdmin && (
+                      <button
+                        type="button"
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          const currentRot = lightboxTarget.rotation || 0;
+                          const nextRot = (currentRot + 90) % 360;
+                          await updateProduct(lightboxTarget.id, { rotation: nextRot });
+                          setLightboxTarget({ ...lightboxTarget, rotation: nextRot });
+                          toast.success(
+                            `Rotated photo to ${nextRot}° (lossless, saved everywhere)`,
+                          );
+                        }}
+                        className="absolute top-3 right-3 bg-black/75 hover:bg-amber-600 text-white px-2.5 py-1.5 rounded-xl backdrop-blur-md border border-white/15 transition-colors shadow-lg flex items-center gap-1.5 text-xs font-semibold z-20"
+                        title="Rotate picture 90° clockwise (lossless)"
+                      >
+                        <RotateCw className="h-3.5 w-3.5" />
+                        <span>
+                          {lightboxTarget.rotation ? `${lightboxTarget.rotation}°` : "Rotate"}
+                        </span>
+                      </button>
+                    )}
 
                     <button
                       type="button"
@@ -817,7 +849,12 @@ export function WallCladdingCatalog({
             <img
               src={lightboxTarget.image}
               alt={lightboxTarget.name}
-              className="max-h-[86vh] max-w-full w-auto h-auto object-contain rounded-xl shadow-2xl"
+              className="max-h-[86vh] max-w-full w-auto h-auto object-contain rounded-xl shadow-2xl transition-all duration-300"
+              style={
+                lightboxTarget.rotation
+                  ? { transform: `rotate(${lightboxTarget.rotation}deg)` }
+                  : undefined
+              }
             />
             <div className="mt-3 text-center text-white/90">
               <div className="text-sm font-bold">

@@ -74,6 +74,7 @@ export interface CatalogProduct {
   slug: string;
   image: string;
   images?: string[]; // Multiple high-res photos for product gallery
+  rotation?: number; // Lossless rotation angle in degrees: 0, 90, 180, 270
   category: string;
   stoneType: string;
   standardSizes: string;
@@ -633,6 +634,48 @@ export function useWebsiteCatalog(initialSettings?: Partial<SiteSettings>) {
     [allProducts],
   );
 
+  // Move a product directly to an explicit 1-based numerical rank (e.g. move #184 to #34)
+  // The product at targetPosition becomes targetPosition + 1, smoothly shifting subsequent items
+  const moveToPosition = useCallback(
+    async (sourceId: string, targetPosition: number) => {
+      if (allProducts.length === 0) return;
+      const targetRank = Math.max(1, Math.min(allProducts.length, Math.round(targetPosition)));
+      const targetIndex = targetRank - 1;
+
+      const currentList = [...allProducts];
+      const sourceIndex = currentList.findIndex((p) => p.id === sourceId);
+      if (sourceIndex === -1 || sourceIndex === targetIndex) return targetRank;
+
+      // Extract item from current index
+      const [movedItem] = currentList.splice(sourceIndex, 1);
+      // Insert item at target index (shifts item formerly at targetIndex to targetIndex + 1)
+      currentList.splice(targetIndex, 0, movedItem);
+
+      // Save new sequential ID order
+      const newOrderIds = currentList.map((p) => p.id);
+      saveCatalogOrder(newOrderIds, true);
+      setCustomOrder(newOrderIds);
+      return targetRank;
+    },
+    [allProducts],
+  );
+
+  // Rotate a product photo losslessly by delta degrees (+90° CW, -90° CCW, or 180°)
+  const rotateProduct = useCallback(
+    async (productId: string, deltaDegrees: number = 90) => {
+      const target = allProducts.find((p) => p.id === productId);
+      if (!target) throw new Error(`Product ${productId} not found`);
+
+      const currentRotation = target.rotation || 0;
+      const rawNew = (currentRotation + deltaDegrees) % 360;
+      const newRotation = (rawNew + 360) % 360; // normalized: 0, 90, 180, 270
+
+      await updateProduct(productId, { rotation: newRotation });
+      return newRotation;
+    },
+    [allProducts, updateProduct],
+  );
+
   // Reset order to factory benchmark sequence
   const resetOrder = useCallback(async () => {
     saveCatalogOrder([], true);
@@ -648,6 +691,8 @@ export function useWebsiteCatalog(initialSettings?: Partial<SiteSettings>) {
     addProduct,
     deleteProduct,
     reorderProducts,
+    moveToPosition,
+    rotateProduct,
     resetOrder,
   };
 }
