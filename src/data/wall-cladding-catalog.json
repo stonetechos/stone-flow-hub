@@ -3426,5 +3426,1107 @@
     ],
     "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered", "Natural Cleft"],
     "code": "ST-WC-039"
+  },
+  {
+    "id": "ST-WC-183",
+    "index": 183,
+    "name": "Egyptian Hieroglyph Teakwood Sandstone Relief Panel",
+    "slug": "egyptian-hieroglyph-teakwood-sandstone-relief-panel",
+    "image": "/images/catalog/wall-cladding/cladding-183-egyptian-hieroglyph-teakwood-sandstone-relief-panel.jpg",
+    "category": "Stone Wall Mural Artwork",
+    "stoneType": "Teakwood Sandstone & Basalt Accents",
+    "standardSizes": "600x300mm / 600x600mm / Custom Modules",
+    "thickness": "25-35mm variable relief",
+    "applications": [
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Exterior Elevation Facade",
+      "Luxury Villas & Hotels"
+    ],
+    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered"],
+    "code": "ST-WC-183"
+  },
+  {
+    "id": "ST-WC-184",
+    "index": 184,
+    "name": "Pharaonic Pantheon & Sacred Glyphs Sandstone Mural",
+    "slug": "pharaonic-pantheon-sacred-glyphs-sandstone-mural",
+    "image": "/images/catalog/wall-cladding/cladding-184-pharaonic-pantheon-sacred-glyphs-sandstone-mural.jpg",
+    "category": "Stone Wall Mural Artwork",
+    "stoneType": "Golden Teakwood Sandstone",
+    "standardSizes": "600x400mm / 900x600mm / Custom Modules",
+    "thickness": "25-40mm variable relief",
+    "applications": [
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Executive Boardrooms",
+      "Art Gallery Facades"
+    ],
+    "finishes": ["Honed", "Hand-chiselled", "Bush-hammered", "Shot-blasted"],
+    "code": "ST-WC-184"
+  },
+  {
+    "id": "ST-WC-185",
+    "index": 185,
+    "name": "Silver Mint Sandstone Sacred Lotus & Palm Cladding",
+    "slug": "silver-mint-sandstone-sacred-lotus-palm-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-185-silver-mint-sandstone-sacred-lotus-palm-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "White Mint Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-30mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Courtyards & Patios",
+      "Boundary Walls"
+    ],
+    "finishes": ["Shot-blasted", "Honed", "Bush-hammered", "Natural Cleft"],
+    "code": "ST-WC-185"
+  },
+  {
+    "id": "ST-WC-186",
+    "index": 186,
+    "name": "Radial Floral & Feather Leaf Carved Teakwood Cladding",
+    "slug": "radial-floral-feather-leaf-carved-teakwood-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-186-radial-floral-feather-leaf-carved-teakwood-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Teakwood Sandstone",
+    "standardSizes": "300x300mm / 600x600mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer Backdrops",
+      "Landscape Features"
+    ],
+    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered"],
+    "code": "ST-WC-186"
+  },
+  {
+    "id": "ST-WC-187",
+    "index": 187,
+    "name": "Botanical Maple Leaf & Baroque Rosette Mint Stone Cladding",
+    "slug": "botanical-maple-leaf-baroque-rosette-mint-stone-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-187-botanical-maple-leaf-baroque-rosette-mint-stone-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "White Mint Sandstone",
+    "standardSizes": "300x300mm / 600x300mm / Custom Modules",
+    "thickness": "20-30mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Garden & Courtyard Walls",
+      "Verandah Accents"
+    ],
+    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Natural Cleft"],
+    "code": "ST-WC-187"
+  },
+  {
+    "id": "ST-WC-188",
+    "index": 188,
+    "name": "Arched & Rectangular Recessed Niche Sandstone Cladding",
+    "slug": "arched-rectangular-recessed-niche-sandstone-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-188-arched-rectangular-recessed-niche-sandstone-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Golden Teakwood Sandstone",
+    "standardSizes": "600x300mm / 900x450mm / Custom Modules",
+    "thickness": "25-35mm CNC profiled",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Entrance Porticos",
+      "Compound Wall Piers"
+    ],
+    "finishes": ["Honed", "Shot-blasted", "Hand-chiselled", "Fine Sanded"],
+    "code": "ST-WC-188"
+  },
+  {
+    "id": "ST-WC-189",
+    "index": 189,
+    "name": "Classical Roman Arcade & Caryatid Relief Modular Cladding",
+    "slug": "classical-roman-arcade-caryatid-relief-modular-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-189-classical-roman-arcade-caryatid-relief-modular-cladding.jpg",
+    "category": "Stone Wall Mural Artwork",
+    "stoneType": "White Sandstone & Basalt Accents",
+    "standardSizes": "600x600mm / 900x900mm / Custom Modules",
+    "thickness": "25-40mm variable relief",
+    "applications": [
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Palatial Entrances",
+      "Banquet Facades"
+    ],
+    "finishes": ["Honed", "Hand-chiselled", "Bush-hammered", "Shot-blasted"],
+    "code": "ST-WC-189"
+  },
+  {
+    "id": "ST-WC-190",
+    "index": 190,
+    "name": "Arabesque Filigree & Split-Face Ashlar White Sandstone Cladding",
+    "slug": "arabesque-filigree-split-face-ashlar-white-sandstone-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-190-arabesque-filigree-split-face-ashlar-white-sandstone-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Dholpur White Sandstone",
+    "standardSizes": "600x300mm / 600x400mm / Custom Modules",
+    "thickness": "20-35mm multi-depth",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Courtyards & Patios",
+      "Boundary Walls"
+    ],
+    "finishes": ["Split-face", "Honed", "Shot-blasted", "Hand-chiselled"],
+    "code": "ST-WC-190"
+  },
+  {
+    "id": "ST-WC-191",
+    "index": 191,
+    "name": "Alternating Baroque Foliate & Linear Striped Sandstone Panel",
+    "slug": "alternating-baroque-foliate-linear-striped-sandstone-panel",
+    "image": "/images/catalog/wall-cladding/cladding-191-alternating-baroque-foliate-linear-striped-sandstone-panel.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Teakwood & Mint Sandstone",
+    "standardSizes": "600x300mm / 900x450mm / Custom Modules",
+    "thickness": "25-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Pillars & Columns",
+      "Entrance Foyers"
+    ],
+    "finishes": ["Bush-hammered", "Honed", "Hand-chiselled", "Shot-blasted"],
+    "code": "ST-WC-191"
+  },
+  {
+    "id": "ST-WC-192",
+    "index": 192,
+    "name": "Sunburst Chakra Rosette Modular Sandstone Cladding",
+    "slug": "sunburst-chakra-rosette-modular-sandstone-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-192-sunburst-chakra-rosette-modular-sandstone-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Golden Teakwood Sandstone",
+    "standardSizes": "600x600mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Courtyard Backdrops",
+      "Landscape Features"
+    ],
+    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered"],
+    "code": "ST-WC-192"
+  },
+  {
+    "id": "ST-WC-193",
+    "index": 193,
+    "name": "Lotus Bud Flora Modular Sandstone & Slate Inlay Cladding",
+    "slug": "lotus-bud-flora-modular-sandstone-slate-inlay-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-193-lotus-bud-flora-modular-sandstone-slate-inlay-cladding.jpg",
+    "category": "Stone Inlay",
+    "stoneType": "Teakwood Slate & Sandstone",
+    "standardSizes": "600x300mm / 600x400mm / Custom Modules",
+    "thickness": "20-30mm variable relief",
+    "applications": [
+      "Interior Feature Wall",
+      "Pooja Room & Mandir Backdrops",
+      "Exterior Elevation Facade",
+      "Foyer Accents"
+    ],
+    "finishes": ["Natural Cleft", "Honed", "Hand-chiselled", "Shot-blasted"],
+    "code": "ST-WC-193"
+  },
+  {
+    "id": "ST-WC-194",
+    "index": 194,
+    "name": "Radial Fluted Fan & Ashlar Dual-Tone Sandstone Cladding",
+    "slug": "radial-fluted-fan-ashlar-dualtone-sandstone-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-194-radial-fluted-fan-ashlar-dualtone-sandstone-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Teakwood & Mint White Sandstone",
+    "standardSizes": "600x300mm / 600x400mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Courtyards & Patios",
+      "Boundary Walls"
+    ],
+    "finishes": ["Shot-blasted", "Honed", "Bush-hammered", "Natural Cleft"],
+    "code": "ST-WC-194"
+  },
+  {
+    "id": "ST-WC-195",
+    "index": 195,
+    "name": "Royal Palmette Crest & Multi-Block White Sandstone Cladding",
+    "slug": "royal-palmette-crest-multi-block-white-sandstone-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-195-royal-palmette-crest-multi-block-white-sandstone-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Dholpur White Sandstone",
+    "standardSizes": "600x300mm / 600x400mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Villa Entrances",
+      "Boundary Walls"
+    ],
+    "finishes": ["Bush-hammered", "Honed", "Hand-chiselled", "Shot-blasted"],
+    "code": "ST-WC-195"
+  },
+  {
+    "id": "ST-WC-196",
+    "index": 196,
+    "name": "Baroque Tulip Crest & Striated Sandstone Wall Cladding",
+    "slug": "baroque-tulip-crest-striated-sandstone-wall-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-196-baroque-tulip-crest-striated-sandstone-wall-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Natural Sandstone",
+    "standardSizes": "600x300mm / 600x400mm / Custom Modules",
+    "thickness": "20-35mm multi-depth",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Landscape Features"
+    ],
+    "finishes": ["Linear Combed", "Honed", "Hand-chiselled", "Shot-blasted"],
+    "code": "ST-WC-196"
+  },
+  {
+    "id": "ST-WC-197",
+    "index": 197,
+    "name": "Geometric Diagonal Micro-Fluted Sandstone Facet Cladding",
+    "slug": "geometric-diagonal-micro-fluted-sandstone-facet-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-197-geometric-diagonal-micro-fluted-sandstone-facet-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "White Mint Sandstone",
+    "standardSizes": "600x300mm / 900x450mm / Custom Modules",
+    "thickness": "20-30mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Modern Architectural Elevations",
+      "Column Cladding"
+    ],
+    "finishes": ["Micro-fluted", "Bush-hammered", "Honed", "Shot-blasted"],
+    "code": "ST-WC-197"
+  },
+  {
+    "id": "ST-WC-198",
+    "index": 198,
+    "name": "Diamond Facet Lattice & V-Groove White Sandstone Cladding",
+    "slug": "diamond-facet-lattice-v-groove-white-sandstone-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-198-diamond-facet-lattice-v-groove-white-sandstone-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Dholpur White Sandstone",
+    "standardSizes": "600x300mm / 900x450mm / Custom Modules",
+    "thickness": "25-35mm 3D pyramidal",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Pillars & Porticos",
+      "Boundary Wall Piers"
+    ],
+    "finishes": ["Honed", "Pyramidal Chiseled", "Shot-blasted", "Bush-hammered"],
+    "code": "ST-WC-198"
+  },
+  {
+    "id": "ST-WC-199",
+    "index": 199,
+    "name": "Pleated Radial Fan & Bush-Hammered Teakwood Sandstone Cladding",
+    "slug": "pleated-radial-fan-bush-hammered-teakwood-sandstone-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-199-pleated-radial-fan-bush-hammered-teakwood-sandstone-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Golden Teakwood Sandstone",
+    "standardSizes": "600x600mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Courtyards & Patios",
+      "Boundary Walls"
+    ],
+    "finishes": ["Shot-blasted", "Honed", "Bush-hammered", "Hand-chiselled"],
+    "code": "ST-WC-199"
+  },
+  {
+    "id": "ST-WC-200",
+    "index": 200,
+    "name": "Multi-Texture Geometric Mosaic Sandstone Wall Cladding",
+    "slug": "multi-texture-geometric-mosaic-sandstone-wall-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-200-multi-texture-geometric-mosaic-sandstone-wall-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Natural Buff Sandstone",
+    "standardSizes": "600x600mm / Custom Modules",
+    "thickness": "20-30mm multi-relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Living Room Accents",
+      "Restaurant & Cafe Murals"
+    ],
+    "finishes": ["Micro-fluted", "Cross-hatched", "Pyramidal", "Shot-blasted"],
+    "code": "ST-WC-200"
+  },
+  {
+    "id": "ST-WC-201",
+    "index": 201,
+    "name": "Organic Fluid Ripple & Ashlar Modular Stone Cladding",
+    "slug": "organic-fluid-ripple-ashlar-modular-stone-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-201-organic-fluid-ripple-ashlar-modular-stone-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "White Mint Sandstone",
+    "standardSizes": "600x300mm / 600x400mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Water Feature Backdrops",
+      "Spa & Wellness Centers"
+    ],
+    "finishes": ["Sculpted Relief", "Bush-hammered", "Honed", "Shot-blasted"],
+    "code": "ST-WC-201"
+  },
+  {
+    "id": "ST-WC-202",
+    "index": 202,
+    "name": "Tropical Monstera Foliage Modular Sandstone Cladding",
+    "slug": "tropical-monstera-foliage-modular-sandstone-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-202-tropical-monstera-foliage-modular-sandstone-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Teakwood & White Sandstone",
+    "standardSizes": "600x600mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Garden & Courtyard Walls",
+      "Resort Villas"
+    ],
+    "finishes": ["Shot-blasted", "Honed", "Bush-hammered", "Hand-chiselled"],
+    "code": "ST-WC-202"
+  },
+  {
+    "id": "ST-WC-203",
+    "index": 203,
+    "name": "Parametric Fibonacci Spiral Vortex Sandstone Cladding",
+    "slug": "parametric-fibonacci-spiral-vortex-sandstone-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-203-parametric-fibonacci-spiral-vortex-sandstone-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Teakwood Sandstone",
+    "standardSizes": "600x300mm / 900x450mm / Custom Modules",
+    "thickness": "25-40mm 3D CNC carved",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Luxury Living Walls"
+    ],
+    "finishes": ["3D CNC Sculpted", "Honed", "Fine Sanded", "Shot-blasted"],
+    "code": "ST-WC-203"
+  },
+  {
+    "id": "ST-WC-204",
+    "index": 204,
+    "name": "Sacred Spiral Vortex & Dual-Tone Modular Stone Cladding",
+    "slug": "sacred-spiral-vortex-dualtone-modular-stone-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-204-sacred-spiral-vortex-dualtone-modular-stone-cladding.jpg",
+    "category": "Stone Inlay",
+    "stoneType": "White Sandstone & Basalt",
+    "standardSizes": "600x600mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Exterior Elevation Facade",
+      "Courtyard Accents"
+    ],
+    "finishes": ["3D Sculpted", "Bush-hammered", "Honed", "Shot-blasted"],
+    "code": "ST-WC-204"
+  },
+  {
+    "id": "ST-WC-205",
+    "index": 205,
+    "name": "Egyptian Pantheon & Sacred Lattice Charcoal Wall Mural",
+    "slug": "egyptian-pantheon-sacred-lattice-charcoal-wall-mural",
+    "image": "/images/catalog/wall-cladding/cladding-205-egyptian-pantheon-sacred-lattice-charcoal-wall-mural.jpg",
+    "category": "Stone Wall Mural Artwork",
+    "stoneType": "Charcoal Granite & Gold Accents",
+    "standardSizes": "900x600mm / 1200x800mm / Custom Modules",
+    "thickness": "25-40mm variable relief",
+    "applications": [
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Luxury Dining Backdrops",
+      "Art Galleries"
+    ],
+    "finishes": ["Textured Cleft", "Hand-chiselled", "Gold Leaf Accented", "Honed"],
+    "code": "ST-WC-205"
+  },
+  {
+    "id": "ST-WC-206",
+    "index": 206,
+    "name": "Botanical Leaf & Lotus Rosette Mosaic Stone Cladding",
+    "slug": "botanical-leaf-lotus-rosette-mosaic-stone-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-206-botanical-leaf-lotus-rosette-mosaic-stone-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "White Mint & Teakwood Sandstone",
+    "standardSizes": "600x600mm / Custom Modules",
+    "thickness": "20-30mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Courtyards & Patios",
+      "Boundary Walls"
+    ],
+    "finishes": ["Bush-hammered", "Honed", "Hand-chiselled", "Shot-blasted"],
+    "code": "ST-WC-206"
+  },
+  {
+    "id": "ST-WC-207",
+    "index": 207,
+    "name": "Palmette Shell & Multi-Depth Sandstone Modular Cladding",
+    "slug": "palmette-shell-multi-depth-sandstone-modular-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-207-palmette-shell-multi-depth-sandstone-modular-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Dholpur Beige Sandstone",
+    "standardSizes": "600x300mm / 600x400mm / Custom Modules",
+    "thickness": "20-35mm multi-depth",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Villa Entrances",
+      "Boundary Walls"
+    ],
+    "finishes": ["Bush-hammered", "Honed", "Hand-chiselled", "Shot-blasted"],
+    "code": "ST-WC-207"
+  },
+  {
+    "id": "ST-WC-208",
+    "index": 208,
+    "name": "Aquatic Pisces & Nautilus Relief Sandstone Cladding",
+    "slug": "aquatic-pisces-nautilus-relief-sandstone-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-208-aquatic-pisces-nautilus-relief-sandstone-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "White Mint Sandstone",
+    "standardSizes": "600x600mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Water Feature Backdrops",
+      "Swimming Pool Enclosures",
+      "Interior Feature Wall",
+      "Courtyards & Patios"
+    ],
+    "finishes": ["Bush-hammered", "Hand-sculpted", "Honed", "Shot-blasted"],
+    "code": "ST-WC-208"
+  },
+  {
+    "id": "ST-WC-209",
+    "index": 209,
+    "name": "Palm Frond Foliate & Banded Ashlar Sandstone Cladding",
+    "slug": "palm-frond-foliate-banded-ashlar-sandstone-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-209-palm-frond-foliate-banded-ashlar-sandstone-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Dholpur White Sandstone",
+    "standardSizes": "600x300mm / 900x450mm / Custom Modules",
+    "thickness": "20-30mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Column & Pillar Cladding",
+      "Entrance Foyers"
+    ],
+    "finishes": ["Linear Combed", "Bush-hammered", "Honed", "Shot-blasted"],
+    "code": "ST-WC-209"
+  },
+  {
+    "id": "ST-WC-210",
+    "index": 210,
+    "name": "Zen Lotus Bloom & Buddha Icon Sandstone Wall Mural",
+    "slug": "zen-lotus-bloom-buddha-icon-sandstone-wall-mural",
+    "image": "/images/catalog/wall-cladding/cladding-210-zen-lotus-bloom-buddha-icon-sandstone-wall-mural.jpg",
+    "category": "Stone Wall Mural Artwork",
+    "stoneType": "White Mint Sandstone & Bronze",
+    "standardSizes": "600x400mm / 900x600mm / Custom Modules",
+    "thickness": "25-40mm variable relief",
+    "applications": [
+      "Meditation & Pooja Spaces",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Spa Centers"
+    ],
+    "finishes": ["Honed", "Hand-chiselled", "Metallic Bronze Inlay", "Shot-blasted"],
+    "code": "ST-WC-210"
+  },
+  {
+    "id": "ST-WC-211",
+    "index": 211,
+    "name": "Gothic Quatrefoil & Fleur-de-lis Medallion Cladding",
+    "slug": "gothic-quatrefoil-fleur-de-lis-medallion-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-211-gothic-quatrefoil-fleur-de-lis-medallion-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Natural Beige Sandstone",
+    "standardSizes": "600x600mm / Custom Modules",
+    "thickness": "20-35mm multi-depth",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Courtyards & Patios",
+      "Boundary Walls"
+    ],
+    "finishes": ["Bush-hammered", "Honed", "Hand-chiselled", "Shot-blasted"],
+    "code": "ST-WC-211"
+  },
+  {
+    "id": "ST-WC-212",
+    "index": 212,
+    "name": "Minimalist Origami Faceted 3D Geometric Sandstone Panel",
+    "slug": "minimalist-origami-faceted-3d-geometric-sandstone-panel",
+    "image": "/images/catalog/wall-cladding/cladding-212-minimalist-origami-faceted-3d-geometric-sandstone-panel.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Fine-Honed Beige Sandstone",
+    "standardSizes": "600x300mm / 900x450mm / Custom Modules",
+    "thickness": "25-45mm 3D angular facet",
+    "applications": [
+      "Modern Minimalist Elevations",
+      "Interior Feature Wall",
+      "Commercial Foyers",
+      "Auditorium Facades"
+    ],
+    "finishes": ["Fine-Honed", "Matte Sanded", "Shot-blasted", "Precision Milled"],
+    "code": "ST-WC-212"
+  },
+  {
+    "id": "ST-WC-213",
+    "index": 213,
+    "name": "Fern Foliage & Swirl Rosette Teakwood Sandstone Cladding",
+    "slug": "fern-foliage-swirl-rosette-teakwood-sandstone-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-213-fern-foliage-swirl-rosette-teakwood-sandstone-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Golden Teakwood Sandstone",
+    "standardSizes": "600x600mm / Custom Modules",
+    "thickness": "20-30mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Courtyards & Patios",
+      "Boundary Walls"
+    ],
+    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered"],
+    "code": "ST-WC-213"
+  },
+  {
+    "id": "ST-WC-214",
+    "index": 214,
+    "name": "Classical Colonnade & Devotional Caryatid Teakwood Mural",
+    "slug": "classical-colonnade-devotional-caryatid-teakwood-mural",
+    "image": "/images/catalog/wall-cladding/cladding-214-classical-colonnade-devotional-caryatid-teakwood-mural.jpg",
+    "category": "Stone Wall Mural Artwork",
+    "stoneType": "Golden Teakwood & Basalt",
+    "standardSizes": "900x600mm / 1200x800mm / Custom Modules",
+    "thickness": "25-40mm variable relief",
+    "applications": [
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Heritage Buildings",
+      "Banquet Halls"
+    ],
+    "finishes": ["Honed", "Hand-chiselled", "Bush-hammered", "Shot-blasted"],
+    "code": "ST-WC-214"
+  },
+  {
+    "id": "ST-WC-215",
+    "index": 215,
+    "name": "Silver Quartzite Fern & Acanthus Foliate Modular Cladding",
+    "slug": "silver-quartzite-fern-acanthus-foliate-modular-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-215-silver-quartzite-fern-acanthus-foliate-modular-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Silver Grey Quartzite Sandstone",
+    "standardSizes": "600x300mm / 600x400mm / Custom Modules",
+    "thickness": "20-30mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Courtyards & Patios",
+      "Boundary Walls"
+    ],
+    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Natural Cleft"],
+    "code": "ST-WC-215"
+  },
+  {
+    "id": "ST-WC-216",
+    "index": 216,
+    "name": "Linear Ashlar & Baroque Scrollwork Wave Sandstone Cladding",
+    "slug": "linear-ashlar-baroque-scrollwork-wave-sandstone-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-216-linear-ashlar-baroque-scrollwork-wave-sandstone-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Dholpur Beige Sandstone",
+    "standardSizes": "600x300mm / 900x450mm / Custom Modules",
+    "thickness": "20-30mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Boundary Wall Bands",
+      "Entrance Foyers"
+    ],
+    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered"],
+    "code": "ST-WC-216"
+  },
+  {
+    "id": "ST-WC-217",
+    "index": 217,
+    "name": "Linear Continuous Vertical Micro-Fluted Stone Panel",
+    "slug": "linear-continuous-vertical-micro-fluted-stone-panel",
+    "image": "/images/catalog/wall-cladding/cladding-217-linear-continuous-vertical-micro-fluted-stone-panel.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Travertine Sandstone",
+    "standardSizes": "600x300mm / 900x450mm / Custom Modules",
+    "thickness": "20-30mm continuous fluted",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Column & Pillar Cladding",
+      "Commercial Lobbies"
+    ],
+    "finishes": ["Micro-fluted", "Honed", "Shot-blasted", "Fine Sawn"],
+    "code": "ST-WC-217"
+  },
+  {
+    "id": "ST-WC-218",
+    "index": 218,
+    "name": "Sunburst Mandala & Terracotta Rosette Inlay Cladding",
+    "slug": "sunburst-mandala-terracotta-rosette-inlay-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-218-sunburst-mandala-terracotta-rosette-inlay-cladding.jpg",
+    "category": "Stone Inlay",
+    "stoneType": "Dholpur White & Agra Red Sandstone",
+    "standardSizes": "600x600mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Interior Feature Wall",
+      "Pooja Room & Mandir Backdrops",
+      "Exterior Elevation Facade",
+      "Courtyard Accents"
+    ],
+    "finishes": ["Bush-hammered", "Honed", "Hand-chiselled", "Shot-blasted"],
+    "code": "ST-WC-218"
+  },
+  {
+    "id": "ST-WC-219",
+    "index": 219,
+    "name": "Heritage Jharokha Niche & Jali Arch Sandstone Cladding",
+    "slug": "heritage-jharokha-niche-jali-arch-sandstone-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-219-heritage-jharokha-niche-jali-arch-sandstone-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Golden Teakwood Sandstone",
+    "standardSizes": "600x300mm / 900x450mm / Custom Modules",
+    "thickness": "25-40mm tiered relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Heritage Haveli Facades",
+      "Interior Feature Wall",
+      "Resort Corridors"
+    ],
+    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered"],
+    "code": "ST-WC-219"
+  },
+  {
+    "id": "ST-WC-220",
+    "index": 220,
+    "name": "Sculpted Rose Bloom & Jharokha Teakwood Cladding",
+    "slug": "sculpted-rose-bloom-jharokha-teakwood-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-220-sculpted-rose-bloom-jharokha-teakwood-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Golden Teakwood Sandstone",
+    "standardSizes": "600x300mm / 600x400mm / Custom Modules",
+    "thickness": "25-45mm high relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Luxury Living Rooms"
+    ],
+    "finishes": ["Hand-sculpted", "Shot-blasted", "Honed", "Bush-hammered"],
+    "code": "ST-WC-220"
+  },
+  {
+    "id": "ST-WC-221",
+    "index": 221,
+    "name": "Sunburst Chakra & White Floral Rosette Teakwood Cladding",
+    "slug": "sunburst-chakra-white-floral-rosette-teakwood-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-221-sunburst-chakra-white-floral-rosette-teakwood-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Golden Teakwood & Mint Sandstone",
+    "standardSizes": "600x600mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Courtyards & Patios",
+      "Boundary Walls"
+    ],
+    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered"],
+    "code": "ST-WC-221"
+  },
+  {
+    "id": "ST-WC-222",
+    "index": 222,
+    "name": "Horizontal Linear Grooved Sandstone Elevation Panel",
+    "slug": "horizontal-linear-grooved-sandstone-elevation-panel",
+    "image": "/images/catalog/wall-cladding/cladding-222-horizontal-linear-grooved-sandstone-elevation-panel.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Golden Teakwood Sandstone",
+    "standardSizes": "600x300mm / 900x450mm / Custom Modules",
+    "thickness": "20-30mm CNC grooved",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Column & Pillar Cladding",
+      "Compound Wall Panels"
+    ],
+    "finishes": ["Linear Combed", "Honed", "Shot-blasted", "Natural Cleft"],
+    "code": "ST-WC-222"
+  },
+  {
+    "id": "ST-WC-223",
+    "index": 223,
+    "name": "Haveli Jali Arched Niche Sandstone Pillar & Elevation Panel",
+    "slug": "haveli-jali-arched-niche-sandstone-pillar-elevation-panel",
+    "image": "/images/catalog/wall-cladding/cladding-223-haveli-jali-arched-niche-sandstone-pillar-elevation-panel.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Golden Teakwood Sandstone",
+    "standardSizes": "900x300mm / 1200x400mm / Custom Modules",
+    "thickness": "25-40mm tiered relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Heritage Haveli Facades",
+      "Entrance Porticos",
+      "Pillars & Columns"
+    ],
+    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered"],
+    "code": "ST-WC-223"
+  },
+  {
+    "id": "ST-WC-224",
+    "index": 224,
+    "name": "Dual-Tone Rosette & Teakwood Sandstone Modular Cladding",
+    "slug": "dualtone-rosette-teakwood-sandstone-modular-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-224-dualtone-rosette-teakwood-sandstone-modular-cladding.jpg",
+    "category": "Stone Inlay",
+    "stoneType": "Teakwood, Mint & Red Sandstone",
+    "standardSizes": "600x600mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Courtyards & Patios",
+      "Boundary Walls"
+    ],
+    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered"],
+    "code": "ST-WC-224"
+  },
+  {
+    "id": "ST-WC-225",
+    "index": 225,
+    "name": "Sacred Shankh, Veena & Royal Mayura Teakwood Mural",
+    "slug": "sacred-shankh-veena-royal-mayura-teakwood-mural",
+    "image": "/images/catalog/wall-cladding/cladding-225-sacred-shankh-veena-royal-mayura-teakwood-mural.jpg",
+    "category": "Stone Wall Mural Artwork",
+    "stoneType": "Golden Teakwood & White Marble",
+    "standardSizes": "600x600mm / 900x900mm / Custom Modules",
+    "thickness": "25-40mm variable relief",
+    "applications": [
+      "Pooja Room & Mandir Backdrops",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Heritage Buildings"
+    ],
+    "finishes": ["Hand-sculpted", "Honed", "Shot-blasted", "Bush-hammered"],
+    "code": "ST-WC-225"
+  },
+  {
+    "id": "ST-WC-226",
+    "index": 226,
+    "name": "Quad-Petal Foliate Checkerboard Stone Cladding",
+    "slug": "quad-petal-foliate-checkerboard-stone-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-226-quad-petal-foliate-checkerboard-stone-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Teakwood Sandstone & White Stone",
+    "standardSizes": "600x400mm / 900x600mm / Custom Modules",
+    "thickness": "20-30mm multi-depth",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Courtyard Walls",
+      "Verandah Accents"
+    ],
+    "finishes": ["Split-face", "Honed", "Shot-blasted", "Hand-chiselled"],
+    "code": "ST-WC-226"
+  },
+  {
+    "id": "ST-WC-227",
+    "index": 227,
+    "name": "Stylized Lotus Stem Inlay Sandstone Wall Cladding",
+    "slug": "stylized-lotus-stem-inlay-sandstone-wall-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-227-stylized-lotus-stem-inlay-sandstone-wall-cladding.jpg",
+    "category": "Stone Inlay",
+    "stoneType": "Dholpur White & Teakwood Sandstone",
+    "standardSizes": "600x300mm / 900x450mm / Custom Modules",
+    "thickness": "20-30mm CNC inlaid",
+    "applications": [
+      "Interior Feature Wall",
+      "Pooja Room & Mandir Backdrops",
+      "Exterior Elevation Facade",
+      "Foyer Accents"
+    ],
+    "finishes": ["Fine-Honed", "CNC Inlaid", "Shot-blasted", "Bush-hammered"],
+    "code": "ST-WC-227"
+  },
+  {
+    "id": "ST-WC-228",
+    "index": 228,
+    "name": "Arched & Square Recessed Niche Red Sandstone Cladding",
+    "slug": "arched-square-recessed-niche-red-sandstone-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-228-arched-square-recessed-niche-red-sandstone-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Agra Red Sandstone",
+    "standardSizes": "600x300mm / 900x450mm / Custom Modules",
+    "thickness": "25-35mm CNC profiled",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Heritage Haveli Facades",
+      "Entrance Porticos",
+      "Compound Wall Piers"
+    ],
+    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Fine Sanded"],
+    "code": "ST-WC-228"
+  },
+  {
+    "id": "ST-WC-229",
+    "index": 229,
+    "name": "Floral Medallion & Cantilevered Jharokha Cladding",
+    "slug": "floral-medallion-cantilevered-jharokha-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-229-floral-medallion-cantilevered-jharokha-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Dholpur White Sandstone",
+    "standardSizes": "600x600mm / Custom Modules",
+    "thickness": "25-45mm tiered relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Courtyards & Patios",
+      "Boundary Walls"
+    ],
+    "finishes": ["Bush-hammered", "Hand-chiselled", "Honed", "Shot-blasted"],
+    "code": "ST-WC-229"
+  },
+  {
+    "id": "ST-WC-230",
+    "index": 230,
+    "name": "Multi-Depth Ashlar & Micro-Striated Accent Cladding",
+    "slug": "multi-depth-ashlar-micro-striated-accent-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-230-multi-depth-ashlar-micro-striated-accent-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Dholpur White Sandstone",
+    "standardSizes": "600x300mm / 900x450mm / Custom Modules",
+    "thickness": "20-35mm multi-depth",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Commercial Lobbies",
+      "Modern Residences"
+    ],
+    "finishes": ["Linear Combed", "Bush-hammered", "Honed", "Shot-blasted"],
+    "code": "ST-WC-230"
+  },
+  {
+    "id": "ST-WC-231",
+    "index": 231,
+    "name": "Hexagonal Honeycomb & Fluted Cell Sandstone Cladding",
+    "slug": "hexagonal-honeycomb-fluted-cell-sandstone-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-231-hexagonal-honeycomb-fluted-cell-sandstone-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Dholpur White Sandstone",
+    "standardSizes": "600x600mm / Custom Modules",
+    "thickness": "25-40mm 3D honeycomb",
+    "applications": [
+      "Modern Exterior Facades",
+      "Interior Feature Wall",
+      "Executive Lounges",
+      "Hotel Lobbies"
+    ],
+    "finishes": ["3D CNC Fluted", "Bush-hammered", "Honed", "Shot-blasted"],
+    "code": "ST-WC-231"
+  },
+  {
+    "id": "ST-WC-232",
+    "index": 232,
+    "name": "Architectural Geometric Texture Sampler Stone Cladding",
+    "slug": "architectural-geometric-texture-sampler-stone-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-232-architectural-geometric-texture-sampler-stone-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "White Mint Sandstone",
+    "standardSizes": "600x300mm / 900x450mm / Custom Modules",
+    "thickness": "20-35mm multi-relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Living Room Accents",
+      "Restaurant Murals"
+    ],
+    "finishes": ["Multi-pattern CNC", "Honed", "Bush-hammered", "Shot-blasted"],
+    "code": "ST-WC-232"
+  },
+  {
+    "id": "ST-WC-233",
+    "index": 233,
+    "name": "Heritage Jharokha, Sunburst & Floral Teakwood Cladding",
+    "slug": "heritage-jharokha-sunburst-floral-teakwood-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-233-heritage-jharokha-sunburst-floral-teakwood-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Golden Teakwood Sandstone",
+    "standardSizes": "600x400mm / 900x600mm / Custom Modules",
+    "thickness": "25-40mm tiered relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Heritage Haveli Facades",
+      "Interior Feature Wall",
+      "Resort Villas"
+    ],
+    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered"],
+    "code": "ST-WC-233"
+  },
+  {
+    "id": "ST-WC-234",
+    "index": 234,
+    "name": "Linear Vein Sandstone & Sacred Vortex Mesh Cladding",
+    "slug": "linear-vein-sandstone-sacred-vortex-mesh-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-234-linear-vein-sandstone-sacred-vortex-mesh-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Golden Teakwood Sandstone",
+    "standardSizes": "600x600mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Courtyards & Patios",
+      "Boundary Walls"
+    ],
+    "finishes": ["Honed", "3D CNC Sculpted", "Shot-blasted", "Bush-hammered"],
+    "code": "ST-WC-234"
+  },
+  {
+    "id": "ST-WC-235",
+    "index": 235,
+    "name": "Parametric Spiral Vortex & Floral Ribbon Stone Cladding",
+    "slug": "parametric-spiral-vortex-floral-ribbon-stone-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-235-parametric-spiral-vortex-floral-ribbon-stone-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "White Mint Sandstone",
+    "standardSizes": "600x300mm / 900x450mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer & Reception Backdrops",
+      "Modern Residences"
+    ],
+    "finishes": ["3D CNC Sculpted", "Bush-hammered", "Honed", "Shot-blasted"],
+    "code": "ST-WC-235"
+  },
+  {
+    "id": "ST-WC-236",
+    "index": 236,
+    "name": "Sculptural Concave Scoop 3D Modular Sandstone Cladding",
+    "slug": "sculptural-concave-scoop-3d-modular-sandstone-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-236-sculptural-concave-scoop-3d-modular-sandstone-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Dholpur White Sandstone",
+    "standardSizes": "600x600mm / Custom Modules",
+    "thickness": "30-45mm 3D concave",
+    "applications": [
+      "Modern Architectural Elevations",
+      "Interior Feature Wall",
+      "Hotel Lobbies",
+      "Auditorium Facades"
+    ],
+    "finishes": ["Fine-Honed", "Matte Sanded", "Shot-blasted", "Precision Milled"],
+    "code": "ST-WC-236"
+  },
+  {
+    "id": "ST-WC-237",
+    "index": 237,
+    "name": "Kinetic Fluted Wave Scoop Mosaic Teakwood Cladding",
+    "slug": "kinetic-fluted-wave-scoop-mosaic-teakwood-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-237-kinetic-fluted-wave-scoop-mosaic-teakwood-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Golden Teakwood Sandstone",
+    "standardSizes": "600x600mm / Custom Modules",
+    "thickness": "25-40mm 3D undulating",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Foyer Backdrops",
+      "Column Cladding"
+    ],
+    "finishes": ["Shot-blasted", "Honed", "Bush-hammered", "Fine Sawn"],
+    "code": "ST-WC-237"
+  },
+  {
+    "id": "ST-WC-238",
+    "index": 238,
+    "name": "Autumn Foliage Tri-Tone Natural Stone Mosaic Cladding",
+    "slug": "autumn-foliage-tri-tone-natural-stone-mosaic-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-238-autumn-foliage-tri-tone-natural-stone-mosaic-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Teakwood, Mint Stone & Black Slate",
+    "standardSizes": "600x600mm / Custom Modules",
+    "thickness": "20-35mm multi-depth",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Courtyards & Patios",
+      "Boundary Walls"
+    ],
+    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Natural Cleft"],
+    "code": "ST-WC-238"
+  },
+  {
+    "id": "ST-WC-239",
+    "index": 239,
+    "name": "Sunburst Chakra Rosette Ashlar Sandstone Cladding",
+    "slug": "sunburst-chakra-rosette-ashlar-sandstone-cladding",
+    "image": "/images/catalog/wall-cladding/cladding-239-sunburst-chakra-rosette-ashlar-sandstone-cladding.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Natural Teakwood Sandstone",
+    "standardSizes": "600x600mm / Custom Modules",
+    "thickness": "20-35mm variable relief",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Interior Feature Wall",
+      "Courtyards & Patios",
+      "Boundary Walls"
+    ],
+    "finishes": ["Shot-blasted", "Honed", "Hand-chiselled", "Bush-hammered"],
+    "code": "ST-WC-239"
+  },
+  {
+    "id": "ST-WC-240",
+    "index": 240,
+    "name": "Dual-Tone Charcoal Slate & Gold Quartzite Interlocking Ledger",
+    "slug": "dualtone-charcoal-slate-gold-quartzite-interlocking-ledger",
+    "image": "/images/catalog/wall-cladding/cladding-240-dualtone-charcoal-slate-gold-quartzite-interlocking-ledger.jpg",
+    "category": "Stone Wall Cladding",
+    "stoneType": "Charcoal Slate & Gold Quartzite",
+    "standardSizes": "600x150mm / 600x200mm / Interlocking Z-Modules",
+    "thickness": "20-35mm stepped cleft",
+    "applications": [
+      "Exterior Elevation Facade",
+      "Boundary Walls",
+      "Fireplace Surrounds",
+      "Courtyards & Patios"
+    ],
+    "finishes": ["Natural Cleft", "Split-Face", "Hand-Dressed", "Rustic Rockface"],
+    "code": "ST-WC-240"
   }
 ]

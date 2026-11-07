@@ -144,7 +144,7 @@ def draw_header_footer(draw, fonts, page_num, total_pages, category_name="", hea
     )
 
 
-def create_cover_page(fonts, logo_img):
+def create_cover_page(fonts, logo_img, total_patterns=240):
     """
     Generates luxury dark gold cover page with prominent brand logo medallion.
     Completely clean: NO thumbnail pictures of panels, NO factory address.
@@ -240,7 +240,7 @@ def create_cover_page(fonts, logo_img):
     )
     draw.text(
         (PAGE_WIDTH // 2, 680),
-        "182 DISTINCTIVE PRECISION PATTERNS",
+        f"{total_patterns} DISTINCTIVE PRECISION PATTERNS",
         fill=(148, 163, 184),
         font=fonts["card_bold"],
         anchor="mm",
@@ -269,7 +269,7 @@ def create_cover_page(fonts, logo_img):
     )
 
     highlights = [
-        "· 182 Distinctive Natural Stone Wall Cladding & Mosaic Designs",
+        f"· {total_patterns} Distinctive Natural Stone Wall Cladding & Mosaic Designs",
         "· 100% Authentic Quarried Marble, Sandstone, Quartzite, Slate & Basalt",
         "· Precision Calibrated Modular Tiles, 3D CNC Relief & Linear Ledgestone",
         "· Custom Cut-to-Size Fabrication to Match Architectural & Interior Drawings",
@@ -593,7 +593,7 @@ def main():
 
     # Page 1: Cover
     print("Generating Cover Page with Official Logo (no thumbnail panels, no factory address)...")
-    pages.append(create_cover_page(fonts, logo_img))
+    pages.append(create_cover_page(fonts, logo_img, len(items)))
 
     # Pattern Catalog Pages (Pages 2 to 47): 4 patterns per page (2 columns x 2 rows)
     for chunk_idx in range(0, len(items), 4):
