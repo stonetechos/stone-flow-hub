@@ -237,6 +237,7 @@ export const DEFAULT_WEBSITE_CATALOG_ORDER: string[] = [
   "ST-WC-188",
   "ST-WC-189",
   "ST-WC-190",
+  "ST-WC-191",
   "ST-WC-192",
   "ST-WC-193",
   "ST-WC-194",
@@ -284,8 +285,6 @@ export const DEFAULT_WEBSITE_CATALOG_ORDER: string[] = [
   "ST-WC-236",
   "ST-WC-237",
   "ST-WC-238",
-  "ST-WC-239",
-  "ST-WC-240",
 ];
 
 /** Hard-coded defaults — used as fallback when the DB is unavailable. */
