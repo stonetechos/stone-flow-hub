@@ -169,19 +169,21 @@ def get_luxury_fonts():
         return ImageFont.load_default()
 
     return {
-        # Avenir Next indices: 0:Bold, 1:BoldItalic, 2:DemiBold, 5:Medium, 7:Regular, 8:Heavy
-        # Optima indices: 0:Regular, 1:Bold, 4:ExtraBlack
-        "cover_brand": load(optima_path, 34, index=1),
-        "cover_subtitle": load(avenir_path, 16, index=2),
-        "cover_title": load(optima_path, 44, index=1),
-        "cover_year": load(avenir_path, 40, index=8),
-        "cover_subheading": load(avenir_path, 18, index=2),
-        "cover_meta": load(avenir_path, 13, index=5),
-        "cover_ch_title": load(avenir_path, 15, index=0),
-        "cover_ch_desc": load(avenir_path, 12, index=7),
-        "cover_exp_title": load(optima_path, 24, index=1),
+        # Cover Page
+        "cover_brand": load(optima_path, 36, index=1),
+        "cover_subtitle": load(avenir_path, 15, index=2),
+        "cover_title": load(optima_path, 46, index=1),
+        "cover_title2": load(optima_path, 42, index=1),
+        "cover_year": load(avenir_path, 26, index=0),
+        "cover_tagline1": load(avenir_path, 18, index=2),
+        "cover_tagline2": load(avenir_path, 14, index=5),
+        "cover_pillar_num": load(avenir_path, 14, index=0),
+        "cover_pillar_title": load(avenir_path, 14, index=0),
+        "cover_pillar_desc": load(avenir_path, 12, index=7),
+        "cover_exp_title": load(optima_path, 26, index=1),
         "cover_exp_addr": load(avenir_path, 14, index=5),
-        "cover_exp_contact": load(avenir_path, 16, index=0),
+        "cover_exp_contact": load(avenir_path, 17, index=0),
+        "cover_meta": load(avenir_path, 11, index=7),
 
         # Page Header & Footer
         "header_brand": load(avenir_path, 14, index=0),
@@ -262,13 +264,13 @@ def draw_header_footer(draw, fonts, page_num, total_pages, category_name="", hea
     draw.text((PAGE_WIDTH - 50 - tw, PAGE_HEIGHT - 36), page_str, fill=(100, 116, 139), font=fonts["footer_page"])
 
 
-def create_cover_page(fonts, logo_img, chapter_counts, total_patterns=284):
+def create_cover_page(fonts, logo_img, total_patterns=284):
     img = Image.new("RGB", (PAGE_WIDTH, PAGE_HEIGHT), color=(15, 23, 42))
     draw = ImageDraw.Draw(img)
 
     # Gold borders
     draw.rectangle([(35, 35), (PAGE_WIDTH - 35, PAGE_HEIGHT - 35)], outline=(217, 119, 6), width=2)
-    draw.rectangle([(42, 42), (PAGE_WIDTH - 42, PAGE_HEIGHT - 42)], outline=(245, 158, 11), width=1)
+    draw.rectangle([(44, 44), (PAGE_WIDTH - 44, PAGE_HEIGHT - 44)], outline=(245, 158, 11), width=1)
 
     # Corner accents
     for x, y, dx, dy in [
@@ -277,8 +279,8 @@ def create_cover_page(fonts, logo_img, chapter_counts, total_patterns=284):
         (55, PAGE_HEIGHT - 55, 1, -1),
         (PAGE_WIDTH - 55, PAGE_HEIGHT - 55, -1, -1),
     ]:
-        draw.line([(x, y), (x + 30 * dx, y)], fill=(251, 191, 36), width=2)
-        draw.line([(x, y), (x, y + 30 * dy)], fill=(251, 191, 36), width=2)
+        draw.line([(x, y), (x + 35 * dx, y)], fill=(251, 191, 36), width=2)
+        draw.line([(x, y), (x, y + 35 * dy)], fill=(251, 191, 36), width=2)
 
     # Logo Medallion
     card_w, card_h = 180, 160
@@ -291,41 +293,48 @@ def create_cover_page(fonts, logo_img, chapter_counts, total_patterns=284):
 
     # Brand Title
     draw.text((PAGE_WIDTH // 2, 275), "STONE TECH ATELIER", fill=(245, 158, 11), font=fonts["cover_brand"], anchor="mm")
-    draw.text((PAGE_WIDTH // 2, 310), "ARCHITECTURAL STONE FABRICATORS · AHMEDABAD", fill=(148, 163, 184), font=fonts["cover_subtitle"], anchor="mm")
-    draw.line([(PAGE_WIDTH // 2 - 200, 335), (PAGE_WIDTH // 2 + 200, 335)], fill=(217, 119, 6), width=2)
+    draw.text((PAGE_WIDTH // 2, 315), "ARCHITECTURAL STONE FABRICATORS & CRAFTSMEN", fill=(148, 163, 184), font=fonts["cover_subtitle"], anchor="mm")
+    draw.line([(PAGE_WIDTH // 2 - 200, 345), (PAGE_WIDTH // 2 + 200, 345)], fill=(217, 119, 6), width=2)
 
-    # Main Catalog Title
-    draw.text((PAGE_WIDTH // 2, 395), "NATURAL STONE WALL CLADDING", fill=(255, 255, 255), font=fonts["cover_title"], anchor="mm")
-    draw.text((PAGE_WIDTH // 2, 450), "OPTIONS 2026-27", fill=(251, 191, 36), font=fonts["cover_year"], anchor="mm")
-    draw.text((PAGE_WIDTH // 2, 505), "CATEGORIZED BY ARCHITECTURAL PATTERN & STONE PLACEMENT", fill=(103, 232, 249), font=fonts["cover_subheading"], anchor="mm")
-    draw.text((PAGE_WIDTH // 2, 540), f"COMPREHENSIVE COLLECTION OF {total_patterns} PRECISION FABRICATED PATTERNS", fill=(148, 163, 184), font=fonts["cover_meta"], anchor="mm")
+    # Major Heading (as explicitly requested: "Natural Stone Wall Cladding Products Options")
+    draw.text((PAGE_WIDTH // 2, 415), "NATURAL STONE WALL CLADDING", fill=(255, 255, 255), font=fonts["cover_title"], anchor="mm")
+    draw.text((PAGE_WIDTH // 2, 470), "PRODUCTS OPTIONS", fill=(251, 191, 36), font=fonts["cover_title2"], anchor="mm")
+    draw.text((PAGE_WIDTH // 2, 525), "2026 – 2027 COLLECTION", fill=(103, 232, 249), font=fonts["cover_year"], anchor="mm")
 
-    # Table of Architectural Chapters
-    box_top = 580
-    box_w = PAGE_WIDTH - 160
-    box_h = 560
-    draw.rectangle([(80, box_top), (80 + box_w, box_top + box_h)], fill=(30, 41, 59), outline=(51, 65, 85), width=2)
-    draw.text((PAGE_WIDTH // 2, box_top + 32), "ARCHITECTURAL CHAPTERS & STONE PLACEMENTS", fill=(251, 191, 36), font=fonts["cover_subheading"], anchor="mm")
-    draw.line([(PAGE_WIDTH // 2 - 180, box_top + 54), (PAGE_WIDTH // 2 + 180, box_top + 54)], fill=(217, 119, 6), width=1)
+    # Luxury Taglines
+    draw.text((PAGE_WIDTH // 2, 590), f"Curated Portfolio of {total_patterns} Precision-Fabricated Surfaces & 3D Architectural Textures", fill=(241, 245, 249), font=fonts["cover_tagline1"], anchor="mm")
+    draw.text((PAGE_WIDTH // 2, 625), "Quarry-Direct Natural Sandstone, Marble, Slate, Granite & Basalt Claddings", fill=(148, 163, 184), font=fonts["cover_tagline2"], anchor="mm")
 
-    y_cur = box_top + 76
-    for idx, ch in enumerate(CHAPTER_CONFIG):
-        count = chapter_counts.get(ch["name"], 0)
-        ch_num = f"0{idx+1}"
-        draw.text((110, y_cur), f"CHAPTER {ch_num}:", fill=(251, 191, 36), font=fonts["cover_ch_title"])
-        draw.text((230, y_cur), ch["name"], fill=(241, 245, 249), font=fonts["cover_ch_title"])
-        count_str = f"({count} Patterns)"
-        draw.text((80 + box_w - 30, y_cur), count_str, fill=(103, 232, 249), font=fonts["cover_ch_title"], anchor="ra")
-        draw.text((230, y_cur + 22), ch["desc"], fill=(148, 163, 184), font=fonts["cover_ch_desc"])
-        y_cur += 56
+    # Fabrication & Quality Assurance Capabilities Box
+    box_top = 670
+    box_w = PAGE_WIDTH - 180
+    box_h = 475
+    box_x = 90
+    draw.rectangle([(box_x, box_top), (box_x + box_w, box_top + box_h)], fill=(30, 41, 59), outline=(51, 65, 85), width=2)
+    draw.text((PAGE_WIDTH // 2, box_top + 38), "ARCHITECTURAL EXCELLENCE & FABRICATION CAPABILITIES", fill=(251, 191, 36), font=fonts["cover_subtitle"], anchor="mm")
+    draw.line([(PAGE_WIDTH // 2 - 180, box_top + 60), (PAGE_WIDTH // 2 + 180, box_top + 60)], fill=(217, 119, 6), width=1)
+
+    pillars = [
+        ("01", "PRECISION CNC & ARTISANAL CRAFTSMANSHIP", "Advanced multi-axis CNC surface profiling, diamond fluting, and traditional Rajasthani stone hand-chiseling."),
+        ("02", "AUTHENTIC QUARRY-DIRECT GEOLOGY", "Direct sourcing from certified quarries across Rajasthan and Gujarat: Mint Sandstone, Teakwood, Agra Red, Dholpur, and Marbles."),
+        ("03", "FULL PRE-DISPATCH DRY-LAY APPROVAL", "Every order undergoes a complete pre-dispatch dry-lay mockup with high-resolution photo and video approval prior to packing."),
+        ("04", "HEAVY-DUTY SEAWORTHY EXPORT CRATING", "ISPM-15 heat-treated fumigated wooden crates with EPE foam interleaving and corner protectors for damage-free transit.")
+    ]
+
+    y_p = box_top + 95
+    for num, p_title, p_desc in pillars:
+        draw.text((box_x + 35, y_p), f"{num}.", fill=(251, 191, 36), font=fonts["cover_pillar_num"])
+        draw.text((box_x + 75, y_p), p_title, fill=(241, 245, 249), font=fonts["cover_pillar_title"])
+        draw.text((box_x + 75, y_p + 24), p_desc, fill=(148, 163, 184), font=fonts["cover_pillar_desc"])
+        y_p += 85
 
     # Experience Center Box
-    draw.line([(80, 1180), (PAGE_WIDTH - 80, 1180)], fill=(217, 119, 6), width=2)
-    draw.text((PAGE_WIDTH // 2, 1220), "STONE TECH EXPERIENCE CENTER · AHMEDABAD", fill=(251, 191, 36), font=fonts["cover_exp_title"], anchor="mm")
-    draw.text((PAGE_WIDTH // 2, 1270), "E-02, Ground Floor, SG Business Hub, Vasant Nagar, Gota, Ahmedabad, Gujarat 380060", fill=(255, 255, 255), font=fonts["cover_exp_addr"], anchor="mm")
-    draw.text((PAGE_WIDTH // 2, 1318), "Direct WhatsApp Lines: +91 77420 90866 / +91 97844 52998", fill=(103, 232, 249), font=fonts["cover_exp_contact"], anchor="mm")
-    draw.text((PAGE_WIDTH // 2, 1362), "Email: info@stonetech.in   ·   Web: www.stonetech.in", fill=(203, 213, 225), font=fonts["cover_exp_addr"], anchor="mm")
-    draw.text((PAGE_WIDTH // 2, 1420), "Softcopy Edition · StoneTech_NaturalStone_WallCl_Options_26-27.pdf", fill=(100, 116, 139), font=fonts["cover_meta"], anchor="mm")
+    draw.line([(90, 1180), (PAGE_WIDTH - 90, 1180)], fill=(217, 119, 6), width=2)
+    draw.text((PAGE_WIDTH // 2, 1225), "STONE TECH EXPERIENCE CENTER · AHMEDABAD", fill=(251, 191, 36), font=fonts["cover_exp_title"], anchor="mm")
+    draw.text((PAGE_WIDTH // 2, 1275), "E-02, Ground Floor, SG Business Hub, Vasant Nagar, Gota, Ahmedabad, Gujarat 380060", fill=(255, 255, 255), font=fonts["cover_exp_addr"], anchor="mm")
+    draw.text((PAGE_WIDTH // 2, 1323), "Direct WhatsApp Lines: +91 77420 90866 / +91 97844 52998", fill=(103, 232, 249), font=fonts["cover_exp_contact"], anchor="mm")
+    draw.text((PAGE_WIDTH // 2, 1368), "Email: info@stonetech.in   ·   Website: www.stonetech.in", fill=(203, 213, 225), font=fonts["cover_exp_addr"], anchor="mm")
+    draw.text((PAGE_WIDTH // 2, 1425), "Softcopy Edition · StoneTech_NaturalStone_WallCl_Options_26-27.pdf", fill=(100, 116, 139), font=fonts["cover_meta"], anchor="mm")
 
     return img
 
@@ -577,7 +586,7 @@ def main():
     pages = []
     # Cover Page
     print("Rendering Cover Page...")
-    pages.append(create_cover_page(fonts, logo_img, chapter_counts, len(reordered_catalog)))
+    pages.append(create_cover_page(fonts, logo_img, len(reordered_catalog)))
 
     # Product Pages (4 items per page)
     for p_idx, chunk in enumerate(chunks):
@@ -585,15 +594,7 @@ def main():
         p_img = Image.new("RGB", (PAGE_WIDTH, PAGE_HEIGHT), color=(255, 255, 255))
         p_draw = ImageDraw.Draw(p_img)
 
-        # Determine prominent chapter badge for this page
-        page_chapters = [get_chapter(it) for it in chunk]
-        # Most frequent chapter on this page
-        dominant_ch = max(set(page_chapters), key=page_chapters.count)
-        # Find short name
-        ch_cfg = next((c for c in CHAPTER_CONFIG if c["name"] == dominant_ch), None)
-        badge_name = ch_cfg["short"] if ch_cfg else dominant_ch
-
-        draw_header_footer(p_draw, fonts, p_num, total_pages, badge_name, header_icon, p_img)
+        draw_header_footer(p_draw, fonts, p_num, total_pages, "ARCHITECTURAL COLLECTION", header_icon, p_img)
 
         for i, item in enumerate(chunk):
             gx = x_positions[i % 2]
