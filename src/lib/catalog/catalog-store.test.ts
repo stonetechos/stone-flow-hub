@@ -2,8 +2,8 @@ import { describe, it, expect } from "bun:test";
 
 describe("Website Catalog Position Jumping & Lossless Picture Rotation", () => {
   it("correctly simulates moveToPosition moving item from rank 184 to 34", () => {
-    // Generate 261 test products
-    const items = Array.from({ length: 261 }, (_, i) => ({
+    // Generate 284 test products
+    const items = Array.from({ length: 284 }, (_, i) => ({
       id: `ST-WC-${String(i + 1).padStart(3, "0")}`,
       name: `Pattern ${i + 1}`,
       index: i + 1,
@@ -38,16 +38,16 @@ describe("Website Catalog Position Jumping & Lossless Picture Rotation", () => {
     expect(renumbered[34].code).toBe("ST-WC-035");
 
     // The total length must remain intact
-    expect(renumbered.length).toBe(261);
+    expect(renumbered.length).toBe(284);
   });
 
   it("handles bounds checking when target position is out of range", () => {
-    const totalItems = 261;
+    const totalItems = 284;
     const clampTarget = (pos: number) => Math.max(1, Math.min(totalItems, Math.round(pos)));
 
     expect(clampTarget(-5)).toBe(1);
     expect(clampTarget(0)).toBe(1);
-    expect(clampTarget(999)).toBe(261);
+    expect(clampTarget(999)).toBe(284);
     expect(clampTarget(50.4)).toBe(50);
   });
 
