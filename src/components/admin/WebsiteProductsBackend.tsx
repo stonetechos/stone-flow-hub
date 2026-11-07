@@ -22,6 +22,8 @@ import {
   RotateCw,
   ZoomIn,
   ImageIcon,
+  LayoutGrid,
+  List,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -392,6 +394,26 @@ export function WebsiteProductsBackend() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<number | "all">(10);
 
+  // View mode: 'list' (detailed table) or 'icons' (small compact visual grid for drag & drop)
+  const [viewMode, setViewMode] = useState<"list" | "icons">(() => {
+    if (typeof window !== "undefined" && window.localStorage) {
+      const saved = window.localStorage.getItem("st.catalog.adminViewMode");
+      if (saved === "icons" || saved === "list") return saved;
+    }
+    return "list";
+  });
+
+  const handleSetViewMode = (mode: "list" | "icons") => {
+    setViewMode(mode);
+    if (mode === "icons" && pageSize === 10) {
+      // In icons mode, bump page size to see all or more icons across the screen
+      setPageSize("all");
+    }
+    if (typeof window !== "undefined" && window.localStorage) {
+      window.localStorage.setItem("st.catalog.adminViewMode", mode);
+    }
+  };
+
   // Drag and drop state
   const [draggedProductId, setDraggedProductId] = useState<string | null>(null);
   const [dragOverProductId, setDragOverProductId] = useState<string | null>(null);
@@ -739,7 +761,7 @@ export function WebsiteProductsBackend() {
             </SelectContent>
           </Select>
 
-          {/* Page Display Selector (10 / page, 25, 50, or See All) */}
+          {/* Page Display Selector (10 / page, 25, 50, 100, or See All) */}
           <Select
             value={String(pageSize)}
             onValueChange={(v) => {
@@ -747,7 +769,7 @@ export function WebsiteProductsBackend() {
               setPage(1);
             }}
           >
-            <SelectTrigger className="h-9 w-44 text-xs bg-background font-medium">
+            <SelectTrigger className="h-9 w-40 text-xs bg-background font-medium">
               <SelectValue placeholder="Display Option" />
             </SelectTrigger>
             <SelectContent>
@@ -760,6 +782,9 @@ export function WebsiteProductsBackend() {
               <SelectItem value="50" className="text-xs">
                 50 items / page
               </SelectItem>
+              <SelectItem value="100" className="text-xs">
+                100 items / page
+              </SelectItem>
               <SelectItem
                 value="all"
                 className="text-xs font-semibold text-cyan-600 dark:text-cyan-400"
@@ -768,11 +793,77 @@ export function WebsiteProductsBackend() {
               </SelectItem>
             </SelectContent>
           </Select>
+
+          {/* View Mode Switcher: List vs Icons */}
+          <div className="flex items-center rounded-lg border border-border bg-muted/40 p-0.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => handleSetViewMode("list")}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all cursor-pointer",
+                viewMode === "list"
+                  ? "bg-background text-foreground shadow-xs font-semibold"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+              title="View as detailed table list"
+            >
+              <List className="h-3.5 w-3.5" />
+              <span>List</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSetViewMode("icons")}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all cursor-pointer",
+                viewMode === "icons"
+                  ? "bg-cyan-600 text-white shadow-xs font-semibold"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+              title="View as small compact icons (easier to drag and position products)"
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+              <span>Icons</span>
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Re-order Helper Banner */}
-      {pageSize === "all" ? (
+      {viewMode === "icons" ? (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-2.5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-950 dark:text-cyan-100 text-xs">
+          <div className="flex items-center gap-2">
+            <LayoutGrid className="h-4 w-4 text-cyan-600 dark:text-cyan-400 shrink-0" />
+            <span>
+              <strong>Small Icons Reorder Mode:</strong> Products are displayed as compact visual
+              cards so you can see dozens at once. Click &amp; drag any icon across the grid to
+              easily position it anywhere, or type a target position number in any icon's top box
+              and press Enter.
+            </span>
+          </div>
+          {pageSize !== "all" ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setPageSize("all");
+                setPage(1);
+              }}
+              className="h-7 px-2.5 text-[11px] bg-background border-cyan-500/30 hover:bg-cyan-500/20 shrink-0 self-start sm:self-auto font-medium"
+            >
+              See All {filteredProducts.length} Icons
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleSetViewMode("list")}
+              className="h-7 px-2.5 text-[11px] bg-background border-cyan-500/30 hover:bg-cyan-500/20 shrink-0 self-start sm:self-auto font-medium"
+            >
+              Switch to List View
+            </Button>
+          )}
+        </div>
+      ) : pageSize === "all" ? (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-2.5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-950 dark:text-cyan-100 text-xs">
           <div className="flex items-center gap-2">
             <ArrowUpDown className="h-4 w-4 text-cyan-600 dark:text-cyan-400 shrink-0" />
@@ -783,17 +874,28 @@ export function WebsiteProductsBackend() {
               similar-looking products together.
             </span>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setPageSize(10);
-              setPage(1);
-            }}
-            className="h-7 px-2.5 text-[11px] bg-background border-cyan-500/30 hover:bg-cyan-500/20 shrink-0 self-start sm:self-auto font-medium"
-          >
-            Switch to 10 items / page
-          </Button>
+          <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleSetViewMode("icons")}
+              className="h-7 px-2.5 text-[11px] bg-cyan-600 text-white hover:bg-cyan-700 font-medium gap-1"
+            >
+              <LayoutGrid className="h-3 w-3" />
+              <span>Switch to Icons Grid</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setPageSize(10);
+                setPage(1);
+              }}
+              className="h-7 px-2.5 text-[11px] bg-background border-cyan-500/30 hover:bg-cyan-500/20 font-medium"
+            >
+              10 / page
+            </Button>
+          </div>
         </div>
       ) : (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3.5 py-2 rounded-lg border border-border/80 bg-muted/20 text-xs text-muted-foreground">
@@ -804,55 +906,42 @@ export function WebsiteProductsBackend() {
               entire catalog?
             </span>
           </span>
-          <button
-            type="button"
-            onClick={() => {
-              setPageSize("all");
-              setPage(1);
-            }}
-            className="inline-flex items-center gap-1 text-cyan-600 dark:text-cyan-400 font-semibold hover:underline cursor-pointer text-xs self-start sm:self-auto"
-          >
-            <span>Click here to see all {filteredProducts.length} at once</span>
-            <ArrowUpDown className="h-3 w-3" />
-          </button>
+          <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() => {
+                setPageSize("all");
+                setPage(1);
+              }}
+              className="inline-flex items-center gap-1 text-cyan-600 dark:text-cyan-400 font-semibold hover:underline cursor-pointer text-xs"
+            >
+              <span>See all {filteredProducts.length} at once</span>
+              <ArrowUpDown className="h-3 w-3" />
+            </button>
+            <span className="text-border">|</span>
+            <button
+              type="button"
+              onClick={() => handleSetViewMode("icons")}
+              className="inline-flex items-center gap-1 text-cyan-600 dark:text-cyan-400 font-semibold hover:underline cursor-pointer text-xs"
+            >
+              <LayoutGrid className="h-3 w-3" />
+              <span>Switch to Icons</span>
+            </button>
+          </div>
         </div>
       )}
 
-      {/* Products Table */}
+      {/* Products Display: Small Icons Grid vs Detailed List Table */}
       <Card className="overflow-hidden border-border/80 shadow-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs text-left">
-            <thead className="bg-muted/70 text-muted-foreground font-semibold border-b border-border">
-              <tr>
-                {isSuperAdmin && (
-                  <th
-                    className="py-2.5 px-2 w-20 text-center font-mono text-[11px] text-muted-foreground"
-                    title="Direct Sequence Rank # (Type number to jump or drag to reorder)"
-                  >
-                    Seq #
-                  </th>
-                )}
-                <th className="py-2.5 px-3 w-16">Image</th>
-                <th className="py-2.5 px-3">Product Name &amp; Code</th>
-                <th className="py-2.5 px-3">Category</th>
-                <th className="py-2.5 px-3">Stone Type</th>
-                <th className="py-2.5 px-3">Selling Price</th>
-                <th className="py-2.5 px-3">MRP</th>
-                <th className="py-2.5 px-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {paginatedProducts.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={isSuperAdmin ? 8 : 7}
-                    className="py-8 text-center text-muted-foreground"
-                  >
-                    No products found matching the search criteria.
-                  </td>
-                </tr>
-              ) : (
-                paginatedProducts.map((p, idx) => {
+        {viewMode === "icons" ? (
+          <div className="p-3 sm:p-4 bg-muted/10 min-h-[300px]">
+            {paginatedProducts.length === 0 ? (
+              <div className="py-16 text-center text-muted-foreground text-xs">
+                No products found matching the search criteria.
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-12 gap-2 sm:gap-2.5">
+                {paginatedProducts.map((p, idx) => {
                   const priceInfo = getProductPrice(p);
                   const isBeingDragged = draggedProductId === p.id;
                   const isOver = dragOverProductId === p.id;
@@ -861,7 +950,7 @@ export function WebsiteProductsBackend() {
                     (pageSize === "all" ? idx + 1 : (page - 1) * (pageSize as number) + idx + 1);
 
                   return (
-                    <tr
+                    <div
                       key={p.id}
                       draggable={isSuperAdmin}
                       onDragStart={(e) => {
@@ -900,23 +989,25 @@ export function WebsiteProductsBackend() {
                         setDraggedProductId(null);
                         setDragOverProductId(null);
                       }}
-                      className={`hover:bg-muted/30 transition-colors ${
-                        isBeingDragged ? "opacity-40 bg-muted/50" : ""
-                      } ${
+                      className={cn(
+                        "group relative flex flex-col justify-between rounded-xl border bg-card p-1.5 transition-all select-none shadow-2xs hover:shadow-md",
+                        isSuperAdmin ? "cursor-grab active:cursor-grabbing" : "",
+                        isBeingDragged
+                          ? "opacity-30 scale-95 border-dashed border-cyan-500 ring-2 ring-cyan-500/50"
+                          : "hover:border-cyan-500/70",
                         isOver
-                          ? "border-t-2 border-t-cyan-500 bg-cyan-50/20 dark:bg-cyan-950/20 shadow-xs"
-                          : ""
-                      }`}
+                          ? "ring-2 ring-cyan-500 bg-cyan-500/15 scale-105 border-cyan-500 z-10 shadow-lg"
+                          : "border-border/80",
+                      )}
+                      title={`${p.name} (${p.code || p.id})\nPosition #${globalIndex}\nDrag icon to reposition or type a number in the top box`}
                     >
-                      {isSuperAdmin && (
-                        <td className="py-2 px-1 text-center align-middle text-muted-foreground">
-                          <div
-                            className="flex items-center justify-center gap-1 h-full px-1"
-                            title={`Sequence Rank #${globalIndex} — Drag grip or type a new position number and press Enter to instantly move`}
-                          >
-                            <div className="cursor-grab active:cursor-grabbing text-muted-foreground/60 hover:text-cyan-600">
-                              <GripVertical className="h-3.5 w-3.5 shrink-0" />
-                            </div>
+                      {/* Top Bar: Drag Grip + Direct Rank Input + Rotation badge */}
+                      <div className="flex items-center justify-between gap-1 mb-1">
+                        <div className="flex items-center gap-0.5">
+                          {isSuperAdmin && (
+                            <GripVertical className="h-3 w-3 text-muted-foreground/60 shrink-0 group-hover:text-cyan-600" />
+                          )}
+                          {isSuperAdmin ? (
                             <input
                               type="number"
                               min={1}
@@ -926,6 +1017,7 @@ export function WebsiteProductsBackend() {
                                   ? positionInputs[p.id]
                                   : String(globalIndex)
                               }
+                              onClick={(e) => e.stopPropagation()}
                               onChange={(e) => {
                                 const val = e.target.value;
                                 setPositionInputs((prev) => ({ ...prev, [p.id]: val }));
@@ -953,143 +1045,378 @@ export function WebsiteProductsBackend() {
                                   });
                                 }
                               }}
-                              className="w-11 h-6 text-center font-mono text-[11px] font-bold px-1 py-0 rounded border border-border/70 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 bg-background text-foreground shadow-xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none cursor-text"
+                              className="w-8 h-4.5 text-center font-mono text-[10px] font-bold px-0.5 py-0 rounded border border-border/70 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 bg-background text-foreground shadow-2xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none cursor-text"
                               title="Type target position (e.g. 34) and press Enter to jump"
                             />
-                          </div>
-                        </td>
-                      )}
-                      <td className="py-2 px-3">
-                        <div
-                          onMouseEnter={(e) => {
-                            const rect = e.currentTarget.getBoundingClientRect();
-                            setHoveredProduct({
-                              product: p,
-                              top: Math.min(
-                                Math.max(rect.top - 120, 20),
-                                Math.max(window.innerHeight - 360, 20),
-                              ),
-                              left: rect.right + 16,
-                            });
-                          }}
-                          onMouseLeave={() => setHoveredProduct(null)}
-                          className="relative group/thumb h-11 w-14 rounded-lg overflow-hidden border border-border bg-stone-900 shrink-0 cursor-zoom-in hover:ring-2 hover:ring-cyan-500 transition-all flex items-center justify-center p-0.5"
-                        >
-                          <img
-                            src={p.image}
-                            alt={p.name}
-                            style={
-                              p.rotation ? { transform: `rotate(${p.rotation}deg)` } : undefined
-                            }
-                            className="max-h-full max-w-full object-contain rounded pointer-events-none transition-transform duration-200 group-hover/thumb:scale-105"
-                            loading="lazy"
-                          />
-                          {p.rotation ? (
-                            <span className="absolute bottom-0.5 left-0.5 bg-amber-500/90 text-stone-950 text-[8px] font-mono font-black px-1 rounded shadow-xs pointer-events-none">
-                              {p.rotation}°
+                          ) : (
+                            <span className="font-mono text-[10px] font-bold text-muted-foreground">
+                              #{globalIndex}
                             </span>
-                          ) : null}
-                          {isSuperAdmin && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleRotateProduct(p.id, 90, p.name);
-                              }}
-                              className="absolute top-0.5 right-0.5 bg-black/80 hover:bg-amber-600 text-white p-1 rounded opacity-0 group-hover/thumb:opacity-100 transition-opacity z-10 cursor-pointer shadow-xs"
-                              title="Rotate +90° clockwise losslessly"
-                            >
-                              <RotateCw className="h-3 w-3" />
-                            </button>
                           )}
                         </div>
-                      </td>
-                      <td className="py-2 px-3">
-                        <div className="font-semibold text-foreground">{p.name}</div>
-                        <div className="text-[10px] font-mono text-cyan-600 dark:text-cyan-400">
-                          {p.code || p.id}
-                        </div>
-                      </td>
-                      <td className="py-2 px-3">
-                        <Badge variant="outline" className="text-[10px] bg-background">
-                          {p.category}
-                        </Badge>
-                      </td>
-                      <td className="py-2 px-3 text-muted-foreground">{p.stoneType}</td>
-                      <td className="py-2 px-3">
-                        <span className="font-bold text-foreground">
-                          {priceInfo.currency} {priceInfo.price}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground ml-1">
-                          /{priceInfo.unit}
-                        </span>
-                      </td>
-                      <td className="py-2 px-3 text-muted-foreground">
-                        {priceInfo.mrp ? (
-                          <span className="line-through">
-                            {priceInfo.currency} {priceInfo.mrp}
+                        {p.rotation ? (
+                          <span className="text-[8px] bg-amber-500/20 text-amber-600 dark:text-amber-400 font-mono font-bold px-1 rounded">
+                            {p.rotation}°
                           </span>
-                        ) : (
-                          "—"
+                        ) : null}
+                      </div>
+
+                      {/* Small Icon Photo */}
+                      <div
+                        onMouseEnter={(e) => {
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          setHoveredProduct({
+                            product: p,
+                            top: Math.min(
+                              Math.max(rect.top - 120, 20),
+                              Math.max(window.innerHeight - 360, 20),
+                            ),
+                            left: rect.right + 16,
+                          });
+                        }}
+                        onMouseLeave={() => setHoveredProduct(null)}
+                        className="relative aspect-square w-full rounded-lg overflow-hidden bg-stone-950 border border-border/80 flex items-center justify-center p-0.5 cursor-zoom-in group/thumb"
+                      >
+                        <img
+                          src={p.image}
+                          alt={p.name}
+                          style={p.rotation ? { transform: `rotate(${p.rotation}deg)` } : undefined}
+                          className="max-h-full max-w-full object-contain rounded transition-transform duration-200 group-hover/thumb:scale-105 pointer-events-none"
+                          loading="lazy"
+                        />
+
+                        {/* Quick Rotate Button on photo hover */}
+                        {isSuperAdmin && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRotateProduct(p.id, 90, p.name);
+                            }}
+                            className="absolute top-1 right-1 bg-black/80 hover:bg-amber-600 text-white p-1 rounded-md opacity-0 group-hover/thumb:opacity-100 transition-opacity z-10 cursor-pointer shadow-xs"
+                            title="Rotate +90° clockwise"
+                          >
+                            <RotateCw className="h-3 w-3" />
+                          </button>
                         )}
-                      </td>
-                      <td className="py-2 px-3 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          {isSuperAdmin ? (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleRotateProduct(p.id, 90, p.name)}
-                                className="h-7 px-2 text-xs text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30"
-                                title="Rotate picture 90° clockwise losslessly"
-                              >
-                                <RotateCw className="h-3.5 w-3.5 mr-1" />
-                                {p.rotation ? `${p.rotation}°` : "Rotate"}
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleOpenEdit(p)}
-                                className="h-7 px-2 text-xs text-cyan-600 hover:bg-cyan-50"
-                              >
-                                <Edit2 className="h-3.5 w-3.5 mr-1" />
-                                Edit
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={async () => {
-                                  if (
-                                    window.confirm(
-                                      `Are you sure you want to delete "${p.name}" (${p.code || p.id}) from the product catalog?\n\nThis will remove it from the website and software product list.`,
-                                    )
-                                  ) {
-                                    await deleteProduct(p.id);
-                                    toast.success(`Deleted "${p.name}" from catalogue`);
+                      </div>
+
+                      {/* Code & Price Below Image */}
+                      <div className="mt-1 flex flex-col items-center justify-center text-center">
+                        <span className="text-[10px] font-mono font-bold text-cyan-600 dark:text-cyan-400 truncate w-full">
+                          {p.code || p.id}
+                        </span>
+                        <span className="text-[9px] text-muted-foreground truncate w-full font-medium">
+                          {priceInfo.currency} {priceInfo.price}/{priceInfo.unit}
+                        </span>
+                      </div>
+
+                      {/* Quick Edit on Hover */}
+                      {isSuperAdmin && (
+                        <div className="mt-1 pt-1 border-t border-border/50 flex items-center justify-between gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenEdit(p);
+                            }}
+                            className="h-5 px-1.5 text-[9px] rounded text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-950/40 flex items-center gap-0.5 cursor-pointer font-medium"
+                            title="Edit product"
+                          >
+                            <Edit2 className="h-2.5 w-2.5" />
+                            <span>Edit</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRotateProduct(p.id, 90, p.name);
+                            }}
+                            className="h-5 px-1.5 text-[9px] rounded text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 flex items-center gap-0.5 cursor-pointer font-medium"
+                            title="Rotate +90° clockwise"
+                          >
+                            <RotateCw className="h-2.5 w-2.5" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs text-left">
+              <thead className="bg-muted/70 text-muted-foreground font-semibold border-b border-border">
+                <tr>
+                  {isSuperAdmin && (
+                    <th
+                      className="py-2.5 px-2 w-20 text-center font-mono text-[11px] text-muted-foreground"
+                      title="Direct Sequence Rank # (Type number to jump or drag to reorder)"
+                    >
+                      Seq #
+                    </th>
+                  )}
+                  <th className="py-2.5 px-3 w-16">Image</th>
+                  <th className="py-2.5 px-3">Product Name &amp; Code</th>
+                  <th className="py-2.5 px-3">Category</th>
+                  <th className="py-2.5 px-3">Stone Type</th>
+                  <th className="py-2.5 px-3">Selling Price</th>
+                  <th className="py-2.5 px-3">MRP</th>
+                  <th className="py-2.5 px-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {paginatedProducts.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={isSuperAdmin ? 8 : 7}
+                      className="py-8 text-center text-muted-foreground"
+                    >
+                      No products found matching the search criteria.
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedProducts.map((p, idx) => {
+                    const priceInfo = getProductPrice(p);
+                    const isBeingDragged = draggedProductId === p.id;
+                    const isOver = dragOverProductId === p.id;
+                    const globalIndex =
+                      p.index ||
+                      (pageSize === "all" ? idx + 1 : (page - 1) * (pageSize as number) + idx + 1);
+
+                    return (
+                      <tr
+                        key={p.id}
+                        draggable={isSuperAdmin}
+                        onDragStart={(e) => {
+                          if (!isSuperAdmin) return;
+                          setDraggedProductId(p.id);
+                          e.dataTransfer.effectAllowed = "move";
+                          e.dataTransfer.setData("text/plain", p.id);
+                        }}
+                        onDragOver={(e) => {
+                          if (!isSuperAdmin || !draggedProductId) return;
+                          e.preventDefault();
+                          e.dataTransfer.dropEffect = "move";
+                          if (dragOverProductId !== p.id) {
+                            setDragOverProductId(p.id);
+                          }
+                        }}
+                        onDragLeave={() => {
+                          if (dragOverProductId === p.id) {
+                            setDragOverProductId(null);
+                          }
+                        }}
+                        onDrop={async (e) => {
+                          e.preventDefault();
+                          if (!isSuperAdmin || !draggedProductId) return;
+                          const sourceId = draggedProductId;
+                          const targetId = p.id;
+                          setDraggedProductId(null);
+                          setDragOverProductId(null);
+
+                          if (sourceId !== targetId) {
+                            await reorderProducts(sourceId, targetId);
+                            toast.success(`Moved product to position #${globalIndex}`);
+                          }
+                        }}
+                        onDragEnd={() => {
+                          setDraggedProductId(null);
+                          setDragOverProductId(null);
+                        }}
+                        className={`hover:bg-muted/30 transition-colors ${
+                          isBeingDragged ? "opacity-40 bg-muted/50" : ""
+                        } ${
+                          isOver
+                            ? "border-t-2 border-t-cyan-500 bg-cyan-50/20 dark:bg-cyan-950/20 shadow-xs"
+                            : ""
+                        }`}
+                      >
+                        {isSuperAdmin && (
+                          <td className="py-2 px-1 text-center align-middle text-muted-foreground">
+                            <div
+                              className="flex items-center justify-center gap-1 h-full px-1"
+                              title={`Sequence Rank #${globalIndex} — Drag grip or type a new position number and press Enter to instantly move`}
+                            >
+                              <div className="cursor-grab active:cursor-grabbing text-muted-foreground/60 hover:text-cyan-600">
+                                <GripVertical className="h-3.5 w-3.5 shrink-0" />
+                              </div>
+                              <input
+                                type="number"
+                                min={1}
+                                max={products.length}
+                                value={
+                                  positionInputs[p.id] !== undefined
+                                    ? positionInputs[p.id]
+                                    : String(globalIndex)
+                                }
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setPositionInputs((prev) => ({ ...prev, [p.id]: val }));
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    e.currentTarget.blur();
+                                  } else if (e.key === "Escape") {
+                                    setPositionInputs((prev) => {
+                                      const next = { ...prev };
+                                      delete next[p.id];
+                                      return next;
+                                    });
                                   }
                                 }}
-                                className="h-7 px-2 text-xs text-rose-500 hover:bg-rose-50 hover:text-rose-600"
-                                title="Delete this product from catalog"
+                                onBlur={(e) => {
+                                  const val = parseInt(e.target.value, 10);
+                                  if (!isNaN(val) && val !== globalIndex) {
+                                    handleDirectMove(p.id, val, p.name);
+                                  } else {
+                                    setPositionInputs((prev) => {
+                                      const next = { ...prev };
+                                      delete next[p.id];
+                                      return next;
+                                    });
+                                  }
+                                }}
+                                className="w-11 h-6 text-center font-mono text-[11px] font-bold px-1 py-0 rounded border border-border/70 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 bg-background text-foreground shadow-xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none cursor-text"
+                                title="Type target position (e.g. 34) and press Enter to jump"
+                              />
+                            </div>
+                          </td>
+                        )}
+                        <td className="py-2 px-3">
+                          <div
+                            onMouseEnter={(e) => {
+                              const rect = e.currentTarget.getBoundingClientRect();
+                              setHoveredProduct({
+                                product: p,
+                                top: Math.min(
+                                  Math.max(rect.top - 120, 20),
+                                  Math.max(window.innerHeight - 360, 20),
+                                ),
+                                left: rect.right + 16,
+                              });
+                            }}
+                            onMouseLeave={() => setHoveredProduct(null)}
+                            className="relative group/thumb h-11 w-14 rounded-lg overflow-hidden border border-border bg-stone-900 shrink-0 cursor-zoom-in hover:ring-2 hover:ring-cyan-500 transition-all flex items-center justify-center p-0.5"
+                          >
+                            <img
+                              src={p.image}
+                              alt={p.name}
+                              style={
+                                p.rotation ? { transform: `rotate(${p.rotation}deg)` } : undefined
+                              }
+                              className="max-h-full max-w-full object-contain rounded pointer-events-none transition-transform duration-200 group-hover/thumb:scale-105"
+                              loading="lazy"
+                            />
+                            {p.rotation ? (
+                              <span className="absolute bottom-0.5 left-0.5 bg-amber-500/90 text-stone-950 text-[8px] font-mono font-black px-1 rounded shadow-xs pointer-events-none">
+                                {p.rotation}°
+                              </span>
+                            ) : null}
+                            {isSuperAdmin && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRotateProduct(p.id, 90, p.name);
+                                }}
+                                className="absolute top-0.5 right-0.5 bg-black/80 hover:bg-amber-600 text-white p-1 rounded opacity-0 group-hover/thumb:opacity-100 transition-opacity z-10 cursor-pointer shadow-xs"
+                                title="Rotate +90° clockwise losslessly"
                               >
-                                <Trash2 className="h-3.5 w-3.5 mr-1" />
-                                Delete
-                              </Button>
-                            </>
-                          ) : (
-                            <span className="text-[11px] text-muted-foreground italic px-2">
-                              View only
+                                <RotateCw className="h-3 w-3" />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-2 px-3">
+                          <div className="font-semibold text-foreground">{p.name}</div>
+                          <div className="text-[10px] font-mono text-cyan-600 dark:text-cyan-400">
+                            {p.code || p.id}
+                          </div>
+                        </td>
+                        <td className="py-2 px-3">
+                          <Badge variant="outline" className="text-[10px] bg-background">
+                            {p.category}
+                          </Badge>
+                        </td>
+                        <td className="py-2 px-3 text-muted-foreground">{p.stoneType}</td>
+                        <td className="py-2 px-3">
+                          <span className="font-bold text-foreground">
+                            {priceInfo.currency} {priceInfo.price}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground ml-1">
+                            /{priceInfo.unit}
+                          </span>
+                        </td>
+                        <td className="py-2 px-3 text-muted-foreground">
+                          {priceInfo.mrp ? (
+                            <span className="line-through">
+                              {priceInfo.currency} {priceInfo.mrp}
                             </span>
+                          ) : (
+                            "—"
                           )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                        </td>
+                        <td className="py-2 px-3 text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            {isSuperAdmin ? (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleRotateProduct(p.id, 90, p.name)}
+                                  className="h-7 px-2 text-xs text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30"
+                                  title="Rotate picture 90° clockwise losslessly"
+                                >
+                                  <RotateCw className="h-3.5 w-3.5 mr-1" />
+                                  {p.rotation ? `${p.rotation}°` : "Rotate"}
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleOpenEdit(p)}
+                                  className="h-7 px-2 text-xs text-cyan-600 hover:bg-cyan-50"
+                                >
+                                  <Edit2 className="h-3.5 w-3.5 mr-1" />
+                                  Edit
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={async () => {
+                                    if (
+                                      window.confirm(
+                                        `Are you sure you want to delete "${p.name}" (${p.code || p.id}) from the product catalog?\n\nThis will remove it from the website and software product list.`,
+                                      )
+                                    ) {
+                                      await deleteProduct(p.id);
+                                      toast.success(`Deleted "${p.name}" from catalogue`);
+                                    }
+                                  }}
+                                  className="h-7 px-2 text-xs text-rose-500 hover:bg-rose-50 hover:text-rose-600"
+                                  title="Delete this product from catalog"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5 mr-1" />
+                                  Delete
+                                </Button>
+                              </>
+                            ) : (
+                              <span className="text-[11px] text-muted-foreground italic px-2">
+                                View only
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {/* Pagination Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-2.5 border-t border-border bg-muted/20 text-xs">
@@ -1105,7 +1432,7 @@ export function WebsiteProductsBackend() {
 
             <div className="flex items-center gap-1 ml-0 sm:ml-3">
               <span className="text-[11px] text-muted-foreground">Per page:</span>
-              {([10, 25, 50, "all"] as const).map((opt) => (
+              {([10, 25, 50, 100, "all"] as const).map((opt) => (
                 <button
                   key={String(opt)}
                   type="button"
