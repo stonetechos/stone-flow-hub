@@ -237,7 +237,6 @@ export const DEFAULT_WEBSITE_CATALOG_ORDER: string[] = [
   "ST-WC-188",
   "ST-WC-189",
   "ST-WC-190",
-  "ST-WC-191",
   "ST-WC-192",
   "ST-WC-193",
   "ST-WC-194",

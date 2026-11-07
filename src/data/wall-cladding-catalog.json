@@ -3580,27 +3580,8 @@
     "code": "ST-WC-190"
   },
   {
-    "id": "ST-WC-191",
-    "index": 191,
-    "name": "Alternating Baroque Foliate & Linear Striped Sandstone Panel",
-    "slug": "alternating-baroque-foliate-linear-striped-sandstone-panel",
-    "image": "/images/catalog/wall-cladding/cladding-191-alternating-baroque-foliate-linear-striped-sandstone-panel.jpg",
-    "category": "Stone Wall Cladding",
-    "stoneType": "Teakwood & Mint Sandstone",
-    "standardSizes": "600x300mm / 900x450mm / Custom Modules",
-    "thickness": "25-35mm variable relief",
-    "applications": [
-      "Exterior Elevation Facade",
-      "Interior Feature Wall",
-      "Pillars & Columns",
-      "Entrance Foyers"
-    ],
-    "finishes": ["Bush-hammered", "Honed", "Hand-chiselled", "Shot-blasted"],
-    "code": "ST-WC-191"
-  },
-  {
     "id": "ST-WC-192",
-    "index": 192,
+    "index": 191,
     "name": "Sunburst Chakra Rosette Modular Sandstone Cladding",
     "slug": "sunburst-chakra-rosette-modular-sandstone-cladding",
     "image": "/images/catalog/wall-cladding/cladding-192-sunburst-chakra-rosette-modular-sandstone-cladding.jpg",
@@ -3619,7 +3600,7 @@
   },
   {
     "id": "ST-WC-193",
-    "index": 193,
+    "index": 192,
     "name": "Lotus Bud Flora Modular Sandstone & Slate Inlay Cladding",
     "slug": "lotus-bud-flora-modular-sandstone-slate-inlay-cladding",
     "image": "/images/catalog/wall-cladding/cladding-193-lotus-bud-flora-modular-sandstone-slate-inlay-cladding.jpg",
@@ -3638,7 +3619,7 @@
   },
   {
     "id": "ST-WC-194",
-    "index": 194,
+    "index": 193,
     "name": "Radial Fluted Fan & Ashlar Dual-Tone Sandstone Cladding",
     "slug": "radial-fluted-fan-ashlar-dualtone-sandstone-cladding",
     "image": "/images/catalog/wall-cladding/cladding-194-radial-fluted-fan-ashlar-dualtone-sandstone-cladding.jpg",
@@ -3657,7 +3638,7 @@
   },
   {
     "id": "ST-WC-195",
-    "index": 195,
+    "index": 194,
     "name": "Royal Palmette Crest & Multi-Block White Sandstone Cladding",
     "slug": "royal-palmette-crest-multi-block-white-sandstone-cladding",
     "image": "/images/catalog/wall-cladding/cladding-195-royal-palmette-crest-multi-block-white-sandstone-cladding.jpg",
@@ -3676,7 +3657,7 @@
   },
   {
     "id": "ST-WC-196",
-    "index": 196,
+    "index": 195,
     "name": "Baroque Tulip Crest & Striated Sandstone Wall Cladding",
     "slug": "baroque-tulip-crest-striated-sandstone-wall-cladding",
     "image": "/images/catalog/wall-cladding/cladding-196-baroque-tulip-crest-striated-sandstone-wall-cladding.jpg",
@@ -3695,7 +3676,7 @@
   },
   {
     "id": "ST-WC-197",
-    "index": 197,
+    "index": 196,
     "name": "Geometric Diagonal Micro-Fluted Sandstone Facet Cladding",
     "slug": "geometric-diagonal-micro-fluted-sandstone-facet-cladding",
     "image": "/images/catalog/wall-cladding/cladding-197-geometric-diagonal-micro-fluted-sandstone-facet-cladding.jpg",
@@ -3714,7 +3695,7 @@
   },
   {
     "id": "ST-WC-198",
-    "index": 198,
+    "index": 197,
     "name": "Diamond Facet Lattice & V-Groove White Sandstone Cladding",
     "slug": "diamond-facet-lattice-v-groove-white-sandstone-cladding",
     "image": "/images/catalog/wall-cladding/cladding-198-diamond-facet-lattice-v-groove-white-sandstone-cladding.jpg",
@@ -3733,7 +3714,7 @@
   },
   {
     "id": "ST-WC-199",
-    "index": 199,
+    "index": 198,
     "name": "Pleated Radial Fan & Bush-Hammered Teakwood Sandstone Cladding",
     "slug": "pleated-radial-fan-bush-hammered-teakwood-sandstone-cladding",
     "image": "/images/catalog/wall-cladding/cladding-199-pleated-radial-fan-bush-hammered-teakwood-sandstone-cladding.jpg",
@@ -3752,7 +3733,7 @@
   },
   {
     "id": "ST-WC-200",
-    "index": 200,
+    "index": 199,
     "name": "Multi-Texture Geometric Mosaic Sandstone Wall Cladding",
     "slug": "multi-texture-geometric-mosaic-sandstone-wall-cladding",
     "image": "/images/catalog/wall-cladding/cladding-200-multi-texture-geometric-mosaic-sandstone-wall-cladding.jpg",
@@ -3771,7 +3752,7 @@
   },
   {
     "id": "ST-WC-201",
-    "index": 201,
+    "index": 200,
     "name": "Organic Fluid Ripple & Ashlar Modular Stone Cladding",
     "slug": "organic-fluid-ripple-ashlar-modular-stone-cladding",
     "image": "/images/catalog/wall-cladding/cladding-201-organic-fluid-ripple-ashlar-modular-stone-cladding.jpg",
@@ -3790,7 +3771,7 @@
   },
   {
     "id": "ST-WC-202",
-    "index": 202,
+    "index": 201,
     "name": "Tropical Monstera Foliage Modular Sandstone Cladding",
     "slug": "tropical-monstera-foliage-modular-sandstone-cladding",
     "image": "/images/catalog/wall-cladding/cladding-202-tropical-monstera-foliage-modular-sandstone-cladding.jpg",
@@ -3809,7 +3790,7 @@
   },
   {
     "id": "ST-WC-203",
-    "index": 203,
+    "index": 202,
     "name": "Parametric Fibonacci Spiral Vortex Sandstone Cladding",
     "slug": "parametric-fibonacci-spiral-vortex-sandstone-cladding",
     "image": "/images/catalog/wall-cladding/cladding-203-parametric-fibonacci-spiral-vortex-sandstone-cladding.jpg",
@@ -3828,7 +3809,7 @@
   },
   {
     "id": "ST-WC-204",
-    "index": 204,
+    "index": 203,
     "name": "Sacred Spiral Vortex & Dual-Tone Modular Stone Cladding",
     "slug": "sacred-spiral-vortex-dualtone-modular-stone-cladding",
     "image": "/images/catalog/wall-cladding/cladding-204-sacred-spiral-vortex-dualtone-modular-stone-cladding.jpg",
@@ -3847,7 +3828,7 @@
   },
   {
     "id": "ST-WC-205",
-    "index": 205,
+    "index": 204,
     "name": "Egyptian Pantheon & Sacred Lattice Charcoal Wall Mural",
     "slug": "egyptian-pantheon-sacred-lattice-charcoal-wall-mural",
     "image": "/images/catalog/wall-cladding/cladding-205-egyptian-pantheon-sacred-lattice-charcoal-wall-mural.jpg",
@@ -3866,7 +3847,7 @@
   },
   {
     "id": "ST-WC-206",
-    "index": 206,
+    "index": 205,
     "name": "Botanical Leaf & Lotus Rosette Mosaic Stone Cladding",
     "slug": "botanical-leaf-lotus-rosette-mosaic-stone-cladding",
     "image": "/images/catalog/wall-cladding/cladding-206-botanical-leaf-lotus-rosette-mosaic-stone-cladding.jpg",
@@ -3885,7 +3866,7 @@
   },
   {
     "id": "ST-WC-207",
-    "index": 207,
+    "index": 206,
     "name": "Palmette Shell & Multi-Depth Sandstone Modular Cladding",
     "slug": "palmette-shell-multi-depth-sandstone-modular-cladding",
     "image": "/images/catalog/wall-cladding/cladding-207-palmette-shell-multi-depth-sandstone-modular-cladding.jpg",
@@ -3904,7 +3885,7 @@
   },
   {
     "id": "ST-WC-208",
-    "index": 208,
+    "index": 207,
     "name": "Aquatic Pisces & Nautilus Relief Sandstone Cladding",
     "slug": "aquatic-pisces-nautilus-relief-sandstone-cladding",
     "image": "/images/catalog/wall-cladding/cladding-208-aquatic-pisces-nautilus-relief-sandstone-cladding.jpg",
@@ -3923,7 +3904,7 @@
   },
   {
     "id": "ST-WC-209",
-    "index": 209,
+    "index": 208,
     "name": "Palm Frond Foliate & Banded Ashlar Sandstone Cladding",
     "slug": "palm-frond-foliate-banded-ashlar-sandstone-cladding",
     "image": "/images/catalog/wall-cladding/cladding-209-palm-frond-foliate-banded-ashlar-sandstone-cladding.jpg",
@@ -3942,7 +3923,7 @@
   },
   {
     "id": "ST-WC-210",
-    "index": 210,
+    "index": 209,
     "name": "Zen Lotus Bloom & Buddha Icon Sandstone Wall Mural",
     "slug": "zen-lotus-bloom-buddha-icon-sandstone-wall-mural",
     "image": "/images/catalog/wall-cladding/cladding-210-zen-lotus-bloom-buddha-icon-sandstone-wall-mural.jpg",
@@ -3961,7 +3942,7 @@
   },
   {
     "id": "ST-WC-211",
-    "index": 211,
+    "index": 210,
     "name": "Gothic Quatrefoil & Fleur-de-lis Medallion Cladding",
     "slug": "gothic-quatrefoil-fleur-de-lis-medallion-cladding",
     "image": "/images/catalog/wall-cladding/cladding-211-gothic-quatrefoil-fleur-de-lis-medallion-cladding.jpg",
@@ -3980,7 +3961,7 @@
   },
   {
     "id": "ST-WC-212",
-    "index": 212,
+    "index": 211,
     "name": "Minimalist Origami Faceted 3D Geometric Sandstone Panel",
     "slug": "minimalist-origami-faceted-3d-geometric-sandstone-panel",
     "image": "/images/catalog/wall-cladding/cladding-212-minimalist-origami-faceted-3d-geometric-sandstone-panel.jpg",
@@ -3999,7 +3980,7 @@
   },
   {
     "id": "ST-WC-213",
-    "index": 213,
+    "index": 212,
     "name": "Fern Foliage & Swirl Rosette Teakwood Sandstone Cladding",
     "slug": "fern-foliage-swirl-rosette-teakwood-sandstone-cladding",
     "image": "/images/catalog/wall-cladding/cladding-213-fern-foliage-swirl-rosette-teakwood-sandstone-cladding.jpg",
@@ -4018,7 +3999,7 @@
   },
   {
     "id": "ST-WC-214",
-    "index": 214,
+    "index": 213,
     "name": "Classical Colonnade & Devotional Caryatid Teakwood Mural",
     "slug": "classical-colonnade-devotional-caryatid-teakwood-mural",
     "image": "/images/catalog/wall-cladding/cladding-214-classical-colonnade-devotional-caryatid-teakwood-mural.jpg",
@@ -4037,7 +4018,7 @@
   },
   {
     "id": "ST-WC-215",
-    "index": 215,
+    "index": 214,
     "name": "Silver Quartzite Fern & Acanthus Foliate Modular Cladding",
     "slug": "silver-quartzite-fern-acanthus-foliate-modular-cladding",
     "image": "/images/catalog/wall-cladding/cladding-215-silver-quartzite-fern-acanthus-foliate-modular-cladding.jpg",
@@ -4056,7 +4037,7 @@
   },
   {
     "id": "ST-WC-216",
-    "index": 216,
+    "index": 215,
     "name": "Linear Ashlar & Baroque Scrollwork Wave Sandstone Cladding",
     "slug": "linear-ashlar-baroque-scrollwork-wave-sandstone-cladding",
     "image": "/images/catalog/wall-cladding/cladding-216-linear-ashlar-baroque-scrollwork-wave-sandstone-cladding.jpg",
@@ -4075,7 +4056,7 @@
   },
   {
     "id": "ST-WC-217",
-    "index": 217,
+    "index": 216,
     "name": "Linear Continuous Vertical Micro-Fluted Stone Panel",
     "slug": "linear-continuous-vertical-micro-fluted-stone-panel",
     "image": "/images/catalog/wall-cladding/cladding-217-linear-continuous-vertical-micro-fluted-stone-panel.jpg",
@@ -4094,7 +4075,7 @@
   },
   {
     "id": "ST-WC-218",
-    "index": 218,
+    "index": 217,
     "name": "Sunburst Mandala & Terracotta Rosette Inlay Cladding",
     "slug": "sunburst-mandala-terracotta-rosette-inlay-cladding",
     "image": "/images/catalog/wall-cladding/cladding-218-sunburst-mandala-terracotta-rosette-inlay-cladding.jpg",
@@ -4113,7 +4094,7 @@
   },
   {
     "id": "ST-WC-219",
-    "index": 219,
+    "index": 218,
     "name": "Heritage Jharokha Niche & Jali Arch Sandstone Cladding",
     "slug": "heritage-jharokha-niche-jali-arch-sandstone-cladding",
     "image": "/images/catalog/wall-cladding/cladding-219-heritage-jharokha-niche-jali-arch-sandstone-cladding.jpg",
@@ -4132,7 +4113,7 @@
   },
   {
     "id": "ST-WC-220",
-    "index": 220,
+    "index": 219,
     "name": "Sculpted Rose Bloom & Jharokha Teakwood Cladding",
     "slug": "sculpted-rose-bloom-jharokha-teakwood-cladding",
     "image": "/images/catalog/wall-cladding/cladding-220-sculpted-rose-bloom-jharokha-teakwood-cladding.jpg",
@@ -4151,7 +4132,7 @@
   },
   {
     "id": "ST-WC-221",
-    "index": 221,
+    "index": 220,
     "name": "Sunburst Chakra & White Floral Rosette Teakwood Cladding",
     "slug": "sunburst-chakra-white-floral-rosette-teakwood-cladding",
     "image": "/images/catalog/wall-cladding/cladding-221-sunburst-chakra-white-floral-rosette-teakwood-cladding.jpg",
@@ -4170,7 +4151,7 @@
   },
   {
     "id": "ST-WC-222",
-    "index": 222,
+    "index": 221,
     "name": "Horizontal Linear Grooved Sandstone Elevation Panel",
     "slug": "horizontal-linear-grooved-sandstone-elevation-panel",
     "image": "/images/catalog/wall-cladding/cladding-222-horizontal-linear-grooved-sandstone-elevation-panel.jpg",
@@ -4189,7 +4170,7 @@
   },
   {
     "id": "ST-WC-223",
-    "index": 223,
+    "index": 222,
     "name": "Haveli Jali Arched Niche Sandstone Pillar & Elevation Panel",
     "slug": "haveli-jali-arched-niche-sandstone-pillar-elevation-panel",
     "image": "/images/catalog/wall-cladding/cladding-223-haveli-jali-arched-niche-sandstone-pillar-elevation-panel.jpg",
@@ -4208,7 +4189,7 @@
   },
   {
     "id": "ST-WC-224",
-    "index": 224,
+    "index": 223,
     "name": "Dual-Tone Rosette & Teakwood Sandstone Modular Cladding",
     "slug": "dualtone-rosette-teakwood-sandstone-modular-cladding",
     "image": "/images/catalog/wall-cladding/cladding-224-dualtone-rosette-teakwood-sandstone-modular-cladding.jpg",
@@ -4227,7 +4208,7 @@
   },
   {
     "id": "ST-WC-225",
-    "index": 225,
+    "index": 224,
     "name": "Sacred Shankh, Veena & Royal Mayura Teakwood Mural",
     "slug": "sacred-shankh-veena-royal-mayura-teakwood-mural",
     "image": "/images/catalog/wall-cladding/cladding-225-sacred-shankh-veena-royal-mayura-teakwood-mural.jpg",
@@ -4246,7 +4227,7 @@
   },
   {
     "id": "ST-WC-226",
-    "index": 226,
+    "index": 225,
     "name": "Quad-Petal Foliate Checkerboard Stone Cladding",
     "slug": "quad-petal-foliate-checkerboard-stone-cladding",
     "image": "/images/catalog/wall-cladding/cladding-226-quad-petal-foliate-checkerboard-stone-cladding.jpg",
@@ -4265,7 +4246,7 @@
   },
   {
     "id": "ST-WC-227",
-    "index": 227,
+    "index": 226,
     "name": "Stylized Lotus Stem Inlay Sandstone Wall Cladding",
     "slug": "stylized-lotus-stem-inlay-sandstone-wall-cladding",
     "image": "/images/catalog/wall-cladding/cladding-227-stylized-lotus-stem-inlay-sandstone-wall-cladding.jpg",
@@ -4284,7 +4265,7 @@
   },
   {
     "id": "ST-WC-228",
-    "index": 228,
+    "index": 227,
     "name": "Arched & Square Recessed Niche Red Sandstone Cladding",
     "slug": "arched-square-recessed-niche-red-sandstone-cladding",
     "image": "/images/catalog/wall-cladding/cladding-228-arched-square-recessed-niche-red-sandstone-cladding.jpg",
@@ -4303,7 +4284,7 @@
   },
   {
     "id": "ST-WC-229",
-    "index": 229,
+    "index": 228,
     "name": "Floral Medallion & Cantilevered Jharokha Cladding",
     "slug": "floral-medallion-cantilevered-jharokha-cladding",
     "image": "/images/catalog/wall-cladding/cladding-229-floral-medallion-cantilevered-jharokha-cladding.jpg",
@@ -4322,7 +4303,7 @@
   },
   {
     "id": "ST-WC-230",
-    "index": 230,
+    "index": 229,
     "name": "Multi-Depth Ashlar & Micro-Striated Accent Cladding",
     "slug": "multi-depth-ashlar-micro-striated-accent-cladding",
     "image": "/images/catalog/wall-cladding/cladding-230-multi-depth-ashlar-micro-striated-accent-cladding.jpg",
@@ -4341,7 +4322,7 @@
   },
   {
     "id": "ST-WC-231",
-    "index": 231,
+    "index": 230,
     "name": "Hexagonal Honeycomb & Fluted Cell Sandstone Cladding",
     "slug": "hexagonal-honeycomb-fluted-cell-sandstone-cladding",
     "image": "/images/catalog/wall-cladding/cladding-231-hexagonal-honeycomb-fluted-cell-sandstone-cladding.jpg",
@@ -4360,7 +4341,7 @@
   },
   {
     "id": "ST-WC-232",
-    "index": 232,
+    "index": 231,
     "name": "Architectural Geometric Texture Sampler Stone Cladding",
     "slug": "architectural-geometric-texture-sampler-stone-cladding",
     "image": "/images/catalog/wall-cladding/cladding-232-architectural-geometric-texture-sampler-stone-cladding.jpg",
@@ -4379,7 +4360,7 @@
   },
   {
     "id": "ST-WC-233",
-    "index": 233,
+    "index": 232,
     "name": "Heritage Jharokha, Sunburst & Floral Teakwood Cladding",
     "slug": "heritage-jharokha-sunburst-floral-teakwood-cladding",
     "image": "/images/catalog/wall-cladding/cladding-233-heritage-jharokha-sunburst-floral-teakwood-cladding.jpg",
@@ -4398,7 +4379,7 @@
   },
   {
     "id": "ST-WC-234",
-    "index": 234,
+    "index": 233,
     "name": "Linear Vein Sandstone & Sacred Vortex Mesh Cladding",
     "slug": "linear-vein-sandstone-sacred-vortex-mesh-cladding",
     "image": "/images/catalog/wall-cladding/cladding-234-linear-vein-sandstone-sacred-vortex-mesh-cladding.jpg",
@@ -4417,7 +4398,7 @@
   },
   {
     "id": "ST-WC-235",
-    "index": 235,
+    "index": 234,
     "name": "Parametric Spiral Vortex & Floral Ribbon Stone Cladding",
     "slug": "parametric-spiral-vortex-floral-ribbon-stone-cladding",
     "image": "/images/catalog/wall-cladding/cladding-235-parametric-spiral-vortex-floral-ribbon-stone-cladding.jpg",
@@ -4436,7 +4417,7 @@
   },
   {
     "id": "ST-WC-236",
-    "index": 236,
+    "index": 235,
     "name": "Sculptural Concave Scoop 3D Modular Sandstone Cladding",
     "slug": "sculptural-concave-scoop-3d-modular-sandstone-cladding",
     "image": "/images/catalog/wall-cladding/cladding-236-sculptural-concave-scoop-3d-modular-sandstone-cladding.jpg",
@@ -4455,7 +4436,7 @@
   },
   {
     "id": "ST-WC-237",
-    "index": 237,
+    "index": 236,
     "name": "Kinetic Fluted Wave Scoop Mosaic Teakwood Cladding",
     "slug": "kinetic-fluted-wave-scoop-mosaic-teakwood-cladding",
     "image": "/images/catalog/wall-cladding/cladding-237-kinetic-fluted-wave-scoop-mosaic-teakwood-cladding.jpg",
@@ -4474,7 +4455,7 @@
   },
   {
     "id": "ST-WC-238",
-    "index": 238,
+    "index": 237,
     "name": "Autumn Foliage Tri-Tone Natural Stone Mosaic Cladding",
     "slug": "autumn-foliage-tri-tone-natural-stone-mosaic-cladding",
     "image": "/images/catalog/wall-cladding/cladding-238-autumn-foliage-tri-tone-natural-stone-mosaic-cladding.jpg",
@@ -4493,7 +4474,7 @@
   },
   {
     "id": "ST-WC-239",
-    "index": 239,
+    "index": 238,
     "name": "Sunburst Chakra Rosette Ashlar Sandstone Cladding",
     "slug": "sunburst-chakra-rosette-ashlar-sandstone-cladding",
     "image": "/images/catalog/wall-cladding/cladding-239-sunburst-chakra-rosette-ashlar-sandstone-cladding.jpg",
@@ -4512,7 +4493,7 @@
   },
   {
     "id": "ST-WC-240",
-    "index": 240,
+    "index": 239,
     "name": "Dual-Tone Charcoal Slate & Gold Quartzite Interlocking Ledger",
     "slug": "dualtone-charcoal-slate-gold-quartzite-interlocking-ledger",
     "image": "/images/catalog/wall-cladding/cladding-240-dualtone-charcoal-slate-gold-quartzite-interlocking-ledger.jpg",
