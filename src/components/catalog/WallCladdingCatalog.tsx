@@ -426,9 +426,9 @@ export function WallCladdingCatalog({
 
             {/* WhatsApp PDF Download */}
             <a
-              href="/catalogues/stos-wall-cladding-catalogue-2026.pdf"
-              download="Stone-Tech-Wall-Cladding-Catalogue-2026.pdf"
-              title="Download WhatsApp PDF Softcopy"
+              href="/catalogues/StoneTech_NaturalStone_WallCl_Options_26-27.pdf"
+              download="StoneTech_NaturalStone_WallCl_Options_26-27.pdf"
+              title="Download WhatsApp PDF Softcopy (StoneTech_NaturalStone_WallCl_Options_26-27.pdf)"
               className="inline-flex"
             >
               <Button
