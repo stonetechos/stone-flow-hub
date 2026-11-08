@@ -385,28 +385,36 @@ function PhuljhadiSparkler({ className }: { className?: string }) {
 }
 
 /**
- * 5. Auspicious Vedic Swastik (स्वस्तिक) in vibrant sacred saffron-orange with 4 sacred bindu dots.
+ * 5. Auspicious Vedic Swastik (स्वस्तिक) in bold sacred saffron-orange with solid geometry (100% visible on all displays).
  */
 function SwastikSvg({ className }: { className?: string }) {
   return (
     <div className={cn("relative inline-block select-none pointer-events-none", className)}>
-      <div className="absolute inset-0 rounded-full bg-orange-500/35 blur-md pointer-events-none animate-pulse" />
+      <div className="absolute inset-0 rounded-full bg-orange-500/40 blur-md pointer-events-none animate-pulse" />
       <svg
         viewBox="0 0 64 64"
-        className="w-full h-full drop-shadow-[0_0_14px_rgba(234,88,12,0.95)] overflow-visible"
+        className="w-full h-full drop-shadow-[0_0_12px_rgba(234,88,12,1)] overflow-visible"
         aria-hidden="true"
       >
-        <defs>
-          <linearGradient id="orangeSwastikGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#FFAA00" />
-            <stop offset="25%" stopColor="#FF6D00" />
-            <stop offset="70%" stopColor="#EA580C" />
-            <stop offset="100%" stopColor="#C2410C" />
-          </linearGradient>
-        </defs>
+        {/* Sacred Outer Aura Stroke for maximum contrast on light and dark backgrounds */}
         <g
           fill="none"
-          stroke="url(#orangeSwastikGrad)"
+          stroke="#9A3412"
+          strokeWidth="7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M32 10 L32 54" />
+          <path d="M10 32 L54 32" />
+          <path d="M32 10 L50 10" />
+          <path d="M54 32 L54 50" />
+          <path d="M32 54 L14 54" />
+          <path d="M10 32 L10 14" />
+        </g>
+        {/* Core Bold Sacred Saffron-Orange Stroke */}
+        <g
+          fill="none"
+          stroke="#FF6D00"
           strokeWidth="5"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -418,10 +426,26 @@ function SwastikSvg({ className }: { className?: string }) {
           <path d="M32 54 L14 54" />
           <path d="M10 32 L10 14" />
         </g>
-        <circle cx="21" cy="21" r="2.8" fill="#FF6D00" />
-        <circle cx="43" cy="21" r="2.8" fill="#FF6D00" />
-        <circle cx="43" cy="43" r="2.8" fill="#FF6D00" />
-        <circle cx="21" cy="43" r="2.8" fill="#FF6D00" />
+        {/* Inner Golden Radiant Highlight Core */}
+        <g
+          fill="none"
+          stroke="#FDBA74"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M32 12 L32 52" />
+          <path d="M12 32 L52 32" />
+          <path d="M32 12 L48 12" />
+          <path d="M52 32 L52 48" />
+          <path d="M32 52 L16 52" />
+          <path d="M12 32 L12 16" />
+        </g>
+        {/* 4 Sacred Auspicious Bindus */}
+        <circle cx="21" cy="21" r="3.2" fill="#FF6D00" stroke="#7C2D12" strokeWidth="0.8" />
+        <circle cx="43" cy="21" r="3.2" fill="#FF6D00" stroke="#7C2D12" strokeWidth="0.8" />
+        <circle cx="43" cy="43" r="3.2" fill="#FF6D00" stroke="#7C2D12" strokeWidth="0.8" />
+        <circle cx="21" cy="43" r="3.2" fill="#FF6D00" stroke="#7C2D12" strokeWidth="0.8" />
       </svg>
     </div>
   );
@@ -683,13 +707,19 @@ function CopperKalashShivlingSvg({ className }: { className?: string }) {
           <ellipse cx="31" cy="53" rx="0.6" ry="1.2" fill="#FFFFFF" opacity="0.9" />
         </g>
 
+        {/* Dynamic Water Splash Droplets upon hitting the Shivling apex (y=69) */}
+        <circle cx="32" cy="69" r="1.3" fill="#BAE6FD" className="water-splash-left-1" />
+        <circle cx="32" cy="69" r="1.3" fill="#BAE6FD" className="water-splash-right-1" />
+        <circle cx="32" cy="69" r="1.3" fill="#BAE6FD" className="water-splash-left-2" />
+        <circle cx="32" cy="69" r="1.3" fill="#BAE6FD" className="water-splash-right-2" />
+
         {/* ================= BOTTOM: SACRED SHIVLING (शिवलिंग एवं जलधारी) ================= */}
-        {/* Expanding Sacred Water Splash Ripples on Shivling apex */}
+        {/* Expanding Sacred Water Splash Ripples directly on Shivling apex */}
         <ellipse
           cx="32"
           cy="69"
-          rx="8"
-          ry="2.5"
+          rx="7"
+          ry="2.2"
           fill="none"
           stroke="#38BDF8"
           className="water-ripple-1"
@@ -697,8 +727,8 @@ function CopperKalashShivlingSvg({ className }: { className?: string }) {
         <ellipse
           cx="32"
           cy="69"
-          rx="8"
-          ry="2.5"
+          rx="7"
+          ry="2.2"
           fill="none"
           stroke="#7DD3FC"
           className="water-ripple-2"
@@ -827,18 +857,23 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
   const [isBannerMinimized, setIsBannerMinimized] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     try {
-      const stored = localStorage.getItem("stos_diwali_banner_minimized");
+      const stored = sessionStorage.getItem("stos_diwali_banner_minimized");
       return stored === "true";
     } catch {
       return false;
     }
   });
 
-  // Auto-collapse the full banner to the iPhone 10 style header notch after 15 seconds
+  // Auto-collapse the full banner to the suspended header notch after 15 seconds
   useEffect(() => {
     if (isBannerMinimized) return;
     const timer = setTimeout(() => {
       setIsBannerMinimized(true);
+      try {
+        sessionStorage.setItem("stos_diwali_banner_minimized", "true");
+      } catch {
+        /* ignore */
+      }
     }, 15000);
     return () => clearTimeout(timer);
   }, [isBannerMinimized]);
@@ -847,7 +882,7 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
     setIsBannerMinimized((prev) => {
       const next = !prev;
       try {
-        localStorage.setItem("stos_diwali_banner_minimized", String(next));
+        sessionStorage.setItem("stos_diwali_banner_minimized", String(next));
       } catch {
         /* ignore */
       }
@@ -1606,60 +1641,117 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
 
         @keyframes waterDrip {
           0% {
-            transform: translateY(0) scaleY(0.6) scaleX(0.9);
+            transform: translateY(0) scaleY(0.5) scaleX(0.85);
             opacity: 0;
           }
-          20% {
-            transform: translateY(4px) scaleY(1.1) scaleX(0.9);
+          15% {
+            transform: translateY(3px) scaleY(1.1) scaleX(0.9);
             opacity: 0.95;
           }
           70% {
-            transform: translateY(30px) scaleY(1.4) scaleX(0.7);
+            transform: translateY(16px) scaleY(1.3) scaleX(0.75);
             opacity: 1;
           }
           90% {
-            transform: translateY(40px) scaleY(0.8) scaleX(1.3);
-            opacity: 0.7;
+            transform: translateY(22px) scaleY(0.7) scaleX(1.4);
+            opacity: 0.95;
           }
           100% {
-            transform: translateY(44px) scaleY(0.3) scaleX(1.8);
+            /* Hits apex of Shivling and flattens on impact */
+            transform: translateY(23px) scaleY(0.2) scaleX(2.2);
             opacity: 0;
           }
         }
 
         .water-drop-1 {
-          animation: waterDrip 2.2s cubic-bezier(0.55, 0.055, 0.675, 0.19) infinite;
+          animation: waterDrip 2.0s cubic-bezier(0.55, 0.055, 0.675, 0.19) infinite;
           transform-origin: center top;
         }
 
         .water-drop-2 {
-          animation: waterDrip 2.2s cubic-bezier(0.55, 0.055, 0.675, 0.19) infinite;
-          animation-delay: 1.1s;
+          animation: waterDrip 2.0s cubic-bezier(0.55, 0.055, 0.675, 0.19) infinite;
+          animation-delay: 1.0s;
           transform-origin: center top;
         }
 
-        @keyframes waterRipple {
-          0% {
-            transform: scale(0.2);
-            opacity: 0.9;
-            stroke-width: 1.5;
+        @keyframes waterSplashLeft {
+          0%, 82% {
+            transform: translate(0, 0) scale(0);
+            opacity: 0;
+          }
+          90% {
+            transform: translate(-3.5px, -3px) scale(1.1);
+            opacity: 1;
           }
           100% {
-            transform: scale(2.4);
+            transform: translate(-6.5px, 2.5px) scale(0.5);
             opacity: 0;
-            stroke-width: 0.4;
+          }
+        }
+
+        @keyframes waterSplashRight {
+          0%, 82% {
+            transform: translate(0, 0) scale(0);
+            opacity: 0;
+          }
+          90% {
+            transform: translate(3.5px, -3px) scale(1.1);
+            opacity: 1;
+          }
+          100% {
+            transform: translate(6.5px, 2.5px) scale(0.5);
+            opacity: 0;
+          }
+        }
+
+        .water-splash-left-1 {
+          animation: waterSplashLeft 2.0s ease-out infinite;
+          transform-origin: 32px 69px;
+        }
+
+        .water-splash-right-1 {
+          animation: waterSplashRight 2.0s ease-out infinite;
+          transform-origin: 32px 69px;
+        }
+
+        .water-splash-left-2 {
+          animation: waterSplashLeft 2.0s ease-out infinite;
+          animation-delay: 1.0s;
+          transform-origin: 32px 69px;
+        }
+
+        .water-splash-right-2 {
+          animation: waterSplashRight 2.0s ease-out infinite;
+          animation-delay: 1.0s;
+          transform-origin: 32px 69px;
+        }
+
+        @keyframes waterRipple {
+          0%, 82% {
+            transform: scale(0.1);
+            opacity: 0;
+            stroke-width: 1.5;
+          }
+          88% {
+            opacity: 0.95;
+            stroke-width: 1.2;
+          }
+          100% {
+            transform: scale(2.0);
+            opacity: 0;
+            stroke-width: 0.3;
           }
         }
 
         .water-ripple-1 {
-          animation: waterRipple 2.2s ease-out infinite;
-          transform-origin: 30px 62px;
+          animation: waterRipple 2.0s ease-out infinite;
+          transform-origin: 32px 69px;
         }
 
         .water-ripple-2 {
-          animation: waterRipple 2.2s ease-out infinite;
-          animation-delay: 1.1s;
-          transform-origin: 30px 62px;
+          animation: waterRipple 2.0s ease-out infinite;
+          animation-delay: 1.0s;
+          transform-origin: 32px 69px;
         }
       `}</style>
     </>

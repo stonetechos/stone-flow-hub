@@ -180,29 +180,46 @@ export const DivineRamParivarSequence = memo(function DivineRamParivarSequence({
       {/* 3. The Divine Stage Area — Walking Entrance, Position Affixing, Blessing & Hanuman ji Puja */}
       <div className="relative z-10 w-full h-[330px] sm:h-[370px] flex items-end justify-center pb-3 px-2">
         <div className="relative w-full max-w-[440px] h-[310px] sm:h-[350px] mx-auto flex items-end justify-center">
-          {/* Sacred Full-Body Head-to-Toe Ram Darbar Visual with Choreographed Dynamic Transitions */}
-          <div
+          {/* Phase 0 (0 - 3.5s): Prabhu Shri Ram, Mata Sita & Lakshman ji walking forward towards us */}
+          <img
+            src="/images/diwali/ram-parivar-walking.jpg"
+            alt="Bhagwan Shri Ram walking forward towards the viewer with Mata Sita and Lakshman ji"
             className={cn(
-              "relative transition-all duration-1000 ease-out flex items-end justify-center",
-              // Phase 0: Walking entrance towards us (stepping forward, smooth scale progression)
-              phase === 0 && "animate-divine-walk",
-              // Phase 1: Affix positions & blessing aura
-              phase === 1 && "scale-100 drop-shadow-[0_0_28px_rgba(245,158,11,0.75)]",
-              // Phase 2: Hanuman ji kneeling puja focus
-              phase === 2 && "scale-100 drop-shadow-[0_0_32px_rgba(245,158,11,0.85)]",
-              // Phase 3: Radiant celebration
-              phase === 3 && "scale-[1.02] drop-shadow-[0_0_40px_rgba(251,191,36,0.95)]",
+              "absolute bottom-0 max-h-[295px] sm:max-h-[335px] w-auto max-w-full object-contain rounded-lg drop-shadow-[0_8px_24px_rgba(0,0,0,0.95)] transition-all duration-1000 ease-out",
+              phase === 0
+                ? "opacity-100 scale-100 animate-divine-walk"
+                : "opacity-0 scale-105 pointer-events-none",
             )}
-          >
-            <img
-              src="/images/diwali/ram-parivar-blessing.jpg"
-              alt="Shri Ram Darbar Divine Presence"
-              className="max-h-[295px] sm:max-h-[335px] w-auto max-w-full object-contain rounded-lg drop-shadow-[0_8px_24px_rgba(0,0,0,0.95)]"
-              loading="eager"
-            />
-          </div>
+            loading="eager"
+          />
 
-          {/* Phase 0 Footstep Lotus Ripples appearing as they walk forward */}
+          {/* Phase 1 (3.5 - 7.0s): Affixing positions & raising right hand in Abhaya Mudra to bless everyone */}
+          <img
+            src="/images/diwali/ram-parivar-standing-blessing.jpg"
+            alt="Bhagwan Shri Ram raising his right hand in Abhaya Mudra blessing everyone with Mata Sita and Lakshman ji"
+            className={cn(
+              "absolute bottom-0 max-h-[295px] sm:max-h-[335px] w-auto max-w-full object-contain rounded-lg drop-shadow-[0_8px_24px_rgba(0,0,0,0.95)] transition-all duration-1000 ease-out",
+              phase === 1
+                ? "opacity-100 scale-100 drop-shadow-[0_0_32px_rgba(245,158,11,0.85)]"
+                : "opacity-0 pointer-events-none",
+            )}
+            loading="eager"
+          />
+
+          {/* Phase 2 & 3 (7.0 - 15.0s): Shri Hanuman ji arrives and kneels on one knee with folded hands in devout puja */}
+          <img
+            src="/images/diwali/ram-parivar-blessing.jpg"
+            alt="Shri Ram Darbar with Shri Hanuman ji kneeling at Prabhu Ram's lotus feet in devout prayer"
+            className={cn(
+              "absolute bottom-0 max-h-[295px] sm:max-h-[335px] w-auto max-w-full object-contain rounded-lg drop-shadow-[0_8px_24px_rgba(0,0,0,0.95)] transition-all duration-1000 ease-out",
+              phase >= 2
+                ? "opacity-100 scale-100 drop-shadow-[0_0_40px_rgba(251,191,36,0.95)]"
+                : "opacity-0 pointer-events-none",
+            )}
+            loading="eager"
+          />
+
+          {/* Phase 0 Footstep Lotus Ripples appearing as they step forward */}
           {phase === 0 && (
             <div className="absolute bottom-2 inset-x-0 flex justify-center gap-12 pointer-events-none">
               <span className="text-sm animate-ping opacity-75">🪷</span>
@@ -211,10 +228,10 @@ export const DivineRamParivarSequence = memo(function DivineRamParivarSequence({
             </div>
           )}
 
-          {/* Phase 1 & 2: Radiant Golden Abhaya Mudra Blessing Wave from Divine Hands */}
-          {phase >= 1 && (
+          {/* Phase 1: Radiant Golden Abhaya Mudra Blessing Wave from Divine Hands */}
+          {phase === 1 && (
             <div
-              className="absolute top-[32%] left-[48%] -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-radial from-white via-amber-300 to-transparent blur-xs animate-pulse pointer-events-none"
+              className="absolute top-[28%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-radial from-white via-amber-300 to-transparent blur-xs animate-pulse pointer-events-none"
               style={{ animationDuration: "1.2s" }}
             >
               {/* Expanding Divine Blessing Rays */}
