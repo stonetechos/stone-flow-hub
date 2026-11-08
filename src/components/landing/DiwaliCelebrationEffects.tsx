@@ -385,7 +385,7 @@ function PhuljhadiSparkler({ className }: { className?: string }) {
 }
 
 /**
- * 5. Auspicious Vedic Swastik (स्वस्तिक) in bold sacred saffron-orange with solid geometry (100% visible on all displays).
+ * 5. Auspicious Vedic Swastik (स्वस्तिक) in bold sacred saffron-orange with 100% solid filled geometry.
  */
 function SwastikSvg({ className }: { className?: string }) {
   return (
@@ -396,56 +396,83 @@ function SwastikSvg({ className }: { className?: string }) {
         className="w-full h-full drop-shadow-[0_0_12px_rgba(234,88,12,1)] overflow-visible"
         aria-hidden="true"
       >
-        {/* Sacred Outer Aura Stroke for maximum contrast on light and dark backgrounds */}
-        <g
-          fill="none"
-          stroke="#9A3412"
-          strokeWidth="7"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M32 10 L32 54" />
-          <path d="M10 32 L54 32" />
-          <path d="M32 10 L50 10" />
-          <path d="M54 32 L54 50" />
-          <path d="M32 54 L14 54" />
-          <path d="M10 32 L10 14" />
+        {/* Vedic Swastik Drawn with 100% Solid Filled Rectangles in Sacred Saffron Orange */}
+        <g fill="#EA580C" style={{ fill: "#EA580C" }}>
+          {/* Central Vertical Stem */}
+          <rect
+            x="29"
+            y="9"
+            width="6"
+            height="46"
+            rx="2"
+            fill="#EA580C"
+            style={{ fill: "#EA580C" }}
+          />
+          {/* Central Horizontal Bar */}
+          <rect
+            x="9"
+            y="29"
+            width="46"
+            height="6"
+            rx="2"
+            fill="#EA580C"
+            style={{ fill: "#EA580C" }}
+          />
+          {/* Top-Right Hook (pointing East) */}
+          <rect
+            x="29"
+            y="9"
+            width="26"
+            height="6"
+            rx="2"
+            fill="#EA580C"
+            style={{ fill: "#EA580C" }}
+          />
+          {/* Bottom-Right Hook (pointing South) */}
+          <rect
+            x="49"
+            y="29"
+            width="6"
+            height="26"
+            rx="2"
+            fill="#EA580C"
+            style={{ fill: "#EA580C" }}
+          />
+          {/* Bottom-Left Hook (pointing West) */}
+          <rect
+            x="9"
+            y="49"
+            width="26"
+            height="6"
+            rx="2"
+            fill="#EA580C"
+            style={{ fill: "#EA580C" }}
+          />
+          {/* Top-Left Hook (pointing North) */}
+          <rect
+            x="9"
+            y="9"
+            width="6"
+            height="26"
+            rx="2"
+            fill="#EA580C"
+            style={{ fill: "#EA580C" }}
+          />
+          {/* 4 Auspicious Sacred Bindus */}
+          <circle cx="20" cy="20" r="3.4" fill="#EA580C" style={{ fill: "#EA580C" }} />
+          <circle cx="44" cy="20" r="3.4" fill="#EA580C" style={{ fill: "#EA580C" }} />
+          <circle cx="44" cy="44" r="3.4" fill="#EA580C" style={{ fill: "#EA580C" }} />
+          <circle cx="20" cy="44" r="3.4" fill="#EA580C" style={{ fill: "#EA580C" }} />
         </g>
-        {/* Core Bold Sacred Saffron-Orange Stroke */}
-        <g
-          fill="none"
-          stroke="#FF6D00"
-          strokeWidth="5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M32 10 L32 54" />
-          <path d="M10 32 L54 32" />
-          <path d="M32 10 L50 10" />
-          <path d="M54 32 L54 50" />
-          <path d="M32 54 L14 54" />
-          <path d="M10 32 L10 14" />
+        {/* Inner Golden Core Layer */}
+        <g fill="#FDBA74" opacity="0.85" style={{ fill: "#FDBA74" }}>
+          <rect x="31" y="11" width="2" height="42" rx="1" fill="#FDBA74" />
+          <rect x="11" y="31" width="42" height="2" rx="1" fill="#FDBA74" />
+          <rect x="31" y="11" width="22" height="2" rx="1" fill="#FDBA74" />
+          <rect x="51" y="31" width="2" height="22" rx="1" fill="#FDBA74" />
+          <rect x="11" y="51" width="22" height="2" rx="1" fill="#FDBA74" />
+          <rect x="11" y="11" width="2" height="22" rx="1" fill="#FDBA74" />
         </g>
-        {/* Inner Golden Radiant Highlight Core */}
-        <g
-          fill="none"
-          stroke="#FDBA74"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M32 12 L32 52" />
-          <path d="M12 32 L52 32" />
-          <path d="M32 12 L48 12" />
-          <path d="M52 32 L52 48" />
-          <path d="M32 52 L16 52" />
-          <path d="M12 32 L12 16" />
-        </g>
-        {/* 4 Sacred Auspicious Bindus */}
-        <circle cx="21" cy="21" r="3.2" fill="#FF6D00" stroke="#7C2D12" strokeWidth="0.8" />
-        <circle cx="43" cy="21" r="3.2" fill="#FF6D00" stroke="#7C2D12" strokeWidth="0.8" />
-        <circle cx="43" cy="43" r="3.2" fill="#FF6D00" stroke="#7C2D12" strokeWidth="0.8" />
-        <circle cx="21" cy="43" r="3.2" fill="#FF6D00" stroke="#7C2D12" strokeWidth="0.8" />
       </svg>
     </div>
   );
@@ -857,6 +884,8 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
   const [isBannerMinimized, setIsBannerMinimized] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     try {
+      // Clear legacy localStorage key so all users experience the divine sequence
+      localStorage.removeItem("stos_diwali_banner_minimized");
       const stored = sessionStorage.getItem("stos_diwali_banner_minimized");
       return stored === "true";
     } catch {
