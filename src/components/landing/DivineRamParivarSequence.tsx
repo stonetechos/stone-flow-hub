@@ -349,42 +349,6 @@ export const DivineRamParivarSequence = memo(function DivineRamParivarSequence({
         </div>
       )}
 
-      {/* 5. Progressive Narrative Caption describing each divine act */}
-      <div className="absolute bottom-1.5 inset-x-0 z-20 text-center px-4">
-        <div className="inline-block px-3.5 py-1 rounded-full bg-black/85 border border-amber-500/60 backdrop-blur-md transition-all duration-500 shadow-md">
-          {phase === 0 && (
-            <span className="text-[10.5px] sm:text-xs font-medium text-amber-200 tracking-wide flex items-center gap-1.5 animate-pulse">
-              <span>🚶‍♂️</span>
-              <span>
-                प्रभु श्री राम, माता सीता एवं लक्ष्मण जी का दिव्य आगमन (Runway Model Walk)...
-              </span>
-            </span>
-          )}
-          {phase === 1 && (
-            <span className="text-[10.5px] sm:text-xs font-bold text-amber-300 tracking-wide flex items-center gap-1.5 animate-pulse">
-              <span>✋</span>
-              <span>विराजमान होकर श्री राम परिवार द्वारा दिव्य अभय वरदान एवं आशीर्वाद</span>
-            </span>
-          )}
-          {phase === 2 && (
-            <span className="text-[10.5px] sm:text-xs font-bold text-amber-200 tracking-wide flex items-center gap-1.5">
-              <span>🙏</span>
-              <span>
-                {hanumanStep === 1
-                  ? "श्री हनुमान जी का बाईं ओर से पावन आगमन..."
-                  : "श्री चरणों में एक-जानु बैठकर करबद्ध पावन वंदन (प्रणाम)"}
-              </span>
-            </span>
-          )}
-          {phase === 3 && (
-            <span className="text-[10.5px] sm:text-xs font-black text-amber-100 tracking-wider flex items-center gap-1.5">
-              <span>🔔</span>
-              <span>दीपोत्सव महापर्व की हार्दिक मंगलकामनाएं · जय श्री राम!</span>
-            </span>
-          )}
-        </div>
-      </div>
-
       {/* Embedded 60 FPS Keyframe Animations */}
       <style>{`
         /* 1. Continuous Runway Model Walk Forward towards the viewer (scale 0.72 to 1.0 with cadence) */

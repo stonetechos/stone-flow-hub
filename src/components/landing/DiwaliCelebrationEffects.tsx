@@ -1428,24 +1428,9 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
             </div>
 
             {/* Banner card */}
-            <div className="w-full bg-gradient-to-b from-[#2a0810]/95 via-[#4a0d1a]/98 to-[#2a0810]/95 border-2 border-amber-500/70 rounded-2xl sm:rounded-3xl shadow-[0_16px_45px_rgba(0,0,0,0.85),0_0_30px_rgba(245,158,11,0.35)] p-3 sm:p-4 backdrop-blur-xl relative overflow-hidden flex flex-col items-center -mt-1">
+            <div className="w-full bg-gradient-to-b from-[#2a0810]/95 via-[#4a0d1a]/98 to-[#2a0810]/95 border-2 border-amber-500/70 rounded-2xl sm:rounded-3xl shadow-[0_16px_45px_rgba(0,0,0,0.85),0_0_30px_rgba(245,158,11,0.35)] p-2 sm:p-3 backdrop-blur-xl relative overflow-hidden flex flex-col items-center -mt-1">
               {/* Filigree inner border */}
               <div className="absolute inset-1 sm:inset-1.5 border border-amber-400/35 rounded-xl sm:rounded-2xl pointer-events-none" />
-
-              {/* Divya Shubh Deepavali Header */}
-              <div className="text-center mb-2 relative z-10 px-4 sm:px-8">
-                <div className="text-[10px] sm:text-[11px] uppercase tracking-[2px] font-bold text-amber-300/90 mb-0.5 flex items-center justify-center gap-2">
-                  <span>❖</span>
-                  <span>दीपोत्सव महापर्व · पावन प्रकाशोत्सव</span>
-                  <span>❖</span>
-                </div>
-                <div className="font-serif text-2xl sm:text-3xl md:text-4xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-b from-white via-amber-200 to-amber-500 drop-shadow-[0_2px_18px_rgba(245,158,11,0.95)]">
-                  शुभ दीपावली
-                </div>
-                <div className="text-xs sm:text-sm text-amber-100/90 font-medium tracking-wide drop-shadow-sm mt-0.5">
-                  ॥ प्रभु श्री राम परिवार का दिव्य आशीर्वाद सदा बना रहे ॥
-                </div>
-              </div>
 
               {/* 15-Second Choreographed Divine Sequence: Ram ji, Sita ma, Lakshman ji walk, blessing, Hanuman ji puja & Shubh Deepawali ring */}
               <DivineRamParivarSequence
