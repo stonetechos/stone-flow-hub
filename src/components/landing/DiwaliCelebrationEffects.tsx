@@ -383,6 +383,308 @@ function PhuljhadiSparkler({ className }: { className?: string }) {
   );
 }
 
+/**
+ * 5. Auspicious Vedic Swastik (स्वस्तिक) with 4 sacred bindu dots and golden divine glow.
+ */
+function SwastikSvg({ className }: { className?: string }) {
+  return (
+    <div className={cn("relative inline-block select-none pointer-events-none", className)}>
+      <div className="absolute inset-0 rounded-full bg-amber-500/25 blur-md pointer-events-none animate-pulse" />
+      <svg
+        viewBox="0 0 64 64"
+        className="w-full h-full drop-shadow-[0_0_14px_rgba(245,158,11,0.85)] overflow-visible"
+        aria-hidden="true"
+      >
+        <defs>
+          <linearGradient id="goldSwastikGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#FFFBEB" />
+            <stop offset="30%" stopColor="#FCD34D" />
+            <stop offset="70%" stopColor="#F59E0B" />
+            <stop offset="100%" stopColor="#B45309" />
+          </linearGradient>
+        </defs>
+        <g
+          fill="none"
+          stroke="url(#goldSwastikGrad)"
+          strokeWidth="4.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M32 10 L32 54" />
+          <path d="M10 32 L54 32" />
+          <path d="M32 10 L50 10" />
+          <path d="M54 32 L54 50" />
+          <path d="M32 54 L14 54" />
+          <path d="M10 32 L10 14" />
+        </g>
+        <circle cx="21" cy="21" r="2.6" fill="#FBBF24" />
+        <circle cx="43" cy="21" r="2.6" fill="#FBBF24" />
+        <circle cx="43" cy="43" r="2.6" fill="#FBBF24" />
+        <circle cx="21" cy="43" r="2.6" fill="#FBBF24" />
+      </svg>
+    </div>
+  );
+}
+
+/**
+ * 6. Classic Diwali Sky Rocket with red-gold body, conical nosecone, and sparkling fuse.
+ */
+function DiwaliRocketSvg({ className, flip = false }: { className?: string; flip?: boolean }) {
+  return (
+    <div
+      className={cn(
+        "relative inline-block select-none pointer-events-none animate-rocket-bob",
+        className,
+      )}
+    >
+      <svg
+        viewBox="0 0 60 70"
+        className="w-full h-full drop-shadow-[0_4px_14px_rgba(239,68,68,0.75)] overflow-visible"
+        aria-hidden="true"
+      >
+        {flip ? (
+          <>
+            <line
+              x1="34"
+              y1="28"
+              x2="46"
+              y2="66"
+              stroke="#92400E"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+            <path
+              d="M34 38 C32 42 33 46 31 50"
+              stroke="#FBBF24"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+            <circle
+              cx="31"
+              cy="50"
+              r="2.5"
+              fill="#FFFFFF"
+              style={{ filter: "drop-shadow(0 0 6px #F59E0B)" }}
+            />
+            <g transform="rotate(-22 32 25)">
+              <rect
+                x="26"
+                y="16"
+                width="12"
+                height="24"
+                rx="2"
+                fill="#DC2626"
+                stroke="#F59E0B"
+                strokeWidth="1"
+              />
+              <rect x="26" y="21" width="12" height="4" fill="#FBBF24" />
+              <rect x="26" y="30" width="12" height="3" fill="#FBBF24" />
+              <polygon
+                points="32,4 24,16 40,16"
+                fill="#F59E0B"
+                stroke="#FEF08A"
+                strokeWidth="0.8"
+              />
+              <circle cx="32" cy="23" r="1.2" fill="#DC2626" />
+            </g>
+          </>
+        ) : (
+          <>
+            <line
+              x1="26"
+              y1="28"
+              x2="14"
+              y2="66"
+              stroke="#92400E"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+            <path
+              d="M26 38 C28 42 27 46 29 50"
+              stroke="#FBBF24"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+            <circle
+              cx="29"
+              cy="50"
+              r="2.5"
+              fill="#FFFFFF"
+              style={{ filter: "drop-shadow(0 0 6px #F59E0B)" }}
+            />
+            <g transform="rotate(22 28 25)">
+              <rect
+                x="22"
+                y="16"
+                width="12"
+                height="24"
+                rx="2"
+                fill="#DC2626"
+                stroke="#F59E0B"
+                strokeWidth="1"
+              />
+              <rect x="22" y="21" width="12" height="4" fill="#FBBF24" />
+              <rect x="22" y="30" width="12" height="3" fill="#FBBF24" />
+              <polygon
+                points="28,4 20,16 36,16"
+                fill="#F59E0B"
+                stroke="#FEF08A"
+                strokeWidth="0.8"
+              />
+              <circle cx="28" cy="23" r="1.2" fill="#DC2626" />
+            </g>
+          </>
+        )}
+      </svg>
+    </div>
+  );
+}
+
+/**
+ * 7. Sacred Polished Copper Kalash with Mango Leaves & Animated Dripping Amrit Water.
+ */
+function CopperKalashWaterSvg({ className }: { className?: string }) {
+  return (
+    <div className={cn("relative inline-block select-none pointer-events-none", className)}>
+      <svg
+        viewBox="0 0 60 84"
+        className="w-full h-full drop-shadow-[0_4px_16px_rgba(217,119,6,0.75)] overflow-visible"
+        aria-hidden="true"
+      >
+        <defs>
+          <linearGradient id="copperKalashGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#7C2D12" />
+            <stop offset="25%" stopColor="#C2410C" />
+            <stop offset="50%" stopColor="#FB923C" />
+            <stop offset="75%" stopColor="#EA580C" />
+            <stop offset="100%" stopColor="#7C2D12" />
+          </linearGradient>
+          <linearGradient id="mangoLeafGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#15803D" />
+            <stop offset="50%" stopColor="#22C55E" />
+            <stop offset="100%" stopColor="#14532D" />
+          </linearGradient>
+          <radialGradient id="amritWaterGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#E0F2FE" />
+            <stop offset="60%" stopColor="#38BDF8" />
+            <stop offset="100%" stopColor="#0284C7" />
+          </radialGradient>
+        </defs>
+
+        {/* Fresh Green Mango Leaves (आम्रपल्लव) on Kalash Rim */}
+        <g>
+          <path
+            d="M30 16 C25 8 20 6 16 10 C16 15 22 18 28 20 Z"
+            fill="url(#mangoLeafGrad)"
+            stroke="#166534"
+            strokeWidth="0.6"
+          />
+          <path
+            d="M30 16 C35 8 40 6 44 10 C44 15 38 18 32 20 Z"
+            fill="url(#mangoLeafGrad)"
+            stroke="#166534"
+            strokeWidth="0.6"
+          />
+          <path d="M30 15 C28 5 32 5 30 2 C28 5 32 5 30 15 Z" fill="url(#mangoLeafGrad)" />
+        </g>
+
+        {/* Coconut / Shriphal on top */}
+        <ellipse cx="30" cy="14" rx="7" ry="6" fill="#78350F" stroke="#92400E" strokeWidth="0.8" />
+        <path d="M26 12 C28 14 32 14 34 12" stroke="#D97706" strokeWidth="0.6" />
+
+        {/* Flared Copper Neck & Holy Water inside */}
+        <ellipse cx="30" cy="20" rx="15" ry="4" fill="#EA580C" stroke="#FDBA74" strokeWidth="0.8" />
+        <ellipse cx="30" cy="19" rx="12" ry="2.5" fill="#38BDF8" opacity="0.85" />
+
+        {/* Sacred Kalawa / Mouli Red Thread */}
+        <rect x="18" y="22" width="24" height="3" rx="1.5" fill="#DC2626" />
+        <line
+          x1="20"
+          y1="23.5"
+          x2="40"
+          y2="23.5"
+          stroke="#FBBF24"
+          strokeWidth="1"
+          strokeDasharray="2,2"
+        />
+
+        {/* Globular Copper Pot (तांबे का लोटा) */}
+        <path
+          d="M18 24 C14 30 12 38 16 46 C20 53 40 53 44 46 C48 38 46 30 42 24 Z"
+          fill="url(#copperKalashGrad)"
+          stroke="#9A3412"
+          strokeWidth="1"
+        />
+
+        {/* Polished Highlight */}
+        <path
+          d="M26 26 C23 32 23 40 25 46"
+          stroke="#FED7AA"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          opacity="0.75"
+        />
+
+        {/* Embossed sacred swastik motif on copper */}
+        <path
+          d="M30 33 L30 41 M26 37 L34 37 M30 33 L33 33 M34 37 L34 40 M30 41 L27 41 M26 37 L26 34"
+          stroke="#FEF08A"
+          strokeWidth="1"
+          strokeLinecap="round"
+          opacity="0.9"
+        />
+
+        {/* Base */}
+        <ellipse
+          cx="30"
+          cy="50"
+          rx="10"
+          ry="2.5"
+          fill="#7C2D12"
+          stroke="#9A3412"
+          strokeWidth="0.8"
+        />
+
+        {/* Animated Dripping Water Drops (अमृत धारा) */}
+        <g className="water-drop-1">
+          <path
+            d="M30 52 C28.5 55 27 58 27 60 C27 62 28.3 64 30 64 C31.7 64 33 62 33 60 C33 58 31.5 55 30 52 Z"
+            fill="url(#amritWaterGlow)"
+          />
+          <ellipse cx="29" cy="59" rx="0.8" ry="1.5" fill="#FFFFFF" opacity="0.9" />
+        </g>
+        <g className="water-drop-2">
+          <path
+            d="M30 52 C28.5 55 27 58 27 60 C27 62 28.3 64 30 64 C31.7 64 33 62 33 60 C33 58 31.5 55 30 52 Z"
+            fill="url(#amritWaterGlow)"
+          />
+          <ellipse cx="29" cy="59" rx="0.8" ry="1.5" fill="#FFFFFF" opacity="0.9" />
+        </g>
+
+        {/* Water Ripples below */}
+        <ellipse
+          cx="30"
+          cy="74"
+          rx="12"
+          ry="4"
+          fill="none"
+          stroke="#38BDF8"
+          className="water-ripple-1"
+        />
+        <ellipse
+          cx="30"
+          cy="74"
+          rx="12"
+          ry="4"
+          fill="none"
+          stroke="#7DD3FC"
+          className="water-ripple-2"
+        />
+      </svg>
+    </div>
+  );
+}
+
 // Particle types for canvas firecrackers, sparks, rockets & embers
 interface Particle {
   x: number;
@@ -425,6 +727,28 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
       return true;
     }
   });
+
+  const [isBannerMinimized, setIsBannerMinimized] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      const stored = localStorage.getItem("stos_diwali_banner_minimized");
+      return stored === "true";
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleBanner = () => {
+    setIsBannerMinimized((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("stos_diwali_banner_minimized", String(next));
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     if (!isEnabled) return;
@@ -849,139 +1173,207 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
         />
       )}
 
-      {/* 2. Visual Animated Diyas & Live Firecrackers Layer — Fully Responsive Across All Screens */}
+      {/* 2. Visual Animated Festive Layer — Strictly Uncluttered & Mobile Safe */}
       {isEnabled && (
         <div
-          className="fixed inset-0 pointer-events-none z-25 overflow-hidden w-full h-full max-w-[100vw]"
+          className="fixed inset-0 pointer-events-none z-30 overflow-hidden w-full h-full max-w-[100vw]"
           aria-hidden="true"
         >
-          {/* ================= TOP HEADER DIYAS ================= */}
-          {/* Top Left Diya */}
-          <div className="absolute top-2.5 sm:top-4 left-3 sm:left-6 animate-diya-subtle-sway opacity-95 drop-shadow-[0_4px_18px_rgba(245,158,11,0.7)]">
-            <DiyaSvg className="w-7 h-7 sm:w-9 sm:h-9 md:w-11 md:h-11" glowIntensity={1.3} />
+          {/* ================= TOP HANGING SHUBH DIPAWAALI BANNER ================= */}
+          <div
+            className={cn(
+              "absolute top-0 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-auto transition-transform duration-700 ease-out z-40 max-w-[94vw] w-[620px] lg:w-[680px]",
+              isBannerMinimized ? "-translate-y-[calc(100%-40px)]" : "translate-y-0",
+            )}
+          >
+            {/* Hanging suspension cords */}
+            <div className="w-full flex justify-between px-10 sm:px-16 h-4 sm:h-5">
+              <div className="w-1 h-full bg-gradient-to-b from-amber-400 via-amber-600 to-amber-800 shadow-[0_0_6px_rgba(245,158,11,0.6)] relative">
+                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-gradient-to-br from-amber-200 via-amber-500 to-amber-800 shadow-md" />
+              </div>
+              <div className="w-1 h-full bg-gradient-to-b from-amber-400 via-amber-600 to-amber-800 shadow-[0_0_6px_rgba(245,158,11,0.6)] relative">
+                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-gradient-to-br from-amber-200 via-amber-500 to-amber-800 shadow-md" />
+              </div>
+            </div>
+
+            {/* Banner card */}
+            <div className="w-full bg-gradient-to-b from-[#2a0810]/95 via-[#4a0d1a]/98 to-[#2a0810]/95 border-2 border-t-0 border-amber-500/70 rounded-b-2xl sm:rounded-b-3xl shadow-[0_16px_45px_rgba(0,0,0,0.85),0_0_30px_rgba(245,158,11,0.35)] p-3 sm:p-5 backdrop-blur-xl relative overflow-hidden flex flex-col items-center">
+              {/* Filigree inner border */}
+              <div className="absolute inset-1 sm:inset-1.5 border border-amber-400/35 border-t-0 rounded-b-xl sm:rounded-b-2xl pointer-events-none" />
+
+              {/* Temple bells */}
+              <div className="absolute top-2 left-3 sm:left-5 w-5 h-7 sm:w-6 sm:h-8 animate-bell-sway origin-top">
+                <svg
+                  viewBox="0 0 32 40"
+                  className="w-full h-full drop-shadow-[0_2px_8px_rgba(245,158,11,0.6)]"
+                >
+                  <path
+                    d="M16 4 C14 12 8 20 6 28 C6 32 26 32 26 28 C24 20 18 12 16 4 Z"
+                    fill="#F59E0B"
+                    stroke="#B45309"
+                    strokeWidth="1"
+                  />
+                  <ellipse cx="16" cy="30" rx="10" ry="3" fill="#D97706" />
+                  <circle cx="16" cy="35" r="2.5" fill="#FEF08A" />
+                </svg>
+              </div>
+              <div className="absolute top-2 right-3 sm:right-5 w-5 h-7 sm:w-6 sm:h-8 animate-bell-sway-delayed origin-top">
+                <svg
+                  viewBox="0 0 32 40"
+                  className="w-full h-full drop-shadow-[0_2px_8px_rgba(245,158,11,0.6)]"
+                >
+                  <path
+                    d="M16 4 C14 12 8 20 6 28 C6 32 26 32 26 28 C24 20 18 12 16 4 Z"
+                    fill="#F59E0B"
+                    stroke="#B45309"
+                    strokeWidth="1"
+                  />
+                  <ellipse cx="16" cy="30" rx="10" ry="3" fill="#D97706" />
+                  <circle cx="16" cy="35" r="2.5" fill="#FEF08A" />
+                </svg>
+              </div>
+
+              {/* Divya Shubh Deepavali Header */}
+              <div className="text-center mb-2.5 sm:mb-3.5 relative z-10 px-6 sm:px-12">
+                <div className="text-[10px] sm:text-[11px] uppercase tracking-[2px] font-bold text-amber-300/90 mb-0.5 flex items-center justify-center gap-2">
+                  <span>❖</span>
+                  <span>दीपोत्सव महापर्व · पावन प्रकाशोत्सव</span>
+                  <span>❖</span>
+                </div>
+                <div className="font-serif text-3xl sm:text-4xl md:text-5xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-b from-white via-amber-200 to-amber-500 drop-shadow-[0_2px_18px_rgba(245,158,11,0.95)]">
+                  शुभ दीपावली
+                </div>
+                <div className="text-xs sm:text-sm text-amber-100/90 font-medium tracking-wide drop-shadow-sm mt-0.5">
+                  ॥ प्रभु श्री राम परिवार का दिव्य आशीर्वाद सदा बना रहे ॥
+                </div>
+              </div>
+
+              {/* Ram Parivar Blessing Artwork Frame */}
+              <div className="w-full rounded-xl overflow-hidden border-2 border-amber-500/70 shadow-[0_8px_24px_rgba(0,0,0,0.6),0_0_18px_rgba(245,158,11,0.35)] relative bg-[#18090C] group">
+                <img
+                  src="/images/diwali/ram-parivar-blessing.jpg"
+                  alt="Shri Ram Parivar Blessing"
+                  className="w-full h-36 sm:h-48 md:h-56 object-cover object-[center_30%] transition-transform duration-500 group-hover:scale-[1.02]"
+                  loading="eager"
+                />
+                <div className="absolute bottom-0 inset-x-0 p-2 sm:p-2.5 bg-gradient-to-t from-black/95 via-black/70 to-transparent flex items-end justify-between">
+                  <div>
+                    <div className="text-xs sm:text-sm font-bold text-amber-200 tracking-wide">
+                      श्री राम दरबार दिव्य आशीर्वाद
+                    </div>
+                    <div className="text-[10px] sm:text-xs text-amber-100/80">
+                      सर्वमंगल, सुख-शांति, समृद्धि एवं आरोग्यता का पावन वरदान
+                    </div>
+                  </div>
+                  <span className="text-[9px] sm:text-[10px] uppercase font-extrabold bg-gradient-to-r from-amber-500 to-rose-600 text-white px-2 py-0.5 rounded-full shadow-sm">
+                    अभय मुद्रा
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Pull Tab Toggle */}
+            <button
+              type="button"
+              onClick={toggleBanner}
+              className="bg-gradient-to-b from-amber-600 to-amber-800 hover:from-amber-500 hover:to-amber-700 text-amber-100 hover:text-white border border-t-0 border-amber-400/60 rounded-b-xl px-4 py-1 text-[11px] font-bold shadow-md cursor-pointer transition-all flex items-center gap-1.5 focus:outline-none"
+              title={isBannerMinimized ? "Expand Diwali Banner" : "Minimize Diwali Banner"}
+            >
+              <span>{isBannerMinimized ? "▼" : "▲"}</span>
+              <span>
+                {isBannerMinimized ? "बैनर दिखाएं / Open Banner" : "बैनर छुपाएं / Minimize"}
+              </span>
+            </button>
           </div>
 
-          {/* Top Right Diya */}
-          <div className="absolute top-2.5 sm:top-4 right-3 sm:right-6 animate-diya-subtle-sway opacity-95 drop-shadow-[0_4px_18px_rgba(245,158,11,0.7)]">
-            <DiyaSvg className="w-7 h-7 sm:w-9 sm:h-9 md:w-11 md:h-11" glowIntensity={1.3} />
+          {/* ================= LEFT SIDE PILLAR — STRICTLY ONE BELOW THE OTHER ================= */}
+          <div className="absolute top-0 bottom-0 left-2 sm:left-4 md:left-6 w-12 sm:w-14 flex flex-col justify-between items-center py-6 sm:py-8 pointer-events-auto">
+            {/* 1. Diya on top */}
+            <div
+              className="transition-transform hover:scale-110 drop-shadow-[0_4px_16px_rgba(245,158,11,0.8)]"
+              title="1. Auspicious Diya (Top)"
+            >
+              <DiyaSvg className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12" glowIntensity={1.3} />
+            </div>
+
+            {/* 2. Swastik */}
+            <div className="transition-transform hover:scale-110" title="2. Sacred Vedic Swastik">
+              <SwastikSvg className="w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11" />
+            </div>
+
+            {/* 3. Rocket */}
+            <div className="transition-transform hover:scale-110" title="3. Diwali Sky Rocket">
+              <DiwaliRocketSvg className="w-8 h-10 sm:w-10 sm:h-12 md:w-11 md:h-14" />
+            </div>
+
+            {/* 4. Chakri in the middle */}
+            <div
+              className="transition-transform hover:scale-110"
+              title="4. Whirling Chakri (Middle)"
+            >
+              <ChakriFirecracker className="w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12" />
+            </div>
+
+            {/* 5. Fuljhari */}
+            <div
+              className="transition-transform hover:scale-110"
+              title="5. Sizzling Fuljhari Sparkler"
+            >
+              <PhuljhadiSparkler className="w-8 h-12 sm:w-9 sm:h-14 md:w-10 md:h-16" />
+            </div>
+
+            {/* 6. Copper Kalash with dripping water at the bottom */}
+            <div
+              className="transition-transform hover:scale-110"
+              title="6. Copper Kalash with Dripping Amrit Jal (Bottom)"
+            >
+              <CopperKalashWaterSvg className="w-10 h-14 sm:w-12 sm:h-16 md:w-13 md:h-18" />
+            </div>
           </div>
 
-          {/* Top Center-Left Floating Diya (Desktop & Tablet) */}
-          <div className="hidden md:block absolute top-3 left-[28%] animate-diya-drift-left opacity-90 drop-shadow-[0_4px_16px_rgba(245,158,11,0.6)]">
-            <DiyaSvg className="w-8 h-8 lg:w-9 lg:h-9" glowIntensity={1.2} />
-          </div>
+          {/* ================= RIGHT SIDE PILLAR — STRICTLY ONE BELOW THE OTHER ================= */}
+          <div className="absolute top-0 bottom-0 right-2 sm:right-4 md:right-6 w-12 sm:w-14 flex flex-col justify-between items-center py-6 sm:py-8 pointer-events-auto">
+            {/* 1. Diya on top */}
+            <div
+              className="transition-transform hover:scale-110 drop-shadow-[0_4px_16px_rgba(245,158,11,0.8)]"
+              title="1. Auspicious Diya (Top)"
+            >
+              <DiyaSvg className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12" glowIntensity={1.3} />
+            </div>
 
-          {/* Top Center-Right Floating Diya (Desktop & Tablet) */}
-          <div className="hidden md:block absolute top-3 right-[28%] animate-diya-drift-right opacity-90 drop-shadow-[0_4px_16px_rgba(245,158,11,0.6)]">
-            <DiyaSvg className="w-8 h-8 lg:w-9 lg:h-9" glowIntensity={1.2} />
-          </div>
+            {/* 2. Swastik */}
+            <div className="transition-transform hover:scale-110" title="2. Sacred Vedic Swastik">
+              <SwastikSvg className="w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11" />
+            </div>
 
-          {/* ================= LEFT FLANK FLOATING DIYAS ================= */}
-          {/* Left Diya 1 (Upper) */}
-          <div className="absolute top-[18%] left-1.5 sm:left-4 animate-diya-drift-left opacity-95 drop-shadow-[0_4px_18px_rgba(245,158,11,0.7)]">
-            <DiyaSvg
-              className="w-7 h-7 sm:w-9 sm:h-9 md:w-11 md:h-11 transform -rotate-6"
-              glowIntensity={1.25}
-            />
-          </div>
+            {/* 3. Rocket */}
+            <div className="transition-transform hover:scale-110" title="3. Diwali Sky Rocket">
+              <DiwaliRocketSvg className="w-8 h-10 sm:w-10 sm:h-12 md:w-11 md:h-14" flip />
+            </div>
 
-          {/* Left Diya 2 (Mid-Upper) */}
-          <div className="absolute top-[38%] left-1.5 sm:left-4 animate-diya-drift-right opacity-95 drop-shadow-[0_4px_18px_rgba(245,158,11,0.7)]">
-            <DiyaSvg
-              className="w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 transform rotate-3"
-              glowIntensity={1.2}
-            />
-          </div>
+            {/* 4. Chakri in the middle */}
+            <div
+              className="transition-transform hover:scale-110"
+              title="4. Whirling Chakri (Middle)"
+            >
+              <ChakriFirecracker className="w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12" />
+            </div>
 
-          {/* Left Diya 3 (Mid-Lower) */}
-          <div className="absolute top-[58%] left-1.5 sm:left-4 animate-diya-drift-left opacity-95 drop-shadow-[0_4px_18px_rgba(245,158,11,0.7)]">
-            <DiyaSvg
-              className="w-7 h-7 sm:w-9 sm:h-9 md:w-11 md:h-11 transform -rotate-4"
-              glowIntensity={1.25}
-            />
-          </div>
+            {/* 5. Fuljhari */}
+            <div
+              className="transition-transform hover:scale-110"
+              title="5. Sizzling Fuljhari Sparkler"
+            >
+              <PhuljhadiSparkler className="w-8 h-12 sm:w-9 sm:h-14 md:w-10 md:h-16" />
+            </div>
 
-          {/* Left Diya 4 (Lower) */}
-          <div className="absolute top-[76%] left-1.5 sm:left-4 animate-diya-subtle-sway opacity-95 drop-shadow-[0_4px_18px_rgba(245,158,11,0.7)]">
-            <DiyaSvg
-              className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 transform rotate-6"
-              glowIntensity={1.2}
-            />
-          </div>
-
-          {/* ================= RIGHT FLANK FLOATING DIYAS ================= */}
-          {/* Right Diya 1 (Upper) */}
-          <div className="absolute top-[22%] right-1.5 sm:right-4 animate-diya-drift-right opacity-95 drop-shadow-[0_4px_18px_rgba(245,158,11,0.7)]">
-            <DiyaSvg
-              className="w-7 h-7 sm:w-9 sm:h-9 md:w-11 md:h-11 transform rotate-6"
-              glowIntensity={1.25}
-            />
-          </div>
-
-          {/* Right Diya 2 (Mid-Upper) */}
-          <div className="absolute top-[42%] right-1.5 sm:right-4 animate-diya-drift-left opacity-95 drop-shadow-[0_4px_18px_rgba(245,158,11,0.7)]">
-            <DiyaSvg
-              className="w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 transform -rotate-3"
-              glowIntensity={1.2}
-            />
-          </div>
-
-          {/* Right Diya 3 (Mid-Lower) */}
-          <div className="absolute top-[62%] right-1.5 sm:right-4 animate-diya-drift-right opacity-95 drop-shadow-[0_4px_18px_rgba(245,158,11,0.7)]">
-            <DiyaSvg
-              className="w-7 h-7 sm:w-9 sm:h-9 md:w-11 md:h-11 transform rotate-4"
-              glowIntensity={1.25}
-            />
-          </div>
-
-          {/* Right Diya 4 (Lower) */}
-          <div className="absolute top-[80%] right-1.5 sm:right-4 animate-diya-subtle-sway opacity-95 drop-shadow-[0_4px_18px_rgba(245,158,11,0.7)]">
-            <DiyaSvg
-              className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 transform -rotate-6"
-              glowIntensity={1.2}
-            />
-          </div>
-
-          {/* ================= BOTTOM CORNER CEREMONIAL DIYAS ================= */}
-          {/* Bottom Left Corner Diya (Raised safely above mobile bottom bar) */}
-          <div className="absolute bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] sm:bottom-4 left-3 sm:left-6 animate-diya-subtle-sway opacity-95 drop-shadow-[0_6px_22px_rgba(245,158,11,0.85)]">
-            <DiyaSvg className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12" glowIntensity={1.4} />
-          </div>
-
-          {/* Bottom Right Corner Diya */}
-          <div className="absolute bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] sm:bottom-4 right-3 sm:right-6 animate-diya-subtle-sway opacity-95 drop-shadow-[0_6px_22px_rgba(245,158,11,0.85)]">
-            <DiyaSvg className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12" glowIntensity={1.4} />
-          </div>
-
-          {/* ================= LIVE FIRECRACKERS (CHAKRI, ANAAR, PHULJHADI) ================= */}
-          {/* Left Anaar Flowerpot Fountain */}
-          <div className="absolute bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] sm:bottom-3 left-14 sm:left-24 drop-shadow-[0_4px_18px_rgba(245,158,11,0.8)]">
-            <AnaarFirecracker className="w-9 h-11 sm:w-12 sm:h-14 md:w-14 md:h-16" />
-          </div>
-
-          {/* Right Anaar Flowerpot Fountain */}
-          <div className="absolute bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] sm:bottom-3 right-14 sm:right-24 drop-shadow-[0_4px_18px_rgba(245,158,11,0.8)]">
-            <AnaarFirecracker className="w-9 h-11 sm:w-12 sm:h-14 md:w-14 md:h-16" />
-          </div>
-
-          {/* Left Whirling Ground Chakri */}
-          <div className="hidden sm:block absolute bottom-14 left-4 md:left-8 drop-shadow-[0_0_20px_rgba(245,158,11,0.85)]">
-            <ChakriFirecracker className="w-10 h-10 md:w-12 md:h-12" />
-          </div>
-
-          {/* Right Whirling Ground Chakri */}
-          <div className="hidden sm:block absolute bottom-14 right-4 md:right-8 drop-shadow-[0_0_20px_rgba(245,158,11,0.85)]">
-            <ChakriFirecracker className="w-10 h-10 md:w-12 md:h-12" />
-          </div>
-
-          {/* Left Sizzling Phuljhadi Sparkler */}
-          <div className="absolute top-[48%] left-1.5 sm:left-4 drop-shadow-[0_0_16px_rgba(251,191,36,0.9)]">
-            <PhuljhadiSparkler className="w-6 h-14 sm:w-8 sm:h-16 md:w-9 md:h-18" />
-          </div>
-
-          {/* Right Sizzling Phuljhadi Sparkler */}
-          <div className="absolute top-[48%] right-1.5 sm:right-4 drop-shadow-[0_0_16px_rgba(251,191,36,0.9)]">
-            <PhuljhadiSparkler className="w-6 h-14 sm:w-8 sm:h-16 md:w-9 md:h-18" />
+            {/* 6. Copper Kalash with dripping water at the bottom */}
+            <div
+              className="transition-transform hover:scale-110"
+              title="6. Copper Kalash with Dripping Amrit Jal (Bottom)"
+            >
+              <CopperKalashWaterSvg className="w-10 h-14 sm:w-12 sm:h-16 md:w-13 md:h-18" />
+            </div>
           </div>
         </div>
       )}
@@ -1041,17 +1433,35 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
           animation: chakriBob 2.2s ease-in-out infinite;
         }
 
-        @keyframes anaarPulse {
+        @keyframes rocketBob {
           0%, 100% {
-            transform: scale(1);
+            transform: translateY(0px);
           }
           50% {
-            transform: scale(1.03);
+            transform: translateY(-4px);
           }
         }
 
-        .animate-anaar-pulse {
-          animation: anaarPulse 1.6s ease-in-out infinite;
+        .animate-rocket-bob {
+          animation: rocketBob 2.6s ease-in-out infinite;
+        }
+
+        @keyframes bellSway {
+          0% {
+            transform: rotate(-7deg);
+          }
+          100% {
+            transform: rotate(7deg);
+          }
+        }
+
+        .animate-bell-sway {
+          animation: bellSway 3s ease-in-out infinite alternate;
+        }
+
+        .animate-bell-sway-delayed {
+          animation: bellSway 3s ease-in-out infinite alternate;
+          animation-delay: 1.5s;
         }
 
         @keyframes phuljhadiSparks {
@@ -1077,56 +1487,62 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
           animation: phuljhadiSparks 0.20s ease-in-out infinite;
         }
 
-        @keyframes phuljhadiFloat {
-          0%, 100% {
-            transform: translateY(0px) rotate(12deg);
+        @keyframes waterDrip {
+          0% {
+            transform: translateY(0) scaleY(0.6) scaleX(0.9);
+            opacity: 0;
           }
-          50% {
-            transform: translateY(-16px) rotate(5deg);
+          20% {
+            transform: translateY(4px) scaleY(1.1) scaleX(0.9);
+            opacity: 0.95;
           }
-        }
-
-        .animate-phuljhadi-float {
-          animation: phuljhadiFloat 4.8s ease-in-out infinite;
-        }
-
-        @keyframes diyaDriftLeft {
-          0%, 100% {
-            transform: translateY(0px) rotate(-4deg);
+          70% {
+            transform: translateY(30px) scaleY(1.4) scaleX(0.7);
+            opacity: 1;
           }
-          50% {
-            transform: translateY(-24px) rotate(4deg);
+          90% {
+            transform: translateY(40px) scaleY(0.8) scaleX(1.3);
+            opacity: 0.7;
           }
-        }
-
-        @keyframes diyaDriftRight {
-          0%, 100% {
-            transform: translateY(-18px) rotate(4deg);
-          }
-          50% {
-            transform: translateY(14px) rotate(-4deg);
+          100% {
+            transform: translateY(44px) scaleY(0.3) scaleX(1.8);
+            opacity: 0;
           }
         }
 
-        @keyframes diyaSubtleSway {
-          0%, 100% {
-            transform: translateY(0px) rotate(0deg);
+        .water-drop-1 {
+          animation: waterDrip 2.2s cubic-bezier(0.55, 0.055, 0.675, 0.19) infinite;
+          transform-origin: center top;
+        }
+
+        .water-drop-2 {
+          animation: waterDrip 2.2s cubic-bezier(0.55, 0.055, 0.675, 0.19) infinite;
+          animation-delay: 1.1s;
+          transform-origin: center top;
+        }
+
+        @keyframes waterRipple {
+          0% {
+            transform: scale(0.2);
+            opacity: 0.9;
+            stroke-width: 1.5;
           }
-          50% {
-            transform: translateY(-10px) rotate(2deg);
+          100% {
+            transform: scale(2.4);
+            opacity: 0;
+            stroke-width: 0.4;
           }
         }
 
-        .animate-diya-drift-left {
-          animation: diyaDriftLeft 6.0s ease-in-out infinite;
+        .water-ripple-1 {
+          animation: waterRipple 2.2s ease-out infinite;
+          transform-origin: 30px 62px;
         }
 
-        .animate-diya-drift-right {
-          animation: diyaDriftRight 6.8s ease-in-out infinite;
-        }
-
-        .animate-diya-subtle-sway {
-          animation: diyaSubtleSway 4.5s ease-in-out infinite;
+        .water-ripple-2 {
+          animation: waterRipple 2.2s ease-out infinite;
+          animation-delay: 1.1s;
+          transform-origin: 30px 62px;
         }
       `}</style>
     </>
