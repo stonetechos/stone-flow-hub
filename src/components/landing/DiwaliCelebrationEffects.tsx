@@ -1357,7 +1357,7 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
             )}
           >
             {/* Golden Ropes descending from browser top down past headerbar */}
-            <div className="flex justify-between w-[220px] sm:w-[280px] h-[58px] sm:h-[66px] pointer-events-none">
+            <div className="flex justify-between w-[200px] xs:w-[240px] sm:w-[280px] h-[50px] sm:h-[66px] pointer-events-none">
               {/* Left golden rope */}
               <div className="w-[1.5px] h-full bg-gradient-to-b from-amber-300 via-amber-500 to-amber-700 shadow-[0_0_4px_rgba(245,158,11,0.8)] relative">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-1.5 rounded-b-full bg-amber-400 shadow-sm" />
@@ -1381,21 +1381,21 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
                   toggleBanner();
                 }
               }}
-              className="h-[34px] sm:h-[36px] w-[310px] sm:w-[380px] md:w-[410px] bg-gradient-to-b from-[#1D050C] via-[#2C0712] to-[#130307] border border-amber-500/80 rounded-2xl shadow-[0_4px_22px_rgba(0,0,0,0.85),0_0_16px_rgba(245,158,11,0.4)] backdrop-blur-md flex items-center justify-between px-3.5 sm:px-4 cursor-pointer hover:border-amber-400 hover:scale-[1.02] transition-all duration-300 ease-out group select-none -mt-1"
+              className="h-[32px] sm:h-[36px] w-[calc(100vw-36px)] max-w-[320px] sm:max-w-[380px] md:max-w-[410px] bg-gradient-to-b from-[#1D050C] via-[#2C0712] to-[#130307] border border-amber-500/80 rounded-2xl shadow-[0_4px_22px_rgba(0,0,0,0.85),0_0_16px_rgba(245,158,11,0.4)] backdrop-blur-md flex items-center justify-between px-3 sm:px-4 cursor-pointer hover:border-amber-400 hover:scale-[1.02] transition-all duration-300 ease-out group select-none -mt-1"
               title="Click to view Shri Ram Darbar Diwali blessing"
             >
               {/* Left Auspicious Diya Sparkle */}
-              <span className="text-amber-400 text-xs sm:text-sm animate-pulse">🪔</span>
+              <span className="text-amber-400 text-xs sm:text-sm animate-pulse shrink-0">🪔</span>
 
               {/* Center text */}
-              <div className="flex items-center gap-1.5 overflow-hidden">
-                <span className="font-serif font-bold text-[11px] sm:text-xs md:text-[12.5px] tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-100 drop-shadow-[0_1px_6px_rgba(245,158,11,0.6)] truncate">
+              <div className="flex items-center gap-1.5 overflow-hidden mx-1.5">
+                <span className="font-serif font-bold text-[10px] xs:text-[11px] sm:text-xs md:text-[12.5px] tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-100 drop-shadow-[0_1px_6px_rgba(245,158,11,0.6)] truncate">
                   Happy Diwali and a Happy New Year
                 </span>
               </div>
 
               {/* Right Sparkle & Expand indicator */}
-              <div className="flex items-center gap-1 text-amber-300">
+              <div className="flex items-center gap-1 text-amber-300 shrink-0">
                 <span className="text-xs animate-pulse">✨</span>
                 <span className="text-[10px] opacity-75 group-hover:opacity-100 group-hover:translate-y-0.5 transition-all">
                   ▼
@@ -1407,28 +1407,28 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
           {/* ================= 2. FULL HANGING SHUBH DIPAWAALI & HEAD-TO-TOE RAM DARBAR BANNER SUSPENDED FROM BROWSER TOP VIA ROPES ================= */}
           <div
             className={cn(
-              "fixed top-0 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-auto transition-all duration-700 cubic-bezier(0.16, 1, 0.3, 1) z-[100] max-w-[94vw] w-[540px] sm:w-[600px] lg:w-[640px]",
+              "fixed top-0 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-auto transition-all duration-700 cubic-bezier(0.16, 1, 0.3, 1) z-[100] w-[95vw] sm:w-[580px] md:w-[620px] lg:w-[660px] max-w-[680px]",
               isBannerMinimized
                 ? "-translate-y-[calc(100%+120px)] opacity-0 pointer-events-none"
                 : "translate-y-0 opacity-100 pointer-events-auto",
             )}
           >
             {/* Golden Ropes descending from browser top down past headerbar */}
-            <div className="flex justify-between w-[300px] sm:w-[400px] h-[58px] sm:h-[66px] pointer-events-none">
+            <div className="flex justify-between w-[70%] sm:w-[380px] md:w-[420px] h-[48px] sm:h-[66px] pointer-events-none">
               {/* Left golden rope */}
               <div className="w-[1.5px] h-full bg-gradient-to-b from-amber-300 via-amber-500 to-amber-700 shadow-[0_0_4px_rgba(245,158,11,0.8)] relative">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-1.5 rounded-b-full bg-amber-400 shadow-sm" />
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-amber-300 border border-amber-600 shadow-sm" />
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2.5 sm:w-3 h-2.5 sm:h-3 rounded-full bg-amber-300 border border-amber-600 shadow-sm" />
               </div>
               {/* Right golden rope */}
               <div className="w-[1.5px] h-full bg-gradient-to-b from-amber-300 via-amber-500 to-amber-700 shadow-[0_0_4px_rgba(245,158,11,0.8)] relative">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-1.5 rounded-b-full bg-amber-400 shadow-sm" />
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-amber-300 border border-amber-600 shadow-sm" />
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2.5 sm:w-3 h-2.5 sm:h-3 rounded-full bg-amber-300 border border-amber-600 shadow-sm" />
               </div>
             </div>
 
             {/* Banner card */}
-            <div className="w-full bg-gradient-to-b from-[#2a0810]/95 via-[#4a0d1a]/98 to-[#2a0810]/95 border-2 border-amber-500/80 rounded-2xl sm:rounded-3xl shadow-[0_16px_45px_rgba(0,0,0,0.85),0_0_30px_rgba(245,158,11,0.4)] p-1.5 sm:p-2 backdrop-blur-xl relative overflow-hidden flex flex-col items-center -mt-1">
+            <div className="w-full bg-gradient-to-b from-[#2a0810]/95 via-[#4a0d1a]/98 to-[#2a0810]/95 border sm:border-2 border-amber-500/80 rounded-xl sm:rounded-2xl md:rounded-3xl shadow-[0_12px_36px_rgba(0,0,0,0.85),0_0_24px_rgba(245,158,11,0.35)] p-1 sm:p-1.5 md:p-2 backdrop-blur-xl relative overflow-hidden flex flex-col items-center -mt-1">
               {/* 15-Second Choreographed Divine Sequence: Ram ji, Sita ma, Lakshman ji standing, blessing, Hanuman ji puja & Shubh Deepawali ring */}
               <DivineRamParivarSequence
                 isActive={!isBannerMinimized}
@@ -1440,7 +1440,7 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
             <button
               type="button"
               onClick={toggleBanner}
-              className="bg-gradient-to-b from-amber-600 to-amber-800 hover:from-amber-500 hover:to-amber-700 text-amber-100 hover:text-white border border-t-0 border-amber-400/60 rounded-b-xl px-4 py-1 text-[11px] font-bold shadow-md cursor-pointer transition-all flex items-center gap-1.5 focus:outline-none -mt-0.5"
+              className="bg-gradient-to-b from-amber-600 to-amber-800 hover:from-amber-500 hover:to-amber-700 text-amber-100 hover:text-white border border-t-0 border-amber-400/60 rounded-b-xl px-3 sm:px-4 py-0.5 sm:py-1 text-[9.5px] sm:text-[11px] font-bold shadow-md cursor-pointer transition-all flex items-center gap-1 sm:gap-1.5 focus:outline-none -mt-0.5"
               title="Collapse to iPhone notch"
             >
               <span>▲</span>

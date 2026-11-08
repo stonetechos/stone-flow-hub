@@ -240,7 +240,7 @@ export const DivineRamParivarSequence = memo(function DivineRamParivarSequence({
   return (
     <div
       className={cn(
-        "relative w-full aspect-[16/9.5] sm:aspect-[16/9] min-h-[260px] max-h-[380px] overflow-hidden rounded-xl sm:rounded-2xl bg-black select-none",
+        "relative w-full aspect-[16/9] max-h-[380px] overflow-hidden rounded-xl sm:rounded-2xl bg-black select-none",
         className,
       )}
     >
@@ -277,19 +277,19 @@ export const DivineRamParivarSequence = memo(function DivineRamParivarSequence({
 
           {/* Golden Divine Halo Ring directly radiating behind Bhagwan Ram's Crown */}
           <div
-            className="absolute top-[18%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-44 h-44 rounded-full border-2 border-amber-300/70 animate-spin pointer-events-none"
+            className="absolute top-[18%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-24 h-24 sm:w-36 sm:h-36 md:w-44 md:h-44 rounded-full border-2 border-amber-300/70 animate-spin pointer-events-none"
             style={{ animationDuration: "20s" }}
           >
             <div className="w-full h-full border border-dashed border-amber-200/50 rounded-full animate-pulse" />
           </div>
 
           {/* Expanding Radiant Sunburst Rays */}
-          <div className="absolute top-[18%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full border border-amber-300/80 animate-ping pointer-events-none" />
+          <div className="absolute top-[18%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-18 h-18 sm:w-26 sm:h-26 md:w-32 md:h-32 rounded-full border border-amber-300/80 animate-ping pointer-events-none" />
 
           {/* Glowing Golden Aura at Raised Blessing Hands */}
           <div className="absolute top-[28%] left-[50%] -translate-x-1/2 pointer-events-none flex items-center justify-center">
-            <div className="w-14 h-14 rounded-full border-2 border-amber-300/80 animate-ping" />
-            <div className="absolute w-20 h-20 rounded-full border border-amber-400/50 animate-ping delay-200" />
+            <div className="w-8 h-8 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full border-2 border-amber-300/80 animate-ping" />
+            <div className="absolute w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full border border-amber-400/50 animate-ping delay-200" />
           </div>
         </div>
 
@@ -324,7 +324,7 @@ export const DivineRamParivarSequence = memo(function DivineRamParivarSequence({
       {/* 3. Left & Right Swaying Temple Bells with Dynamic Acoustic Rings */}
       <div
         className={cn(
-          "absolute top-3 left-4 sm:left-6 w-7 h-10 transition-transform origin-top z-30 cursor-pointer",
+          "absolute top-2 sm:top-3 left-2 sm:left-4 md:left-6 w-5 sm:w-7 h-7 sm:h-10 transition-transform origin-top z-30 cursor-pointer",
           phase === 3 ? "animate-bell-ring-fast" : "animate-bell-sway",
         )}
         onClick={playTempleBellSound}
@@ -344,12 +344,12 @@ export const DivineRamParivarSequence = memo(function DivineRamParivarSequence({
           <circle cx="16" cy="35" r="2.5" fill="#FEF08A" />
         </svg>
         {phase === 3 && (
-          <div className="absolute -inset-3 rounded-full border border-amber-300 animate-ping opacity-75" />
+          <div className="absolute -inset-2 sm:-inset-3 rounded-full border border-amber-300 animate-ping opacity-75" />
         )}
       </div>
       <div
         className={cn(
-          "absolute top-3 right-4 sm:right-6 w-7 h-10 transition-transform origin-top z-30 cursor-pointer",
+          "absolute top-2 sm:top-3 right-2 sm:right-4 md:right-6 w-5 sm:w-7 h-7 sm:h-10 transition-transform origin-top z-30 cursor-pointer",
           phase === 3 ? "animate-bell-ring-fast" : "animate-bell-sway-delayed",
         )}
         onClick={playTempleBellSound}
@@ -369,30 +369,30 @@ export const DivineRamParivarSequence = memo(function DivineRamParivarSequence({
           <circle cx="16" cy="35" r="2.5" fill="#FEF08A" />
         </svg>
         {phase === 3 && (
-          <div className="absolute -inset-3 rounded-full border border-amber-300 animate-ping opacity-75" />
+          <div className="absolute -inset-2 sm:-inset-3 rounded-full border border-amber-300 animate-ping opacity-75" />
         )}
       </div>
 
       {/* 4. STAGE 4: "शुभ दीपावली" & TAGLINE BANNER (10.5s - 14.8s) with Temple Bell "तांग" */}
       {phase === 3 && (
-        <div className="absolute inset-x-0 top-3 z-35 flex flex-col items-center pointer-events-none animate-deepavali-banner-unfurl">
-          <div className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-amber-700/95 via-rose-800/98 to-amber-700/95 border-2 border-amber-300 shadow-[0_0_36px_rgba(251,191,36,1)] backdrop-blur-md flex items-center gap-3">
+        <div className="absolute inset-x-0 top-1.5 sm:top-3 z-35 flex flex-col items-center pointer-events-none animate-deepavali-banner-unfurl px-2">
+          <div className="max-w-[95%] sm:max-w-none px-2.5 sm:px-6 py-1 sm:py-2.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-amber-700/95 via-rose-800/98 to-amber-700/95 border sm:border-2 border-amber-300 shadow-[0_0_24px_rgba(251,191,36,0.9)] backdrop-blur-md flex items-center justify-center gap-1.5 sm:gap-3">
             <span
-              className="text-amber-200 text-xl animate-spin"
+              className="text-amber-200 text-sm sm:text-xl animate-spin shrink-0"
               style={{ animationDuration: "3.5s" }}
             >
               🪔
             </span>
             <div className="flex flex-col items-center text-center">
-              <span className="font-serif text-2xl sm:text-3xl md:text-4xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-200 to-amber-400 drop-shadow-[0_2px_16px_rgba(245,158,11,1)]">
+              <span className="font-serif text-base xs:text-lg sm:text-3xl md:text-4xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-200 to-amber-400 drop-shadow-[0_2px_12px_rgba(245,158,11,1)] leading-tight">
                 शुभ दीपावली
               </span>
-              <span className="text-xs sm:text-sm font-bold text-amber-100 tracking-wide mt-0.5 drop-shadow-[0_1px_4px_rgba(0,0,0,0.95)]">
+              <span className="text-[9px] xs:text-[10.5px] sm:text-sm font-bold text-amber-100 tracking-wide mt-0.5 drop-shadow-[0_1px_4px_rgba(0,0,0,0.95)] leading-tight">
                 आप सभी पर प्रभु श्री राम का आशीर्वाद सदैव बना रहे
               </span>
             </div>
             <span
-              className="text-amber-200 text-xl animate-spin"
+              className="text-amber-200 text-sm sm:text-xl animate-spin shrink-0"
               style={{ animationDuration: "3.5s" }}
             >
               🪔
