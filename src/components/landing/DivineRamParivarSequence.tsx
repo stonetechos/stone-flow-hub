@@ -8,8 +8,18 @@ interface DivineRamParivarSequenceProps {
 }
 
 /**
- * Synthesizes an authentic Indian Temple Bell (मन्दिर की घण्टा / Ghanti) "तांग..." sound
- * using the Web Audio API with bronze inharmonic overtones and resonant decay.
+ * Synthesizes an authentic Indian Temple Bell (मन्दिर का महा-घण्टा / Bronze Ghanta) "तांग..." sound
+ * played inside a stone temple sanctum (Garbha-Griha).
+ *
+ * Models:
+ * 1. Heavy Clapper Strike Transient (metallic "ट्-क्लिं" impact tap)
+ * 2. Ashtadhatu Bronze Partials:
+ *    - Deep Hum tone (sub-bass drone resonating in stone garbha-griha)
+ *    - Prime strike tone with twin beating for natural 1.5Hz bronze pulsation ("तांग-ॐ...")
+ *    - Sacred Tierce (minor 3rd), Quint (5th), Nominal (octave), Decime, and shimmering overtones
+ * 3. Stone Temple Sanctum Reverb:
+ *    - ConvolverNode with a synthetic stone hall impulse response + multi-tap reflections
+ *      mimicking high stone arches, dome acoustics, and lingering sacred reverberation.
  */
 function playTempleBellSound() {
   try {
@@ -23,37 +33,124 @@ function playTempleBellSound() {
     }
     const now = ctx.currentTime;
 
-    // Bronze Temple Bell Inharmonic Overtones:
-    // Strike chime + Fundamental (D5 ~587Hz) + Minor 3rd + 5th + Octave + Upper Chimes
-    const bellPartials = [
-      { freq: 587.33, gain: 0.65, decay: 3.8 }, // Fundamental (तांग...)
-      { freq: 704.8, gain: 0.45, decay: 3.0 }, // Tierce
-      { freq: 880.0, gain: 0.35, decay: 2.5 }, // Quint
-      { freq: 1174.66, gain: 0.25, decay: 2.0 }, // Nominal octave
-      { freq: 1760.0, gain: 0.16, decay: 1.4 }, // High resonance
-      { freq: 2420.0, gain: 0.12, decay: 1.0 }, // Metallic strike chime
-    ];
-
+    // Master bus
     const masterGain = ctx.createGain();
-    masterGain.gain.setValueAtTime(0.75, now);
+    masterGain.gain.setValueAtTime(0.72, now);
     masterGain.connect(ctx.destination);
 
-    bellPartials.forEach(({ freq, gain, decay }) => {
+    // Stone Temple Sanctum Reverb via synthetic impulse response
+    let reverbInput: GainNode = masterGain;
+    try {
+      const sampleRate = ctx.sampleRate;
+      const reverbDuration = 3.6;
+      const reverbLength = Math.floor(sampleRate * reverbDuration);
+      const impulse = ctx.createBuffer(2, reverbLength, sampleRate);
+      const leftChannel = impulse.getChannelData(0);
+      const rightChannel = impulse.getChannelData(1);
+
+      for (let i = 0; i < reverbLength; i++) {
+        const t = i / sampleRate;
+        // Stone hall exponential decay with high frequency damping
+        const decayEnv = Math.exp(-t * 2.2);
+        const stoneDamping = Math.exp(-t * 3.8);
+        leftChannel[i] = (Math.random() * 2 - 1) * decayEnv * (0.35 + 0.65 * stoneDamping);
+        rightChannel[i] = (Math.random() * 2 - 1) * decayEnv * (0.35 + 0.65 * stoneDamping);
+      }
+
+      const convolver = ctx.createConvolver();
+      convolver.buffer = impulse;
+
+      const reverbGain = ctx.createGain();
+      reverbGain.gain.setValueAtTime(0.42, now);
+      convolver.connect(reverbGain);
+      reverbGain.connect(masterGain);
+
+      // Dedicated send to reverb
+      const sendNode = ctx.createGain();
+      sendNode.gain.setValueAtTime(0.75, now);
+      sendNode.connect(convolver);
+      sendNode.connect(masterGain);
+      reverbInput = sendNode;
+    } catch {
+      // Graceful fallback to direct master bus if convolver unavailable
+      reverbInput = masterGain;
+    }
+
+    // Secondary Mandir Stone Arch Delay (for guaranteed natural slapback echo)
+    const delay1 = ctx.createDelay();
+    delay1.delayTime.setValueAtTime(0.065, now);
+    const delay1Gain = ctx.createGain();
+    delay1Gain.gain.setValueAtTime(0.25, now);
+    const delayFilter = ctx.createBiquadFilter();
+    delayFilter.type = "lowpass";
+    delayFilter.frequency.setValueAtTime(1800, now);
+
+    delay1.connect(delayFilter);
+    delayFilter.connect(delay1Gain);
+    delay1Gain.connect(masterGain);
+
+    // 1. Heavy Clapper Strike Transient (initial metallic "ट्-क्लिं" impact)
+    const strikeOsc1 = ctx.createOscillator();
+    const strikeOsc2 = ctx.createOscillator();
+    const strikeGain = ctx.createGain();
+
+    strikeOsc1.type = "triangle";
+    strikeOsc1.frequency.setValueAtTime(2650, now);
+    strikeOsc2.type = "sine";
+    strikeOsc2.frequency.setValueAtTime(3800, now);
+
+    strikeGain.gain.setValueAtTime(0.001, now);
+    strikeGain.gain.linearRampToValueAtTime(0.35, now + 0.0015);
+    strikeGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
+
+    strikeOsc1.connect(strikeGain);
+    strikeOsc2.connect(strikeGain);
+    strikeGain.connect(reverbInput);
+    strikeGain.connect(delay1);
+
+    strikeOsc1.start(now);
+    strikeOsc2.start(now);
+    strikeOsc1.stop(now + 0.05);
+    strikeOsc2.stop(now + 0.05);
+
+    // 2. Authentic Indian Ashtadhatu Bronze Temple Bell Harmonics
+    // Fundamental ~392Hz (G4 - auspicious temple ghanta pitch)
+    const F0 = 392.0;
+    const bellPartials = [
+      // Deep Hum Tone (sub-bass drone resonating in stone garbha-griha)
+      { freq: F0 * 0.5, gain: 0.65, attack: 0.005, decay: 5.8 },
+      // Prime Strike Tone with slight beating twin for bronze pulsation ("तांग-ॐ...")
+      { freq: F0 * 1.0, gain: 0.85, attack: 0.002, decay: 5.2 },
+      { freq: F0 * 1.0038, gain: 0.55, attack: 0.003, decay: 4.8 }, // 1.5Hz natural beating
+      // Sacred Tierce (Minor Third - characteristic Indian temple bell mood)
+      { freq: F0 * 1.1892, gain: 0.6, attack: 0.002, decay: 4.5 },
+      // Quint (Fifth)
+      { freq: F0 * 1.4983, gain: 0.45, attack: 0.002, decay: 3.8 },
+      // Nominal (Octave - clear, singing "ting")
+      { freq: F0 * 2.0, gain: 0.5, attack: 0.001, decay: 3.4 },
+      // Decime & Superials (Upper bronze chime resonance)
+      { freq: F0 * 2.76, gain: 0.28, attack: 0.001, decay: 2.4 },
+      { freq: F0 * 3.0, gain: 0.25, attack: 0.001, decay: 2.0 },
+      { freq: F0 * 4.07, gain: 0.18, attack: 0.001, decay: 1.5 },
+      { freq: F0 * 5.42, gain: 0.12, attack: 0.001, decay: 1.0 },
+    ];
+
+    bellPartials.forEach(({ freq, gain, attack, decay }) => {
       const osc = ctx.createOscillator();
       const gainNode = ctx.createGain();
 
       osc.type = "sine";
       osc.frequency.setValueAtTime(freq, now);
-      // Slight pitch relaxation on strike
-      osc.frequency.exponentialRampToValueAtTime(freq * 0.996, now + decay);
+      // Subtle downward micro-pitch glide on strike (physical bell elasticity)
+      osc.frequency.exponentialRampToValueAtTime(freq * 0.997, now + decay);
 
-      // Fast strike attack (3ms) and long ringing resonance
       gainNode.gain.setValueAtTime(0.0001, now);
-      gainNode.gain.linearRampToValueAtTime(gain, now + 0.003);
+      gainNode.gain.linearRampToValueAtTime(gain, now + attack);
       gainNode.gain.exponentialRampToValueAtTime(0.0001, now + decay);
 
       osc.connect(gainNode);
-      gainNode.connect(masterGain);
+      gainNode.connect(reverbInput);
+      gainNode.connect(delay1);
 
       osc.start(now);
       osc.stop(now + decay);
@@ -209,19 +306,6 @@ export const DivineRamParivarSequence = memo(function DivineRamParivarSequence({
             className="w-full h-full object-cover object-center drop-shadow-[0_0_36px_rgba(251,191,36,0.6)]"
             loading="eager"
           />
-
-          {/* Magical Lightburst Materialization at Lotus Feet when Hanuman ji appears */}
-          {phase === 2 && (
-            <div className="absolute bottom-6 left-[34%] -translate-x-1/2 pointer-events-none flex flex-col items-center animate-magic-bloom">
-              <span className="text-2xl animate-spin" style={{ animationDuration: "2s" }}>
-                ✨
-              </span>
-              <div className="w-20 h-20 rounded-full bg-radial from-amber-300/90 via-amber-500/50 to-transparent blur-sm animate-ping" />
-              <span className="text-amber-300 text-lg font-bold drop-shadow-md animate-bounce -mt-8">
-                🙏
-              </span>
-            </div>
-          )}
         </div>
       </div>
 
@@ -319,27 +403,7 @@ export const DivineRamParivarSequence = memo(function DivineRamParivarSequence({
 
       {/* Embedded 60 FPS Keyframe Animations */}
       <style>{`
-        /* 1. Magical Divine Lightburst when Hanuman ji appears at lotus feet */
-        @keyframes magicBloom {
-          0% {
-            transform: scale(0.2);
-            opacity: 0;
-          }
-          50% {
-            transform: scale(1.4);
-            opacity: 1;
-          }
-          100% {
-            transform: scale(1.0);
-            opacity: 0.9;
-          }
-        }
-
-        .animate-magic-bloom {
-          animation: magicBloom 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        /* 2. Deepavali Banner Unfurl */
+        /* 1. Deepavali Banner Unfurl */
         @keyframes deepavaliBannerUnfurl {
           0% {
             transform: scale(0.5) translateY(-30px);
