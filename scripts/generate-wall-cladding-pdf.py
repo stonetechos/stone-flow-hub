@@ -504,8 +504,9 @@ def main():
 
     order = site_data.get("website_catalog_order", [])
     custom_items = site_data.get("website_catalog_items", [])
+    deleted_ids = set(site_data.get("website_deleted_product_ids", []))
 
-    print(f"Remote order length: {len(order)}, Custom edited items: {len(custom_items)}")
+    print(f"Remote order length: {len(order)}, Custom edited items: {len(custom_items)}, Deleted items: {len(deleted_ids)}")
 
     # Merge custom overrides (rotations, custom titles, prices, etc.)
     for c in custom_items:
@@ -515,17 +516,17 @@ def main():
         else:
             local_map[cid] = dict(c)
 
-    # Sort strictly according to the CMS custom order
+    # Sort strictly according to the CMS custom order, skipping deleted products
     sorted_items = []
     seen = set()
     for pid in order:
-        if pid in local_map and pid not in seen:
+        if pid in local_map and pid not in seen and pid not in deleted_ids:
             sorted_items.append(local_map[pid])
             seen.add(pid)
 
-    # Append any remaining items not in custom order
+    # Append any remaining items not in custom order, skipping deleted items
     for pid, item in local_map.items():
-        if pid not in seen:
+        if pid not in seen and pid not in deleted_ids:
             sorted_items.append(item)
             seen.add(pid)
 
