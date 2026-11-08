@@ -1428,11 +1428,8 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
             </div>
 
             {/* Banner card */}
-            <div className="w-full bg-gradient-to-b from-[#2a0810]/95 via-[#4a0d1a]/98 to-[#2a0810]/95 border-2 border-amber-500/70 rounded-2xl sm:rounded-3xl shadow-[0_16px_45px_rgba(0,0,0,0.85),0_0_30px_rgba(245,158,11,0.35)] p-2 sm:p-3 backdrop-blur-xl relative overflow-hidden flex flex-col items-center -mt-1">
-              {/* Filigree inner border */}
-              <div className="absolute inset-1 sm:inset-1.5 border border-amber-400/35 rounded-xl sm:rounded-2xl pointer-events-none" />
-
-              {/* 15-Second Choreographed Divine Sequence: Ram ji, Sita ma, Lakshman ji walk, blessing, Hanuman ji puja & Shubh Deepawali ring */}
+            <div className="w-full bg-gradient-to-b from-[#2a0810]/95 via-[#4a0d1a]/98 to-[#2a0810]/95 border-2 border-amber-500/80 rounded-2xl sm:rounded-3xl shadow-[0_16px_45px_rgba(0,0,0,0.85),0_0_30px_rgba(245,158,11,0.4)] p-1.5 sm:p-2 backdrop-blur-xl relative overflow-hidden flex flex-col items-center -mt-1">
+              {/* 15-Second Choreographed Divine Sequence: Ram ji, Sita ma, Lakshman ji standing, blessing, Hanuman ji puja & Shubh Deepawali ring */}
               <DivineRamParivarSequence
                 isActive={!isBannerMinimized}
                 onComplete={() => setIsBannerMinimized(true)}

@@ -9,7 +9,7 @@ interface DivineRamParivarSequenceProps {
 
 /**
  * Synthesizes an authentic Indian Temple Bell (मन्दिर की घण्टा / Ghanti) "तांग..." sound
- * using the Web Audio API with realistic bronze inharmonic overtones and resonant decay.
+ * using the Web Audio API with bronze inharmonic overtones and resonant decay.
  */
 function playTempleBellSound() {
   try {
@@ -143,77 +143,104 @@ export const DivineRamParivarSequence = memo(function DivineRamParivarSequence({
   return (
     <div
       className={cn(
-        "relative w-full overflow-hidden rounded-xl bg-gradient-to-b from-[#180307] via-[#2a0610] to-[#100205] border-2 border-amber-500/70 shadow-[0_12px_36px_rgba(0,0,0,0.85),0_0_24px_rgba(245,158,11,0.35)] select-none",
+        "relative w-full aspect-[16/9.5] sm:aspect-[16/9] min-h-[260px] max-h-[380px] overflow-hidden rounded-xl sm:rounded-2xl bg-black select-none",
         className,
       )}
-      style={{ minHeight: "360px" }}
     >
-      {/* 1. Divine Ayodhya Sanctum Ambient Backdrop */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Warm sanctum lighting glow */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-600/30 via-rose-950/45 to-black/95" />
-
-        {/* Golden Arch / Mandir Toran Backdrop */}
-        <svg
-          viewBox="0 0 600 380"
-          className="w-full h-full opacity-30 object-cover"
-          aria-hidden="true"
-        >
-          <path
-            d="M30 380 L30 140 C30 60 150 20 300 20 C450 20 570 60 570 140 L570 380"
-            fill="none"
-            stroke="#F59E0B"
-            strokeWidth="3"
-          />
-          <path
-            d="M50 380 L50 145 C50 75 160 38 300 38 C440 38 550 75 550 145 L550 380"
-            fill="none"
-            stroke="#FEF08A"
-            strokeWidth="1"
-            strokeDasharray="6,6"
-          />
-        </svg>
-
-        {/* Ambient Divine Halo Sunburst behind Bhagwan Ram */}
+      {/* 1. Divine Stage Area — Ram Darbar's Full Seamless Sanctum Background */}
+      <div className="absolute inset-0 w-full h-full overflow-hidden">
+        {/* ================= STAGE 1: RAM JI, LAKSHMAN JI & SITA MATA STANDING SERENELY (0.0s - 3.8s) ================= */}
         <div
           className={cn(
-            "absolute top-8 left-1/2 -translate-x-1/2 w-60 h-60 rounded-full bg-gradient-to-r from-amber-300 via-amber-500 to-amber-200 blur-2xl transition-all duration-1000",
-            phase >= 1 ? "opacity-80 scale-125" : "opacity-35 scale-95",
+            "absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out",
+            phase === 0 ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none",
           )}
-        />
+        >
+          <img
+            src="/images/diwali/ram-parivar-walking.jpg"
+            alt="Bhagwan Shri Ram, Mata Sita and Lakshman ji standing gracefully in the sanctum"
+            className="w-full h-full object-cover object-center"
+            loading="eager"
+          />
+        </div>
 
-        {/* Dynamic Divine Halo Rings appearing behind heads during blessing phase */}
-        {phase >= 1 && (
-          <>
-            {/* Bhagwan Ram's Crown Halo Ring */}
-            <div
-              className="absolute top-10 left-1/2 -translate-x-1/2 w-48 h-48 rounded-full border-2 border-amber-300/60 animate-spin pointer-events-none"
-              style={{ animationDuration: "20s" }}
-            >
-              <div className="w-full h-full border border-dashed border-amber-200/50 rounded-full animate-pulse" />
-            </div>
-            {/* Expanding Blessing Rings */}
-            <div className="absolute top-16 left-1/2 -translate-x-1/2 w-36 h-36 rounded-full border border-amber-300/70 animate-ping pointer-events-none" />
-          </>
-        )}
+        {/* ================= STAGE 2: RAISE HANDS TO BLESS EVERYONE + HALO RINGS APPEAR (3.8s - 7.2s) ================= */}
+        <div
+          className={cn(
+            "absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out",
+            phase === 1 ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none",
+          )}
+        >
+          <img
+            src="/images/diwali/ram-parivar-standing-blessing.jpg"
+            alt="Bhagwan Shri Ram raising his right hand in Abhaya Mudra blessing with Mata Sita and Lakshman ji"
+            className="w-full h-full object-cover object-center drop-shadow-[0_0_28px_rgba(245,158,11,0.5)]"
+            loading="eager"
+          />
 
-        {/* Celestial Flower Petal Shower during Hanuman ji appearance & Deepavali celebration */}
-        {phase >= 2 && (
-          <div className="absolute inset-0 pointer-events-none overflow-hidden z-25">
-            <span className="petal petal-1">🌸</span>
-            <span className="petal petal-2">🌼</span>
-            <span className="petal petal-3">🌺</span>
-            <span className="petal petal-4">🌸</span>
-            <span className="petal petal-5">🌼</span>
-            <span className="petal petal-6">🌺</span>
+          {/* Golden Divine Halo Ring directly radiating behind Bhagwan Ram's Crown */}
+          <div
+            className="absolute top-[18%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-44 h-44 rounded-full border-2 border-amber-300/70 animate-spin pointer-events-none"
+            style={{ animationDuration: "20s" }}
+          >
+            <div className="w-full h-full border border-dashed border-amber-200/50 rounded-full animate-pulse" />
           </div>
-        )}
+
+          {/* Expanding Radiant Sunburst Rays */}
+          <div className="absolute top-[18%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full border border-amber-300/80 animate-ping pointer-events-none" />
+
+          {/* Glowing Golden Aura at Raised Blessing Hands */}
+          <div className="absolute top-[28%] left-[50%] -translate-x-1/2 pointer-events-none flex items-center justify-center">
+            <div className="w-14 h-14 rounded-full border-2 border-amber-300/80 animate-ping" />
+            <div className="absolute w-20 h-20 rounded-full border border-amber-400/50 animate-ping delay-200" />
+          </div>
+        </div>
+
+        {/* ================= STAGE 3: HANUMAN JI APPEARS LIKE MAGIC IN BENT & PRANAM MUDRA (7.2s - 15.0s) ================= */}
+        <div
+          className={cn(
+            "absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out",
+            phase >= 2 ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none",
+          )}
+        >
+          <img
+            src="/images/diwali/ram-parivar-hanuman-kneeling.jpg"
+            alt="Shri Ram Darbar with Shri Hanuman ji kneeling at Prabhu Ram's lotus feet with folded hands in devout prayer"
+            className="w-full h-full object-cover object-center drop-shadow-[0_0_36px_rgba(251,191,36,0.6)]"
+            loading="eager"
+          />
+
+          {/* Magical Lightburst Materialization at Lotus Feet when Hanuman ji appears */}
+          {phase === 2 && (
+            <div className="absolute bottom-6 left-[34%] -translate-x-1/2 pointer-events-none flex flex-col items-center animate-magic-bloom">
+              <span className="text-2xl animate-spin" style={{ animationDuration: "2s" }}>
+                ✨
+              </span>
+              <div className="w-20 h-20 rounded-full bg-radial from-amber-300/90 via-amber-500/50 to-transparent blur-sm animate-ping" />
+              <span className="text-amber-300 text-lg font-bold drop-shadow-md animate-bounce -mt-8">
+                🙏
+              </span>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* 2. Left & Right Swaying Temple Bells with Dynamic Acoustic Rings */}
+      {/* 2. Celestial Flower Petal Shower during Hanuman ji appearance & Deepavali celebration */}
+      {phase >= 2 && (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-25">
+          <span className="petal petal-1">🌸</span>
+          <span className="petal petal-2">🌼</span>
+          <span className="petal petal-3">🌺</span>
+          <span className="petal petal-4">🌸</span>
+          <span className="petal petal-5">🌼</span>
+          <span className="petal petal-6">🌺</span>
+        </div>
+      )}
+
+      {/* 3. Left & Right Swaying Temple Bells with Dynamic Acoustic Rings */}
       <div
         className={cn(
-          "absolute top-3 left-4 sm:left-6 w-7 h-10 transition-transform origin-top z-20 cursor-pointer",
+          "absolute top-3 left-4 sm:left-6 w-7 h-10 transition-transform origin-top z-30 cursor-pointer",
           phase === 3 ? "animate-bell-ring-fast" : "animate-bell-sway",
         )}
         onClick={playTempleBellSound}
@@ -238,7 +265,7 @@ export const DivineRamParivarSequence = memo(function DivineRamParivarSequence({
       </div>
       <div
         className={cn(
-          "absolute top-3 right-4 sm:right-6 w-7 h-10 transition-transform origin-top z-20 cursor-pointer",
+          "absolute top-3 right-4 sm:right-6 w-7 h-10 transition-transform origin-top z-30 cursor-pointer",
           phase === 3 ? "animate-bell-ring-fast" : "animate-bell-sway-delayed",
         )}
         onClick={playTempleBellSound}
@@ -262,82 +289,9 @@ export const DivineRamParivarSequence = memo(function DivineRamParivarSequence({
         )}
       </div>
 
-      {/* 3. The Divine Stage Area */}
-      <div className="relative z-10 w-full h-[330px] sm:h-[370px] flex items-end justify-center pb-3 px-2">
-        <div className="relative w-full max-w-[540px] h-[310px] sm:h-[350px] mx-auto flex items-end justify-center overflow-hidden">
-          {/* ================= STAGE 1: RAM JI, LAKSHMAN JI & SITA MATA STANDING SERENELY (0.0s - 3.8s) ================= */}
-          <div
-            className={cn(
-              "absolute inset-0 flex items-end justify-center transition-opacity duration-1000",
-              phase === 0 ? "opacity-100" : "opacity-0 pointer-events-none",
-            )}
-          >
-            <img
-              src="/images/diwali/ram-parivar-walking.jpg"
-              alt="Bhagwan Shri Ram, Mata Sita and Lakshman ji standing gracefully in the sanctum"
-              className="max-h-[295px] sm:max-h-[335px] w-auto max-w-full object-contain rounded-lg drop-shadow-[0_8px_24px_rgba(0,0,0,0.95)]"
-              loading="eager"
-            />
-          </div>
-
-          {/* ================= STAGE 2: RAISE HANDS TO BLESS EVERYONE + HALO RINGS APPEAR (3.8s - 7.2s) ================= */}
-          <div
-            className={cn(
-              "absolute inset-0 flex items-end justify-center transition-all duration-1000",
-              phase === 1
-                ? "opacity-100 scale-100 drop-shadow-[0_0_36px_rgba(245,158,11,0.9)]"
-                : "opacity-0 scale-98 pointer-events-none",
-            )}
-          >
-            <img
-              src="/images/diwali/ram-parivar-standing-blessing.jpg"
-              alt="Bhagwan Shri Ram raising his right hand in Abhaya Mudra blessing with Mata Sita and Lakshman ji"
-              className="max-h-[295px] sm:max-h-[335px] w-auto max-w-full object-contain rounded-lg"
-              loading="eager"
-            />
-
-            {/* Glowing Golden Aura at Raised Hands */}
-            <div className="absolute top-[26%] left-1/2 -translate-x-1/2 pointer-events-none flex items-center justify-center">
-              <div className="w-16 h-16 rounded-full border-2 border-amber-300/80 animate-ping" />
-              <div className="absolute w-24 h-24 rounded-full border border-amber-400/50 animate-ping delay-200" />
-            </div>
-          </div>
-
-          {/* ================= STAGE 3: HANUMAN JI APPEARS LIKE MAGIC IN BENT & PRANAM MUDRA (7.2s - 15.0s) ================= */}
-          <div
-            className={cn(
-              "absolute inset-0 flex items-end justify-center transition-all duration-1000",
-              phase >= 2
-                ? "opacity-100 scale-100 drop-shadow-[0_0_42px_rgba(251,191,36,0.95)]"
-                : "opacity-0 scale-95 pointer-events-none",
-            )}
-          >
-            <img
-              src="/images/diwali/ram-parivar-hanuman-kneeling.jpg"
-              alt="Shri Ram Darbar with Shri Hanuman ji kneeling at Prabhu Ram's lotus feet with folded hands in devout prayer"
-              className="max-h-[295px] sm:max-h-[335px] w-auto max-w-full object-contain rounded-lg"
-              loading="eager"
-            />
-
-            {/* Magical Lightburst Materialization at Lotus Feet when Hanuman ji appears */}
-            {phase === 2 && (
-              <div className="absolute bottom-6 left-[32%] -translate-x-1/2 pointer-events-none flex flex-col items-center animate-magic-bloom">
-                <span className="text-2xl animate-spin" style={{ animationDuration: "2s" }}>
-                  ✨
-                </span>
-                <div className="w-20 h-20 rounded-full bg-radial from-amber-300/90 via-amber-500/50 to-transparent blur-sm animate-ping" />
-                <span className="text-amber-300 text-lg font-bold drop-shadow-md animate-bounce -mt-8">
-                  🙏
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
       {/* 4. STAGE 4: "शुभ दीपावली" & TAGLINE BANNER (10.5s - 14.8s) with Temple Bell "तांग" */}
       {phase === 3 && (
-        <div className="absolute inset-x-0 top-3 z-30 flex flex-col items-center pointer-events-none animate-deepavali-banner-unfurl">
+        <div className="absolute inset-x-0 top-3 z-35 flex flex-col items-center pointer-events-none animate-deepavali-banner-unfurl">
           <div className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-amber-700/95 via-rose-800/98 to-amber-700/95 border-2 border-amber-300 shadow-[0_0_36px_rgba(251,191,36,1)] backdrop-blur-md flex items-center gap-3">
             <span
               className="text-amber-200 text-xl animate-spin"
