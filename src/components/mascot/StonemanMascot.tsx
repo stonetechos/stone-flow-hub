@@ -227,7 +227,7 @@ export function StonemanMascot({ onClick, className }: StonemanMascotProps) {
             }
       }
       className={cn(
-        "fixed z-50 pointer-events-none select-none flex items-center justify-center overflow-visible",
+        "fixed z-[120] pointer-events-none select-none flex items-center justify-center overflow-visible",
         className,
       )}
     >
@@ -263,6 +263,7 @@ export function StonemanMascot({ onClick, className }: StonemanMascotProps) {
           }
         }}
         aria-label="Open Stoneman AI (draggable)"
+        style={{ cursor: isDragging ? "grabbing" : "grab" }}
         className={cn(
           "group relative flex h-14 w-14 items-center justify-center rounded-full select-none pointer-events-auto",
           isDragging
@@ -277,7 +278,7 @@ export function StonemanMascot({ onClick, className }: StonemanMascotProps) {
         )}
       >
         {/* Stone Energy Aura Ring */}
-        <span className="absolute inset-0 rounded-full bg-teal-500/15 group-hover:bg-teal-400/25 transition-colors" />
+        <span className="absolute inset-0 rounded-full bg-teal-500/15 group-hover:bg-teal-400/25 transition-colors pointer-events-none" />
 
         {/* Stoneman Character */}
         <div className="relative h-11 w-11 overflow-hidden rounded-full p-0.5 pointer-events-none">

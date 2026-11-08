@@ -1468,28 +1468,34 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
           </div>
 
           {/* ================= LEFT SIDE PILLAR — STRICTLY ONE BELOW THE OTHER with 25% TRANSLUCENCY ================= */}
-          <div className="absolute top-0 bottom-0 left-2 sm:left-4 md:left-6 w-12 sm:w-14 flex flex-col justify-between items-center py-6 sm:py-8 pointer-events-auto opacity-75 hover:opacity-100 transition-opacity duration-300">
+          <div className="absolute top-0 bottom-0 left-2 sm:left-4 md:left-6 w-12 sm:w-14 flex flex-col justify-between items-center py-6 sm:py-8 pointer-events-none opacity-75 hover:opacity-100 transition-opacity duration-300">
             {/* 1. Diya on top */}
             <div
-              className="transition-transform hover:scale-110 drop-shadow-[0_4px_16px_rgba(245,158,11,0.8)]"
+              className="transition-transform hover:scale-110 drop-shadow-[0_4px_16px_rgba(245,158,11,0.8)] pointer-events-auto cursor-pointer"
               title="1. Auspicious Diya (Top)"
             >
               <DiyaSvg className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12" glowIntensity={1.3} />
             </div>
 
             {/* 2. Sacred Swastik in vibrant saffron-orange */}
-            <div className="transition-transform hover:scale-110" title="2. Sacred Vedic Swastik">
+            <div
+              className="transition-transform hover:scale-110 pointer-events-auto cursor-pointer"
+              title="2. Sacred Vedic Swastik"
+            >
               <SwastikSvg className="w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11" />
             </div>
 
             {/* 3. Rocket */}
-            <div className="transition-transform hover:scale-110" title="3. Diwali Sky Rocket">
+            <div
+              className="transition-transform hover:scale-110 pointer-events-auto cursor-pointer"
+              title="3. Diwali Sky Rocket"
+            >
               <DiwaliRocketSvg className="w-8 h-10 sm:w-10 sm:h-12 md:w-11 md:h-14" />
             </div>
 
             {/* 4. Chakri in the middle */}
             <div
-              className="transition-transform hover:scale-110"
+              className="transition-transform hover:scale-110 pointer-events-auto cursor-pointer"
               title="4. Whirling Chakri (Middle)"
             >
               <ChakriFirecracker className="w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12" />
@@ -1497,7 +1503,7 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
 
             {/* 5. Fuljhari */}
             <div
-              className="transition-transform hover:scale-110"
+              className="transition-transform hover:scale-110 pointer-events-auto cursor-pointer"
               title="5. Sizzling Fuljhari Sparkler"
             >
               <PhuljhadiSparkler className="w-8 h-12 sm:w-9 sm:h-14 md:w-10 md:h-16" />
@@ -1505,7 +1511,7 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
 
             {/* 6. Sacred Copper Kalash dripping continuous holy water onto Shivling beneath it */}
             <div
-              className="transition-transform hover:scale-110"
+              className="transition-transform hover:scale-110 pointer-events-auto cursor-pointer"
               title="6. Sacred Copper Kalash Jalabhisheka onto Shivling (Bottom)"
             >
               <CopperKalashShivlingSvg className="w-11 h-16 sm:w-12 sm:h-20 md:w-13 md:h-22" />
@@ -1513,28 +1519,34 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
           </div>
 
           {/* ================= RIGHT SIDE PILLAR — STRICTLY ONE BELOW THE OTHER with 25% TRANSLUCENCY ================= */}
-          <div className="absolute top-0 bottom-0 right-2 sm:right-4 md:right-6 w-12 sm:w-14 flex flex-col justify-between items-center py-6 sm:py-8 pointer-events-auto opacity-75 hover:opacity-100 transition-opacity duration-300">
+          <div className="absolute top-0 bottom-0 right-2 sm:right-4 md:right-6 w-12 sm:w-14 flex flex-col justify-between items-center py-6 sm:py-8 pointer-events-none opacity-75 hover:opacity-100 transition-opacity duration-300">
             {/* 1. Diya on top */}
             <div
-              className="transition-transform hover:scale-110 drop-shadow-[0_4px_16px_rgba(245,158,11,0.8)]"
+              className="transition-transform hover:scale-110 drop-shadow-[0_4px_16px_rgba(245,158,11,0.8)] pointer-events-auto cursor-pointer"
               title="1. Auspicious Diya (Top)"
             >
               <DiyaSvg className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12" glowIntensity={1.3} />
             </div>
 
             {/* 2. Sacred Swastik in vibrant saffron-orange */}
-            <div className="transition-transform hover:scale-110" title="2. Sacred Vedic Swastik">
+            <div
+              className="transition-transform hover:scale-110 pointer-events-auto cursor-pointer"
+              title="2. Sacred Vedic Swastik"
+            >
               <SwastikSvg className="w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11" />
             </div>
 
             {/* 3. Rocket */}
-            <div className="transition-transform hover:scale-110" title="3. Diwali Sky Rocket">
+            <div
+              className="transition-transform hover:scale-110 pointer-events-auto cursor-pointer"
+              title="3. Diwali Sky Rocket"
+            >
               <DiwaliRocketSvg className="w-8 h-10 sm:w-10 sm:h-12 md:w-11 md:h-14" flip />
             </div>
 
             {/* 4. Chakri in the middle */}
             <div
-              className="transition-transform hover:scale-110"
+              className="transition-transform hover:scale-110 pointer-events-auto cursor-pointer"
               title="4. Whirling Chakri (Middle)"
             >
               <ChakriFirecracker className="w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12" />
@@ -1542,7 +1554,7 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
 
             {/* 5. Fuljhari */}
             <div
-              className="transition-transform hover:scale-110"
+              className="transition-transform hover:scale-110 pointer-events-auto cursor-pointer"
               title="5. Sizzling Fuljhari Sparkler"
             >
               <PhuljhadiSparkler className="w-8 h-12 sm:w-9 sm:h-14 md:w-10 md:h-16" />
@@ -1550,7 +1562,7 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
 
             {/* 6. Sacred Copper Kalash dripping continuous holy water onto Shivling beneath it */}
             <div
-              className="transition-transform hover:scale-110"
+              className="transition-transform hover:scale-110 pointer-events-auto cursor-pointer"
               title="6. Sacred Copper Kalash Jalabhisheka onto Shivling (Bottom)"
             >
               <CopperKalashShivlingSvg className="w-11 h-16 sm:w-12 sm:h-20 md:w-13 md:h-22" />
