@@ -9,49 +9,76 @@ interface DivineRamParivarSequenceProps {
 
 /**
  * DivineRamParivarSequence:
- * Choreographed 15-second divine cinematic sequence:
- * 1. (0s - 3.5s): Ram ji followed by Sita ma and Lakshman ji walking forward smiling towards us.
- * 2. (3.5s - 7.0s): Affix classical Ram Darbar positions & raise hands in Abhay Mudra blessing.
- * 3. (7.0s - 10.8s): Shri Hanuman ji enters and bends down on one knee with folded hands in puja.
- * 4. (10.8s - 14.8s): "Shubh Deepawali" ringing celebration with swinging temple bells and golden radiance.
- * 5. (15.0s): Sequence concludes and banner auto-collapses to the hanging notch.
+ * Choreographed 15-second divine cinematic video sequence:
+ *
+ * Act 1 (0.0s - 4.5s):
+ *   - Prabhu Shri Ram, Mata Sita & Lakshman ji perform a majestic runway model walk
+ *     advancing continuously forward from distance towards the viewer (scale 0.72 -> 1.0)
+ *     with rhythmic left-right footstep cadence, hip sway, vertical bobbing, and lotus ripples.
+ *
+ * Act 2 (4.5s - 7.0s):
+ *   - The walking gait decelerates to a complete, dignified stop.
+ *   - Prabhu Ram, Mata Sita & Lakshman ji raise their hands in divine Abhaya Mudra to bless everyone.
+ *   - Radiant golden blessing rays and rotating Prabhamandal halos illuminate their crowns and palms.
+ *
+ * Act 3 (7.0s - 10.5s):
+ *   - Shri Hanuman ji comes walking in from the left side of the sanctum floor.
+ *   - He halts at Prabhu Shri Ram's lotus feet, smoothly bends down onto one knee (ek-janu),
+ *     and folds his palms together in devout prayer (Anjali Mudra / Pranam).
+ *   - A celestial shower of marigold and lotus petals cascades down around them.
+ *
+ * Act 4 (10.5s - 14.8s):
+ *   - A grand royal "शुभ दीपावली" celebration banner unfurls across the video with ringing temple bells.
+ *
+ * Act 5 (15.0s):
+ *   - Banner smoothly lifts itself up into the hanging notch at the top.
  */
 export const DivineRamParivarSequence = memo(function DivineRamParivarSequence({
   isActive,
   onComplete,
   className,
 }: DivineRamParivarSequenceProps) {
-  // Current phase:
-  // 0: Walking entrance towards viewer (0 - 3.5s)
-  // 1: Positions affixed & Abhaya Mudra blessing (3.5 - 7.0s)
-  // 2: Hanuman ji enters & kneels on one knee in devout puja (7.0 - 10.8s)
-  // 3: "Shubh Deepawali" divine ringing celebration (10.8 - 15.0s)
+  // 0: Model walk forward (0.0s - 4.5s)
+  // 1: Stop & raise hands to bless in Abhaya Mudra (4.5s - 7.0s)
+  // 2: Hanuman ji walks from left, bends on one knee & folds hands in Pranam (7.0s - 10.5s)
+  // 3: "Shubh Deepawali" video celebration banner unfurls with ringing bells (10.5s - 15.0s)
   const [phase, setPhase] = useState<0 | 1 | 2 | 3>(0);
+
+  // Sub-step for Hanuman ji entering (0 = offscreen, 1 = walking, 2 = kneeling with folded hands)
+  const [hanumanStep, setHanumanStep] = useState<0 | 1 | 2>(0);
 
   useEffect(() => {
     if (!isActive) {
       setPhase(0);
+      setHanumanStep(0);
       return;
     }
 
     setPhase(0);
+    setHanumanStep(0);
 
-    // Phase 1 at 3.5s: Affix positions and raise hands in blessing
+    // 4.5s: Come to stop and raise hands in blessing
     const t1 = setTimeout(() => {
       setPhase(1);
-    }, 3500);
+    }, 4500);
 
-    // Phase 2 at 7.0s: Hanuman ji enters and kneels on one knee with folded hands
+    // 7.0s: Hanuman ji enters walking from the left
     const t2 = setTimeout(() => {
       setPhase(2);
+      setHanumanStep(1); // Walking from left
     }, 7000);
 
-    // Phase 3 at 10.8s: "Shubh Deepawali" ringing celebration
+    // 8.8s: Hanuman ji bends down onto one knee and folds palms in pranam
+    const t2b = setTimeout(() => {
+      setHanumanStep(2); // Kneeling with folded hands
+    }, 8800);
+
+    // 10.5s: "Shubh Deepawali" grand video banner unfurls with ringing bells
     const t3 = setTimeout(() => {
       setPhase(3);
-    }, 10800);
+    }, 10500);
 
-    // Phase 4 at 15.0s: Conclude and auto-collapse
+    // 15.0s: Complete sequence and auto-collapse to top notch
     const t4 = setTimeout(() => {
       onComplete?.();
     }, 15000);
@@ -59,6 +86,7 @@ export const DivineRamParivarSequence = memo(function DivineRamParivarSequence({
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
+      clearTimeout(t2b);
       clearTimeout(t3);
       clearTimeout(t4);
     };
@@ -72,15 +100,15 @@ export const DivineRamParivarSequence = memo(function DivineRamParivarSequence({
       )}
       style={{ minHeight: "360px" }}
     >
-      {/* 1. Divine Ayodhya Sanctum Backdrop with Golden Temple Arch & Radiant Halo */}
+      {/* 1. Divine Ayodhya Sanctum Ambient Backdrop */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Soft background sanctum illumination */}
+        {/* Warm sanctum lighting glow */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-600/30 via-rose-950/45 to-black/95" />
 
-        {/* Golden Arch / Mandir Toran */}
+        {/* Golden Arch / Mandir Toran Backdrop */}
         <svg
           viewBox="0 0 600 380"
-          className="w-full h-full opacity-35 object-cover"
+          className="w-full h-full opacity-30 object-cover"
           aria-hidden="true"
         >
           <path
@@ -98,25 +126,25 @@ export const DivineRamParivarSequence = memo(function DivineRamParivarSequence({
           />
         </svg>
 
-        {/* Ambient Divine Sunburst Halo behind Bhagwan Ram */}
+        {/* Ambient Divine Prabhamandal Sunburst behind Bhagwan Ram */}
         <div
           className={cn(
-            "absolute top-8 left-1/2 -translate-x-1/2 w-52 h-52 rounded-full bg-gradient-to-r from-amber-300 via-amber-500 to-amber-200 blur-2xl transition-all duration-1000",
-            phase >= 1 ? "opacity-80 scale-125" : "opacity-45 scale-100",
+            "absolute top-8 left-1/2 -translate-x-1/2 w-60 h-60 rounded-full bg-gradient-to-r from-amber-300 via-amber-500 to-amber-200 blur-2xl transition-all duration-1000",
+            phase >= 1 ? "opacity-75 scale-125" : "opacity-35 scale-95",
           )}
         />
 
-        {/* Rotating Golden Prabhamandal Rays during blessing & ringing phases */}
+        {/* Rotating Sacred Sunburst Prabhamandal Rays during blessing & Deepavali */}
         {phase >= 1 && (
           <div
-            className="absolute top-10 left-1/2 -translate-x-1/2 w-64 h-64 border-2 border-amber-300/40 rounded-full animate-spin pointer-events-none"
-            style={{ animationDuration: "20s" }}
+            className="absolute top-8 left-1/2 -translate-x-1/2 w-64 h-64 border-2 border-amber-300/40 rounded-full animate-spin pointer-events-none"
+            style={{ animationDuration: "24s" }}
           >
             <div className="w-full h-full border border-dashed border-amber-400/35 rounded-full" />
           </div>
         )}
 
-        {/* Flower Petal Shower during Hanuman ji puja & Deepavali celebration */}
+        {/* Celestial Flower Petal Shower during Hanuman ji puja & Deepavali celebration */}
         {phase >= 2 && (
           <div className="absolute inset-0 pointer-events-none overflow-hidden z-25">
             <span className="petal petal-1">🌸</span>
@@ -129,7 +157,7 @@ export const DivineRamParivarSequence = memo(function DivineRamParivarSequence({
         )}
       </div>
 
-      {/* 2. Left & Right Swaying Temple Bells with Dynamic Sound Resonance */}
+      {/* 2. Left & Right Swaying Temple Bells with Dynamic Resonance */}
       <div
         className={cn(
           "absolute top-3 left-4 sm:left-6 w-7 h-10 transition-transform origin-top z-20",
@@ -177,131 +205,175 @@ export const DivineRamParivarSequence = memo(function DivineRamParivarSequence({
         )}
       </div>
 
-      {/* 3. The Divine Stage Area — Walking Entrance, Position Affixing, Blessing & Hanuman ji Puja */}
+      {/* 3. The Divine Stage Area — Choreographed Runway Walk, Stop, Blessing & Hanuman Ji Puja */}
       <div className="relative z-10 w-full h-[330px] sm:h-[370px] flex items-end justify-center pb-3 px-2">
-        <div className="relative w-full max-w-[440px] h-[310px] sm:h-[350px] mx-auto flex items-end justify-center">
-          {/* Phase 0 (0 - 3.5s): Prabhu Shri Ram, Mata Sita & Lakshman ji walking forward towards us */}
-          <img
-            src="/images/diwali/ram-parivar-walking.jpg"
-            alt="Bhagwan Shri Ram walking forward towards the viewer with Mata Sita and Lakshman ji"
+        <div className="relative w-full max-w-[540px] h-[310px] sm:h-[350px] mx-auto flex items-end justify-center overflow-hidden">
+          {/* ================= ACT 1: RUNWAY MODEL WALK FORWARD (0.0s - 4.5s) ================= */}
+          <div
             className={cn(
-              "absolute bottom-0 max-h-[295px] sm:max-h-[335px] w-auto max-w-full object-contain rounded-lg drop-shadow-[0_8px_24px_rgba(0,0,0,0.95)] transition-all duration-1000 ease-out",
-              phase === 0
-                ? "opacity-100 scale-100 animate-divine-walk"
-                : "opacity-0 scale-105 pointer-events-none",
+              "absolute inset-0 flex items-end justify-center transition-opacity duration-700",
+              phase === 0 ? "opacity-100" : "opacity-0 pointer-events-none",
             )}
-            loading="eager"
-          />
+          >
+            <img
+              src="/images/diwali/ram-parivar-walking.jpg"
+              alt="Bhagwan Shri Ram walking forward towards the camera like a model with Mata Sita and Lakshman ji"
+              className="max-h-[295px] sm:max-h-[335px] w-auto max-w-full object-contain rounded-lg drop-shadow-[0_8px_24px_rgba(0,0,0,0.95)] animate-runway-model-walk"
+              loading="eager"
+            />
 
-          {/* Phase 1 (3.5 - 7.0s): Affixing positions & raising right hand in Abhaya Mudra to bless everyone */}
-          <img
-            src="/images/diwali/ram-parivar-standing-blessing.jpg"
-            alt="Bhagwan Shri Ram raising his right hand in Abhaya Mudra blessing everyone with Mata Sita and Lakshman ji"
-            className={cn(
-              "absolute bottom-0 max-h-[295px] sm:max-h-[335px] w-auto max-w-full object-contain rounded-lg drop-shadow-[0_8px_24px_rgba(0,0,0,0.95)] transition-all duration-1000 ease-out",
-              phase === 1
-                ? "opacity-100 scale-100 drop-shadow-[0_0_32px_rgba(245,158,11,0.85)]"
-                : "opacity-0 pointer-events-none",
-            )}
-            loading="eager"
-          />
-
-          {/* Phase 2 & 3 (7.0 - 15.0s): Shri Hanuman ji arrives and kneels on one knee with folded hands in devout puja */}
-          <img
-            src="/images/diwali/ram-parivar-blessing.jpg"
-            alt="Shri Ram Darbar with Shri Hanuman ji kneeling at Prabhu Ram's lotus feet in devout prayer"
-            className={cn(
-              "absolute bottom-0 max-h-[295px] sm:max-h-[335px] w-auto max-w-full object-contain rounded-lg drop-shadow-[0_8px_24px_rgba(0,0,0,0.95)] transition-all duration-1000 ease-out",
-              phase >= 2
-                ? "opacity-100 scale-100 drop-shadow-[0_0_40px_rgba(251,191,36,0.95)]"
-                : "opacity-0 pointer-events-none",
-            )}
-            loading="eager"
-          />
-
-          {/* Phase 0 Footstep Lotus Ripples appearing as they step forward */}
-          {phase === 0 && (
-            <div className="absolute bottom-2 inset-x-0 flex justify-center gap-12 pointer-events-none">
-              <span className="text-sm animate-ping opacity-75">🪷</span>
-              <span className="text-sm animate-ping opacity-90 delay-300">🪷</span>
-              <span className="text-sm animate-ping opacity-75 delay-150">🪷</span>
+            {/* Dynamic Lotus Footsteps Appearing Under Their Stride */}
+            <div className="absolute bottom-2 inset-x-0 flex justify-center gap-10 pointer-events-none">
+              <span
+                className="text-base animate-ping opacity-80"
+                style={{ animationDuration: "1.4s" }}
+              >
+                🪷
+              </span>
+              <span
+                className="text-base animate-ping opacity-90 delay-300"
+                style={{ animationDuration: "1.4s" }}
+              >
+                🪷
+              </span>
+              <span
+                className="text-base animate-ping opacity-80 delay-150"
+                style={{ animationDuration: "1.4s" }}
+              >
+                🪷
+              </span>
             </div>
-          )}
+          </div>
 
-          {/* Phase 1: Radiant Golden Abhaya Mudra Blessing Wave from Divine Hands */}
-          {phase === 1 && (
-            <div
-              className="absolute top-[28%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-radial from-white via-amber-300 to-transparent blur-xs animate-pulse pointer-events-none"
-              style={{ animationDuration: "1.2s" }}
-            >
-              {/* Expanding Divine Blessing Rays */}
-              <div className="absolute inset-0 flex items-center justify-center text-amber-200 text-base animate-ping">
-                ✨
-              </div>
-              <div className="absolute -inset-4 rounded-full border border-amber-300/60 animate-ping opacity-60" />
+          {/* ================= ACT 2: STOP & RAISE HANDS IN ABHAYA MUDRA BLESSING (4.5s - 7.0s) ================= */}
+          <div
+            className={cn(
+              "absolute inset-0 flex items-end justify-center transition-opacity duration-700",
+              phase === 1 ? "opacity-100" : "opacity-0 pointer-events-none",
+            )}
+          >
+            <img
+              src="/images/diwali/ram-parivar-standing-blessing.jpg"
+              alt="Bhagwan Shri Ram standing in position, raising his right hand in Abhaya Mudra blessing with Mata Sita and Lakshman ji"
+              className="max-h-[295px] sm:max-h-[335px] w-auto max-w-full object-contain rounded-lg drop-shadow-[0_0_36px_rgba(245,158,11,0.85)] animate-blessing-ignite"
+              loading="eager"
+            />
+
+            {/* Divine Blessing Rays & Rings Emanating from Palms */}
+            <div className="absolute top-[26%] left-1/2 -translate-x-1/2 pointer-events-none flex items-center justify-center">
+              <div className="w-14 h-14 rounded-full border-2 border-amber-300/80 animate-ping" />
+              <div className="absolute w-20 h-20 rounded-full border border-amber-400/50 animate-ping delay-200" />
             </div>
-          )}
+          </div>
 
-          {/* Phase 2: Shri Hanuman ji Kneeling on One Knee in Devout Puja Aura */}
-          {phase >= 2 && (
+          {/* ================= ACT 3 & 4: HANUMAN JI WALKS FROM LEFT, KNEELS IN PRANAM (7.0s - 15.0s) ================= */}
+          {/* Base scene: Standing Parivar blessing */}
+          <div
+            className={cn(
+              "absolute inset-0 flex items-end justify-center transition-opacity duration-500",
+              phase >= 2 && hanumanStep === 1 ? "opacity-100" : "opacity-0 pointer-events-none",
+            )}
+          >
+            <img
+              src="/images/diwali/ram-parivar-standing-blessing.jpg"
+              alt="Shri Ram Parivar awaiting Shri Hanuman ji"
+              className="max-h-[295px] sm:max-h-[335px] w-auto max-w-full object-contain rounded-lg drop-shadow-[0_0_30px_rgba(245,158,11,0.7)]"
+              loading="eager"
+            />
+
+            {/* Dynamic Animated Actor: Shri Hanuman ji actively walking in from the left side */}
             <div
-              className="absolute bottom-[10%] left-[34%] -translate-x-1/2 w-24 h-24 rounded-full bg-radial from-amber-400/50 via-orange-500/25 to-transparent blur-md animate-pulse pointer-events-none"
-              style={{ animationDuration: "1.5s" }}
+              className="absolute bottom-2 left-2 sm:left-4 z-20 pointer-events-none animate-hanuman-enter-walk"
+              style={{ width: "130px", height: "180px" }}
             >
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-amber-300 text-sm font-bold drop-shadow-md">
+              <img
+                src="/images/diwali/hanuman-walking.jpg"
+                alt="Shri Hanuman ji walking in gracefully from the left carrying golden gada"
+                className="w-full h-full object-contain drop-shadow-[0_4px_16px_rgba(245,158,11,0.9)] rounded-lg"
+              />
+            </div>
+          </div>
+
+          {/* Locked Classical Darbar: Hanuman ji kneeling on one knee with folded palms in Pranam */}
+          <div
+            className={cn(
+              "absolute inset-0 flex items-end justify-center transition-all duration-700",
+              phase >= 2 && hanumanStep === 2
+                ? "opacity-100 scale-100 drop-shadow-[0_0_42px_rgba(251,191,36,0.95)]"
+                : "opacity-0 scale-95 pointer-events-none",
+            )}
+          >
+            <img
+              src="/images/diwali/ram-parivar-hanuman-kneeling.jpg"
+              alt="Shri Ram Darbar with Shri Hanuman ji kneeling at Prabhu Ram's lotus feet with folded hands in devout prayer"
+              className="max-h-[295px] sm:max-h-[335px] w-auto max-w-full object-contain rounded-lg"
+              loading="eager"
+            />
+
+            {/* Devotional Anjali Mudra Aura at Lotus Feet */}
+            <div className="absolute bottom-6 left-[32%] -translate-x-1/2 pointer-events-none flex flex-col items-center">
+              <span className="text-amber-300 text-lg font-bold drop-shadow-md animate-bounce">
                 🙏
-              </div>
-              <div className="absolute -inset-2 rounded-full border border-amber-400/40 animate-ping opacity-50" />
+              </span>
+              <div className="w-12 h-12 rounded-full border border-amber-400/60 animate-ping opacity-60" />
             </div>
-          )}
+          </div>
         </div>
       </div>
 
-      {/* 4. Phase 3 Divine "Shubh Deepawali" Ringing Crest & Lightburst */}
+      {/* 4. ACT 4: Grand Royal "Shubh Deepawali" Video Banner & Ringing Lightburst */}
       {phase === 3 && (
-        <div className="absolute inset-x-0 top-3 z-30 flex flex-col items-center pointer-events-none animate-deepavali-burst">
-          <div className="px-5 py-1.5 rounded-full bg-gradient-to-r from-amber-600/95 via-rose-700/98 to-amber-600/95 border-2 border-amber-300 shadow-[0_0_30px_rgba(251,191,36,1)] backdrop-blur-md flex items-center gap-2">
+        <div className="absolute inset-x-0 top-3 z-30 flex flex-col items-center pointer-events-none animate-deepavali-banner-unfurl">
+          <div className="px-6 py-2 rounded-2xl bg-gradient-to-r from-amber-700/95 via-rose-800/98 to-amber-700/95 border-2 border-amber-300 shadow-[0_0_36px_rgba(251,191,36,1)] backdrop-blur-md flex items-center gap-2.5">
             <span
-              className="text-amber-200 text-base animate-spin"
-              style={{ animationDuration: "4s" }}
+              className="text-amber-200 text-lg animate-spin"
+              style={{ animationDuration: "3.5s" }}
             >
               🪔
             </span>
-            <span className="font-serif text-2xl sm:text-3xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-200 to-amber-400 drop-shadow-[0_2px_14px_rgba(245,158,11,1)]">
-              शुभ दीपावली
-            </span>
+            <div className="flex flex-col items-center">
+              <span className="font-serif text-2xl sm:text-3xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-200 to-amber-400 drop-shadow-[0_2px_16px_rgba(245,158,11,1)]">
+                शुभ दीपावली
+              </span>
+              <span className="text-[10.5px] sm:text-xs font-bold text-amber-100 tracking-widest uppercase -mt-0.5 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
+                ॥ Happy Diwali and a Happy New Year ॥
+              </span>
+            </div>
             <span
-              className="text-amber-200 text-base animate-spin"
-              style={{ animationDuration: "4s" }}
+              className="text-amber-200 text-lg animate-spin"
+              style={{ animationDuration: "3.5s" }}
             >
               🪔
             </span>
-          </div>
-          <div className="text-[11px] sm:text-xs font-bold text-amber-100 tracking-widest uppercase mt-1 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
-            ॥ Happy Diwali and a Happy New Year ॥
           </div>
         </div>
       )}
 
-      {/* 5. Progressive Divine Captions throughout the 15-second sequence */}
+      {/* 5. Progressive Narrative Caption describing each divine act */}
       <div className="absolute bottom-1.5 inset-x-0 z-20 text-center px-4">
-        <div className="inline-block px-3 py-1 rounded-full bg-black/80 border border-amber-500/50 backdrop-blur-md transition-all duration-500 shadow-md">
+        <div className="inline-block px-3.5 py-1 rounded-full bg-black/85 border border-amber-500/60 backdrop-blur-md transition-all duration-500 shadow-md">
           {phase === 0 && (
-            <span className="text-[10.5px] sm:text-xs font-medium text-amber-200 tracking-wide flex items-center gap-1.5">
+            <span className="text-[10.5px] sm:text-xs font-medium text-amber-200 tracking-wide flex items-center gap-1.5 animate-pulse">
               <span>🚶‍♂️</span>
-              <span>प्रभु श्री राम, माता सीता एवं लक्ष्मण जी का दिव्य आगमन...</span>
+              <span>
+                प्रभु श्री राम, माता सीता एवं लक्ष्मण जी का दिव्य आगमन (Runway Model Walk)...
+              </span>
             </span>
           )}
           {phase === 1 && (
             <span className="text-[10.5px] sm:text-xs font-bold text-amber-300 tracking-wide flex items-center gap-1.5 animate-pulse">
               <span>✋</span>
-              <span>श्री राम परिवार का अभय वरदान एवं सर्वमंगल दिव्य आशीर्वाद</span>
+              <span>विराजमान होकर श्री राम परिवार द्वारा दिव्य अभय वरदान एवं आशीर्वाद</span>
             </span>
           )}
           {phase === 2 && (
             <span className="text-[10.5px] sm:text-xs font-bold text-amber-200 tracking-wide flex items-center gap-1.5">
               <span>🙏</span>
-              <span>हनुमान जी द्वारा श्री चरणों में करबद्ध एक-जानु पावन वंदन</span>
+              <span>
+                {hanumanStep === 1
+                  ? "श्री हनुमान जी का बाईं ओर से पावन आगमन..."
+                  : "श्री चरणों में एक-जानु बैठकर करबद्ध पावन वंदन (प्रणाम)"}
+              </span>
             </span>
           )}
           {phase === 3 && (
@@ -313,35 +385,113 @@ export const DivineRamParivarSequence = memo(function DivineRamParivarSequence({
         </div>
       </div>
 
-      {/* Embedded CSS for divine walking gait, petal shower & deepavali burst */}
+      {/* Embedded 60 FPS Keyframe Animations */}
       <style>{`
-        @keyframes divineWalk {
+        /* 1. Continuous Runway Model Walk Forward towards the viewer (scale 0.72 to 1.0 with cadence) */
+        @keyframes runwayModelWalk {
           0% {
-            transform: scale(0.88) translateY(16px);
-            opacity: 0.85;
+            transform: scale(0.72) translateY(24px) rotate(0deg);
           }
-          25% {
-            transform: scale(0.92) translateY(6px);
-            opacity: 0.92;
+          15% {
+            transform: scale(0.78) translateY(14px) rotate(-1.2deg);
           }
-          50% {
-            transform: scale(0.95) translateY(10px);
-            opacity: 0.96;
+          30% {
+            transform: scale(0.84) translateY(20px) rotate(1.2deg);
+          }
+          45% {
+            transform: scale(0.90) translateY(10px) rotate(-1.0deg);
+          }
+          60% {
+            transform: scale(0.95) translateY(16px) rotate(1.0deg);
           }
           75% {
-            transform: scale(0.98) translateY(3px);
-            opacity: 0.99;
+            transform: scale(0.98) translateY(6px) rotate(-0.6deg);
+          }
+          90% {
+            transform: scale(1.0) translateY(2px) rotate(0.4deg);
           }
           100% {
-            transform: scale(1.0) translateY(0px);
+            transform: scale(1.0) translateY(0px) rotate(0deg);
+          }
+        }
+
+        .animate-runway-model-walk {
+          animation: runwayModelWalk 4.5s cubic-bezier(0.2, 0.8, 0.4, 1) forwards;
+        }
+
+        /* 2. Blessing Pose Ignition */
+        @keyframes blessingIgnite {
+          0% {
+            transform: scale(0.97);
+            filter: brightness(0.95);
+          }
+          50% {
+            transform: scale(1.02);
+            filter: brightness(1.15);
+          }
+          100% {
+            transform: scale(1.0);
+            filter: brightness(1.05);
+          }
+        }
+
+        .animate-blessing-ignite {
+          animation: blessingIgnite 1.2s ease-out forwards;
+        }
+
+        /* 3. Shri Hanuman Ji Walking in from Left Edge to Prabhu Ram's Lotus Feet */
+        @keyframes hanumanEnterWalk {
+          0% {
+            transform: translateX(-160px) translateY(12px) rotate(-2deg);
+            opacity: 0;
+          }
+          20% {
+            transform: translateX(-90px) translateY(2px) rotate(1deg);
+            opacity: 1;
+          }
+          45% {
+            transform: translateX(-40px) translateY(8px) rotate(-1.5deg);
+            opacity: 1;
+          }
+          70% {
+            transform: translateX(10px) translateY(2px) rotate(1deg);
+            opacity: 1;
+          }
+          90% {
+            transform: translateX(45px) translateY(6px) rotate(0deg);
+            opacity: 1;
+          }
+          100% {
+            transform: translateX(60px) translateY(10px) rotate(0deg);
+            opacity: 0.95;
+          }
+        }
+
+        .animate-hanuman-enter-walk {
+          animation: hanumanEnterWalk 1.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        /* 4. Grand Deepavali Video Banner Unfurl */
+        @keyframes deepavaliBannerUnfurl {
+          0% {
+            transform: scale(0.5) translateY(-30px);
+            opacity: 0;
+          }
+          60% {
+            transform: scale(1.06) translateY(2px);
+            opacity: 1;
+          }
+          100% {
+            transform: scale(1) translateY(0);
             opacity: 1;
           }
         }
 
-        .animate-divine-walk {
-          animation: divineWalk 3.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        .animate-deepavali-banner-unfurl {
+          animation: deepavaliBannerUnfurl 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
+        /* 5. Fast Temple Bell Ringing during celebration */
         @keyframes bellRingFast {
           0%, 100% { transform: rotate(0deg); }
           20% { transform: rotate(18deg); }
@@ -354,26 +504,7 @@ export const DivineRamParivarSequence = memo(function DivineRamParivarSequence({
           animation: bellRingFast 0.45s ease-in-out infinite;
         }
 
-        @keyframes deepavaliBurst {
-          0% {
-            transform: scale(0.6) translateY(-20px);
-            opacity: 0;
-          }
-          50% {
-            transform: scale(1.08) translateY(0);
-            opacity: 1;
-          }
-          100% {
-            transform: scale(1) translateY(0);
-            opacity: 1;
-          }
-        }
-
-        .animate-deepavali-burst {
-          animation: deepavaliBurst 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        /* Flower Petals raining down gently */
+        /* 6. Flower Petals raining down gently */
         .petal {
           position: absolute;
           font-size: 14px;

@@ -884,10 +884,9 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
   const [isBannerMinimized, setIsBannerMinimized] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     try {
-      // Clear legacy localStorage key so all users experience the divine sequence
       localStorage.removeItem("stos_diwali_banner_minimized");
-      const stored = sessionStorage.getItem("stos_diwali_banner_minimized");
-      return stored === "true";
+      sessionStorage.removeItem("stos_diwali_banner_minimized");
+      return false;
     } catch {
       return false;
     }
