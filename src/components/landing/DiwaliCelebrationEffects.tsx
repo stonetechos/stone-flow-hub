@@ -738,6 +738,15 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
     }
   });
 
+  // Auto-collapse the full banner to the iPhone 10 style header notch after 15 seconds
+  useEffect(() => {
+    if (isBannerMinimized) return;
+    const timer = setTimeout(() => {
+      setIsBannerMinimized(true);
+    }, 15000);
+    return () => clearTimeout(timer);
+  }, [isBannerMinimized]);
+
   const toggleBanner = () => {
     setIsBannerMinimized((prev) => {
       const next = !prev;
@@ -1179,11 +1188,51 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
           className="fixed inset-0 pointer-events-none z-30 overflow-hidden w-full h-full max-w-[100vw]"
           aria-hidden="true"
         >
-          {/* ================= TOP HANGING SHUBH DIPAWAALI BANNER ================= */}
+          {/* ================= 1. IPHONE 10 STYLE HEADER NOTCH BANNER (~10 mm / ~38px) ================= */}
+          <div
+            onClick={toggleBanner}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                toggleBanner();
+              }
+            }}
+            className={cn(
+              "fixed top-0 left-1/2 -translate-x-1/2 z-50 h-[36px] sm:h-[38px] w-[310px] sm:w-[380px] md:w-[410px] bg-gradient-to-b from-[#1D050C] via-[#2C0712] to-[#130307] border-b-2 border-x border-amber-500/80 rounded-b-2xl sm:rounded-b-3xl shadow-[0_4px_22px_rgba(0,0,0,0.85),0_0_16px_rgba(245,158,11,0.4)] backdrop-blur-md flex items-center justify-between px-3.5 sm:px-4 cursor-pointer hover:border-amber-400 transition-all duration-500 ease-out group select-none",
+              isBannerMinimized
+                ? "translate-y-0 opacity-100 pointer-events-auto"
+                : "-translate-y-full opacity-0 pointer-events-none",
+            )}
+            title="Click to view Shri Ram Darbar Diwali blessing"
+          >
+            {/* Left Auspicious Diya Sparkle */}
+            <span className="text-amber-400 text-xs sm:text-sm animate-pulse">🪔</span>
+
+            {/* Apple iPhone 10 notch style center text */}
+            <div className="flex items-center gap-1.5 overflow-hidden">
+              <span className="font-serif font-bold text-[11px] sm:text-xs md:text-[12.5px] tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-100 drop-shadow-[0_1px_6px_rgba(245,158,11,0.6)] truncate">
+                Happy Diwali and a Happy New Year
+              </span>
+            </div>
+
+            {/* Right Sparkle & Expand indicator */}
+            <div className="flex items-center gap-1 text-amber-300">
+              <span className="text-xs animate-pulse">✨</span>
+              <span className="text-[10px] opacity-75 group-hover:opacity-100 group-hover:translate-y-0.5 transition-all">
+                ▼
+              </span>
+            </div>
+          </div>
+
+          {/* ================= 2. FULL HANGING SHUBH DIPAWAALI & HEAD-TO-TOE RAM DARBAR BANNER ================= */}
           <div
             className={cn(
-              "absolute top-0 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-auto transition-transform duration-700 ease-out z-40 max-w-[94vw] w-[620px] lg:w-[680px]",
-              isBannerMinimized ? "-translate-y-[calc(100%-40px)]" : "translate-y-0",
+              "fixed top-0 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-auto transition-all duration-700 cubic-bezier(0.16, 1, 0.3, 1) z-40 max-w-[94vw] w-[540px] sm:w-[600px] lg:w-[640px]",
+              isBannerMinimized
+                ? "-translate-y-[calc(100%+30px)] opacity-0 pointer-events-none"
+                : "translate-y-0 opacity-100 pointer-events-auto",
             )}
           >
             {/* Hanging suspension cords */}
@@ -1197,7 +1246,7 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
             </div>
 
             {/* Banner card */}
-            <div className="w-full bg-gradient-to-b from-[#2a0810]/95 via-[#4a0d1a]/98 to-[#2a0810]/95 border-2 border-t-0 border-amber-500/70 rounded-b-2xl sm:rounded-b-3xl shadow-[0_16px_45px_rgba(0,0,0,0.85),0_0_30px_rgba(245,158,11,0.35)] p-3 sm:p-5 backdrop-blur-xl relative overflow-hidden flex flex-col items-center">
+            <div className="w-full bg-gradient-to-b from-[#2a0810]/95 via-[#4a0d1a]/98 to-[#2a0810]/95 border-2 border-t-0 border-amber-500/70 rounded-b-2xl sm:rounded-b-3xl shadow-[0_16px_45px_rgba(0,0,0,0.85),0_0_30px_rgba(245,158,11,0.35)] p-3 sm:p-4 md:p-5 backdrop-blur-xl relative overflow-hidden flex flex-col items-center">
               {/* Filigree inner border */}
               <div className="absolute inset-1 sm:inset-1.5 border border-amber-400/35 border-t-0 rounded-b-xl sm:rounded-b-2xl pointer-events-none" />
 
@@ -1234,7 +1283,7 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
               </div>
 
               {/* Divya Shubh Deepavali Header */}
-              <div className="text-center mb-2.5 sm:mb-3.5 relative z-10 px-6 sm:px-12">
+              <div className="text-center mb-2 sm:mb-3 relative z-10 px-6 sm:px-12">
                 <div className="text-[10px] sm:text-[11px] uppercase tracking-[2px] font-bold text-amber-300/90 mb-0.5 flex items-center justify-center gap-2">
                   <span>❖</span>
                   <span>दीपोत्सव महापर्व · पावन प्रकाशोत्सव</span>
@@ -1248,41 +1297,33 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
                 </div>
               </div>
 
-              {/* Ram Parivar Blessing Artwork Frame */}
-              <div className="w-full rounded-xl overflow-hidden border-2 border-amber-500/70 shadow-[0_8px_24px_rgba(0,0,0,0.6),0_0_18px_rgba(245,158,11,0.35)] relative bg-[#18090C] group">
+              {/* Full-Body (Head to Toe) Ram Darbar Artwork Frame — Complete and Uncropped */}
+              <div className="w-full flex items-center justify-center rounded-xl overflow-hidden border-2 border-amber-500/70 shadow-[0_8px_24px_rgba(0,0,0,0.7),0_0_20px_rgba(245,158,11,0.35)] relative bg-[#120407] p-1 sm:p-1.5 group">
                 <img
                   src="/images/diwali/ram-parivar-blessing.jpg"
-                  alt="Shri Ram Parivar Blessing"
-                  className="w-full h-36 sm:h-48 md:h-56 object-cover object-[center_30%] transition-transform duration-500 group-hover:scale-[1.02]"
+                  alt="Shri Ram Darbar Complete Blessing with Hanuman ji"
+                  className="max-h-[320px] sm:max-h-[380px] md:max-h-[430px] w-auto max-w-full object-contain rounded-lg drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)] transition-transform duration-500 group-hover:scale-[1.01]"
                   loading="eager"
                 />
-                <div className="absolute bottom-0 inset-x-0 p-2 sm:p-2.5 bg-gradient-to-t from-black/95 via-black/70 to-transparent flex items-end justify-between">
-                  <div>
-                    <div className="text-xs sm:text-sm font-bold text-amber-200 tracking-wide">
-                      श्री राम दरबार दिव्य आशीर्वाद
-                    </div>
-                    <div className="text-[10px] sm:text-xs text-amber-100/80">
-                      सर्वमंगल, सुख-शांति, समृद्धि एवं आरोग्यता का पावन वरदान
-                    </div>
-                  </div>
-                  <span className="text-[9px] sm:text-[10px] uppercase font-extrabold bg-gradient-to-r from-amber-500 to-rose-600 text-white px-2 py-0.5 rounded-full shadow-sm">
-                    अभय मुद्रा
-                  </span>
+              </div>
+
+              {/* Graceful Footer Note (Unobstructed, outside the image frame) */}
+              <div className="mt-2 text-center">
+                <div className="text-[11px] sm:text-xs font-semibold text-amber-200 tracking-wide">
+                  श्री राम दरबार दिव्य आशीर्वाद · सुख, शांति, समृद्धि एवं आरोग्यता का पावन वरदान
                 </div>
               </div>
             </div>
 
-            {/* Pull Tab Toggle */}
+            {/* Pull Tab / Collapse to Notch Button */}
             <button
               type="button"
               onClick={toggleBanner}
               className="bg-gradient-to-b from-amber-600 to-amber-800 hover:from-amber-500 hover:to-amber-700 text-amber-100 hover:text-white border border-t-0 border-amber-400/60 rounded-b-xl px-4 py-1 text-[11px] font-bold shadow-md cursor-pointer transition-all flex items-center gap-1.5 focus:outline-none"
-              title={isBannerMinimized ? "Expand Diwali Banner" : "Minimize Diwali Banner"}
+              title="Collapse to iPhone notch"
             >
-              <span>{isBannerMinimized ? "▼" : "▲"}</span>
-              <span>
-                {isBannerMinimized ? "बैनर दिखाएं / Open Banner" : "बैनर छुपाएं / Minimize"}
-              </span>
+              <span>▲</span>
+              <span>बैनर समेटें / Collapse to Notch</span>
             </button>
           </div>
 
