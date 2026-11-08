@@ -738,47 +738,6 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
     }
   });
 
-  // Track the website header's live bottom position so the banner/notch hangs seamlessly from the bottom of the header
-  const [headerBottom, setHeaderBottom] = useState<number>(() => {
-    if (typeof window === "undefined") return 64;
-    const header = document.querySelector("header");
-    if (header) {
-      const rect = header.getBoundingClientRect();
-      if (rect.height > 0) return Math.round(rect.bottom);
-    }
-    return window.innerWidth < 640 ? 56 : 64;
-  });
-
-  useEffect(() => {
-    const measureHeader = () => {
-      const header = document.querySelector("header");
-      if (header) {
-        const rect = header.getBoundingClientRect();
-        if (rect.height > 0 && rect.top <= 10) {
-          setHeaderBottom(Math.round(rect.bottom));
-          return;
-        }
-      }
-      setHeaderBottom(window.innerWidth < 640 ? 56 : 64);
-    };
-
-    measureHeader();
-    window.addEventListener("resize", measureHeader, { passive: true });
-    window.addEventListener("scroll", measureHeader, { passive: true });
-
-    // Catch asynchronous layout shifts or client route navigation
-    const timer = setTimeout(measureHeader, 500);
-    const observer = new MutationObserver(measureHeader);
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    return () => {
-      window.removeEventListener("resize", measureHeader);
-      window.removeEventListener("scroll", measureHeader);
-      clearTimeout(timer);
-      observer.disconnect();
-    };
-  }, []);
-
   // Auto-collapse the full banner to the iPhone 10 style header notch after 15 seconds
   useEffect(() => {
     if (isBannerMinimized) return;
@@ -1226,10 +1185,10 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
       {/* 2. Visual Animated Festive Layer — Strictly Uncluttered & Mobile Safe */}
       {isEnabled && (
         <div
-          className="fixed inset-0 pointer-events-none z-50 overflow-hidden w-full h-full max-w-[100vw]"
+          className="fixed inset-0 pointer-events-none z-[100] overflow-hidden w-full h-full max-w-[100vw]"
           aria-hidden="true"
         >
-          {/* ================= 1. IPHONE 10 STYLE HEADER NOTCH BANNER (~10 mm / ~38px) HANGING FROM BOTTOM OF HEADER ================= */}
+          {/* ================= 1. IPHONE 10 STYLE HEADER NOTCH BANNER (~10 mm / ~38px) ATTACHED TO BROWSER TOP ================= */}
           <div
             onClick={toggleBanner}
             role="button"
@@ -1240,9 +1199,8 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
                 toggleBanner();
               }
             }}
-            style={{ top: `${headerBottom}px` }}
             className={cn(
-              "fixed left-1/2 -translate-x-1/2 z-50 h-[36px] sm:h-[38px] w-[310px] sm:w-[380px] md:w-[410px] bg-gradient-to-b from-[#1D050C] via-[#2C0712] to-[#130307] border-b-2 border-x border-amber-500/80 rounded-b-2xl sm:rounded-b-3xl shadow-[0_4px_22px_rgba(0,0,0,0.85),0_0_16px_rgba(245,158,11,0.4)] backdrop-blur-md flex items-center justify-between px-3.5 sm:px-4 cursor-pointer hover:border-amber-400 transition-all duration-500 ease-out group select-none",
+              "fixed top-0 left-1/2 -translate-x-1/2 z-[100] h-[36px] sm:h-[38px] w-[310px] sm:w-[380px] md:w-[410px] bg-gradient-to-b from-[#1D050C] via-[#2C0712] to-[#130307] border-b-2 border-x border-amber-500/80 rounded-b-2xl sm:rounded-b-3xl shadow-[0_4px_22px_rgba(0,0,0,0.85),0_0_16px_rgba(245,158,11,0.4)] backdrop-blur-md flex items-center justify-between px-3.5 sm:px-4 cursor-pointer hover:border-amber-400 transition-all duration-500 ease-out group select-none",
               isBannerMinimized
                 ? "translate-y-0 opacity-100 pointer-events-auto"
                 : "-translate-y-full opacity-0 pointer-events-none",
@@ -1268,17 +1226,16 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
             </div>
           </div>
 
-          {/* ================= 2. FULL HANGING SHUBH DIPAWAALI & HEAD-TO-TOE RAM DARBAR BANNER HANGING FROM BOTTOM OF HEADER ================= */}
+          {/* ================= 2. FULL HANGING SHUBH DIPAWAALI & HEAD-TO-TOE RAM DARBAR BANNER ATTACHED TO BROWSER TOP ================= */}
           <div
-            style={{ top: `${headerBottom}px` }}
             className={cn(
-              "fixed left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-auto transition-all duration-700 cubic-bezier(0.16, 1, 0.3, 1) z-50 max-w-[94vw] w-[540px] sm:w-[600px] lg:w-[640px]",
+              "fixed top-0 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-auto transition-all duration-700 cubic-bezier(0.16, 1, 0.3, 1) z-[100] max-w-[94vw] w-[540px] sm:w-[600px] lg:w-[640px]",
               isBannerMinimized
                 ? "-translate-y-[calc(100%+80px)] opacity-0 pointer-events-none"
                 : "translate-y-0 opacity-100 pointer-events-auto",
             )}
           >
-            {/* Hanging suspension cords connecting directly to the bottom of the header */}
+            {/* Hanging suspension cords */}
             <div className="w-full flex justify-between px-10 sm:px-16 h-4 sm:h-5">
               <div className="w-1 h-full bg-gradient-to-b from-amber-400 via-amber-600 to-amber-800 shadow-[0_0_6px_rgba(245,158,11,0.6)] relative">
                 <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-gradient-to-br from-amber-200 via-amber-500 to-amber-800 shadow-md" />
@@ -1371,10 +1328,7 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
           </div>
 
           {/* ================= LEFT SIDE PILLAR — STRICTLY ONE BELOW THE OTHER ================= */}
-          <div
-            style={{ top: `${headerBottom}px` }}
-            className="absolute bottom-0 left-2 sm:left-4 md:left-6 w-12 sm:w-14 flex flex-col justify-between items-center py-4 sm:py-6 pointer-events-auto"
-          >
+          <div className="absolute top-0 bottom-0 left-2 sm:left-4 md:left-6 w-12 sm:w-14 flex flex-col justify-between items-center py-6 sm:py-8 pointer-events-auto">
             {/* 1. Diya on top */}
             <div
               className="transition-transform hover:scale-110 drop-shadow-[0_4px_16px_rgba(245,158,11,0.8)]"
@@ -1419,10 +1373,7 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
           </div>
 
           {/* ================= RIGHT SIDE PILLAR — STRICTLY ONE BELOW THE OTHER ================= */}
-          <div
-            style={{ top: `${headerBottom}px` }}
-            className="absolute bottom-0 right-2 sm:right-4 md:right-6 w-12 sm:w-14 flex flex-col justify-between items-center py-4 sm:py-6 pointer-events-auto"
-          >
+          <div className="absolute top-0 bottom-0 right-2 sm:right-4 md:right-6 w-12 sm:w-14 flex flex-col justify-between items-center py-6 sm:py-8 pointer-events-auto">
             {/* 1. Diya on top */}
             <div
               className="transition-transform hover:scale-110 drop-shadow-[0_4px_16px_rgba(245,158,11,0.8)]"
