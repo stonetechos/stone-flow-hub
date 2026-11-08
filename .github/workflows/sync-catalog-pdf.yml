@@ -1,0 +1,44 @@
+name: Sync Catalog PDF
+
+on:
+  schedule:
+    # Run every 6 hours automatically to sync any CMS changes into the PDF
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    # Allows manual one-click trigger from GitHub Actions tab
+
+concurrency:
+  group: sync-catalog-pdf
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Sync Live CMS Order to Catalog PDF
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Pillow
+        run: pip install pillow
+
+      - name: Run Catalog Generator
+        run: python3 scripts/generate-wall-cladding-pdf.py
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -n "$(git status --porcelain src/data/wall-cladding-catalog.json public/catalogues/)" ]; then
+            git add src/data/wall-cladding-catalog.json public/catalogues/
+            git commit -m "fix(catalog): auto-sync latest CMS product placements to live PDF"
+            git push
+          else
+            echo "No changes detected. Catalog PDF is already up to date with live CMS."
+          fi
