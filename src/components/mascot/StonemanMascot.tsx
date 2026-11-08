@@ -244,9 +244,6 @@ export function StonemanMascot({ onClick, className }: StonemanMascotProps) {
           style={{ animationDuration: "6s" }}
         />
         <span>Ask Stoneman</span>
-        <kbd className="rounded bg-teal-950/80 px-1.5 py-0.5 font-mono text-[10px] text-teal-300/80">
-          ⌘J
-        </kbd>
       </div>
 
       {/* Animated Draggable Mascot Button — strictly captures pointer events only on the mascot circle */}
@@ -265,7 +262,7 @@ export function StonemanMascot({ onClick, className }: StonemanMascotProps) {
             onClick?.();
           }
         }}
-        aria-label="Open Stoneman AI (⌘J, draggable)"
+        aria-label="Open Stoneman AI (draggable)"
         className={cn(
           "group relative flex h-14 w-14 items-center justify-center rounded-full select-none pointer-events-auto",
           isDragging

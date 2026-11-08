@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, memo } from "react";
 import { cn } from "@/lib/utils";
+import { DivineRamParivarSequence } from "./DivineRamParivarSequence";
 
 /**
  * 1. Single SVG Diya with realistic multi-layer flickering flame & ambient golden glow.
@@ -384,29 +385,29 @@ function PhuljhadiSparkler({ className }: { className?: string }) {
 }
 
 /**
- * 5. Auspicious Vedic Swastik (स्वस्तिक) with 4 sacred bindu dots and golden divine glow.
+ * 5. Auspicious Vedic Swastik (स्वस्तिक) in vibrant sacred saffron-orange with 4 sacred bindu dots.
  */
 function SwastikSvg({ className }: { className?: string }) {
   return (
     <div className={cn("relative inline-block select-none pointer-events-none", className)}>
-      <div className="absolute inset-0 rounded-full bg-amber-500/25 blur-md pointer-events-none animate-pulse" />
+      <div className="absolute inset-0 rounded-full bg-orange-500/35 blur-md pointer-events-none animate-pulse" />
       <svg
         viewBox="0 0 64 64"
-        className="w-full h-full drop-shadow-[0_0_14px_rgba(245,158,11,0.85)] overflow-visible"
+        className="w-full h-full drop-shadow-[0_0_14px_rgba(234,88,12,0.95)] overflow-visible"
         aria-hidden="true"
       >
         <defs>
-          <linearGradient id="goldSwastikGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#FFFBEB" />
-            <stop offset="30%" stopColor="#FCD34D" />
-            <stop offset="70%" stopColor="#F59E0B" />
-            <stop offset="100%" stopColor="#B45309" />
+          <linearGradient id="orangeSwastikGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#FFAA00" />
+            <stop offset="25%" stopColor="#FF6D00" />
+            <stop offset="70%" stopColor="#EA580C" />
+            <stop offset="100%" stopColor="#C2410C" />
           </linearGradient>
         </defs>
         <g
           fill="none"
-          stroke="url(#goldSwastikGrad)"
-          strokeWidth="4.5"
+          stroke="url(#orangeSwastikGrad)"
+          strokeWidth="5"
           strokeLinecap="round"
           strokeLinejoin="round"
         >
@@ -417,10 +418,10 @@ function SwastikSvg({ className }: { className?: string }) {
           <path d="M32 54 L14 54" />
           <path d="M10 32 L10 14" />
         </g>
-        <circle cx="21" cy="21" r="2.6" fill="#FBBF24" />
-        <circle cx="43" cy="21" r="2.6" fill="#FBBF24" />
-        <circle cx="43" cy="43" r="2.6" fill="#FBBF24" />
-        <circle cx="21" cy="43" r="2.6" fill="#FBBF24" />
+        <circle cx="21" cy="21" r="2.8" fill="#FF6D00" />
+        <circle cx="43" cy="21" r="2.8" fill="#FF6D00" />
+        <circle cx="43" cy="43" r="2.8" fill="#FF6D00" />
+        <circle cx="21" cy="43" r="2.8" fill="#FF6D00" />
       </svg>
     </div>
   );
@@ -541,13 +542,13 @@ function DiwaliRocketSvg({ className, flip = false }: { className?: string; flip
 }
 
 /**
- * 7. Sacred Polished Copper Kalash with Mango Leaves & Animated Dripping Amrit Water.
+ * 7. Sacred Polished Copper Kalash dripping holy Amrit water onto a sacred Shivling kept beneath it.
  */
-function CopperKalashWaterSvg({ className }: { className?: string }) {
+function CopperKalashShivlingSvg({ className }: { className?: string }) {
   return (
     <div className={cn("relative inline-block select-none pointer-events-none", className)}>
       <svg
-        viewBox="0 0 60 84"
+        viewBox="0 0 64 105"
         className="w-full h-full drop-shadow-[0_4px_16px_rgba(217,119,6,0.75)] overflow-visible"
         aria-hidden="true"
       >
@@ -569,117 +570,212 @@ function CopperKalashWaterSvg({ className }: { className?: string }) {
             <stop offset="60%" stopColor="#38BDF8" />
             <stop offset="100%" stopColor="#0284C7" />
           </radialGradient>
+          <linearGradient id="shivlingBlackStone" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#1C1917" />
+            <stop offset="40%" stopColor="#292524" />
+            <stop offset="60%" stopColor="#44403C" />
+            <stop offset="85%" stopColor="#292524" />
+            <stop offset="100%" stopColor="#0C0A09" />
+          </linearGradient>
+          <linearGradient id="jaladhariStone" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#1C1917" />
+            <stop offset="50%" stopColor="#292524" />
+            <stop offset="100%" stopColor="#0C0A09" />
+          </linearGradient>
         </defs>
 
-        {/* Fresh Green Mango Leaves (आम्रपल्लव) on Kalash Rim */}
+        {/* ================= TOP: COPPER KALASH (तांबे का कलश) ================= */}
+        {/* Fresh Green Mango Leaves on Kalash Rim */}
         <g>
           <path
-            d="M30 16 C25 8 20 6 16 10 C16 15 22 18 28 20 Z"
+            d="M32 14 C27 7 22 5 18 9 C18 14 24 16 30 18 Z"
             fill="url(#mangoLeafGrad)"
             stroke="#166534"
             strokeWidth="0.6"
           />
           <path
-            d="M30 16 C35 8 40 6 44 10 C44 15 38 18 32 20 Z"
+            d="M32 14 C37 7 42 5 46 9 C46 14 40 16 34 18 Z"
             fill="url(#mangoLeafGrad)"
             stroke="#166534"
             strokeWidth="0.6"
           />
-          <path d="M30 15 C28 5 32 5 30 2 C28 5 32 5 30 15 Z" fill="url(#mangoLeafGrad)" />
+          <path d="M32 13 C30 4 34 4 32 1 C30 4 34 4 32 13 Z" fill="url(#mangoLeafGrad)" />
         </g>
 
         {/* Coconut / Shriphal on top */}
-        <ellipse cx="30" cy="14" rx="7" ry="6" fill="#78350F" stroke="#92400E" strokeWidth="0.8" />
-        <path d="M26 12 C28 14 32 14 34 12" stroke="#D97706" strokeWidth="0.6" />
+        <ellipse
+          cx="32"
+          cy="12"
+          rx="6.5"
+          ry="5.5"
+          fill="#78350F"
+          stroke="#92400E"
+          strokeWidth="0.8"
+        />
+        <path d="M28 10 C30 12 34 12 36 10" stroke="#D97706" strokeWidth="0.6" />
 
         {/* Flared Copper Neck & Holy Water inside */}
-        <ellipse cx="30" cy="20" rx="15" ry="4" fill="#EA580C" stroke="#FDBA74" strokeWidth="0.8" />
-        <ellipse cx="30" cy="19" rx="12" ry="2.5" fill="#38BDF8" opacity="0.85" />
+        <ellipse
+          cx="32"
+          cy="18"
+          rx="14"
+          ry="3.5"
+          fill="#EA580C"
+          stroke="#FDBA74"
+          strokeWidth="0.8"
+        />
+        <ellipse cx="32" cy="17" rx="11" ry="2" fill="#38BDF8" opacity="0.85" />
 
         {/* Sacred Kalawa / Mouli Red Thread */}
-        <rect x="18" y="22" width="24" height="3" rx="1.5" fill="#DC2626" />
+        <rect x="20" y="20" width="24" height="2.8" rx="1.4" fill="#DC2626" />
         <line
-          x1="20"
-          y1="23.5"
-          x2="40"
-          y2="23.5"
+          x1="22"
+          y1="21.4"
+          x2="42"
+          y2="21.4"
           stroke="#FBBF24"
-          strokeWidth="1"
+          strokeWidth="0.8"
           strokeDasharray="2,2"
         />
 
         {/* Globular Copper Pot (तांबे का लोटा) */}
         <path
-          d="M18 24 C14 30 12 38 16 46 C20 53 40 53 44 46 C48 38 46 30 42 24 Z"
+          d="M20 22 C16 27 14 34 18 41 C22 47 42 47 46 41 C50 34 48 27 44 22 Z"
           fill="url(#copperKalashGrad)"
           stroke="#9A3412"
           strokeWidth="1"
         />
 
-        {/* Polished Highlight */}
+        {/* Polished Highlight on Copper */}
         <path
-          d="M26 26 C23 32 23 40 25 46"
+          d="M28 24 C25 29 25 36 27 41"
           stroke="#FED7AA"
-          strokeWidth="1.8"
+          strokeWidth="1.6"
           strokeLinecap="round"
           opacity="0.75"
         />
 
-        {/* Embossed sacred swastik motif on copper */}
+        {/* Embossed sacred Swastik motif on copper */}
         <path
-          d="M30 33 L30 41 M26 37 L34 37 M30 33 L33 33 M34 37 L34 40 M30 41 L27 41 M26 37 L26 34"
+          d="M32 30 L32 37 M28 33.5 L36 33.5 M32 30 L35 30 M36 33.5 L36 36 M32 37 L29 37 M28 33.5 L28 31"
           stroke="#FEF08A"
-          strokeWidth="1"
+          strokeWidth="0.9"
           strokeLinecap="round"
           opacity="0.9"
         />
 
-        {/* Base */}
-        <ellipse
-          cx="30"
-          cy="50"
-          rx="10"
-          ry="2.5"
-          fill="#7C2D12"
-          stroke="#9A3412"
-          strokeWidth="0.8"
-        />
+        {/* Base Rim of Kalash */}
+        <ellipse cx="32" cy="44" rx="9" ry="2" fill="#7C2D12" stroke="#9A3412" strokeWidth="0.8" />
 
-        {/* Animated Dripping Water Drops (अमृत धारा) */}
+        {/* ================= MIDDLE: ANIMATED DRIPPING HOLY AMRIT WATER ================= */}
         <g className="water-drop-1">
           <path
-            d="M30 52 C28.5 55 27 58 27 60 C27 62 28.3 64 30 64 C31.7 64 33 62 33 60 C33 58 31.5 55 30 52 Z"
+            d="M32 46 C30.8 49 29.5 52 29.5 54 C29.5 55.8 30.6 57 32 57 C33.4 57 34.5 55.8 34.5 54 C34.5 52 33.2 49 32 46 Z"
             fill="url(#amritWaterGlow)"
           />
-          <ellipse cx="29" cy="59" rx="0.8" ry="1.5" fill="#FFFFFF" opacity="0.9" />
+          <ellipse cx="31" cy="53" rx="0.6" ry="1.2" fill="#FFFFFF" opacity="0.9" />
         </g>
         <g className="water-drop-2">
           <path
-            d="M30 52 C28.5 55 27 58 27 60 C27 62 28.3 64 30 64 C31.7 64 33 62 33 60 C33 58 31.5 55 30 52 Z"
+            d="M32 46 C30.8 49 29.5 52 29.5 54 C29.5 55.8 30.6 57 32 57 C33.4 57 34.5 55.8 34.5 54 C34.5 52 33.2 49 32 46 Z"
             fill="url(#amritWaterGlow)"
           />
-          <ellipse cx="29" cy="59" rx="0.8" ry="1.5" fill="#FFFFFF" opacity="0.9" />
+          <ellipse cx="31" cy="53" rx="0.6" ry="1.2" fill="#FFFFFF" opacity="0.9" />
         </g>
 
-        {/* Water Ripples below */}
+        {/* ================= BOTTOM: SACRED SHIVLING (शिवलिंग एवं जलधारी) ================= */}
+        {/* Expanding Sacred Water Splash Ripples on Shivling apex */}
         <ellipse
-          cx="30"
-          cy="74"
-          rx="12"
-          ry="4"
+          cx="32"
+          cy="69"
+          rx="8"
+          ry="2.5"
           fill="none"
           stroke="#38BDF8"
           className="water-ripple-1"
         />
         <ellipse
-          cx="30"
-          cy="74"
-          rx="12"
-          ry="4"
+          cx="32"
+          cy="69"
+          rx="8"
+          ry="2.5"
           fill="none"
           stroke="#7DD3FC"
           className="water-ripple-2"
         />
+
+        {/* Jaladhari / Yoni-Peeth Pedestal Base */}
+        <path
+          d="M16 88 C16 84 23 83 32 83 C41 83 48 84 48 88 L55 90 C56 91 55 92 53 92 L48 91 C48 95 41 97 32 97 C23 97 16 95 16 91 Z"
+          fill="url(#jaladhariStone)"
+          stroke="#44403C"
+          strokeWidth="0.9"
+        />
+
+        {/* Jaladhari Inner Channel Rim */}
+        <ellipse
+          cx="32"
+          cy="85.5"
+          rx="14"
+          ry="3.5"
+          fill="#0C0A09"
+          stroke="#57534E"
+          strokeWidth="0.8"
+        />
+        <ellipse cx="32" cy="85.5" rx="12" ry="2.8" fill="#1C1917" />
+
+        {/* Polished Black Stone Shivling Dome (शिवलिंग) */}
+        <path
+          d="M25 84 L25 74 C25 68 39 68 39 74 L39 84 Z"
+          fill="url(#shivlingBlackStone)"
+          stroke="#44403C"
+          strokeWidth="0.9"
+        />
+
+        {/* Glossy wet sheen highlight on Shivling */}
+        <path
+          d="M28 72 C28 70 30 69 32 69 C34 69 36 70 36 72"
+          stroke="#BAE6FD"
+          strokeWidth="1.2"
+          strokeLinecap="round"
+          opacity="0.9"
+        />
+        <path
+          d="M27 74 L27 82"
+          stroke="#78716C"
+          strokeWidth="1.2"
+          strokeLinecap="round"
+          opacity="0.6"
+        />
+
+        {/* Sacred Tripundra (3 White Chandan Stripes across Shivling) */}
+        <path
+          d="M27 75 L37 75"
+          stroke="#FFFFFF"
+          strokeWidth="0.9"
+          strokeLinecap="round"
+          opacity="0.95"
+        />
+        <path
+          d="M27 77 L37 77"
+          stroke="#FFFFFF"
+          strokeWidth="0.9"
+          strokeLinecap="round"
+          opacity="0.95"
+        />
+        <path
+          d="M27 79 L37 79"
+          stroke="#FFFFFF"
+          strokeWidth="0.9"
+          strokeLinecap="round"
+          opacity="0.95"
+        />
+
+        {/* Auspicious Red Kumkum Bindi / Tilak in center */}
+        <circle cx="32" cy="77" r="1.1" fill="#DC2626" />
+
+        {/* Holy Amrit water trickling on Shivling base */}
+        <ellipse cx="32" cy="86" rx="5" ry="1.2" fill="#38BDF8" opacity="0.6" />
       </svg>
     </div>
   );
@@ -1188,108 +1284,99 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
           className="fixed inset-0 pointer-events-none z-[100] overflow-hidden w-full h-full max-w-[100vw]"
           aria-hidden="true"
         >
-          {/* ================= 1. IPHONE 10 STYLE HEADER NOTCH BANNER (~10 mm / ~38px) ATTACHED TO BROWSER TOP ================= */}
+          {/* ================= 1. IPHONE 10 STYLE HEADER NOTCH BANNER SUSPENDED FROM BROWSER TOP VIA ROPES ================= */}
           <div
-            onClick={toggleBanner}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                toggleBanner();
-              }
-            }}
             className={cn(
-              "fixed top-0 left-1/2 -translate-x-1/2 z-[100] h-[36px] sm:h-[38px] w-[310px] sm:w-[380px] md:w-[410px] bg-gradient-to-b from-[#1D050C] via-[#2C0712] to-[#130307] border-b-2 border-x border-amber-500/80 rounded-b-2xl sm:rounded-b-3xl shadow-[0_4px_22px_rgba(0,0,0,0.85),0_0_16px_rgba(245,158,11,0.4)] backdrop-blur-md flex items-center justify-between px-3.5 sm:px-4 cursor-pointer hover:border-amber-400 transition-all duration-500 ease-out group select-none",
+              "fixed top-0 left-1/2 -translate-x-1/2 z-[100] flex flex-col items-center pointer-events-auto transition-all duration-700 ease-out select-none",
               isBannerMinimized
                 ? "translate-y-0 opacity-100 pointer-events-auto"
                 : "-translate-y-full opacity-0 pointer-events-none",
             )}
-            title="Click to view Shri Ram Darbar Diwali blessing"
           >
-            {/* Left Auspicious Diya Sparkle */}
-            <span className="text-amber-400 text-xs sm:text-sm animate-pulse">🪔</span>
-
-            {/* Apple iPhone 10 notch style center text */}
-            <div className="flex items-center gap-1.5 overflow-hidden">
-              <span className="font-serif font-bold text-[11px] sm:text-xs md:text-[12.5px] tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-100 drop-shadow-[0_1px_6px_rgba(245,158,11,0.6)] truncate">
-                Happy Diwali and a Happy New Year
-              </span>
+            {/* Golden Ropes descending from browser top down past headerbar */}
+            <div className="flex justify-between w-[220px] sm:w-[280px] h-[58px] sm:h-[66px] pointer-events-none">
+              {/* Left golden rope */}
+              <div className="w-[1.5px] h-full bg-gradient-to-b from-amber-300 via-amber-500 to-amber-700 shadow-[0_0_4px_rgba(245,158,11,0.8)] relative">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-1.5 rounded-b-full bg-amber-400 shadow-sm" />
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-amber-300 border border-amber-600 shadow-sm" />
+              </div>
+              {/* Right golden rope */}
+              <div className="w-[1.5px] h-full bg-gradient-to-b from-amber-300 via-amber-500 to-amber-700 shadow-[0_0_4px_rgba(245,158,11,0.8)] relative">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-1.5 rounded-b-full bg-amber-400 shadow-sm" />
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-amber-300 border border-amber-600 shadow-sm" />
+              </div>
             </div>
 
-            {/* Right Sparkle & Expand indicator */}
-            <div className="flex items-center gap-1 text-amber-300">
-              <span className="text-xs animate-pulse">✨</span>
-              <span className="text-[10px] opacity-75 group-hover:opacity-100 group-hover:translate-y-0.5 transition-all">
-                ▼
-              </span>
+            {/* Apple iPhone 10 Notch Banner body hanging beneath headerbar */}
+            <div
+              onClick={toggleBanner}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  toggleBanner();
+                }
+              }}
+              className="h-[34px] sm:h-[36px] w-[310px] sm:w-[380px] md:w-[410px] bg-gradient-to-b from-[#1D050C] via-[#2C0712] to-[#130307] border border-amber-500/80 rounded-2xl shadow-[0_4px_22px_rgba(0,0,0,0.85),0_0_16px_rgba(245,158,11,0.4)] backdrop-blur-md flex items-center justify-between px-3.5 sm:px-4 cursor-pointer hover:border-amber-400 hover:scale-[1.02] transition-all duration-300 ease-out group select-none -mt-1"
+              title="Click to view Shri Ram Darbar Diwali blessing"
+            >
+              {/* Left Auspicious Diya Sparkle */}
+              <span className="text-amber-400 text-xs sm:text-sm animate-pulse">🪔</span>
+
+              {/* Center text */}
+              <div className="flex items-center gap-1.5 overflow-hidden">
+                <span className="font-serif font-bold text-[11px] sm:text-xs md:text-[12.5px] tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-100 drop-shadow-[0_1px_6px_rgba(245,158,11,0.6)] truncate">
+                  Happy Diwali and a Happy New Year
+                </span>
+              </div>
+
+              {/* Right Sparkle & Expand indicator */}
+              <div className="flex items-center gap-1 text-amber-300">
+                <span className="text-xs animate-pulse">✨</span>
+                <span className="text-[10px] opacity-75 group-hover:opacity-100 group-hover:translate-y-0.5 transition-all">
+                  ▼
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* ================= 2. FULL HANGING SHUBH DIPAWAALI & HEAD-TO-TOE RAM DARBAR BANNER ATTACHED TO BROWSER TOP ================= */}
+          {/* ================= 2. FULL HANGING SHUBH DIPAWAALI & HEAD-TO-TOE RAM DARBAR BANNER SUSPENDED FROM BROWSER TOP VIA ROPES ================= */}
           <div
             className={cn(
               "fixed top-0 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-auto transition-all duration-700 cubic-bezier(0.16, 1, 0.3, 1) z-[100] max-w-[94vw] w-[540px] sm:w-[600px] lg:w-[640px]",
               isBannerMinimized
-                ? "-translate-y-[calc(100%+80px)] opacity-0 pointer-events-none"
+                ? "-translate-y-[calc(100%+120px)] opacity-0 pointer-events-none"
                 : "translate-y-0 opacity-100 pointer-events-auto",
             )}
           >
-            {/* Hanging suspension cords */}
-            <div className="w-full flex justify-between px-10 sm:px-16 h-4 sm:h-5">
-              <div className="w-1 h-full bg-gradient-to-b from-amber-400 via-amber-600 to-amber-800 shadow-[0_0_6px_rgba(245,158,11,0.6)] relative">
-                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-gradient-to-br from-amber-200 via-amber-500 to-amber-800 shadow-md" />
+            {/* Golden Ropes descending from browser top down past headerbar */}
+            <div className="flex justify-between w-[300px] sm:w-[400px] h-[58px] sm:h-[66px] pointer-events-none">
+              {/* Left golden rope */}
+              <div className="w-[1.5px] h-full bg-gradient-to-b from-amber-300 via-amber-500 to-amber-700 shadow-[0_0_4px_rgba(245,158,11,0.8)] relative">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-1.5 rounded-b-full bg-amber-400 shadow-sm" />
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-amber-300 border border-amber-600 shadow-sm" />
               </div>
-              <div className="w-1 h-full bg-gradient-to-b from-amber-400 via-amber-600 to-amber-800 shadow-[0_0_6px_rgba(245,158,11,0.6)] relative">
-                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-gradient-to-br from-amber-200 via-amber-500 to-amber-800 shadow-md" />
+              {/* Right golden rope */}
+              <div className="w-[1.5px] h-full bg-gradient-to-b from-amber-300 via-amber-500 to-amber-700 shadow-[0_0_4px_rgba(245,158,11,0.8)] relative">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-1.5 rounded-b-full bg-amber-400 shadow-sm" />
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-amber-300 border border-amber-600 shadow-sm" />
               </div>
             </div>
 
             {/* Banner card */}
-            <div className="w-full bg-gradient-to-b from-[#2a0810]/95 via-[#4a0d1a]/98 to-[#2a0810]/95 border-2 border-t-0 border-amber-500/70 rounded-b-2xl sm:rounded-b-3xl shadow-[0_16px_45px_rgba(0,0,0,0.85),0_0_30px_rgba(245,158,11,0.35)] p-3 sm:p-4 md:p-5 backdrop-blur-xl relative overflow-hidden flex flex-col items-center">
+            <div className="w-full bg-gradient-to-b from-[#2a0810]/95 via-[#4a0d1a]/98 to-[#2a0810]/95 border-2 border-amber-500/70 rounded-2xl sm:rounded-3xl shadow-[0_16px_45px_rgba(0,0,0,0.85),0_0_30px_rgba(245,158,11,0.35)] p-3 sm:p-4 backdrop-blur-xl relative overflow-hidden flex flex-col items-center -mt-1">
               {/* Filigree inner border */}
-              <div className="absolute inset-1 sm:inset-1.5 border border-amber-400/35 border-t-0 rounded-b-xl sm:rounded-b-2xl pointer-events-none" />
-
-              {/* Temple bells */}
-              <div className="absolute top-2 left-3 sm:left-5 w-5 h-7 sm:w-6 sm:h-8 animate-bell-sway origin-top">
-                <svg
-                  viewBox="0 0 32 40"
-                  className="w-full h-full drop-shadow-[0_2px_8px_rgba(245,158,11,0.6)]"
-                >
-                  <path
-                    d="M16 4 C14 12 8 20 6 28 C6 32 26 32 26 28 C24 20 18 12 16 4 Z"
-                    fill="#F59E0B"
-                    stroke="#B45309"
-                    strokeWidth="1"
-                  />
-                  <ellipse cx="16" cy="30" rx="10" ry="3" fill="#D97706" />
-                  <circle cx="16" cy="35" r="2.5" fill="#FEF08A" />
-                </svg>
-              </div>
-              <div className="absolute top-2 right-3 sm:right-5 w-5 h-7 sm:w-6 sm:h-8 animate-bell-sway-delayed origin-top">
-                <svg
-                  viewBox="0 0 32 40"
-                  className="w-full h-full drop-shadow-[0_2px_8px_rgba(245,158,11,0.6)]"
-                >
-                  <path
-                    d="M16 4 C14 12 8 20 6 28 C6 32 26 32 26 28 C24 20 18 12 16 4 Z"
-                    fill="#F59E0B"
-                    stroke="#B45309"
-                    strokeWidth="1"
-                  />
-                  <ellipse cx="16" cy="30" rx="10" ry="3" fill="#D97706" />
-                  <circle cx="16" cy="35" r="2.5" fill="#FEF08A" />
-                </svg>
-              </div>
+              <div className="absolute inset-1 sm:inset-1.5 border border-amber-400/35 rounded-xl sm:rounded-2xl pointer-events-none" />
 
               {/* Divya Shubh Deepavali Header */}
-              <div className="text-center mb-2 sm:mb-3 relative z-10 px-6 sm:px-12">
+              <div className="text-center mb-2 relative z-10 px-4 sm:px-8">
                 <div className="text-[10px] sm:text-[11px] uppercase tracking-[2px] font-bold text-amber-300/90 mb-0.5 flex items-center justify-center gap-2">
                   <span>❖</span>
                   <span>दीपोत्सव महापर्व · पावन प्रकाशोत्सव</span>
                   <span>❖</span>
                 </div>
-                <div className="font-serif text-3xl sm:text-4xl md:text-5xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-b from-white via-amber-200 to-amber-500 drop-shadow-[0_2px_18px_rgba(245,158,11,0.95)]">
+                <div className="font-serif text-2xl sm:text-3xl md:text-4xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-b from-white via-amber-200 to-amber-500 drop-shadow-[0_2px_18px_rgba(245,158,11,0.95)]">
                   शुभ दीपावली
                 </div>
                 <div className="text-xs sm:text-sm text-amber-100/90 font-medium tracking-wide drop-shadow-sm mt-0.5">
@@ -1297,29 +1384,18 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
                 </div>
               </div>
 
-              {/* Full-Body (Head to Toe) Ram Darbar Artwork Frame — Complete and Uncropped */}
-              <div className="w-full flex items-center justify-center rounded-xl overflow-hidden border-2 border-amber-500/70 shadow-[0_8px_24px_rgba(0,0,0,0.7),0_0_20px_rgba(245,158,11,0.35)] relative bg-[#120407] p-1 sm:p-1.5 group">
-                <img
-                  src="/images/diwali/ram-parivar-blessing.jpg"
-                  alt="Shri Ram Darbar Complete Blessing with Hanuman ji"
-                  className="max-h-[320px] sm:max-h-[380px] md:max-h-[430px] w-auto max-w-full object-contain rounded-lg drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)] transition-transform duration-500 group-hover:scale-[1.01]"
-                  loading="eager"
-                />
-              </div>
-
-              {/* Graceful Footer Note (Unobstructed, outside the image frame) */}
-              <div className="mt-2 text-center">
-                <div className="text-[11px] sm:text-xs font-semibold text-amber-200 tracking-wide">
-                  श्री राम दरबार दिव्य आशीर्वाद · सुख, शांति, समृद्धि एवं आरोग्यता का पावन वरदान
-                </div>
-              </div>
+              {/* 15-Second Choreographed Divine Sequence: Ram ji, Sita ma, Lakshman ji walk, blessing, Hanuman ji puja & Shubh Deepawali ring */}
+              <DivineRamParivarSequence
+                isActive={!isBannerMinimized}
+                onComplete={() => setIsBannerMinimized(true)}
+              />
             </div>
 
             {/* Pull Tab / Collapse to Notch Button */}
             <button
               type="button"
               onClick={toggleBanner}
-              className="bg-gradient-to-b from-amber-600 to-amber-800 hover:from-amber-500 hover:to-amber-700 text-amber-100 hover:text-white border border-t-0 border-amber-400/60 rounded-b-xl px-4 py-1 text-[11px] font-bold shadow-md cursor-pointer transition-all flex items-center gap-1.5 focus:outline-none"
+              className="bg-gradient-to-b from-amber-600 to-amber-800 hover:from-amber-500 hover:to-amber-700 text-amber-100 hover:text-white border border-t-0 border-amber-400/60 rounded-b-xl px-4 py-1 text-[11px] font-bold shadow-md cursor-pointer transition-all flex items-center gap-1.5 focus:outline-none -mt-0.5"
               title="Collapse to iPhone notch"
             >
               <span>▲</span>
@@ -1327,8 +1403,8 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
             </button>
           </div>
 
-          {/* ================= LEFT SIDE PILLAR — STRICTLY ONE BELOW THE OTHER ================= */}
-          <div className="absolute top-0 bottom-0 left-2 sm:left-4 md:left-6 w-12 sm:w-14 flex flex-col justify-between items-center py-6 sm:py-8 pointer-events-auto">
+          {/* ================= LEFT SIDE PILLAR — STRICTLY ONE BELOW THE OTHER with 25% TRANSLUCENCY ================= */}
+          <div className="absolute top-0 bottom-0 left-2 sm:left-4 md:left-6 w-12 sm:w-14 flex flex-col justify-between items-center py-6 sm:py-8 pointer-events-auto opacity-75 hover:opacity-100 transition-opacity duration-300">
             {/* 1. Diya on top */}
             <div
               className="transition-transform hover:scale-110 drop-shadow-[0_4px_16px_rgba(245,158,11,0.8)]"
@@ -1337,7 +1413,7 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
               <DiyaSvg className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12" glowIntensity={1.3} />
             </div>
 
-            {/* 2. Swastik */}
+            {/* 2. Sacred Swastik in vibrant saffron-orange */}
             <div className="transition-transform hover:scale-110" title="2. Sacred Vedic Swastik">
               <SwastikSvg className="w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11" />
             </div>
@@ -1363,17 +1439,17 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
               <PhuljhadiSparkler className="w-8 h-12 sm:w-9 sm:h-14 md:w-10 md:h-16" />
             </div>
 
-            {/* 6. Copper Kalash with dripping water at the bottom */}
+            {/* 6. Sacred Copper Kalash dripping continuous holy water onto Shivling beneath it */}
             <div
               className="transition-transform hover:scale-110"
-              title="6. Copper Kalash with Dripping Amrit Jal (Bottom)"
+              title="6. Sacred Copper Kalash Jalabhisheka onto Shivling (Bottom)"
             >
-              <CopperKalashWaterSvg className="w-10 h-14 sm:w-12 sm:h-16 md:w-13 md:h-18" />
+              <CopperKalashShivlingSvg className="w-11 h-16 sm:w-12 sm:h-20 md:w-13 md:h-22" />
             </div>
           </div>
 
-          {/* ================= RIGHT SIDE PILLAR — STRICTLY ONE BELOW THE OTHER ================= */}
-          <div className="absolute top-0 bottom-0 right-2 sm:right-4 md:right-6 w-12 sm:w-14 flex flex-col justify-between items-center py-6 sm:py-8 pointer-events-auto">
+          {/* ================= RIGHT SIDE PILLAR — STRICTLY ONE BELOW THE OTHER with 25% TRANSLUCENCY ================= */}
+          <div className="absolute top-0 bottom-0 right-2 sm:right-4 md:right-6 w-12 sm:w-14 flex flex-col justify-between items-center py-6 sm:py-8 pointer-events-auto opacity-75 hover:opacity-100 transition-opacity duration-300">
             {/* 1. Diya on top */}
             <div
               className="transition-transform hover:scale-110 drop-shadow-[0_4px_16px_rgba(245,158,11,0.8)]"
@@ -1382,7 +1458,7 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
               <DiyaSvg className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12" glowIntensity={1.3} />
             </div>
 
-            {/* 2. Swastik */}
+            {/* 2. Sacred Swastik in vibrant saffron-orange */}
             <div className="transition-transform hover:scale-110" title="2. Sacred Vedic Swastik">
               <SwastikSvg className="w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11" />
             </div>
@@ -1408,12 +1484,12 @@ export const DiwaliCelebrationEffects = memo(function DiwaliCelebrationEffects()
               <PhuljhadiSparkler className="w-8 h-12 sm:w-9 sm:h-14 md:w-10 md:h-16" />
             </div>
 
-            {/* 6. Copper Kalash with dripping water at the bottom */}
+            {/* 6. Sacred Copper Kalash dripping continuous holy water onto Shivling beneath it */}
             <div
               className="transition-transform hover:scale-110"
-              title="6. Copper Kalash with Dripping Amrit Jal (Bottom)"
+              title="6. Sacred Copper Kalash Jalabhisheka onto Shivling (Bottom)"
             >
-              <CopperKalashWaterSvg className="w-10 h-14 sm:w-12 sm:h-16 md:w-13 md:h-18" />
+              <CopperKalashShivlingSvg className="w-11 h-16 sm:w-12 sm:h-20 md:w-13 md:h-22" />
             </div>
           </div>
         </div>
