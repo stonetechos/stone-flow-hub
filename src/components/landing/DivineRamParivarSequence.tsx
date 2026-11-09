@@ -238,14 +238,9 @@ export const DivineRamParivarSequence = memo(function DivineRamParivarSequence({
   }, [isActive, onComplete]);
 
   return (
-    <div
-      className={cn(
-        "relative w-full aspect-[16/9] max-h-[380px] overflow-hidden rounded-xl sm:rounded-2xl bg-black select-none",
-        className,
-      )}
-    >
-      {/* 1. Divine Stage Area — Ram Darbar's Full Seamless Sanctum Background */}
-      <div className="absolute inset-0 w-full h-full overflow-hidden">
+    <div className={cn("relative w-full flex flex-col items-center select-none", className)}>
+      {/* 1. Divine Stage Area — Ram Darbar's Full Seamless Sanctum Background (Zero Overlay Over Gods) */}
+      <div className="relative w-full aspect-[16/9] max-h-[380px] overflow-hidden rounded-xl sm:rounded-2xl bg-black shadow-inner">
         {/* ================= STAGE 1: RAM JI, LAKSHMAN JI & SITA MATA STANDING SERENELY (0.0s - 3.8s) ================= */}
         <div
           className={cn(
@@ -307,99 +302,104 @@ export const DivineRamParivarSequence = memo(function DivineRamParivarSequence({
             loading="eager"
           />
         </div>
-      </div>
 
-      {/* 2. Celestial Flower Petal Shower during Hanuman ji appearance & Deepavali celebration */}
-      {phase >= 2 && (
-        <div className="absolute inset-0 pointer-events-none overflow-hidden z-25">
-          <span className="petal petal-1">🌸</span>
-          <span className="petal petal-2">🌼</span>
-          <span className="petal petal-3">🌺</span>
-          <span className="petal petal-4">🌸</span>
-          <span className="petal petal-5">🌼</span>
-          <span className="petal petal-6">🌺</span>
+        {/* 2. Celestial Flower Petal Shower during Hanuman ji appearance & Deepavali celebration */}
+        {phase >= 2 && (
+          <div className="absolute inset-0 pointer-events-none overflow-hidden z-25">
+            <span className="petal petal-1">🌸</span>
+            <span className="petal petal-2">🌼</span>
+            <span className="petal petal-3">🌺</span>
+            <span className="petal petal-4">🌸</span>
+            <span className="petal petal-5">🌼</span>
+            <span className="petal petal-6">🌺</span>
+          </div>
+        )}
+
+        {/* 3. Left & Right Swaying Temple Bells with Dynamic Acoustic Rings */}
+        <div
+          className={cn(
+            "absolute top-2 sm:top-3 left-2 sm:left-4 md:left-6 w-5 sm:w-7 h-7 sm:h-10 transition-transform origin-top z-30 cursor-pointer",
+            phase === 3 ? "animate-bell-ring-fast" : "animate-bell-sway",
+          )}
+          onClick={playTempleBellSound}
+          title="तांग! Mandir Bell (Click to ring)"
+        >
+          <svg
+            viewBox="0 0 32 40"
+            className="w-full h-full drop-shadow-[0_2px_10px_rgba(245,158,11,0.85)]"
+          >
+            <path
+              d="M16 4 C14 12 8 20 6 28 C6 32 26 32 26 28 C24 20 18 12 16 4 Z"
+              fill="#F59E0B"
+              stroke="#B45309"
+              strokeWidth="1"
+            />
+            <ellipse cx="16" cy="30" rx="10" ry="3" fill="#D97706" />
+            <circle cx="16" cy="35" r="2.5" fill="#FEF08A" />
+          </svg>
+          {phase === 3 && (
+            <div className="absolute -inset-2 sm:-inset-3 rounded-full border border-amber-300 animate-ping opacity-75" />
+          )}
         </div>
-      )}
-
-      {/* 3. Left & Right Swaying Temple Bells with Dynamic Acoustic Rings */}
-      <div
-        className={cn(
-          "absolute top-2 sm:top-3 left-2 sm:left-4 md:left-6 w-5 sm:w-7 h-7 sm:h-10 transition-transform origin-top z-30 cursor-pointer",
-          phase === 3 ? "animate-bell-ring-fast" : "animate-bell-sway",
-        )}
-        onClick={playTempleBellSound}
-        title="तांग! Mandir Bell (Click to ring)"
-      >
-        <svg
-          viewBox="0 0 32 40"
-          className="w-full h-full drop-shadow-[0_2px_10px_rgba(245,158,11,0.85)]"
+        <div
+          className={cn(
+            "absolute top-2 sm:top-3 right-2 sm:right-4 md:right-6 w-5 sm:w-7 h-7 sm:h-10 transition-transform origin-top z-30 cursor-pointer",
+            phase === 3 ? "animate-bell-ring-fast" : "animate-bell-sway-delayed",
+          )}
+          onClick={playTempleBellSound}
+          title="तांग! Mandir Bell (Click to ring)"
         >
-          <path
-            d="M16 4 C14 12 8 20 6 28 C6 32 26 32 26 28 C24 20 18 12 16 4 Z"
-            fill="#F59E0B"
-            stroke="#B45309"
-            strokeWidth="1"
-          />
-          <ellipse cx="16" cy="30" rx="10" ry="3" fill="#D97706" />
-          <circle cx="16" cy="35" r="2.5" fill="#FEF08A" />
-        </svg>
-        {phase === 3 && (
-          <div className="absolute -inset-2 sm:-inset-3 rounded-full border border-amber-300 animate-ping opacity-75" />
-        )}
-      </div>
-      <div
-        className={cn(
-          "absolute top-2 sm:top-3 right-2 sm:right-4 md:right-6 w-5 sm:w-7 h-7 sm:h-10 transition-transform origin-top z-30 cursor-pointer",
-          phase === 3 ? "animate-bell-ring-fast" : "animate-bell-sway-delayed",
-        )}
-        onClick={playTempleBellSound}
-        title="तांग! Mandir Bell (Click to ring)"
-      >
-        <svg
-          viewBox="0 0 32 40"
-          className="w-full h-full drop-shadow-[0_2px_10px_rgba(245,158,11,0.85)]"
-        >
-          <path
-            d="M16 4 C14 12 8 20 6 28 C6 32 26 32 26 28 C24 20 18 12 16 4 Z"
-            fill="#F59E0B"
-            stroke="#B45309"
-            strokeWidth="1"
-          />
-          <ellipse cx="16" cy="30" rx="10" ry="3" fill="#D97706" />
-          <circle cx="16" cy="35" r="2.5" fill="#FEF08A" />
-        </svg>
-        {phase === 3 && (
-          <div className="absolute -inset-2 sm:-inset-3 rounded-full border border-amber-300 animate-ping opacity-75" />
-        )}
+          <svg
+            viewBox="0 0 32 40"
+            className="w-full h-full drop-shadow-[0_2px_10px_rgba(245,158,11,0.85)]"
+          >
+            <path
+              d="M16 4 C14 12 8 20 6 28 C6 32 26 32 26 28 C24 20 18 12 16 4 Z"
+              fill="#F59E0B"
+              stroke="#B45309"
+              strokeWidth="1"
+            />
+            <ellipse cx="16" cy="30" rx="10" ry="3" fill="#D97706" />
+            <circle cx="16" cy="35" r="2.5" fill="#FEF08A" />
+          </svg>
+          {phase === 3 && (
+            <div className="absolute -inset-2 sm:-inset-3 rounded-full border border-amber-300 animate-ping opacity-75" />
+          )}
+        </div>
       </div>
 
-      {/* 4. STAGE 4: "शुभ दीपावली" & TAGLINE BANNER (10.5s - 14.8s) with Temple Bell "तांग" */}
-      {phase === 3 && (
-        <div className="absolute inset-x-0 top-1.5 sm:top-3 z-35 flex flex-col items-center pointer-events-none animate-deepavali-banner-unfurl px-2">
-          <div className="max-w-[95%] sm:max-w-none px-2.5 sm:px-6 py-1 sm:py-2.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-amber-700/95 via-rose-800/98 to-amber-700/95 border sm:border-2 border-amber-300 shadow-[0_0_24px_rgba(251,191,36,0.9)] backdrop-blur-md flex items-center justify-center gap-1.5 sm:gap-3">
-            <span
-              className="text-amber-200 text-sm sm:text-xl animate-spin shrink-0"
-              style={{ animationDuration: "3.5s" }}
-            >
-              🪔
+      {/* 2. STAGE 4: "शुभ दीपावली" & TAGLINE BANNER — Placed Below the Image Frame to Never Hinder Deities */}
+      <div
+        className={cn(
+          "w-full transition-all duration-700 ease-out overflow-hidden flex flex-col items-center",
+          phase === 3
+            ? "max-h-28 opacity-100 pt-2 sm:pt-2.5 pb-0.5"
+            : "max-h-0 opacity-0 p-0 pointer-events-none",
+        )}
+      >
+        <div className="w-full px-2.5 sm:px-6 py-1.5 sm:py-2.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-amber-700/95 via-rose-800/98 to-amber-700/95 border border-amber-300 shadow-[0_0_24px_rgba(251,191,36,0.6)] backdrop-blur-md flex items-center justify-center gap-1.5 sm:gap-3 animate-deepavali-banner-unfurl">
+          <span
+            className="text-amber-200 text-sm sm:text-xl animate-spin shrink-0"
+            style={{ animationDuration: "3.5s" }}
+          >
+            🪔
+          </span>
+          <div className="flex flex-col items-center text-center">
+            <span className="font-serif text-base xs:text-lg sm:text-2xl md:text-3xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-200 to-amber-400 drop-shadow-[0_2px_12px_rgba(245,158,11,1)] leading-tight">
+              शुभ दीपावली
             </span>
-            <div className="flex flex-col items-center text-center">
-              <span className="font-serif text-base xs:text-lg sm:text-3xl md:text-4xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-200 to-amber-400 drop-shadow-[0_2px_12px_rgba(245,158,11,1)] leading-tight">
-                शुभ दीपावली
-              </span>
-              <span className="text-[9px] xs:text-[10.5px] sm:text-sm font-bold text-amber-100 tracking-wide mt-0.5 drop-shadow-[0_1px_4px_rgba(0,0,0,0.95)] leading-tight">
-                आप सभी पर प्रभु श्री राम का आशीर्वाद सदैव बना रहे
-              </span>
-            </div>
-            <span
-              className="text-amber-200 text-sm sm:text-xl animate-spin shrink-0"
-              style={{ animationDuration: "3.5s" }}
-            >
-              🪔
+            <span className="text-[9.5px] xs:text-[11px] sm:text-xs md:text-sm font-bold text-amber-100 tracking-wide mt-0.5 drop-shadow-[0_1px_4px_rgba(0,0,0,0.95)] leading-tight">
+              आप सभी पर प्रभु श्री राम का आशीर्वाद सदैव बना रहे
             </span>
           </div>
+          <span
+            className="text-amber-200 text-sm sm:text-xl animate-spin shrink-0"
+            style={{ animationDuration: "3.5s" }}
+          >
+            🪔
+          </span>
         </div>
-      )}
+      </div>
 
       {/* Embedded 60 FPS Keyframe Animations */}
       <style>{`
