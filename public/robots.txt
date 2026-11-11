@@ -1,0 +1,11 @@
+# robots.txt for https://stonetech.in
+User-agent: *
+Allow: /
+Allow: /inquiry
+Allow: /careers
+Allow: /catalogues
+Disallow: /backend/
+Disallow: /api/
+Disallow: /track/
+
+Sitemap: https://stonetech.in/sitemap.xml

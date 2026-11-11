@@ -122,11 +122,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover, interactive-widget=resizes-content",
       },
-      { title: "Stone Tech - Architectural Stone Atelier" },
+      { title: "Stone Tech - Architectural Natural Stone Atelier & Wall Cladding" },
       {
         name: "description",
         content:
-          "Stone Tech - Architectural Stone Atelier, Ahmedabad. Premium Natural Stone, Cladding & Murals.",
+          "Stone Tech - Architectural Natural Stone Atelier, Ahmedabad. Premium Flexible Stone Veneer, Custom 3D Cladding, CNC Mandir Murals & Italian Marble.",
+      },
+      {
+        name: "keywords",
+        content:
+          "natural stone wall cladding, flexible stone veneer ahmedabad, gwalior mint sandstone, italian marble supplier india, cnc stone temple mandir, stone fabrication erp, dry mechanical cladding ahmedabad",
       },
       { name: "author", content: "Stone Tech" },
       // Phase G.10A — PWA foundation. theme_color mirrors the manifest and
@@ -166,10 +171,56 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         as: "style",
         href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Gujarati:wght@400;500;600;700&family=Caveat:wght@500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap",
       },
-      // Phase G.10A — PWA foundation
+      // Canonical URL & Phase G.10A — PWA foundation
+      { rel: "canonical", href: "https://stonetech.in" },
       { rel: "manifest", href: "/manifest.json" },
       { rel: "icon", href: "/icons/icon-192.png", type: "image/png" },
       { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "HomeAndConstructionBusiness",
+          name: "Stone Tech - Architectural Natural Stone Atelier",
+          image: "https://stonetech.in/branding/careers-og-banner.png?v=3",
+          "@id": "https://stonetech.in/#organization",
+          url: "https://stonetech.in",
+          telephone: "+91-9876543210",
+          priceRange: "₹₹₹",
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: "StoneTech Experience Centre, SG Highway / Bodakdev",
+            addressLocality: "Ahmedabad",
+            addressRegion: "Gujarat",
+            postalCode: "380054",
+            addressCountry: "IN",
+          },
+          geo: {
+            "@type": "GeoCoordinates",
+            latitude: 23.0378,
+            longitude: 72.5186,
+          },
+          openingHoursSpecification: {
+            "@type": "OpeningHoursSpecification",
+            dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+            opens: "09:30",
+            closes: "19:00",
+          },
+          sameAs: [
+            "https://www.linkedin.com/company/stonetech-in",
+            "https://www.instagram.com/stonetech.in",
+          ],
+          knowsAbout: [
+            "Flexible Stone Veneer",
+            "3D Wall Cladding",
+            "CNC Temple Murals & Mandirs",
+            "Italian Marble Dry-Lay",
+            "Gwalior Mint Sandstone",
+          ],
+        }),
+      },
     ],
   }),
   shellComponent: RootShell,

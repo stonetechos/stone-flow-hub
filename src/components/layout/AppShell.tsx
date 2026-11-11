@@ -159,11 +159,22 @@ function NavLinkRow({
   onOpenCustomizeNav?: () => void;
 }) {
   const isCustomized = defaultLabel ? label !== defaultLabel : false;
+  const navigate = useNavigate();
+
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // For standard primary left-click without keyboard modifiers (Ctrl, Cmd, Shift):
+    if (e.button === 0 && !e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey) {
+      onNavigate?.();
+      // Guarantees immediate navigation across WebKit/Safari/touch trackpads
+      // even if Radix ContextMenu pointerdown capture suppresses synthetic click.
+      void navigate({ to });
+    }
+  };
 
   const link = (
     <Link
       to={to}
-      onClick={onNavigate}
+      onClick={handleLinkClick}
       aria-current={active ? "page" : undefined}
       className={cn(
         "relative flex flex-1 items-center gap-2.5 rounded-lg outline-none",
@@ -456,7 +467,8 @@ function NavGroupRow({
     );
   }
 
-  const handleGroupClick = () => {
+  const handleGroupClick = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     if (group.items.length > 0) {
       onToggle();
     } else if (group.to) {
