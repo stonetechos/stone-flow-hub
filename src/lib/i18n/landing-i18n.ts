@@ -2075,24 +2075,42 @@ export function getLocalizedProducts(
 }
 
 export function getProductNameInLang(nameOrId: string, lang = "en"): string {
+  if (!nameOrId) return "";
   const code = lang?.substring(0, 2) || "en";
   if (code === "en") return nameOrId;
+
+  const raw = nameOrId.trim();
+  const rawLower = raw.toLowerCase();
+  const normalizedKey = rawLower.replace(/[\s-]+/g, "_");
+
   if (code === "hi") {
-    if (HINDI_PRODUCT_MAP[nameOrId]) return HINDI_PRODUCT_MAP[nameOrId].name;
+    if (HINDI_PRODUCT_MAP[raw]) return HINDI_PRODUCT_MAP[raw].name;
+    if (HINDI_PRODUCT_MAP[normalizedKey]) return HINDI_PRODUCT_MAP[normalizedKey].name;
     const matchHi = Object.entries(HINDI_PRODUCT_MAP).find(
-      ([id, v]) => id === nameOrId || v.name === nameOrId,
+      ([id, v]) =>
+        id.toLowerCase() === normalizedKey ||
+        id.toLowerCase() === rawLower ||
+        v.name.toLowerCase() === rawLower,
     );
     if (matchHi) return matchHi[1].name;
-    if (LUXURY_SHOWCASE_HI[nameOrId]) return LUXURY_SHOWCASE_HI[nameOrId].name;
+    if (LUXURY_SHOWCASE_HI[raw]) return LUXURY_SHOWCASE_HI[raw].name;
+    if (LUXURY_SHOWCASE_HI[normalizedKey]) return LUXURY_SHOWCASE_HI[normalizedKey].name;
   }
+
   if (code === "gu") {
-    if (GUJARATI_PRODUCT_MAP[nameOrId]) return GUJARATI_PRODUCT_MAP[nameOrId].name;
+    if (GUJARATI_PRODUCT_MAP[raw]) return GUJARATI_PRODUCT_MAP[raw].name;
+    if (GUJARATI_PRODUCT_MAP[normalizedKey]) return GUJARATI_PRODUCT_MAP[normalizedKey].name;
     const matchGu = Object.entries(GUJARATI_PRODUCT_MAP).find(
-      ([id, v]) => id === nameOrId || v.name === nameOrId,
+      ([id, v]) =>
+        id.toLowerCase() === normalizedKey ||
+        id.toLowerCase() === rawLower ||
+        v.name.toLowerCase() === rawLower,
     );
     if (matchGu) return matchGu[1].name;
-    if (LUXURY_SHOWCASE_GU[nameOrId]) return LUXURY_SHOWCASE_GU[nameOrId].name;
+    if (LUXURY_SHOWCASE_GU[raw]) return LUXURY_SHOWCASE_GU[raw].name;
+    if (LUXURY_SHOWCASE_GU[normalizedKey]) return LUXURY_SHOWCASE_GU[normalizedKey].name;
   }
+
   return nameOrId;
 }
 

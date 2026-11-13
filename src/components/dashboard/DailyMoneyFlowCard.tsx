@@ -89,6 +89,9 @@ const MONEY_FLOW_TEXTS = {
     customerPayments: "Customer Payments →",
     vendorPayments: "Vendor Payments →",
     fullMoneyFlowHub: "Full Money Flow Hub →",
+    stripIn: "In",
+    stripOut: "Out",
+    stripNet: "Net:",
   },
   hi: {
     heading: "दैनिक धन प्रवाह एवं लेन-देन रडार",
@@ -134,6 +137,9 @@ const MONEY_FLOW_TEXTS = {
     customerPayments: "ग्राहक भुगतान →",
     vendorPayments: "विक्रेता भुगतान →",
     fullMoneyFlowHub: "पूर्ण मनी फ्लो हब →",
+    stripIn: "आवक",
+    stripOut: "जावक",
+    stripNet: "नेट:",
   },
   gu: {
     heading: "દૈનિક નાણાકીય પ્રવાહ અને વ્યવહાર રડાર",
@@ -179,8 +185,78 @@ const MONEY_FLOW_TEXTS = {
     customerPayments: "ગ્રાહક ચુકવણી →",
     vendorPayments: "સપ્લાયર ચુકવણી →",
     fullMoneyFlowHub: "સંપૂર્ણ મની ફ્લો હબ →",
+    stripIn: "આવક",
+    stripOut: "જાવક",
+    stripNet: "નેટ:",
   },
 };
+
+function localizeDayLabel(label: string, lang: string): string {
+  if (lang === "hi") {
+    if (label === "Today") return "आज";
+    if (label === "Yesterday") return "कल";
+    return label
+      .replace(/\bJan\b/g, "जन")
+      .replace(/\bFeb\b/g, "फ़र")
+      .replace(/\bMar\b/g, "मार्च")
+      .replace(/\bApr\b/g, "अप्रैल")
+      .replace(/\bMay\b/g, "मई")
+      .replace(/\bJun\b/g, "जून")
+      .replace(/\bJul\b/g, "जुलाई")
+      .replace(/\bAug\b/g, "अग")
+      .replace(/\bSep\b/g, "सित")
+      .replace(/\bOct\b/g, "अक्तू")
+      .replace(/\bNov\b/g, "नव")
+      .replace(/\bDec\b/g, "दिस");
+  }
+  if (lang === "gu") {
+    if (label === "Today") return "આજે";
+    if (label === "Yesterday") return "ગઈકાલે";
+    return label
+      .replace(/\bJan\b/g, "જાન્યુ")
+      .replace(/\bFeb\b/g, "ફેબ્રુ")
+      .replace(/\bMar\b/g, "માર્ચ")
+      .replace(/\bApr\b/g, "એપ્રિલ")
+      .replace(/\bMay\b/g, "મે")
+      .replace(/\bJun\b/g, "જૂન")
+      .replace(/\bJul\b/g, "જુલાઈ")
+      .replace(/\bAug\b/g, "ઓગ")
+      .replace(/\bSep\b/g, "સપ્ટે")
+      .replace(/\bOct\b/g, "ઓક્ટો")
+      .replace(/\bNov\b/g, "નવે")
+      .replace(/\bDec\b/g, "ડિસે");
+  }
+  return label;
+}
+
+function localizeWeekday(weekday: string, lang: string): string {
+  const norm = weekday.trim().toUpperCase();
+  if (lang === "hi") {
+    const map: Record<string, string> = {
+      MON: "सोम",
+      TUE: "मंगल",
+      WED: "बुध",
+      THU: "गुरु",
+      FRI: "शुक्र",
+      SAT: "शनि",
+      SUN: "रवि",
+    };
+    return map[norm] || weekday;
+  }
+  if (lang === "gu") {
+    const map: Record<string, string> = {
+      MON: "સોમ",
+      TUE: "મંગળ",
+      WED: "બુધ",
+      THU: "ગુરુ",
+      FRI: "શુક્ર",
+      SAT: "શનિ",
+      SUN: "રવિ",
+    };
+    return map[norm] || weekday;
+  }
+  return weekday;
+}
 
 export function DailyMoneyFlowCard() {
   const { i18n } = useTranslation();
@@ -431,16 +507,16 @@ export function DailyMoneyFlowCard() {
                   <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-purple-600 animate-pulse" />
                 )}
                 <div className="flex items-center justify-between font-semibold text-foreground text-[11px]">
-                  <span>{day.dayLabel}</span>
+                  <span>{localizeDayLabel(day.dayLabel, lang)}</span>
                   <span className="text-[10px] text-muted-foreground uppercase font-mono">
-                    {day.weekday}
+                    {localizeWeekday(day.weekday, lang)}
                   </span>
                 </div>
 
                 <div className="mt-2 space-y-1">
                   <div className="flex items-center justify-between font-mono text-[11px]">
                     <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
-                      <ArrowDownLeft className="h-3 w-3" /> In
+                      <ArrowDownLeft className="h-3 w-3" /> {txt.stripIn}
                     </span>
                     <span className="font-semibold text-emerald-700 dark:text-emerald-300">
                       {day.inflow > 0 ? `₹${(day.inflow / 1000).toFixed(0)}k` : "—"}
@@ -449,7 +525,7 @@ export function DailyMoneyFlowCard() {
 
                   <div className="flex items-center justify-between font-mono text-[11px]">
                     <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
-                      <ArrowUpRight className="h-3 w-3" /> Out
+                      <ArrowUpRight className="h-3 w-3" /> {txt.stripOut}
                     </span>
                     <span className="font-semibold text-amber-700 dark:text-amber-300">
                       {day.outflow > 0 ? `₹${(day.outflow / 1000).toFixed(0)}k` : "—"}
@@ -466,7 +542,7 @@ export function DailyMoneyFlowCard() {
                         : "text-amber-700 dark:text-amber-400 border-amber-200/50",
                     )}
                   >
-                    <span>Net:</span>
+                    <span>{txt.stripNet}</span>
                     <span className="font-bold">
                       {day.net >= 0 ? "+" : ""}
                       {formatInr(day.net)}

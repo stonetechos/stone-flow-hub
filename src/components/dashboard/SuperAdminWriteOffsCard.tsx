@@ -135,6 +135,22 @@ export function SuperAdminWriteOffsCard() {
   const txt = WRITE_OFF_TEXTS[lang] || WRITE_OFF_TEXTS.en;
   const getReasonLabel = (reason: string | null | undefined, defaultLabel: string) =>
     (reason && txt.reasons[reason]) || defaultLabel;
+  const localizeRemarks = (remarks: string | null | undefined) => {
+    if (!remarks) return "—";
+    if (lang === "hi") {
+      if (remarks.startsWith("Adjusted with payment receipt ")) {
+        return (
+          remarks.replace("Adjusted with payment receipt ", "भुगतान रसीद ") + " के साथ समायोजित"
+        );
+      }
+    }
+    if (lang === "gu") {
+      if (remarks.startsWith("Adjusted with payment receipt ")) {
+        return remarks.replace("Adjusted with payment receipt ", "ચૂકવણી રસીદ ") + " સાથે સમાયોજિત";
+      }
+    }
+    return remarks;
+  };
   const roles = useRoles();
   const [writeOffModalOpen, setWriteOffModalOpen] = useState(false);
 
@@ -314,9 +330,9 @@ export function SuperAdminWriteOffsCard() {
                         </TableCell>
                         <TableCell
                           className="text-xs text-muted-foreground max-w-[240px] truncate"
-                          title={row.remarks || ""}
+                          title={localizeRemarks(row.remarks)}
                         >
-                          {row.remarks || "—"}
+                          {localizeRemarks(row.remarks)}
                         </TableCell>
                         <TableCell className="text-right font-mono font-bold text-red-600 dark:text-red-400">
                           {formatInr(row.amount)}

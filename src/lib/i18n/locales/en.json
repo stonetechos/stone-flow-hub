@@ -160,6 +160,9 @@
     "view": "View",
     "download": "Download",
     "open": "Open",
+    "overdue": "overdue",
+    "quote": "Quote",
+    "order": "Order",
     "new": "New",
     "live": "Live",
     "demo": "Demo",
@@ -2467,6 +2470,14 @@
     "inactiveProfile": "{{name}} — 0 orders · Inactive client profile ({{level}})",
     "ordersInactiveDays": "{{name}} — {{orders}} orders ({{amount}}), inactive {{days}}d ({{level}})",
     "balanceOverdue": "{{name}} — {{amount}} balance ({{overdue}}{{level}})",
+    "assignFulfilment": "Assign Fulfilment (Live Stock / Partner) for {{name}} ({{docType}} {{docNo}}) — {{deadline}}",
+    "redFlagAssignFulfilment": "🚩 Red Flag: Assign Fulfilment (Live Stock / Partner) for {{name}} ({{docType}} {{docNo}}) — {{deadline}}",
+    "deliveryDeadlineNotSet": "Delivery deadline not set",
+    "deliveryDeadlineToday": "Delivery deadline is TODAY",
+    "deliveryDeadlineOverdue": "Delivery deadline overdue by {{days}}d",
+    "deliveryDeadlineInDays": "Delivery deadline in {{days}} days",
+    "dueInDays": "Due in {{days}} days",
+    "quoteAwaitingResponse": "{{quoteNo}} is {{band}} — {{days}}d awaiting response",
     "actionReview": "Review",
     "actionFollowUp": "Follow up",
     "actionCollect": "Collect",
@@ -2480,6 +2491,13 @@
       "risk": "Risk",
       "critical": "Critical",
       "healthy": "Healthy"
+    },
+    "bands": {
+      "stale": "stale",
+      "warm": "warm",
+      "critical": "critical",
+      "at risk": "at risk",
+      "fresh": "fresh"
     }
   },
   "activity": {

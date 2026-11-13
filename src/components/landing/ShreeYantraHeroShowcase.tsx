@@ -115,17 +115,19 @@ export interface ShreeYantraHeroShowcaseProps {
   isClaimed: boolean;
   onToggleClaim: () => void;
   className?: string;
+  lang?: "en" | "hi" | "gu";
 }
 
 export function ShreeYantraHeroShowcase({
   isClaimed,
   onToggleClaim,
   className,
+  lang: propLang,
 }: ShreeYantraHeroShowcaseProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const { i18n } = useTranslation();
-  const lang = (i18n.language?.substring(0, 2) || "en") as "en" | "hi" | "gu";
+  const lang = propLang || ((i18n.language?.substring(0, 2) || "en") as "en" | "hi" | "gu");
   const t = SHREE_YANTRA_TEXTS[lang] || SHREE_YANTRA_TEXTS.en;
 
   return (

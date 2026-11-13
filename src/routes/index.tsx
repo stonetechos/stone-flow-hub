@@ -1197,6 +1197,7 @@ function HomePage() {
 
               {/* Scaled Sacred Shree Yantra & Prepayment Privilege Showcase (Single Exclusive Ad) */}
               <ShreeYantraHeroShowcase
+                lang={currentLang as "en" | "hi" | "gu"}
                 isClaimed={prepaymentDiscountSelected}
                 onToggleClaim={() => {
                   const next = !prepaymentDiscountSelected;
@@ -1511,8 +1512,16 @@ function HomePage() {
                               className="text-[10px] font-bold px-1.5 py-0 border-teal-500/40 text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/50"
                             >
                               {serviceScope === "supply_and_installation"
-                                ? "Turnkey Execution"
-                                : "Material Delivery"}
+                                ? currentLang === "hi"
+                                  ? "टर्नकी निष्पादन"
+                                  : currentLang === "gu"
+                                    ? "ટર્નકી અમલીકરણ"
+                                    : "Turnkey Execution"
+                                : currentLang === "hi"
+                                  ? "सामग्री वितरण"
+                                  : currentLang === "gu"
+                                    ? "સામગ્રી ડિલિવરી"
+                                    : "Material Delivery"}
                             </Badge>
                           </div>
 
@@ -1636,7 +1645,11 @@ function HomePage() {
                                   <span>{texts.form.uploadWallPhotos}</span>
                                 </div>
                                 <span className="text-[10px] text-muted-foreground">
-                                  Living room, exterior elevation or feature walls
+                                  {currentLang === "hi"
+                                    ? "लिविंग रूम, बाहरी एलिवेशन या फीचर दीवारें"
+                                    : currentLang === "gu"
+                                      ? "લિવિંગ રૂમ, બાહ્ય એલિવેશન અથવા ફીચર દિવાલો"
+                                      : "Living room, exterior elevation or feature walls"}
                                 </span>
                               </div>
 
@@ -1654,7 +1667,11 @@ function HomePage() {
                                   <span>{texts.form.uploadCad}</span>
                                 </div>
                                 <span className="text-[10px] text-muted-foreground">
-                                  Architectural elevation or CAD drawing
+                                  {currentLang === "hi"
+                                    ? "वास्तुशिल्प एलिवेशन या सीएडी ड्राइंग"
+                                    : currentLang === "gu"
+                                      ? "આર્કિટેક્ચરલ એલિવેશન અથવા સીએડી ડ્રોઇંગ"
+                                      : "Architectural elevation or CAD drawing"}
                                 </span>
                               </div>
                             </div>

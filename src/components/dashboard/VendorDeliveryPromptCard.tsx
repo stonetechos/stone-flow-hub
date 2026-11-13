@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import {
   Truck,
   MessageSquare,
@@ -20,7 +21,37 @@ import {
 import { VendorDeliveryPromptDialog } from "./VendorDeliveryPromptDialog";
 import { cn } from "@/lib/utils";
 
+const VENDOR_TEXTS = {
+  en: {
+    title: "Team Deliveries Round the Corner",
+    dueBadge: "Due within 5 Days",
+    subtitleSingle:
+      "order approaching deadline — tap below to verify fabrication status with assigned team partners using 1-day safety buffer.",
+    subtitlePlural:
+      "orders approaching deadline — tap below to verify fabrication status with assigned team partners using 1-day safety buffer.",
+  },
+  hi: {
+    title: "आगामी टीम डिलीवरी",
+    dueBadge: "5 दिनों के भीतर देय",
+    subtitleSingle:
+      "ऑर्डर की समय-सीमा नजदीक है — 1-दिन के सुरक्षा बफर के साथ असाइन टीम पार्टनर्स से निर्माण स्थिति की पुष्टि करने के लिए नीचे टैप करें।",
+    subtitlePlural:
+      "ऑर्डर्स की समय-सीमा नजदीक है — 1-दिन के सुरक्षा बफर के साथ असाइन टीम पार्टनर्स से निर्माण स्थिति की पुष्टि करने के लिए नीचे टैप करें।",
+  },
+  gu: {
+    title: "આગામી ટીમ ડિલિવરી",
+    dueBadge: "5 દિવસમાં બાકી",
+    subtitleSingle:
+      "ઓર્ડરની સમય-મર્યાદા નજીક છે — 1-દિવસના સલામતી બફર સાથે સોંપેલ ટીમ પાર્ટનર્સ પાસેથી ફેબ્રિકેશન સ્થિતિની ચકાસણી કરવા નીચે ટેપ કરો.",
+    subtitlePlural:
+      "ઓર્ડર્સની સમય-મર્યાદા નજીક છે — 1-દિવસના સલામતી બફર સાથે સોંપેલ ટીમ પાર્ટનર્સ પાસેથી ફેબ્રિકેશન સ્થિતિની ચકાસણી કરવા નીચે ટેપ કરો.",
+  },
+};
+
 export function VendorDeliveryPromptCard() {
+  const { i18n } = useTranslation();
+  const lang = (i18n.language?.substring(0, 2) || "en") as "en" | "hi" | "gu";
+  const t = VENDOR_TEXTS[lang] || VENDOR_TEXTS.en;
   const { data: prompts = [], isLoading } = useVendorDeliveryPrompts();
   const [selectedItem, setSelectedItem] = useState<VendorDeliveryPromptItem | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -48,23 +79,16 @@ export function VendorDeliveryPromptCard() {
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-semibold text-foreground text-sm sm:text-base">
-                  Team Deliveries Round the Corner
-                </h3>
+                <h3 className="font-semibold text-foreground text-sm sm:text-base">{t.title}</h3>
                 <Badge
                   variant="outline"
                   className="bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30 text-xs font-semibold px-2 py-0.5"
                 >
-                  Due within 5 Days
+                  {t.dueBadge}
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5 break-words">
-                {prompts.length}{" "}
-                {prompts.length === 1
-                  ? "order approaching deadline"
-                  : "orders approaching deadline"}{" "}
-                — tap below to verify fabrication status with assigned team partners using 1-day
-                safety buffer.
+                {prompts.length} {prompts.length === 1 ? t.subtitleSingle : t.subtitlePlural}
               </p>
             </div>
           </div>

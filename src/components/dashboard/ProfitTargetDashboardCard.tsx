@@ -80,6 +80,44 @@ const PROFIT_TEXTS = {
   },
 };
 
+export function localizeCoachingSuggestion(text: string, lang: string): string {
+  if (!text || lang === "en") return text;
+
+  // Pattern 1: Congratulations
+  const mCongrat =
+    /🎉\s*Congratulations!\s*Target of ₹([\d.]+) Lakhs achieved with ₹([\d,]+) surplus profit!\s*Keep up the momentum on high-margin natural stone orders\./i.exec(
+      text,
+    );
+  if (mCongrat) {
+    const [_, targetLakh, surplus] = mCongrat;
+    if (lang === "hi") {
+      return `🎉 बधाई! ₹${surplus} अधिशेष लाभ के साथ ₹${targetLakh} लाख का लक्ष्य पूरा हुआ! उच्च-मार्जिन वाले प्राकृतिक स्टोन ऑर्डर्स पर गति बनाए रखें।`;
+    }
+    if (lang === "gu") {
+      return `🎉 અભિનંદન! ₹${surplus} સરપ્લસ નફા સાથે ₹${targetLakh} લાખનો ટાર્ગેટ હાંસલ થયો! ઉચ્ચ-માર્જિન નેચરલ સ્ટોન ઓર્ડર્સ પર ગતિ જાળવી રાખો.`;
+    }
+  }
+
+  // Pattern 2: Based on your average profit
+  // "💡 Based on your average profit of ₹80,672 per deal: To bridge the remaining ₹4,83,190 gap to your ₹25L target, you need approximately 6 more closed client deals (~1 deals/week) amounting to 4,832 sq.ft (~805 sq.ft/week). Focus on following up your 1 pending quotes."
+  const mCoach =
+    /Based on your average profit of (₹[\d,]+) per deal:\s*To bridge the remaining (₹[\d,]+) gap to your (₹[\d.]+L) target,\s*you need approximately (\d+) more closed client deals\s*\(~(\d+) deals\/week\)\s*amounting to ([\d,]+)\s*sq\.ft\s*\(~([\d,]+)\s*sq\.ft\/week\)\.\s*Focus on following up your (\d+) pending quotes\./i.exec(
+      text,
+    );
+  if (mCoach) {
+    const [_, avgProfit, gap, target, dealsNeeded, weeklyDeals, totalSqft, weeklySqft, quotes] =
+      mCoach;
+    if (lang === "hi") {
+      return `प्रति सौदा आपके औसत लाभ ${avgProfit} के आधार पर: आपके ${target} लक्ष्य के शेष ${gap} अंतर को पाटने के लिए, आपको लगभग ${dealsNeeded} और सौदे क्लोज़ करने की आवश्यकता है (~${weeklyDeals} डील/सप्ताह) जो कुल ${totalSqft} वर्गफ़ुट (~${weeklySqft} वर्गफ़ुट/सप्ताह) होगी। अपने ${quotes} लंबित कोटेशन पर फ़ॉलो-अप पर ध्यान दें।`;
+    }
+    if (lang === "gu") {
+      return `ડીલ દીઠ તમારા સરેરાશ નફા ${avgProfit} ના આધારે: તમારા ${target} લક્ષ્યાંકના બાકી ${gap} તફાવતને પહોંચી વળવા માટે, તમારે આશરે ${dealsNeeded} વધુ ક્લાયન્ટ ડીલ્સ (~${weeklyDeals} ડીલ/અઠવાડિયે) ક્લોઝ કરવાની જરૂર છે જે કુલ ${totalSqft} ચોરસ ફૂટ (~${weeklySqft} ચોરસ ફૂટ/અઠવાડિયે) થાય છે. તમારા ${quotes} પેન્ડિંગ ક્વોટેશન પર ફોલો-અપ પર ધ્યાન આપો.`;
+    }
+  }
+
+  return text;
+}
+
 export function ProfitTargetDashboardCard() {
   const { i18n } = useTranslation();
   const lang = (i18n.language?.substring(0, 2) || "en") as "en" | "hi" | "gu";
@@ -245,7 +283,9 @@ export function ProfitTargetDashboardCard() {
               {rishi.coachingSuggestion && (
                 <div className="text-[11px] text-muted-foreground bg-muted/40 rounded-lg p-2 flex items-start gap-1.5 leading-snug">
                   <Sparkles className="h-3.5 w-3.5 text-cyan-600 shrink-0 mt-0.5" />
-                  <span className="line-clamp-2">{rishi.coachingSuggestion}</span>
+                  <span className="line-clamp-2">
+                    {localizeCoachingSuggestion(rishi.coachingSuggestion, lang)}
+                  </span>
                 </div>
               )}
             </div>
@@ -290,7 +330,9 @@ export function ProfitTargetDashboardCard() {
               {raman.coachingSuggestion && (
                 <div className="text-[11px] text-muted-foreground bg-muted/40 rounded-lg p-2 flex items-start gap-1.5 leading-snug">
                   <Sparkles className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
-                  <span className="line-clamp-2">{raman.coachingSuggestion}</span>
+                  <span className="line-clamp-2">
+                    {localizeCoachingSuggestion(raman.coachingSuggestion, lang)}
+                  </span>
                 </div>
               )}
             </div>

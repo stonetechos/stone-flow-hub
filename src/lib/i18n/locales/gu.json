@@ -159,6 +159,9 @@
     "view": "જુઓ",
     "download": "ડાઉનલોડ કરો",
     "open": "ખોલો",
+    "overdue": "મુદતવીતી",
+    "quote": "ક્વોટેશન",
+    "order": "ઓર્ડર",
     "new": "નવું",
     "live": "લાઇવ",
     "demo": "ડેમો",
@@ -1154,7 +1157,7 @@
   "brand": {
     "name": "સ્ટૉસ",
     "byline": "વેડોરા વિઝન દ્વારા",
-    "fullTitle": "Stone Tech-Architectural Stone Atelier",
+    "fullTitle": "સ્ટોન ટેક - આર્કિટેક્ચરલ સ્ટોન એટેલિયર",
     "companyName": "સ્ટોન ટેક",
     "liveErp": "લાઈવ ERP"
   },
@@ -2438,6 +2441,14 @@
     "inactiveProfile": "{{name}} — 0 ઓર્ડર · નિષ્ક્રિય ગ્રાહક પ્રોફાઇલ ({{level}})",
     "ordersInactiveDays": "{{name}} — {{orders}} ઓર્ડર ({{amount}}), {{days}} દિવસોથી નિષ્ક્રિય ({{level}})",
     "balanceOverdue": "{{name}} — {{amount}} બાકી રકમ {{overdue}}({{level}})",
+    "assignFulfilment": "{{name}} ({{docType}} {{docNo}}) માટે પૂર્ણતા (લાઇવ સ્ટોક / પાર્ટનર) સોંપો — {{deadline}}",
+    "redFlagAssignFulfilment": "🚩 રેડ ફ્લેગ: {{name}} ({{docType}} {{docNo}}) માટે પૂર્ણતા (લાઇવ સ્ટોક / પાર્ટનર) સોંપો — {{deadline}}",
+    "deliveryDeadlineNotSet": "ડિલિવરીની અંતિમ તારીખ નિર્ધારિત નથી",
+    "deliveryDeadlineToday": "ડિલિવરીની અંતિમ તારીખ આજે છે",
+    "deliveryDeadlineOverdue": "ડિલિવરી સમય-મર્યાદા {{days}} દિવસ બાકી છે",
+    "deliveryDeadlineInDays": "ડિલિવરી સમય-મર્યાદા {{days}} દિવસમાં છે",
+    "dueInDays": "{{days}} દિવસમાં બાકી",
+    "quoteAwaitingResponse": "{{quoteNo}} {{band}} છે — {{days}} દિવસથી પ્રત્યુત્તરની રાહ છે",
     "actionReview": "સમીક્ષા કરો",
     "actionFollowUp": "ફોલો-અપ",
     "actionCollect": "વસૂલાત કરો",
@@ -2451,6 +2462,13 @@
       "risk": "જોખમ",
       "critical": "ગંભીર",
       "healthy": "સ્વસ્થ"
+    },
+    "bands": {
+      "stale": "સમીક્ષા યોગ્ય",
+      "warm": "સક્રિય",
+      "critical": "ગંભીર",
+      "at risk": "જોખમમાં",
+      "fresh": "નવું"
     }
   },
   "activity": {

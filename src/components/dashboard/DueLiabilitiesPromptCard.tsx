@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 import {
   CreditCard,
   Building,
@@ -44,7 +45,34 @@ import {
   type DueLiabilityPromptItem,
 } from "@/lib/liabilities/liability-prompts";
 
+const DUE_TEXTS = {
+  en: {
+    title: "Liabilities & Loan EMIs Due This Month",
+    actionRequired: "Action Required",
+    subtitle:
+      "The rent and recurring liabilities of this month are now due. If you have already paid, kindly make the entry below to keep your ledger up to date.",
+    viewAll: "View All Liabilities",
+  },
+  hi: {
+    title: "इस महीने देय देनदारियां एवं ऋण ईएमआई",
+    actionRequired: "कार्रवाई आवश्यक",
+    subtitle:
+      "इस महीने का किराया और आवर्ती देनदारियां अब देय हैं। यदि आपने पहले ही भुगतान कर दिया है, तो अपने खाताबही को अपडेट रखने के लिए नीचे प्रविष्टि करें।",
+    viewAll: "सभी देनदारियां देखें",
+  },
+  gu: {
+    title: "આ મહિને ચૂકવવાપાત્ર જવાબદારીઓ અને લોન EMI",
+    actionRequired: "પગલાં જરૂરી",
+    subtitle:
+      "આ મહિનાનું ભાડું અને આવર્તક જવાબદારીઓ હવે બાકી છે. જો તમે પહેલેથી જ ચૂકવણી કરી દીધી હોય, તો તમારો ખાતાવહી અપ-ટૂ-ડેટ રાખવા માટે નીચે એન્ટ્રી કરો.",
+    viewAll: "તમામ જવાબદારીઓ જુઓ",
+  },
+};
+
 export function DueLiabilitiesPromptCard() {
+  const { i18n } = useTranslation();
+  const lang = (i18n.language?.substring(0, 2) || "en") as "en" | "hi" | "gu";
+  const t = DUE_TEXTS[lang] || DUE_TEXTS.en;
   const qc = useQueryClient();
   const { items = [], isLoading } = useDueLiabilityPrompts();
   const [selectedItem, setSelectedItem] = useState<DueLiabilityPromptItem | null>(null);
@@ -117,20 +145,15 @@ export function DueLiabilitiesPromptCard() {
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-semibold text-foreground text-sm sm:text-base">
-                  Liabilities & Loan EMIs Due This Month
-                </h3>
+                <h3 className="font-semibold text-foreground text-sm sm:text-base">{t.title}</h3>
                 <Badge
                   variant="outline"
                   className="bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-500/30 text-xs font-semibold px-2 py-0.5"
                 >
-                  Action Required
+                  {t.actionRequired}
                 </Badge>
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5 break-words">
-                The rent and recurring liabilities of this month are now due. If you have already
-                paid, kindly make the entry below to keep your ledger up to date.
-              </p>
+              <p className="text-xs text-muted-foreground mt-0.5 break-words">{t.subtitle}</p>
             </div>
           </div>
 
@@ -138,7 +161,7 @@ export function DueLiabilitiesPromptCard() {
             to="/liabilities"
             className="inline-flex items-center gap-1.5 text-xs text-rose-700 dark:text-rose-300 hover:underline font-semibold shrink-0 self-start sm:self-auto bg-rose-500/10 px-2.5 py-1 rounded-md border border-rose-500/20"
           >
-            <span>View All Liabilities</span>
+            <span>{t.viewAll}</span>
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>

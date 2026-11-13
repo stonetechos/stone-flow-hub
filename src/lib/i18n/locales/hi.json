@@ -158,6 +158,9 @@
     "view": "देखें",
     "download": "डाउनलोड करें",
     "open": "खोलें",
+    "overdue": "अतिदेय",
+    "quote": "कोटेशन",
+    "order": "ऑर्डर",
     "new": "नया",
     "live": "लाइव",
     "demo": "डेमो",
@@ -1153,7 +1156,7 @@
   "brand": {
     "name": "स्टॉस",
     "byline": "वेडोरा विज़न द्वारा",
-    "fullTitle": "Stone Tech-Architectural Stone Atelier",
+    "fullTitle": "स्टोन टेक - आर्किटेक्चरल स्टोन अटेलियर",
     "companyName": "स्टोन टेक",
     "liveErp": "लाइव ERP"
   },
@@ -2436,6 +2439,14 @@
     "inactiveProfile": "{{name}} — 0 आदेश · निष्क्रिय ग्राहक प्रोफ़ाइल ({{level}})",
     "ordersInactiveDays": "{{name}} — {{orders}} आदेश ({{amount}}), {{days}} दिनों से निष्क्रिय ({{level}})",
     "balanceOverdue": "{{name}} — {{amount}} शेष राशि {{overdue}}({{level}})",
+    "assignFulfilment": "{{name}} ({{docType}} {{docNo}}) हेतु पूर्ति (लाइव स्टॉक / पार्टनर) सौंपें — {{deadline}}",
+    "redFlagAssignFulfilment": "🚩 रेड फ़्लैग: {{name}} ({{docType}} {{docNo}}) हेतु पूर्ति (लाइव स्टॉक / पार्टनर) सौंपें — {{deadline}}",
+    "deliveryDeadlineNotSet": "डिलीवरी की समय-सीमा निर्धारित नहीं है",
+    "deliveryDeadlineToday": "डिलीवरी की समय-सीमा आज है",
+    "deliveryDeadlineOverdue": "डिलीवरी की समय-सीमा {{days}} दिन अतिदेय है",
+    "deliveryDeadlineInDays": "डिलीवरी की समय-सीमा {{days}} दिनों में है",
+    "dueInDays": "{{days}} दिनों में देय",
+    "quoteAwaitingResponse": "{{quoteNo}} {{band}} है — {{days}} दिनों से उत्तर की प्रतीक्षा है",
     "actionReview": "समीक्षा करें",
     "actionFollowUp": "फॉलो-अप",
     "actionCollect": "वसूली करें",
@@ -2449,6 +2460,13 @@
       "risk": "जोखिम",
       "critical": "गंभीर",
       "healthy": "स्वस्थ"
+    },
+    "bands": {
+      "stale": "समीक्षा योग्य",
+      "warm": "सक्रिय",
+      "critical": "गंभीर",
+      "at risk": "जोखिम में",
+      "fresh": "नया"
     }
   },
   "activity": {

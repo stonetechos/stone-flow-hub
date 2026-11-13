@@ -1524,7 +1524,7 @@ function buildBrief(
           count: kpis.todayFollowups,
           overdue:
             kpis.overdueFollowups > 0
-              ? ` (${kpis.overdueFollowups} ${t("common.overdue", "overdue")})`
+              ? ` (${kpis.overdueFollowups} ${t("dashboard.overdue", t("common.overdue", "overdue"))})`
               : "",
         }),
       );
@@ -1631,6 +1631,85 @@ function localizeInsightTitle(title: string, t: TFunction): string {
       overdue: m3[3] ? `${m3[3]}d overdue · ` : "",
       level: translateLevel(m3[4], t),
     });
+  }
+
+  // Pattern 4: "(🚩 Red Flag: )?Assign Fulfilment (Live Stock / Partner) for [Name] ([Quote/Order] [No]) — [DeadlineText]"
+  const m4 =
+    /^(🚩 Red Flag:\s*)?Assign Fulfilment \(Live Stock \/ Partner\) for (.+?) \((Quote|Order)\s+([A-Z0-9-]+)\)\s+—\s+(.+)$/i.exec(
+      title,
+    );
+  if (m4) {
+    const isRedFlag = Boolean(m4[1]);
+    const name = m4[2];
+    const docType =
+      m4[3].toLowerCase() === "quote" ? t("common.quote", "Quote") : t("common.order", "Order");
+    const docNo = m4[4];
+    const rawDeadline = m4[5].trim();
+
+    let localizedDeadline = rawDeadline;
+    if (rawDeadline === "Delivery deadline not set") {
+      localizedDeadline = t("insights.deliveryDeadlineNotSet", "Delivery deadline not set");
+    } else if (rawDeadline === "Delivery deadline is TODAY") {
+      localizedDeadline = t("insights.deliveryDeadlineToday", "Delivery deadline is TODAY");
+    } else {
+      const mOverdue = /^Delivery deadline overdue by (\d+)d$/i.exec(rawDeadline);
+      if (mOverdue) {
+        localizedDeadline = t(
+          "insights.deliveryDeadlineOverdue",
+          "Delivery deadline overdue by {{days}}d",
+          { days: mOverdue[1] },
+        );
+      }
+      const mInDays = /^Delivery deadline in (\d+)\s+days?$/i.exec(rawDeadline);
+      if (mInDays) {
+        localizedDeadline = t(
+          "insights.deliveryDeadlineInDays",
+          "Delivery deadline in {{days}} days",
+          { days: mInDays[1] },
+        );
+      }
+      const mDueIn = /^Due in (\d+)\s+days$/i.exec(rawDeadline);
+      if (mDueIn) {
+        localizedDeadline = t("insights.dueInDays", "Due in {{days}} days", {
+          days: mDueIn[1],
+        });
+      }
+    }
+
+    const baseKey = isRedFlag ? "insights.redFlagAssignFulfilment" : "insights.assignFulfilment";
+    const defaultText = isRedFlag
+      ? "🚩 Red Flag: Assign Fulfilment (Live Stock / Partner) for {{name}} ({{docType}} {{docNo}}) — {{deadline}}"
+      : "Assign Fulfilment (Live Stock / Partner) for {{name}} ({{docType}} {{docNo}}) — {{deadline}}";
+
+    return t(baseKey, defaultText, {
+      name,
+      docType,
+      docNo,
+      deadline: localizedDeadline,
+    });
+  }
+
+  // Pattern 5: "[QuoteNo] is [band] — [days]d awaiting response"
+  const m5 =
+    /^([A-Z0-9-]+)\s+is\s+(stale|warm|critical|at risk|fresh)\s+—\s+(\d+)d\s+awaiting\s+response$/i.exec(
+      title,
+    );
+  if (m5) {
+    const quoteNo = m5[1];
+    const band = m5[2].toLowerCase();
+    const days = m5[3];
+    const bandKey = `insights.bands.${band}`;
+    const localizedBand = t(bandKey, band);
+
+    return t(
+      "insights.quoteAwaitingResponse",
+      "{{quoteNo}} is {{band}} — {{days}}d awaiting response",
+      {
+        quoteNo,
+        band: localizedBand,
+        days,
+      },
+    );
   }
 
   return title;

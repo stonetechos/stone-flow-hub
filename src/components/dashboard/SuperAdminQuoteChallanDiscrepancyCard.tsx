@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import {
   ShieldAlert,
   ArrowUpRight,
@@ -24,8 +25,86 @@ import { useRoles } from "@/hooks/use-roles";
 import { listQuoteChallanDiscrepancies } from "@/lib/dispatch/api";
 import { cn } from "@/lib/utils";
 
+const DISCREPANCY_TEXTS = {
+  en: {
+    title: "Quotation vs Delivery Challan Product Audit",
+    flaggedVariances: "Flagged Variance",
+    flaggedVariancesPlural: "Flagged Variances",
+    matched100: "100% Matched",
+    subtitleDiscrepancies:
+      "Dispatched delivery challan line items differ from approved quotation specifications. Requires executive oversight.",
+    subtitleMatched:
+      "All active delivery challans match approved quotation specifications. Zero material leakage or unapproved substitutions.",
+    allDispatches: "All Dispatches",
+    loading: "Auditing active quotation & delivery challan line items…",
+    alignmentTitle: "Quotation & Delivery Challan Alignment:",
+    alignmentDesc:
+      "Every dispatch aligns exactly with its customer quotation. Both cash deals (challan-only) and invoiced deals match verified yard quantities.",
+    thChallan: "Delivery Challan",
+    thQuote: "Quotation",
+    thCustomer: "Customer",
+    thDealType: "Deal Type",
+    thDiscrepancies: "Discrepancies Detected",
+    thAction: "Action",
+    cashChallanOnly: "Cash Deal (Challan Only)",
+    invoicedDeal: "Invoiced Deal",
+    reviewChallan: "Review Challan",
+  },
+  hi: {
+    title: "कोटेशन बनाम डिलीवरी चालान उत्पाद ऑडिट",
+    flaggedVariances: "चिह्नित अंतर",
+    flaggedVariancesPlural: "चिह्नित अंतर",
+    matched100: "100% मिलान",
+    subtitleDiscrepancies:
+      "डिस्पैच किए गए डिलीवरी चालान के आइटम स्वीकृत कोटेशन विनिर्देशों से भिन्न हैं। कार्यकारी निगरानी की आवश्यकता है।",
+    subtitleMatched:
+      "सभी सक्रिय डिलीवरी चालान स्वीकृत कोटेशन विनिर्देशों से मेल खाते हैं। शून्य सामग्री रिसाव या अनधिकृत प्रतिस्थापन।",
+    allDispatches: "सभी डिस्पैच",
+    loading: "सक्रिय कोटेशन एवं डिलीवरी चालान आइटमों का ऑडिट हो रहा है…",
+    alignmentTitle: "कोटेशन एवं डिलीवरी चालान संरेखण:",
+    alignmentDesc:
+      "प्रत्येक डिस्पैच अपने ग्राहक कोटेशन के बिल्कुल अनुरूप है। नकद सौदे (केवल-चालान) और इनवॉइस सौदे दोनों सत्यापित यार्ड मात्रा से मेल खाते हैं।",
+    thChallan: "डिलीवरी चालान",
+    thQuote: "कोटेशन",
+    thCustomer: "ग्राहक",
+    thDealType: "सौदा प्रकार",
+    thDiscrepancies: "पाए गए अंतर",
+    thAction: "कार्रवाई",
+    cashChallanOnly: "नकद सौदा (केवल चालान)",
+    invoicedDeal: "इनवॉइस सौदा",
+    reviewChallan: "चालान समीक्षा",
+  },
+  gu: {
+    title: "ક્વોટેશન વિરુદ્ધ ડિલિવરી ચલણ પ્રોડક્ટ ઓડિટ",
+    flaggedVariances: "નોંધાયેલ તફાવત",
+    flaggedVariancesPlural: "નોંધાયેલ તફાવતો",
+    matched100: "100% મેળ ખાધું",
+    subtitleDiscrepancies:
+      "ડિસ્પેચ કરેલ ડિલિવરી ચલણની વસ્તુઓ માન્ય ક્વોટેશન વિગતોથી અલગ છે. એક્ઝિક્યુટિવ દેખરેખ જરૂરી છે.",
+    subtitleMatched:
+      "તમામ સક્રિય ડિલિવરી ચલણ માન્ય ક્વોટેશન વિશિષ્ટતાઓ સાથે મેળ ખાય છે. શૂન્ય મટિરિયલ લિકેજ અથવા અનધિકૃત ફેરફાર.",
+    allDispatches: "તમામ ડિસ્પેચ",
+    loading: "સક્રિય ક્વોટેશન અને ડિલિવરી ચલણ આઇટમ્સનું ઓડિટ થઈ રહ્યું છે…",
+    alignmentTitle: "ક્વોટેશન અને ડિલિવરી ચલણ સંરેખણ:",
+    alignmentDesc:
+      "દરેક ડિસ્પેચ તેના ગ્રાહક ક્વોટેશન સાથે બરાબર મેળ ખાય છે. રોકડ સોદા (માત્ર-ચલણ) અને ઇન્વોઇસ સોદા બંને ચકાસાયેલ યાર્ડ જથ્થા સાથે મેળ ખાય છે.",
+    thChallan: "ડિલિવરી ચલણ",
+    thQuote: "ક્વોટેશન",
+    thCustomer: "ગ્રાહક",
+    thDealType: "ડીલ પ્રકાર",
+    thDiscrepancies: "તફાવતો મળ્યા",
+    thAction: "પગલાં",
+    cashChallanOnly: "રોકડ સોદો (માત્ર ચલણ)",
+    invoicedDeal: "ઇન્વોઇસ સોદો",
+    reviewChallan: "ચલણ તપાસો",
+  },
+};
+
 export function SuperAdminQuoteChallanDiscrepancyCard() {
   const roles = useRoles();
+  const { i18n } = useTranslation();
+  const lang = (i18n.language?.substring(0, 2) || "en") as "en" | "hi" | "gu";
+  const t = DISCREPANCY_TEXTS[lang] || DISCREPANCY_TEXTS.en;
 
   // SuperAdmin and Admin executive visibility only
   const isAuthorized = roles.isAdmin || roles.isSuperAdmin;
@@ -73,7 +152,7 @@ export function SuperAdminQuoteChallanDiscrepancyCard() {
             <div>
               <div className="flex items-center gap-2">
                 <CardTitle className="text-base sm:text-lg font-bold tracking-tight">
-                  Quotation vs Delivery Challan Product Audit
+                  {t.title}
                 </CardTitle>
                 <Badge
                   variant="outline"
@@ -85,14 +164,12 @@ export function SuperAdminQuoteChallanDiscrepancyCard() {
                   )}
                 >
                   {hasDiscrepancies
-                    ? `${items.length} Flagged Variance${items.length > 1 ? "s" : ""}`
-                    : "100% Matched"}
+                    ? `${items.length} ${items.length > 1 ? t.flaggedVariancesPlural : t.flaggedVariances}`
+                    : t.matched100}
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
-                {hasDiscrepancies
-                  ? "Dispatched delivery challan line items differ from approved quotation specifications. Requires executive oversight."
-                  : "All active delivery challans match approved quotation specifications. Zero material leakage or unapproved substitutions."}
+                {hasDiscrepancies ? t.subtitleDiscrepancies : t.subtitleMatched}
               </p>
             </div>
           </div>
@@ -101,7 +178,7 @@ export function SuperAdminQuoteChallanDiscrepancyCard() {
             <Button variant="outline" size="sm" asChild className="h-8 text-xs font-semibold">
               <Link to="/dispatch">
                 <Truck className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
-                All Dispatches
+                {t.allDispatches}
                 <ArrowUpRight className="ml-1 h-3 w-3" />
               </Link>
             </Button>
@@ -111,16 +188,13 @@ export function SuperAdminQuoteChallanDiscrepancyCard() {
 
       <CardContent className="p-4 sm:p-5">
         {discrepanciesQ.isLoading ? (
-          <div className="py-6 text-center text-xs text-muted-foreground">
-            Auditing active quotation & delivery challan line items…
-          </div>
+          <div className="py-6 text-center text-xs text-muted-foreground">{t.loading}</div>
         ) : !hasDiscrepancies ? (
           <div className="flex items-center gap-3 p-3 rounded-lg border border-emerald-200/80 bg-emerald-50/50 dark:border-emerald-900/50 dark:bg-emerald-950/20 text-xs text-emerald-900 dark:text-emerald-200">
             <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
             <div>
-              <span className="font-semibold">Quotation & Delivery Challan Alignment:</span> Every
-              dispatch aligns exactly with its customer quotation. Both cash deals (challan-only)
-              and invoiced deals match verified yard quantities.
+              <span className="font-semibold">{t.alignmentTitle} </span>
+              {t.alignmentDesc}
             </div>
           </div>
         ) : (
@@ -129,14 +203,14 @@ export function SuperAdminQuoteChallanDiscrepancyCard() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/40 text-xs">
-                    <TableHead className="font-semibold">Delivery Challan</TableHead>
-                    <TableHead className="font-semibold">Quotation</TableHead>
-                    <TableHead className="font-semibold">Customer</TableHead>
-                    <TableHead className="font-semibold">Deal Type</TableHead>
+                    <TableHead className="font-semibold">{t.thChallan}</TableHead>
+                    <TableHead className="font-semibold">{t.thQuote}</TableHead>
+                    <TableHead className="font-semibold">{t.thCustomer}</TableHead>
+                    <TableHead className="font-semibold">{t.thDealType}</TableHead>
                     <TableHead className="font-semibold min-w-[280px]">
-                      Discrepancies Detected
+                      {t.thDiscrepancies}
                     </TableHead>
-                    <TableHead className="text-right">Action</TableHead>
+                    <TableHead className="text-right">{t.thAction}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -182,7 +256,7 @@ export function SuperAdminQuoteChallanDiscrepancyCard() {
                               : "border-blue-400 bg-blue-50 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300",
                           )}
                         >
-                          {row.dealType === "cash" ? "Cash Deal (Challan Only)" : "Invoiced Deal"}
+                          {row.dealType === "cash" ? t.cashChallanOnly : t.invoicedDeal}
                         </Badge>
                       </TableCell>
 
@@ -217,7 +291,7 @@ export function SuperAdminQuoteChallanDiscrepancyCard() {
                             className="h-7 text-xs px-2.5"
                           >
                             <Link to="/dispatch/$id" params={{ id: row.dispatchId }}>
-                              Review Challan
+                              {t.reviewChallan}
                             </Link>
                           </Button>
                         </div>
