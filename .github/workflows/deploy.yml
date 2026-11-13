@@ -88,6 +88,10 @@ jobs:
           # once src/routes/lovable/ is removed.
           LOVABLE_API_KEY: ${{ secrets.LOVABLE_API_KEY }}
         run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::notice::CLOUDFLARE_API_TOKEN is not configured in this repository (${{ github.repository }}). Skipping Cloudflare secrets push."
+            exit 0
+          fi
           node ../../scripts/wrangler-secrets-payload.mjs > /tmp/wrangler-secrets.json
           npx wrangler secret bulk /tmp/wrangler-secrets.json -c wrangler.json
           rm -f /tmp/wrangler-secrets.json
@@ -97,4 +101,9 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: npx wrangler deploy -c wrangler.json
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::notice::CLOUDFLARE_API_TOKEN is not configured in this repository (${{ github.repository }}). Production deployment is handled by stonetechos/stone-flow-hub."
+            exit 0
+          fi
+          npx wrangler deploy -c wrangler.json
