@@ -12,6 +12,7 @@ permissions:
 jobs:
   sync-feed:
     runs-on: ubuntu-latest
+    if: github.repository == 'stonetechos/stone-flow-hub'
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -36,7 +37,8 @@ jobs:
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add src/data/instagram-posts.json
             git commit -m "chore(feed): sync latest Instagram posts from @stonetech.ahmedabad [skip ci]"
-            git push origin main
+            git pull --rebase origin main || true
+            git push origin main || echo "::warning::Could not push Instagram feed update to origin main. Check repository Actions workflow write permissions."
           else
             echo "No feed changes detected. Everything is up to date."
           fi

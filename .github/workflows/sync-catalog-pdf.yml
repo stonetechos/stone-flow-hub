@@ -18,6 +18,7 @@ jobs:
   sync:
     name: Sync Live CMS Order to Catalog PDF
     runs-on: ubuntu-latest
+    if: github.repository == 'stonetechos/stone-flow-hub'
 
     steps:
       - name: Checkout

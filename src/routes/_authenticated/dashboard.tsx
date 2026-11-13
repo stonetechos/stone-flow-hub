@@ -1635,7 +1635,7 @@ function localizeInsightTitle(title: string, t: TFunction): string {
 
   // Pattern 4: "(🚩 Red Flag: )?Assign Fulfilment (Live Stock / Partner) for [Name] ([Quote/Order] [No]) — [DeadlineText]"
   const m4 =
-    /^(🚩 Red Flag:\s*)?Assign Fulfilment \(Live Stock \/ Partner\) for (.+?) \((Quote|Order)\s+([A-Z0-9-]+)\)\s+—\s+(.+)$/i.exec(
+    /^(🚩 Red Flag:\s*)?Assign Fulfilment \(Live Stock \/ Partner\) for (.+?) \((Quote|Order)\s+([A-Z0-9-]+)\)\s+[-—–]\s+(.+)$/i.exec(
       title,
     );
   if (m4) {
@@ -1654,23 +1654,22 @@ function localizeInsightTitle(title: string, t: TFunction): string {
     } else {
       const mOverdue = /^Delivery deadline overdue by (\d+)d$/i.exec(rawDeadline);
       if (mOverdue) {
-        localizedDeadline = t(
-          "insights.deliveryDeadlineOverdue",
-          "Delivery deadline overdue by {{days}}d",
-          { days: mOverdue[1] },
-        );
+        localizedDeadline = t("insights.deliveryDeadlineOverdue", {
+          defaultValue: "Delivery deadline overdue by {{days}}d",
+          days: mOverdue[1],
+        });
       }
       const mInDays = /^Delivery deadline in (\d+)\s+days?$/i.exec(rawDeadline);
       if (mInDays) {
-        localizedDeadline = t(
-          "insights.deliveryDeadlineInDays",
-          "Delivery deadline in {{days}} days",
-          { days: mInDays[1] },
-        );
+        localizedDeadline = t("insights.deliveryDeadlineInDays", {
+          defaultValue: "Delivery deadline in {{days}} days",
+          days: mInDays[1],
+        });
       }
       const mDueIn = /^Due in (\d+)\s+days$/i.exec(rawDeadline);
       if (mDueIn) {
-        localizedDeadline = t("insights.dueInDays", "Due in {{days}} days", {
+        localizedDeadline = t("insights.dueInDays", {
+          defaultValue: "Due in {{days}} days",
           days: mDueIn[1],
         });
       }
@@ -1681,7 +1680,8 @@ function localizeInsightTitle(title: string, t: TFunction): string {
       ? "🚩 Red Flag: Assign Fulfilment (Live Stock / Partner) for {{name}} ({{docType}} {{docNo}}) — {{deadline}}"
       : "Assign Fulfilment (Live Stock / Partner) for {{name}} ({{docType}} {{docNo}}) — {{deadline}}";
 
-    return t(baseKey, defaultText, {
+    return t(baseKey, {
+      defaultValue: defaultText,
       name,
       docType,
       docNo,
@@ -1691,7 +1691,7 @@ function localizeInsightTitle(title: string, t: TFunction): string {
 
   // Pattern 5: "[QuoteNo] is [band] — [days]d awaiting response"
   const m5 =
-    /^([A-Z0-9-]+)\s+is\s+(stale|warm|critical|at risk|fresh)\s+—\s+(\d+)d\s+awaiting\s+response$/i.exec(
+    /^([A-Z0-9-]+)\s+is\s+(stale|warm|critical|at risk|fresh)\s+[-—–]\s+(\d+)d\s+awaiting\s+response$/i.exec(
       title,
     );
   if (m5) {
@@ -1701,15 +1701,12 @@ function localizeInsightTitle(title: string, t: TFunction): string {
     const bandKey = `insights.bands.${band}`;
     const localizedBand = t(bandKey, band);
 
-    return t(
-      "insights.quoteAwaitingResponse",
-      "{{quoteNo}} is {{band}} — {{days}}d awaiting response",
-      {
-        quoteNo,
-        band: localizedBand,
-        days,
-      },
-    );
+    return t("insights.quoteAwaitingResponse", {
+      defaultValue: "{{quoteNo}} is {{band}} — {{days}}d awaiting response",
+      quoteNo,
+      band: localizedBand,
+      days,
+    });
   }
 
   return title;
@@ -1766,31 +1763,34 @@ function formatActivityAction(action: string, t: TFunction): string {
 }
 
 function formatActivitySummary(summary: string, _entityType: string | null, t: TFunction): string {
-  const lower = summary.toLowerCase();
-  if (lower.includes("customers updated"))
-    return t("activity.summaries.customersUpdated", "customers updated");
-  if (lower.includes("customers created"))
-    return t("activity.summaries.customersCreated", "customers created");
-  if (lower.includes("receipts created"))
-    return t("activity.summaries.receiptsCreated", "receipts created");
-  if (lower.includes("receipts updated"))
-    return t("activity.summaries.receiptsUpdated", "receipts updated");
-  if (lower.includes("invoices created"))
-    return t("activity.summaries.invoicesCreated", "invoices created");
-  if (lower.includes("invoices updated"))
-    return t("activity.summaries.invoicesUpdated", "invoices updated");
-  if (lower.includes("quotes created"))
-    return t("activity.summaries.quotesCreated", "quotes created");
-  if (lower.includes("quotes updated"))
-    return t("activity.summaries.quotesUpdated", "quotes updated");
-  if (lower.includes("orders created"))
-    return t("activity.summaries.ordersCreated", "orders created");
-  if (lower.includes("orders updated"))
-    return t("activity.summaries.ordersUpdated", "orders updated");
-  if (lower.includes("payments created"))
-    return t("activity.summaries.paymentsCreated", "payments created");
-  if (lower.includes("payments updated"))
-    return t("activity.summaries.paymentsUpdated", "payments updated");
+  const norm = summary
+    .toLowerCase()
+    .replace(/[_\s-]+/g, " ")
+    .trim();
+  if (norm.includes("customer") && (norm.includes("creat") || norm.includes("new")))
+    return t("activity.summaries.customersCreated", "नए ग्राहक बनाए गए");
+  if (norm.includes("customer") && norm.includes("updat"))
+    return t("activity.summaries.customersUpdated", "ग्राहक विवरण अपडेट");
+  if (norm.includes("receipt") && norm.includes("creat"))
+    return t("activity.summaries.receiptsCreated", "रसीद दर्ज की गई");
+  if (norm.includes("receipt") && norm.includes("updat"))
+    return t("activity.summaries.receiptsUpdated", "रसीदें अपडेट हुईं");
+  if (norm.includes("invoice") && norm.includes("creat"))
+    return t("activity.summaries.invoicesCreated", "चालान बनाया गया");
+  if (norm.includes("invoice") && norm.includes("updat"))
+    return t("activity.summaries.invoicesUpdated", "चालान अपडेट हुआ");
+  if (norm.includes("quote") && norm.includes("creat"))
+    return t("activity.summaries.quotesCreated", "उद्धरण बनाया गया");
+  if (norm.includes("quote") && norm.includes("updat"))
+    return t("activity.summaries.quotesUpdated", "कोटेशन अपडेट हुआ");
+  if (norm.includes("order") && norm.includes("creat"))
+    return t("activity.summaries.ordersCreated", "बिक्री आदेश बनाया गया");
+  if (norm.includes("order") && norm.includes("updat"))
+    return t("activity.summaries.ordersUpdated", "ऑर्डर अपडेट हुआ");
+  if (norm.includes("payment") && norm.includes("creat"))
+    return t("activity.summaries.paymentsCreated", "भुगतान दर्ज किया गया");
+  if (norm.includes("payment") && norm.includes("updat"))
+    return t("activity.summaries.paymentsUpdated", "भुगतान अपडेट हुआ");
   return summary;
 }
 
