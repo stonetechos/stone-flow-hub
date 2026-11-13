@@ -1151,7 +1151,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                         aria-label="Customize tabs & sidebar width"
                       >
                         <Sliders className="h-3.5 w-3.5" />
-                        <span>Customize</span>
+                        <span>{t("nav.customize", "Customize")}</span>
                       </button>
                     </TooltipTrigger>
                     <TooltipContent

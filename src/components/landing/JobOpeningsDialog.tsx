@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Briefcase,
   MapPin,
@@ -35,10 +36,16 @@ export function JobOpeningsDialog({ trigger }: JobOpeningsDialogProps) {
   const [open, setOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState<JobPosting | null>(null);
   const [isApplying, setIsApplying] = useState(false);
+  const { i18n } = useTranslation();
+  const lang = (i18n.language?.substring(0, 2) || "en") as "en" | "hi" | "gu";
+
+  const brandName = lang === "hi" ? "स्टोन टेक" : lang === "gu" ? "સ્ટોન ટેક" : "Stone Tech";
+  const locationLabel =
+    lang === "hi" ? "गोटा, अहमदाबाद" : lang === "gu" ? "ગોટા, અમદાવાદ" : "Gota, Ahmedabad";
 
   const applyViaWhatsApp = (job: JobPosting) => {
     const text = encodeURIComponent(
-      `Hi Stone Tech HR, I am interested in applying for the "${job.shortTitle}" position in Gota, Ahmedabad. Here is my profile/resume:`,
+      `Hi ${brandName} HR, I am interested in applying for the "${job.shortTitle}" position in ${locationLabel}. Here is my profile/resume:`,
     );
     window.open(`https://api.whatsapp.com/send?phone=917742090866&text=${text}`, "_blank");
   };
@@ -91,7 +98,11 @@ export function JobOpeningsDialog({ trigger }: JobOpeningsDialogProps) {
                   Careers &amp; Job Openings
                 </DialogTitle>
                 <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                  Stone Tech Architectural Stone Atelier — Gota, Ahmedabad
+                  {lang === "hi"
+                    ? "स्टोन टेक आर्किटेक्चरल स्टोन एटलियर — गोटा, अहमदाबाद"
+                    : lang === "gu"
+                      ? "સ્ટોન ટેક આર્કિટેક્ચરલ સ્ટોન એટલિયર — ગોટા, અમદાવાદ"
+                      : "Stone Tech Architectural Stone Atelier — Gota, Ahmedabad"}
                 </DialogDescription>
               </div>
             </div>

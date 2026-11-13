@@ -43,7 +43,8 @@ jobs:
           if [ -n "$(git status --porcelain src/data/wall-cladding-catalog.json src/lib/site-settings/types.ts public/catalogues/)" ]; then
             git add src/data/wall-cladding-catalog.json src/lib/site-settings/types.ts public/catalogues/
             git commit -m "fix(catalog): auto-sync latest CMS product placements to live PDF [skip ci]"
-            git push origin main
+            git pull --rebase origin main || true
+            git push origin main || echo "::warning::Could not push catalog PDF update to origin main. Check repository Actions workflow write permissions."
           else
             echo "No changes detected. Catalog PDF is already up to date with live CMS."
           fi

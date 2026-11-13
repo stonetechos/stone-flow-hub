@@ -1666,7 +1666,13 @@ function localizeInsightAction(label: string, t: TFunction): string {
     label.startsWith("Assign Live Stock / Vendor · ")
   ) {
     const name = label.replace(/^Assign Live Stock \/ (Partner|Vendor) · /, "");
-    return `Assign Live Stock / Partner · ${name}`;
+    return `${t("insights.actionAssignLiveStock", "Assign Live Stock / Partner")} · ${name}`;
+  }
+  if (label === "Open quote") {
+    return t("insights.actionOpenQuote", "Open quote");
+  }
+  if (label === "Assign owner") {
+    return t("insights.actionAssignOwner", "Assign owner");
   }
   return label;
 }
@@ -1684,14 +1690,28 @@ function formatActivitySummary(summary: string, _entityType: string | null, t: T
   const lower = summary.toLowerCase();
   if (lower.includes("customers updated"))
     return t("activity.summaries.customersUpdated", "customers updated");
+  if (lower.includes("customers created"))
+    return t("activity.summaries.customersCreated", "customers created");
   if (lower.includes("receipts created"))
     return t("activity.summaries.receiptsCreated", "receipts created");
+  if (lower.includes("receipts updated"))
+    return t("activity.summaries.receiptsUpdated", "receipts updated");
   if (lower.includes("invoices created"))
     return t("activity.summaries.invoicesCreated", "invoices created");
+  if (lower.includes("invoices updated"))
+    return t("activity.summaries.invoicesUpdated", "invoices updated");
   if (lower.includes("quotes created"))
     return t("activity.summaries.quotesCreated", "quotes created");
+  if (lower.includes("quotes updated"))
+    return t("activity.summaries.quotesUpdated", "quotes updated");
   if (lower.includes("orders created"))
     return t("activity.summaries.ordersCreated", "orders created");
+  if (lower.includes("orders updated"))
+    return t("activity.summaries.ordersUpdated", "orders updated");
+  if (lower.includes("payments created"))
+    return t("activity.summaries.paymentsCreated", "payments created");
+  if (lower.includes("payments updated"))
+    return t("activity.summaries.paymentsUpdated", "payments updated");
   return summary;
 }
 

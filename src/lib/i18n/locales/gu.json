@@ -60,8 +60,11 @@
       "attendance": "હાજરી",
       "payroll": "પેરોલ",
       "hr": "માનવ સંસાધન (HR)",
-      "workforce-intelligence": "કર્મચારી કાર્યદક્ષતા"
+      "workforce-intelligence": "કર્મચારી કાર્યદક્ષતા",
+      "agent-centre": "એજન્ટ સેન્ટર",
+      "website-backend": "વેબસાઇટ CMS"
     },
+    "customize": "કસ્ટમાઇઝ",
     "pinned": "પિન કરેલું",
     "preferences": {
       "title": "નેવિગેશન પસંદગીઓ",
@@ -2439,6 +2442,9 @@
     "actionFollowUp": "ફોલો-અપ",
     "actionCollect": "વસૂલાત કરો",
     "actionAssignVendor": "વિક્રેતા સોંપો",
+    "actionAssignLiveStock": "લાઇવ સ્ટોક / પાર્ટનર સોંપો",
+    "actionOpenQuote": "ક્વોટ ખોલો",
+    "actionAssignOwner": "માલિક સોંપો",
     "redFlag": "રેડ ફ્લેગ",
     "levels": {
       "watch": "દેખરેખ",
@@ -2455,11 +2461,18 @@
       "voided": "રદ કર્યું"
     },
     "summaries": {
+      "customersCreated": "નવા ગ્રાહકો બનાવ્યા",
       "customersUpdated": "ગ્રાહક વિગતો અપડેટ થઈ",
       "receiptsCreated": "રસીદ નોંધવામાં આવી",
+      "receiptsUpdated": "રસીદો અપડેટ થઈ",
       "invoicesCreated": "ઇન્વૉઇસ બનાવવામાં આવ્યું",
+      "invoicesUpdated": "ઇન્વૉઇસ અપડેટ થયું",
       "quotesCreated": "ક્વોટેશન બનાવવામાં આવ્યું",
-      "ordersCreated": "વેચાણ ઓર્ડર બનાવવામાં આવ્યો"
+      "quotesUpdated": "ક્વોટેશન અપડેટ થયું",
+      "ordersCreated": "વેચાણ ઓર્ડર બનાવવામાં આવ્યો",
+      "ordersUpdated": "ઓર્ડર અપડેટ થયો",
+      "paymentsCreated": "ચુકવણી નોંધવામાં આવી",
+      "paymentsUpdated": "ચુકવણી અપડેટ થઈ"
     }
   }
 }

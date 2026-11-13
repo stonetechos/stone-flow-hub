@@ -31,12 +31,17 @@ export function ContactCenter({ className }: { className?: string }) {
   const settings = useSiteSettingsValue();
   const { content } = useWebsiteContent();
 
+  const isEn = currentLang === "en";
   const phone1 = content.contactPhone1 || "+91 77420 90866";
   const phone2 = content.contactPhone2 || "+91 97844 52998";
   const email = content.contactEmail || "info@stonetech.in";
-  const addressJaipur = content.contactAddressJaipur || texts.contact.experienceCenterAddress;
+  const addressJaipur = isEn
+    ? content.contactAddressJaipur || texts.contact.experienceCenterAddress
+    : texts.contact.experienceCenterAddress;
   const addressMakrana = content.contactAddressMakrana || "";
-  const hours = content.contactHours || texts.contact.studioHours;
+  const hours = isEn
+    ? content.contactHours || texts.contact.studioHours
+    : texts.contact.studioHours;
 
   const phone1Clean = phone1.replace(/[^0-9]/g, "");
   const phone2Clean = phone2.replace(/[^0-9]/g, "");

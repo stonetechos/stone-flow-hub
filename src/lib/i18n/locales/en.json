@@ -61,8 +61,11 @@
       "attendance": "Attendance",
       "payroll": "Payroll",
       "hr": "Human Resources",
-      "workforce-intelligence": "Workforce Intelligence"
+      "workforce-intelligence": "Workforce Intelligence",
+      "agent-centre": "Agent Centre",
+      "website-backend": "Website CMS"
     },
+    "customize": "Customize",
     "pinned": "Pinned",
     "preferences": {
       "title": "Navigation Preferences",
@@ -2468,6 +2471,9 @@
     "actionFollowUp": "Follow up",
     "actionCollect": "Collect",
     "actionAssignVendor": "Assign vendor",
+    "actionAssignLiveStock": "Assign Live Stock / Partner",
+    "actionOpenQuote": "Open quote",
+    "actionAssignOwner": "Assign owner",
     "redFlag": "Red Flag",
     "levels": {
       "watch": "Watch",
@@ -2484,11 +2490,18 @@
       "voided": "voided"
     },
     "summaries": {
+      "customersCreated": "customers created",
       "customersUpdated": "customers updated",
       "receiptsCreated": "receipts created",
+      "receiptsUpdated": "receipts updated",
       "invoicesCreated": "invoices created",
+      "invoicesUpdated": "invoices updated",
       "quotesCreated": "quotes created",
-      "ordersCreated": "orders created"
+      "quotesUpdated": "quotes updated",
+      "ordersCreated": "orders created",
+      "ordersUpdated": "orders updated",
+      "paymentsCreated": "payments created",
+      "paymentsUpdated": "payments updated"
     }
   }
 }

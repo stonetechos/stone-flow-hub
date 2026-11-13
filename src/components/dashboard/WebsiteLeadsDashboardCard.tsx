@@ -29,6 +29,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { getProductNameInLang } from "@/lib/i18n/landing-i18n";
 
 interface WebLead {
   id: string;
@@ -98,8 +99,57 @@ const STAGE_CONFIG: Record<string, { label: string; tone: string }> = {
   cancelled: { label: "Cancelled", tone: "bg-rose-50 text-rose-700 border-rose-200" },
 };
 
+const STAGE_LABELS: Record<string, { en: string; hi: string; gu: string }> = {
+  new_lead: { en: "New Lead", hi: "नया लीड", gu: "નવી પૂછપરછ" },
+  contacted: { en: "Contacted", hi: "संपर्क किया", gu: "સંપર્ક કર્યો" },
+  site_visit_scheduled: { en: "Site Visit", hi: "साइट विजिट", gu: "સાઇટ મુલાકાત" },
+  site_visit_completed: { en: "Site Visited", hi: "साइट विजिट पूर्ण", gu: "મુલાકાત પૂર્ણ" },
+  sample_sent: { en: "Sample Sent", hi: "सैंपल भेजा", gu: "સેમ્પલ મોકલ્યું" },
+  customer_quotation_sent: { en: "Quote Shared", hi: "कोटेशन भेजा", gu: "ક્વોટ મોકલ્યો" },
+  vendor_rfq_sent: { en: "RFQ Sent", hi: "RFQ भेजा", gu: "RFQ મોકલ્યું" },
+  vendor_quote_received: {
+    en: "Vendor Quoted",
+    hi: "सप्लायर कोट प्राप्त",
+    gu: "સપ્લાયરે ક્વોટ આપ્યો",
+  },
+  vendor_approved: { en: "Vendor Approved", hi: "सप्लायर स्वीकृत", gu: "સપ્લાયર મંજૂર" },
+  customer_approved: { en: "Order Confirmed", hi: "ऑर्डर कन्फर्म", gu: "ઓર્ડર કન્ફર્મ" },
+  won: { en: "Order Won", hi: "स्वीकृत / ऑर्डर", gu: "ઓર્ડર જીત્યા" },
+  production: { en: "In Production", hi: "उत्पादन में", gu: "પ્રોડક્શનમાં" },
+  dispatch: { en: "Dispatched", hi: "डिस्पैच हुआ", gu: "ડિસ્પેચ થયું" },
+  completed: { en: "Completed", hi: "पूर्ण", gu: "પૂર્ણ" },
+  after_sales: { en: "After Sales", hi: "बिक्री उपरांत", gu: "વેચાણ પછી" },
+  lost: { en: "Closed", hi: "बंद", gu: "બંધ" },
+  cancelled: { en: "Cancelled", hi: "रद्द", gu: "રદ" },
+};
+
+const LEAD_CARD_TEXTS = {
+  en: {
+    allInquiries: "All Inquiries",
+    websiteLeads: "Website Leads",
+    website: "Website",
+    directCrm: "Direct CRM",
+  },
+  hi: {
+    allInquiries: "सभी पूछताछ",
+    websiteLeads: "वेबसाइट लीड्स",
+    website: "वेबसाइट",
+    directCrm: "डायरेक्ट CRM",
+  },
+  gu: {
+    allInquiries: "બધી પૂછપરછ",
+    websiteLeads: "વેબસાઇટ લીડ્સ",
+    website: "વેબસાઇટ",
+    directCrm: "ડાયરેક્ટ CRM",
+  },
+};
+
 export function WebsiteLeadsDashboardCard() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = (i18n.language?.substring(0, 2) || "en") as "en" | "hi" | "gu";
+  const lc = LEAD_CARD_TEXTS[lang] || LEAD_CARD_TEXTS.en;
+  const getStageLabel = (stage: string) =>
+    STAGE_LABELS[stage]?.[lang] || STAGE_CONFIG[stage]?.label || stage;
   const qc = useQueryClient();
   const [copiedLink, setCopiedLink] = useState(false);
   const [filterMode, setFilterMode] = useState<"all" | "web">("all");
@@ -214,7 +264,7 @@ export function WebsiteLeadsDashboardCard() {
                   : "text-slate-600 hover:text-slate-900",
               )}
             >
-              All Inquiries ({totalCount})
+              {lc.allInquiries} ({totalCount})
             </button>
             <button
               type="button"
@@ -226,7 +276,7 @@ export function WebsiteLeadsDashboardCard() {
                   : "text-slate-600 hover:text-slate-900",
               )}
             >
-              Website Leads ({webLeadsCount})
+              {lc.websiteLeads} ({webLeadsCount})
             </button>
           </div>
 
@@ -455,7 +505,7 @@ export function WebsiteLeadsDashboardCard() {
                           variant="outline"
                           className={cn("text-[10px] font-semibold", stageInfo.tone)}
                         >
-                          {stageInfo.label}
+                          {getStageLabel(lead.stage)}
                         </Badge>
                         <Badge
                           variant="outline"
@@ -466,7 +516,7 @@ export function WebsiteLeadsDashboardCard() {
                               : "bg-slate-50 text-slate-700 border-slate-200",
                           )}
                         >
-                          {isWebLead(lead) ? "Website" : lead.source || "Direct CRM"}
+                          {isWebLead(lead) ? lc.website : lead.source || lc.directCrm}
                         </Badge>
                         {dateBadge}
                       </div>
@@ -512,7 +562,7 @@ export function WebsiteLeadsDashboardCard() {
                               className="inline-flex items-center gap-0.5 rounded-md border border-cyan-200/80 bg-cyan-50/60 px-2 py-0.5 text-[10px] font-medium text-cyan-900"
                             >
                               <Package className="h-2.5 w-2.5 text-cyan-700" />
-                              {p}
+                              {getProductNameInLang(p, lang)}
                             </span>
                           ))}
                         </div>

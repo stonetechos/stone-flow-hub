@@ -59,8 +59,11 @@
       "attendance": "उपस्थिति",
       "payroll": "पेरोल",
       "hr": "मानव संसाधन (HR)",
-      "workforce-intelligence": "कर्मचारी कार्यकुशलता"
+      "workforce-intelligence": "कर्मचारी कार्यकुशलता",
+      "agent-centre": "एजेंट सेंटर",
+      "website-backend": "वेबसाइट CMS"
     },
+    "customize": "कस्टमाइज़",
     "pinned": "पिन किए गए",
     "preferences": {
       "title": "नेविगेशन प्राथमिकताएँ",
@@ -2437,6 +2440,9 @@
     "actionFollowUp": "फॉलो-अप",
     "actionCollect": "वसूली करें",
     "actionAssignVendor": "विक्रेता असाइन करें",
+    "actionAssignLiveStock": "लाइव स्टॉक / पार्टनर सौंपें",
+    "actionOpenQuote": "कोटेशन खोलें",
+    "actionAssignOwner": "मालिक सौंपें",
     "redFlag": "रेड फ्लैग",
     "levels": {
       "watch": "निगरानी",
@@ -2453,11 +2459,18 @@
       "voided": "रद्द किया गया"
     },
     "summaries": {
+      "customersCreated": "नए ग्राहक बनाए गए",
       "customersUpdated": "ग्राहक विवरण अपडेट",
       "receiptsCreated": "रसीद दर्ज की गई",
+      "receiptsUpdated": "रसीदें अपडेट हुईं",
       "invoicesCreated": "चालान बनाया गया",
+      "invoicesUpdated": "चालान अपडेट हुआ",
       "quotesCreated": "उद्धरण बनाया गया",
-      "ordersCreated": "बिक्री आदेश बनाया गया"
+      "quotesUpdated": "कोटेशन अपडेट हुआ",
+      "ordersCreated": "बिक्री आदेश बनाया गया",
+      "ordersUpdated": "ऑर्डर अपडेट हुआ",
+      "paymentsCreated": "भुगतान दर्ज किया गया",
+      "paymentsUpdated": "भुगतान अपडेट हुआ"
     }
   }
 }

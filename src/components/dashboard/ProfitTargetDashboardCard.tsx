@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import {
   TrendingUp,
   ArrowRight,
@@ -22,7 +23,68 @@ import {
 import { formatInr } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
+const PROFIT_TEXTS = {
+  en: {
+    heading: "₹50 Lakh Cumulative Profit Target",
+    subheading: "Realized net profit from customer collections vs. ₹50L company profit goal",
+    leaderboard: "Full 50L Leaderboard",
+    profitDiary: "Profit Diary",
+    realizedOfTarget: "realized of ₹50,00,000 target",
+    achieved: "Achieved",
+    gap: "Gap",
+    moneyCollected: "Money Collected",
+    directCosts: "Direct Project Costs",
+    overallMargin: "Overall Margin",
+    closedProjects: "Closed Projects",
+    projects: "projects",
+    target: "Target",
+    goal: "Goal",
+    profitEarned: "Profit Earned",
+    cashCollected: "Cash Collected",
+  },
+  hi: {
+    heading: "₹50 लाख संचयी लाभ लक्ष्य",
+    subheading: "कंपनी के ₹50 लाख लाभ लक्ष्य के मुकाबले ग्राहक वसूली से प्राप्त शुद्ध लाभ",
+    leaderboard: "पूर्ण 50L लीडरबोर्ड",
+    profitDiary: "प्रॉफ़िट डायरी",
+    realizedOfTarget: "₹50,00,000 लक्ष्य में से प्राप्त",
+    achieved: "प्राप्त",
+    gap: "शेष अंतर",
+    moneyCollected: "एकत्रित राशि",
+    directCosts: "प्रत्यक्ष प्रोजेक्ट लागत",
+    overallMargin: "समग्र मार्जिन",
+    closedProjects: "पूर्ण प्रोजेक्ट्स",
+    projects: "प्रोजेक्ट्स",
+    target: "लक्ष्य",
+    goal: "लक्ष्य",
+    profitEarned: "अर्जित लाभ",
+    cashCollected: "प्राप्त नकदी",
+  },
+  gu: {
+    heading: "₹50 લાખ સંચિત નફા લક્ષ્ય",
+    subheading: "કંપનીના ₹50L નફા લક્ષ્ય સામે ગ્રાહક વસૂલાતમાંથી મેળવેલ ચોખ્ખો નફો",
+    leaderboard: "સંપૂર્ણ 50L લીડરબોર્ડ",
+    profitDiary: "પ્રોફિટ ડાયરી",
+    realizedOfTarget: "₹50,00,000 લક્ષ્યમાંથી પ્રાપ્ત",
+    achieved: "પ્રાપ્ત",
+    gap: "બાકી તફાવત",
+    moneyCollected: "એકત્રિત નાણાં",
+    directCosts: "પ્રત્યક્ષ પ્રોજેક્ટ ખર્ચ",
+    overallMargin: "એકંદર માર્જિન",
+    closedProjects: "પૂર્ણ પ્રોજેક્ટ્સ",
+    projects: "પ્રોજેક્ટ્સ",
+    target: "લક્ષ્ય",
+    goal: "ધ્યેય",
+    profitEarned: "મેળવેલ નફો",
+    cashCollected: "રોકડ વસૂલાત",
+  },
+};
+
 export function ProfitTargetDashboardCard() {
+  const { i18n } = useTranslation();
+  const lang = (i18n.language?.substring(0, 2) || "en") as "en" | "hi" | "gu";
+  const t = PROFIT_TEXTS[lang] || PROFIT_TEXTS.en;
+
   const q = useQuery({
     queryKey: ["salesperson-profitability"],
     queryFn: () => getCompanyProfitabilityAndTargets(),
@@ -62,12 +124,8 @@ export function ProfitTargetDashboardCard() {
               <TrendingUp className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-foreground tracking-tight">
-                ₹50 Lakh Cumulative Profit Target
-              </h3>
-              <p className="text-xs text-muted-foreground">
-                Realized net profit from customer collections vs. ₹50L company profit goal
-              </p>
+              <h3 className="text-base font-bold text-foreground tracking-tight">{t.heading}</h3>
+              <p className="text-xs text-muted-foreground">{t.subheading}</p>
             </div>
           </div>
 
@@ -79,7 +137,7 @@ export function ProfitTargetDashboardCard() {
               className="h-8 text-xs font-semibold gap-1.5 border-emerald-500/40 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/50"
             >
               <Link to="/dashboards/profitability">
-                Full 50L Leaderboard
+                {t.leaderboard}
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </Button>
@@ -91,7 +149,7 @@ export function ProfitTargetDashboardCard() {
             >
               <Link to="/projects">
                 <Building2 className="h-3.5 w-3.5 text-amber-600" />
-                Profit Diary
+                {t.profitDiary}
               </Link>
             </Button>
           </div>
@@ -105,11 +163,11 @@ export function ProfitTargetDashboardCard() {
                 {formatInr(data.totalNetProfit)}
               </span>
               <span className="text-xs text-muted-foreground font-medium">
-                realized of ₹50,00,000 target
+                {t.realizedOfTarget}
               </span>
             </div>
             <div className="text-xs font-bold text-muted-foreground">
-              {progressPct}% Achieved · Gap:{" "}
+              {progressPct}% {t.achieved} · {t.gap}:{" "}
               <span className="text-rose-600 dark:text-rose-400 font-bold tabular-nums">
                 {formatInr(data.overallTargetGap)}
               </span>
@@ -120,27 +178,27 @@ export function ProfitTargetDashboardCard() {
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs">
             <div className="border-r border-border/50 pr-2">
-              <span className="text-muted-foreground block text-[11px]">Money Collected</span>
+              <span className="text-muted-foreground block text-[11px]">{t.moneyCollected}</span>
               <span className="font-bold text-foreground tabular-nums">
                 {formatInr(data.totalMoneyCollected)}
               </span>
             </div>
             <div className="border-r border-border/50 pr-2">
-              <span className="text-muted-foreground block text-[11px]">Direct Project Costs</span>
+              <span className="text-muted-foreground block text-[11px]">{t.directCosts}</span>
               <span className="font-bold text-foreground tabular-nums">
                 {formatInr(data.totalCosts)}
               </span>
             </div>
             <div className="border-r border-border/50 pr-2">
-              <span className="text-muted-foreground block text-[11px]">Overall Margin</span>
+              <span className="text-muted-foreground block text-[11px]">{t.overallMargin}</span>
               <span className="font-bold text-emerald-700 dark:text-emerald-400 tabular-nums">
                 {data.overallMarginPct.toFixed(1)}%
               </span>
             </div>
             <div>
-              <span className="text-muted-foreground block text-[11px]">Closed Projects</span>
+              <span className="text-muted-foreground block text-[11px]">{t.closedProjects}</span>
               <span className="font-bold text-foreground tabular-nums">
-                {data.totalDeals} projects
+                {data.totalDeals} {t.projects}
               </span>
             </div>
           </div>
@@ -158,26 +216,26 @@ export function ProfitTargetDashboardCard() {
                   </div>
                   <div>
                     <h4 className="text-xs font-bold text-foreground">Rishi Rai</h4>
-                    <p className="text-[10px] text-muted-foreground">Target: ₹25 Lakhs</p>
+                    <p className="text-[10px] text-muted-foreground">{t.target}: ₹25 Lakhs</p>
                   </div>
                 </div>
                 <Badge
                   variant="secondary"
                   className="bg-cyan-100 text-cyan-900 dark:bg-cyan-950/60 dark:text-cyan-200 font-bold text-[10px]"
                 >
-                  {Math.round(rishi.targetProgressPct)}% Goal
+                  {Math.round(rishi.targetProgressPct)}% {t.goal}
                 </Badge>
               </div>
 
               <div className="grid grid-cols-2 gap-1.5 text-xs">
                 <div>
-                  <span className="text-[10px] text-muted-foreground block">Profit Earned</span>
+                  <span className="text-[10px] text-muted-foreground block">{t.profitEarned}</span>
                   <span className="font-bold text-cyan-700 dark:text-cyan-300 tabular-nums">
                     {formatInr(rishi.netProfit)}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-muted-foreground block">Cash Collected</span>
+                  <span className="text-[10px] text-muted-foreground block">{t.cashCollected}</span>
                   <span className="font-bold text-foreground tabular-nums">
                     {formatInr(rishi.moneyCollected)}
                   </span>
@@ -203,26 +261,26 @@ export function ProfitTargetDashboardCard() {
                   </div>
                   <div>
                     <h4 className="text-xs font-bold text-foreground">Raman Pupneja</h4>
-                    <p className="text-[10px] text-muted-foreground">Target: ₹25 Lakhs</p>
+                    <p className="text-[10px] text-muted-foreground">{t.target}: ₹25 Lakhs</p>
                   </div>
                 </div>
                 <Badge
                   variant="secondary"
                   className="bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-200 font-bold text-[10px]"
                 >
-                  {Math.round(raman.targetProgressPct)}% Goal
+                  {Math.round(raman.targetProgressPct)}% {t.goal}
                 </Badge>
               </div>
 
               <div className="grid grid-cols-2 gap-1.5 text-xs">
                 <div>
-                  <span className="text-[10px] text-muted-foreground block">Profit Earned</span>
+                  <span className="text-[10px] text-muted-foreground block">{t.profitEarned}</span>
                   <span className="font-bold text-amber-700 dark:text-amber-300 tabular-nums">
                     {formatInr(raman.netProfit)}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-muted-foreground block">Cash Collected</span>
+                  <span className="text-[10px] text-muted-foreground block">{t.cashCollected}</span>
                   <span className="font-bold text-foreground tabular-nums">
                     {formatInr(raman.moneyCollected)}
                   </span>

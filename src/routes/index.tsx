@@ -384,6 +384,18 @@ function HomePage() {
     [currentLang],
   );
 
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      if (currentLang === "hi") {
+        document.title = "स्टोन टेक - आर्किटेक्चरल नेचुरल स्टोन अटेलियर एवं वॉल क्लैडिंग";
+      } else if (currentLang === "gu") {
+        document.title = "સ્ટોન ટેક - આર્કિટેક્ચરલ નેચરલ સ્ટોન એટેલિયર અને વોલ ક્લેડિંગ";
+      } else {
+        document.title = "Stone Tech - Architectural Natural Stone Atelier & Wall Cladding";
+      }
+    }
+  }, [currentLang]);
+
   // Form states (2-Step Continuation 1/2 and 2/2)
   const [formStep, setFormStep] = useState<1 | 2>(1);
   const [showcaseTab, setShowcaseTab] = useState<"products" | "installations">("products");
@@ -959,7 +971,7 @@ function HomePage() {
             </div>
             <div className="flex flex-col shrink-0">
               <span className="text-base sm:text-xl font-black tracking-tight uppercase text-foreground leading-tight whitespace-nowrap">
-                STONE TECH
+                {texts.brandName || "STONE TECH"}
               </span>
               <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-wider sm:tracking-widest leading-none mt-0.5 whitespace-nowrap">
                 {texts.brandSubtitle}
@@ -2206,7 +2218,9 @@ function HomePage() {
               alt="Stone Tech"
               className="h-5 w-5 object-contain rounded"
             />
-            <span className="font-bold text-foreground tracking-tight">STONE TECH</span>
+            <span className="font-bold text-foreground tracking-tight">
+              {texts.brandName || "STONE TECH"}
+            </span>
             <span>• {texts.brandSubtitle}</span>
           </div>
           <div className="flex items-center gap-4 text-xs">

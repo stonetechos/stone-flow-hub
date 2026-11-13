@@ -46,6 +46,7 @@ export interface LocalizedLuxuryProduct {
 
 export const LANDING_UI_TRANSLATIONS = {
   en: {
+    brandName: "STONE TECH",
     brandSubtitle: "Architectural Stone Atelier",
     nav: {
       ourProducts: "Our Products",
@@ -268,6 +269,7 @@ export const LANDING_UI_TRANSLATIONS = {
     },
   },
   hi: {
+    brandName: "स्टोन टेक",
     brandSubtitle: "आर्किटेक्चरल स्टोन एटलियर",
     nav: {
       ourProducts: "हमारे उत्पाद",
@@ -490,6 +492,7 @@ export const LANDING_UI_TRANSLATIONS = {
     },
   },
   gu: {
+    brandName: "સ્ટોન ટેક",
     brandSubtitle: "આર્કિટેક્ચરલ સ્ટોન એટલિયર",
     nav: {
       ourProducts: "અમારા ઉત્પાદનો",

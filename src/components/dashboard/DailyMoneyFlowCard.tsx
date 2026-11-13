@@ -44,8 +44,148 @@ import {
   getPaymentMethodBadgeClass,
 } from "@/lib/payments/method-display";
 
+const MONEY_FLOW_TEXTS = {
+  en: {
+    heading: "Daily Money Flow & Transaction Radar",
+    subheading:
+      "Track how much capital arrived from customers versus disbursements to vendors and contractors today.",
+    moneyFlowHub: "Money Flow Hub",
+    recent7Days: "Recent 7-Day Velocity (Click any day to inspect)",
+    viewingToday: "Viewing: Today",
+    viewingDate: "Viewing:",
+    jumpToday: "Jump to Today",
+    moneyIn: "Money In (Received)",
+    moneyOut: "Money Out (Disbursed)",
+    netCashFlow: "Net Cash Flow",
+    receiptsOnDay: "receipts on this day",
+    receiptOnDay: "receipt on this day",
+    disbursementsOnDay: "disbursements",
+    disbursementOnDay: "disbursement",
+    addReceipt: "Add Receipt",
+    addPayment: "Add Payment",
+    customerCollections: "Customer collections",
+    vendorsContractors: "Vendors & Contractors",
+    inflowMinusOutflow: "Inflow minus Outflow",
+    capitalSurplus: "Capital Surplus",
+    netOutflow: "Net Outflow",
+    allTransactions: "All Transactions",
+    searchPlaceholder: "Search party, UTR, doc #...",
+    noTransactionsFor: "No transactions recorded for",
+    noTransactionsDesc:
+      "There were no receipts or disbursements recorded on this day. You can record payments using the shortcuts below.",
+    recordReceipt: "Record Customer Receipt",
+    recordPayment: "Record Vendor Payment",
+    thFlow: "Flow",
+    thParty: "Party Name",
+    thDoc: "Doc #",
+    thMethod: "Channel / Method",
+    thRef: "Reference / UTR",
+    thAmount: "Amount",
+    thDetails: "Details",
+    btnView: "View",
+    mtdNet: "Month-to-Date Net:",
+    mtdIn: "MTD In:",
+    mtdOut: "MTD Out:",
+    customerPayments: "Customer Payments →",
+    vendorPayments: "Vendor Payments →",
+    fullMoneyFlowHub: "Full Money Flow Hub →",
+  },
+  hi: {
+    heading: "दैनिक धन प्रवाह एवं लेन-देन रडार",
+    subheading:
+      "आज ग्राहकों से प्राप्त पूंजी बनाम विक्रेताओं और ठेकेदारों को किए गए भुगतानों को ट्रैक करें।",
+    moneyFlowHub: "मनी फ्लो हब",
+    recent7Days: "पिछले 7 दिनों की गति (निरीक्षण के लिए किसी भी दिन पर क्लिक करें)",
+    viewingToday: "देख रहे हैं: आज",
+    viewingDate: "देख रहे हैं:",
+    jumpToday: "आज पर जाएं",
+    moneyIn: "प्राप्त राशि (आवक)",
+    moneyOut: "भुगतान राशि (जावक)",
+    netCashFlow: "शुद्ध नकदी प्रवाह",
+    receiptsOnDay: "रसीदें इस दिन",
+    receiptOnDay: "रसीद इस दिन",
+    disbursementsOnDay: "भुगतान",
+    disbursementOnDay: "भुगतान",
+    addReceipt: "रसीद जोड़ें",
+    addPayment: "भुगतान जोड़ें",
+    customerCollections: "ग्राहक वसूली",
+    vendorsContractors: "विक्रेता व ठेकेदार",
+    inflowMinusOutflow: "आवक घटा जावक",
+    capitalSurplus: "पूंजी अधिशेष",
+    netOutflow: "शुद्ध बहिर्वाह",
+    allTransactions: "सभी लेन-देन",
+    searchPlaceholder: "पार्टी, UTR, दस्तावेज़ संख्या खोजें...",
+    noTransactionsFor: "इस तारीख के लिए कोई लेन-देन दर्ज नहीं:",
+    noTransactionsDesc:
+      "इस दिन कोई रसीद या भुगतान दर्ज नहीं किया गया। आप नीचे दिए गए शॉर्टकट का उपयोग करके भुगतान दर्ज कर सकते हैं।",
+    recordReceipt: "ग्राहक रसीद दर्ज करें",
+    recordPayment: "विक्रेता भुगतान दर्ज करें",
+    thFlow: "प्रवाह",
+    thParty: "पार्टी का नाम",
+    thDoc: "दस्तावेज़ #",
+    thMethod: "माध्यम / विधि",
+    thRef: "संदर्भ / UTR",
+    thAmount: "राशि",
+    thDetails: "विवरण",
+    btnView: "देखें",
+    mtdNet: "माह-दर-तारीख शुद्ध:",
+    mtdIn: "माह आवक:",
+    mtdOut: "माह जावक:",
+    customerPayments: "ग्राहक भुगतान →",
+    vendorPayments: "विक्रेता भुगतान →",
+    fullMoneyFlowHub: "पूर्ण मनी फ्लो हब →",
+  },
+  gu: {
+    heading: "દૈનિક નાણાકીય પ્રવાહ અને વ્યવહાર રડાર",
+    subheading:
+      "આજે ગ્રાહકો તરફથી આવેલી મૂડી વિરુદ્ધ સપ્લાયર્સ અને કોન્ટ્રાક્ટરોને કરેલી ચુકવણી ટ્રૅક કરો.",
+    moneyFlowHub: "મની ફ્લો હબ",
+    recent7Days: "છેલ્લા 7 દિવસની ઝડપ (તપાસવા માટે કોઈપણ દિવસ પર ક્લિક કરો)",
+    viewingToday: "જોઈ રહ્યા છીએ: આજે",
+    viewingDate: "જોઈ રહ્યા છીએ:",
+    jumpToday: "આજ પર જાઓ",
+    moneyIn: "આવેલા નાણાં (આવક)",
+    moneyOut: "ચૂકવેલા નાણાં (જાવક)",
+    netCashFlow: "ચોખ્ખો રોકડ પ્રવાહ",
+    receiptsOnDay: "રસીદો આ દિવસે",
+    receiptOnDay: "રસીદ આ દિવસે",
+    disbursementsOnDay: "ચુકવણીઓ",
+    disbursementOnDay: "ચુકવણી",
+    addReceipt: "રસીદ ઉમેરો",
+    addPayment: "ચુકવણી ઉમેરો",
+    customerCollections: "ગ્રાહક વસૂલાત",
+    vendorsContractors: "સપ્લાયર્સ અને કોન્ટ્રાક્ટર્સ",
+    inflowMinusOutflow: "આવક બાદ જાવક",
+    capitalSurplus: "મૂડી સરપ્લસ",
+    netOutflow: "ચોખ્ખી જાવક",
+    allTransactions: "બધા વ્યવહારો",
+    searchPlaceholder: "પાર્ટી, UTR, દસ્તાવેજ નં. શોધો...",
+    noTransactionsFor: "આ તારીખ માટે કોઈ વ્યવહાર નોંધાયેલ નથી:",
+    noTransactionsDesc:
+      "આ દિવસે કોઈ રસીદ કે ચુકવણી નોંધાઈ નથી. તમે નીચેના શૉર્ટકટ્સનો ઉપયોગ કરીને ચુકવણી નોંધી શકો છો.",
+    recordReceipt: "ગ્રાહક રસીદ નોંધો",
+    recordPayment: "સપ્લાયર ચુકવણી નોંધો",
+    thFlow: "પ્રવાહ",
+    thParty: "પાર્ટીનું નામ",
+    thDoc: "દસ્તાવેજ #",
+    thMethod: "માધ્યમ / રીત",
+    thRef: "સંદર્ભ / UTR",
+    thAmount: "રકમ",
+    thDetails: "વિગતો",
+    btnView: "જુઓ",
+    mtdNet: "મહિના-દર-તારીખ ચોખ્ખું:",
+    mtdIn: "મહિનાની આવક:",
+    mtdOut: "મહિનાની જાવક:",
+    customerPayments: "ગ્રાહક ચુકવણી →",
+    vendorPayments: "સપ્લાયર ચુકવણી →",
+    fullMoneyFlowHub: "સંપૂર્ણ મની ફ્લો હબ →",
+  },
+};
+
 export function DailyMoneyFlowCard() {
-  const { t } = useTranslation();
+  const { i18n } = useTranslation();
+  const lang = (i18n.language?.substring(0, 2) || "en") as "en" | "hi" | "gu";
+  const txt = MONEY_FLOW_TEXTS[lang] || MONEY_FLOW_TEXTS.en;
   const roles = useRoles();
 
   // Selected date state (defaults to today)
@@ -193,12 +333,9 @@ export function DailyMoneyFlowCard() {
             </div>
             <div>
               <h2 className="font-display text-lg sm:text-xl font-bold tracking-tight text-foreground">
-                Daily Money Flow & Transaction Radar
+                {txt.heading}
               </h2>
-              <p className="text-xs text-muted-foreground">
-                Track how much capital arrived from customers versus disbursements to vendors and
-                contractors today.
-              </p>
+              <p className="text-xs text-muted-foreground">{txt.subheading}</p>
             </div>
           </div>
         </div>
@@ -247,7 +384,7 @@ export function DailyMoneyFlowCard() {
               onClick={handleJumpToday}
             >
               <RotateCcw className="h-3 w-3" />
-              Jump to Today
+              {txt.jumpToday}
             </Button>
           )}
 
@@ -258,7 +395,7 @@ export function DailyMoneyFlowCard() {
             className="h-8 text-xs text-muted-foreground hover:text-foreground"
           >
             <Link to="/money-flow">
-              <span>Money Flow Hub</span>
+              <span>{txt.moneyFlowHub}</span>
               <ExternalLink className="ml-1 h-3 w-3" />
             </Link>
           </Button>
@@ -268,9 +405,9 @@ export function DailyMoneyFlowCard() {
       {/* 2. Interactive 7-Day Day Selector Strip */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between text-[11px] font-semibold text-muted-foreground px-1">
-          <span>Recent 7-Day Velocity (Click any day to inspect)</span>
+          <span>{txt.recent7Days}</span>
           <span className="font-mono text-[10px]">
-            {summary.isToday ? "Viewing: Today" : `Viewing: ${formatDate(selectedDate)}`}
+            {summary.isToday ? txt.viewingToday : `${txt.viewingDate} ${formatDate(selectedDate)}`}
           </span>
         </div>
 
@@ -354,11 +491,11 @@ export function DailyMoneyFlowCard() {
                 </div>
                 <div>
                   <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
-                    Money In (Received)
+                    {txt.moneyIn}
                   </span>
                   <div className="text-xs text-muted-foreground">
-                    {summary.inflowCount} {summary.inflowCount === 1 ? "receipt" : "receipts"} on
-                    this day
+                    {summary.inflowCount}{" "}
+                    {summary.inflowCount === 1 ? txt.receiptOnDay : txt.receiptsOnDay}
                   </div>
                 </div>
               </div>
@@ -369,7 +506,7 @@ export function DailyMoneyFlowCard() {
                 className="h-7 px-2 text-[11px] text-emerald-700 hover:text-emerald-800 hover:bg-emerald-100/50"
               >
                 <Link to="/receipts/new">
-                  <Plus className="h-3 w-3 mr-1" /> Add Receipt
+                  <Plus className="h-3 w-3 mr-1" /> {txt.addReceipt}
                 </Link>
               </Button>
             </div>
@@ -379,7 +516,7 @@ export function DailyMoneyFlowCard() {
             </div>
 
             <div className="text-[11px] text-emerald-900/80 dark:text-emerald-300/80 flex items-center justify-between pt-1">
-              <span>Customer collections</span>
+              <span>{txt.customerCollections}</span>
               <span className="font-medium">
                 {totalVolume > 0 ? `${inflowPercent}% of volume` : "No volume"}
               </span>
@@ -397,11 +534,11 @@ export function DailyMoneyFlowCard() {
                 </div>
                 <div>
                   <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
-                    Money Out (Disbursed)
+                    {txt.moneyOut}
                   </span>
                   <div className="text-xs text-muted-foreground">
                     {summary.outflowCount}{" "}
-                    {summary.outflowCount === 1 ? "disbursement" : "disbursements"}
+                    {summary.outflowCount === 1 ? txt.disbursementOnDay : txt.disbursementsOnDay}
                   </div>
                 </div>
               </div>
@@ -412,7 +549,7 @@ export function DailyMoneyFlowCard() {
                 className="h-7 px-2 text-[11px] text-amber-700 hover:text-amber-800 hover:bg-amber-100/50"
               >
                 <Link to="/vendor-payments/new">
-                  <Plus className="h-3 w-3 mr-1" /> Add Payment
+                  <Plus className="h-3 w-3 mr-1" /> {txt.addPayment}
                 </Link>
               </Button>
             </div>
@@ -422,7 +559,7 @@ export function DailyMoneyFlowCard() {
             </div>
 
             <div className="text-[11px] text-amber-900/80 dark:text-amber-300/80 flex items-center justify-between pt-1">
-              <span>Vendors & Contractors</span>
+              <span>{txt.vendorsContractors}</span>
               <span className="font-medium">
                 {totalVolume > 0 ? `${outflowPercent}% of volume` : "No volume"}
               </span>
@@ -458,9 +595,9 @@ export function DailyMoneyFlowCard() {
                 </div>
                 <div>
                   <span className="text-[11px] font-bold uppercase tracking-wider text-foreground">
-                    Net Cash Flow
+                    {txt.netCashFlow}
                   </span>
-                  <div className="text-xs text-muted-foreground">Inflow minus Outflow</div>
+                  <div className="text-xs text-muted-foreground">{txt.inflowMinusOutflow}</div>
                 </div>
               </div>
               <Badge
@@ -472,7 +609,7 @@ export function DailyMoneyFlowCard() {
                     : "bg-rose-100 text-rose-800 dark:bg-rose-950/50 dark:text-rose-300",
                 )}
               >
-                {summary.netCashFlow >= 0 ? "Capital Surplus" : "Net Outflow"}
+                {summary.netCashFlow >= 0 ? txt.capitalSurplus : txt.netOutflow}
               </Badge>
             </div>
 
@@ -526,7 +663,7 @@ export function DailyMoneyFlowCard() {
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
-              All Transactions ({summary.totalCount})
+              {txt.allTransactions} ({summary.totalCount})
             </button>
             <button
               type="button"
@@ -539,7 +676,7 @@ export function DailyMoneyFlowCard() {
               )}
             >
               <ArrowDownLeft className="h-3 w-3" />
-              Money In ({summary.inflowCount})
+              {txt.moneyIn} ({summary.inflowCount})
             </button>
             <button
               type="button"
@@ -552,7 +689,7 @@ export function DailyMoneyFlowCard() {
               )}
             >
               <ArrowUpRight className="h-3 w-3" />
-              Money Out ({summary.outflowCount})
+              {txt.moneyOut} ({summary.outflowCount})
             </button>
           </div>
 
@@ -560,7 +697,7 @@ export function DailyMoneyFlowCard() {
           <div className="relative w-full sm:w-64">
             <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
             <Input
-              placeholder="Search party, UTR, doc #..."
+              placeholder={txt.searchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-8 h-8 text-xs bg-background/80"
@@ -579,21 +716,20 @@ export function DailyMoneyFlowCard() {
               <Wallet className="h-5 w-5" />
             </div>
             <div className="font-semibold text-sm text-foreground">
-              No transactions recorded for {formatDate(selectedDate)}
+              {txt.noTransactionsFor} {formatDate(selectedDate)}
             </div>
             <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-              There were no receipts or disbursements recorded on this day. You can record payments
-              using the shortcuts below.
+              {txt.noTransactionsDesc}
             </p>
             <div className="flex items-center justify-center gap-2 pt-2">
               <Button asChild size="sm" variant="outline" className="h-7 text-xs">
                 <Link to="/receipts/new">
-                  <Plus className="mr-1 h-3 w-3" /> Record Customer Receipt
+                  <Plus className="mr-1 h-3 w-3" /> {txt.recordReceipt}
                 </Link>
               </Button>
               <Button asChild size="sm" variant="outline" className="h-7 text-xs">
                 <Link to="/vendor-payments/new">
-                  <Plus className="mr-1 h-3 w-3" /> Record Vendor Payment
+                  <Plus className="mr-1 h-3 w-3" /> {txt.recordPayment}
                 </Link>
               </Button>
             </div>
@@ -604,13 +740,13 @@ export function DailyMoneyFlowCard() {
               <table className="w-full text-left text-xs">
                 <thead className="bg-muted/40 text-[11px] font-semibold text-muted-foreground uppercase border-b border-slate-200 dark:border-slate-800">
                   <tr>
-                    <th className="py-2.5 px-3">Flow</th>
-                    <th className="py-2.5 px-3">Party Name</th>
-                    <th className="py-2.5 px-3">Doc #</th>
-                    <th className="py-2.5 px-3">Channel / Method</th>
-                    <th className="py-2.5 px-3">Reference / UTR</th>
-                    <th className="py-2.5 px-3 text-right">Amount</th>
-                    <th className="py-2.5 px-3 text-right">Details</th>
+                    <th className="py-2.5 px-3">{txt.thFlow}</th>
+                    <th className="py-2.5 px-3">{txt.thParty}</th>
+                    <th className="py-2.5 px-3">{txt.thDoc}</th>
+                    <th className="py-2.5 px-3">{txt.thMethod}</th>
+                    <th className="py-2.5 px-3">{txt.thRef}</th>
+                    <th className="py-2.5 px-3 text-right">{txt.thAmount}</th>
+                    <th className="py-2.5 px-3 text-right">{txt.thDetails}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
@@ -633,7 +769,7 @@ export function DailyMoneyFlowCard() {
                             ) : (
                               <ArrowUpRight className="h-3 w-3" />
                             )}
-                            {isInflow ? "Money In" : "Money Out"}
+                            {isInflow ? txt.moneyIn : txt.moneyOut}
                           </span>
                         </td>
 
@@ -705,7 +841,7 @@ export function DailyMoneyFlowCard() {
                         <td className="py-2.5 px-3 text-right">
                           <Button asChild variant="ghost" size="sm" className="h-7 px-2 text-xs">
                             <Link to={tx.detailUrl}>
-                              <span>View</span>
+                              <span>{txt.btnView}</span>
                               <ExternalLink className="ml-1 h-3 w-3" />
                             </Link>
                           </Button>
@@ -724,7 +860,7 @@ export function DailyMoneyFlowCard() {
       <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between text-xs text-muted-foreground gap-2">
         <div className="flex items-center gap-3">
           <span>
-            Month-to-Date Net:{" "}
+            {txt.mtdNet}{" "}
             <strong className={summary.mtdNet >= 0 ? "text-emerald-600" : "text-rose-600"}>
               {summary.mtdNet >= 0 ? "+" : ""}
               {formatInr(summary.mtdNet)}
@@ -732,11 +868,12 @@ export function DailyMoneyFlowCard() {
           </span>
           <span className="hidden sm:inline text-slate-300 dark:text-slate-700">|</span>
           <span className="hidden sm:inline">
-            MTD In: <strong className="text-foreground">{formatInr(summary.mtdInflow)}</strong>
+            {txt.mtdIn} <strong className="text-foreground">{formatInr(summary.mtdInflow)}</strong>
           </span>
           <span className="hidden sm:inline text-slate-300 dark:text-slate-700">|</span>
           <span className="hidden sm:inline">
-            MTD Out: <strong className="text-foreground">{formatInr(summary.mtdOutflow)}</strong>
+            {txt.mtdOut}{" "}
+            <strong className="text-foreground">{formatInr(summary.mtdOutflow)}</strong>
           </span>
         </div>
 
@@ -746,16 +883,16 @@ export function DailyMoneyFlowCard() {
             search={{ tab: "customer" }}
             className="hover:text-foreground hover:underline"
           >
-            Customer Payments →
+            {txt.customerPayments}
           </Link>
           <Link to="/vendor-payments" className="hover:text-foreground hover:underline">
-            Vendor Payments →
+            {txt.vendorPayments}
           </Link>
           <Link
             to="/money-flow"
             className="text-purple-600 dark:text-purple-400 font-bold hover:underline"
           >
-            Full Money Flow Hub →
+            {txt.fullMoneyFlowHub}
           </Link>
         </div>
       </div>
