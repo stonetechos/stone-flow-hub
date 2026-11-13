@@ -57,6 +57,8 @@ import {
 } from "@/lib/notifications/queue";
 import { openWhatsappToContact } from "@/lib/whatsapp";
 import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
+import { WhatsappCrmWorkspace } from "@/components/whatsapp-crm/WhatsappCrmWorkspace";
 
 export const Route = createFileRoute("/_authenticated/communication")({
   ssr: false,
@@ -109,6 +111,7 @@ function CommunicationCentre() {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const { isAdmin } = useRoles();
+  const [activeTab, setActiveTab] = useState<"workspace" | "logs">("workspace");
   const [channel, setChannel] = useState<string>("all");
   const [status, setStatus] = useState<string>("all");
   const [related, setRelated] = useState<string>("all");
@@ -248,18 +251,52 @@ function CommunicationCentre() {
     <div>
       <PageHeader
         title={t("communication.title", "Communication Centre")}
-        subtitle={t(
-          "communication.subtitle",
-          "Every outbound email, WhatsApp and SMS with delivery status and retry history.",
-        )}
+        subtitle={
+          activeTab === "workspace"
+            ? "Unified WhatsApp team inbox with native STOS CRM records, product catalog, and quotation tools."
+            : t(
+                "communication.subtitle",
+                "Every outbound email, WhatsApp and SMS with delivery status and retry history.",
+              )
+        }
         actions={
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center rounded-lg border bg-muted p-0.5 text-xs">
+              <button
+                type="button"
+                onClick={() => setActiveTab("workspace")}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-md px-3 py-1 font-medium transition-colors cursor-pointer",
+                  activeTab === "workspace"
+                    ? "bg-background text-foreground shadow-xs font-semibold"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <MessageCircle className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                WhatsApp CRM Studio
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("logs")}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-md px-3 py-1 font-medium transition-colors cursor-pointer",
+                  activeTab === "logs"
+                    ? "bg-background text-foreground shadow-xs font-semibold"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <RefreshCw className="h-3.5 w-3.5" />
+                Delivery Queue &amp; Logs
+              </button>
+            </div>
+
             <Button variant="outline" size="sm" asChild>
               <Link to="/notification-settings">
                 {t("communication.providerSettings", "Provider settings")}
               </Link>
             </Button>
-            {hasPendingWhatsapp && (
+
+            {activeTab === "logs" && hasPendingWhatsapp && (
               <Button
                 variant="outline"
                 size="sm"
@@ -271,7 +308,7 @@ function CommunicationCentre() {
                 Mark all WhatsApp as sent
               </Button>
             )}
-            {isAdmin && (
+            {activeTab === "logs" && isAdmin && (
               <Button size="sm" onClick={() => dispatch.mutate()} disabled={dispatch.isPending}>
                 <Play className="mr-2 h-4 w-4" />{" "}
                 {t("communication.runDispatcher", "Run dispatcher now")}
@@ -281,300 +318,313 @@ function CommunicationCentre() {
         }
       />
 
-      <div className="mb-4 flex flex-wrap gap-2">
-        {STATUSES.map((s) => (
-          <Badge key={s} variant={statusVariant(s)}>
-            {s}: {counts[s] ?? 0}
-          </Badge>
-        ))}
-      </div>
-
-      {hasPendingWhatsapp && (
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-950 dark:text-emerald-200">
-          <div className="flex items-center gap-2.5">
-            <MessageCircle className="h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
-            <div>
-              <span className="font-semibold">Direct WhatsApp Dispatch:</span> Messages can be sent
-              directly from your WhatsApp account without requiring Meta Cloud API tokens. Click{" "}
-              <span className="font-medium underline">Open in WhatsApp</span> on any row below to
-              open that customer&apos;s chat with the matter pre-filled, or click{" "}
-              <span className="font-medium underline">Mark all WhatsApp as sent</span>.
-            </div>
-          </div>
-          <Button
-            size="sm"
-            variant="outline"
-            className="shrink-0 border-emerald-600/40 bg-background text-emerald-700 hover:bg-emerald-100 dark:text-emerald-300 dark:hover:bg-emerald-900/40"
-            onClick={() => markAllWhatsapp.mutate()}
-            disabled={markAllWhatsapp.isPending}
-          >
-            <CheckCheck className="mr-1.5 h-3.5 w-3.5" />
-            Clear / Mark all sent
-          </Button>
+      {activeTab === "workspace" ? (
+        <div className="mt-2">
+          <WhatsappCrmWorkspace />
         </div>
-      )}
+      ) : (
+        <>
+          <div className="mb-4 flex flex-wrap gap-2">
+            {STATUSES.map((s) => (
+              <Badge key={s} variant={statusVariant(s)}>
+                {s}: {counts[s] ?? 0}
+              </Badge>
+            ))}
+          </div>
 
-      <Card className="shadow-1 mb-4">
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-sm">
-            <Filter className="h-4 w-4" /> {t("common.filters", "Filters")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-6">
-          <div className="space-y-1">
-            <Label className="text-xs">{t("communication.channel", "Channel")}</Label>
-            <Select value={channel} onValueChange={setChannel}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("common.all", "All")}</SelectItem>
-                {CHANNELS.map((c) => (
-                  <SelectItem key={c} value={c}>
-                    {c}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">{t("common.status", "Status")}</Label>
-            <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("common.all", "All")}</SelectItem>
-                {STATUSES.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {s}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">{t("communication.relatedEntity", "Related entity")}</Label>
-            <Select value={related} onValueChange={setRelated}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("common.all", "All")}</SelectItem>
-                {RELATED.map((r) => (
-                  <SelectItem key={r} value={r}>
-                    {r}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">{t("common.from", "From")}</Label>
-            <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">{t("common.to", "To")}</Label>
-            <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">{t("common.search", "Search")}</Label>
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={t("communication.searchPlaceholder", "No, address, subject")}
-            />
-          </div>
-          {filtersActive && (
-            <div className="md:col-span-6">
-              <Button variant="ghost" size="sm" onClick={clearFilters}>
-                <X className="mr-1.5 h-3.5 w-3.5" /> {t("common.clearFilters", "Clear filters")}
+          {hasPendingWhatsapp && (
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-950 dark:text-emerald-200">
+              <div className="flex items-center gap-2.5">
+                <MessageCircle className="h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                <div>
+                  <span className="font-semibold">Direct WhatsApp Dispatch:</span> Messages can be
+                  sent directly from your WhatsApp account without requiring Meta Cloud API tokens.
+                  Click <span className="font-medium underline">Open in WhatsApp</span> on any row
+                  below to open that customer&apos;s chat with the matter pre-filled, or click{" "}
+                  <span className="font-medium underline">Mark all WhatsApp as sent</span>.
+                </div>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="shrink-0 border-emerald-600/40 bg-background text-emerald-700 hover:bg-emerald-100 dark:text-emerald-300 dark:hover:bg-emerald-900/40"
+                onClick={() => markAllWhatsapp.mutate()}
+                disabled={markAllWhatsapp.isPending}
+              >
+                <CheckCheck className="mr-1.5 h-3.5 w-3.5" />
+                Clear / Mark all sent
               </Button>
             </div>
           )}
-        </CardContent>
-      </Card>
 
-      <Card className="shadow-1">
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm">
-            {rows.length} {t("communication.messages", "messages")}
-          </CardTitle>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => query.refetch()}
-            disabled={query.isFetching}
-          >
-            <RefreshCw className={`mr-2 h-4 w-4 ${query.isFetching ? "animate-spin" : ""}`} />
-            {t("common.refresh", "Refresh")}
-          </Button>
-        </CardHeader>
-        <CardContent className="p-0">
-          {query.isLoading ? (
-            <div className="p-4">
-              <SkeletonTable rows={6} columns={8} />
-            </div>
-          ) : query.error ? (
-            <div className="p-4">
-              <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("common.no", "No")}</TableHead>
-                  <TableHead>{t("communication.columns.channel", "Channel")}</TableHead>
-                  <TableHead>{t("communication.columns.to", "To")}</TableHead>
-                  <TableHead>
-                    {t("communication.columns.subjectEntity", "Subject / Entity")}
-                  </TableHead>
-                  <TableHead>{t("common.status", "Status")}</TableHead>
-                  <TableHead>{t("communication.columns.attempts", "Attempts")}</TableHead>
-                  <TableHead>{t("communication.columns.created", "Created")}</TableHead>
-                  <TableHead className="text-right">{t("common.actions", "Actions")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map((r) => (
-                  <TableRow key={r.id}>
-                    <TableCell className="font-mono text-xs">
-                      {r.message_no ?? r.id.slice(0, 8)}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={
-                          r.channel === "whatsapp"
-                            ? "border-emerald-500/40 text-emerald-700 dark:text-emerald-400"
-                            : ""
-                        }
-                      >
-                        {r.channel}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="max-w-[220px] truncate" title={r.to_address}>
-                      {r.to_address}
-                    </TableCell>
-                    <TableCell className="max-w-[280px] truncate" title={r.subject ?? ""}>
-                      {r.subject ?? <span className="text-muted-foreground">—</span>}
-                      {r.related_type && (
-                        <span className="ml-2 text-xs text-muted-foreground">
-                          ({r.related_type})
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {r.status === "failed" &&
-                      r.channel === "whatsapp" &&
-                      r.last_error?.includes("Meta Cloud API not configured") ? (
-                        <>
-                          <Badge variant="secondary">ready</Badge>
-                          <div className="mt-1 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                            Direct WhatsApp ready
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <Badge variant={statusVariant(r.status, r)}>{r.status}</Badge>
-                          {r.last_error && (
-                            <div
-                              className="mt-1 max-w-[220px] truncate text-xs text-destructive"
-                              title={r.last_error}
-                            >
-                              {r.last_error}
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </TableCell>
-                    <TableCell>{r.attempts}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        {r.channel === "whatsapp" && (
-                          <Button
-                            size="sm"
+          <Card className="shadow-1 mb-4">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <Filter className="h-4 w-4" /> {t("common.filters", "Filters")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-3 md:grid-cols-6">
+              <div className="space-y-1">
+                <Label className="text-xs">{t("communication.channel", "Channel")}</Label>
+                <Select value={channel} onValueChange={setChannel}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("common.all", "All")}</SelectItem>
+                    {CHANNELS.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">{t("common.status", "Status")}</Label>
+                <Select value={status} onValueChange={setStatus}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("common.all", "All")}</SelectItem>
+                    {STATUSES.map((s) => (
+                      <SelectItem key={s} value={s}>
+                        {s}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">
+                  {t("communication.relatedEntity", "Related entity")}
+                </Label>
+                <Select value={related} onValueChange={setRelated}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("common.all", "All")}</SelectItem>
+                    {RELATED.map((r) => (
+                      <SelectItem key={r} value={r}>
+                        {r}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">{t("common.from", "From")}</Label>
+                <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">{t("common.to", "To")}</Label>
+                <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">{t("common.search", "Search")}</Label>
+                <Input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder={t("communication.searchPlaceholder", "No, address, subject")}
+                />
+              </div>
+              {filtersActive && (
+                <div className="md:col-span-6">
+                  <Button variant="ghost" size="sm" onClick={clearFilters}>
+                    <X className="mr-1.5 h-3.5 w-3.5" /> {t("common.clearFilters", "Clear filters")}
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-1">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm">
+                {rows.length} {t("communication.messages", "messages")}
+              </CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => query.refetch()}
+                disabled={query.isFetching}
+              >
+                <RefreshCw className={`mr-2 h-4 w-4 ${query.isFetching ? "animate-spin" : ""}`} />
+                {t("common.refresh", "Refresh")}
+              </Button>
+            </CardHeader>
+            <CardContent className="p-0">
+              {query.isLoading ? (
+                <div className="p-4">
+                  <SkeletonTable rows={6} columns={8} />
+                </div>
+              ) : query.error ? (
+                <div className="p-4">
+                  <ErrorBlock
+                    message={toUserMessage(query.error)}
+                    onRetry={() => query.refetch()}
+                  />
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t("common.no", "No")}</TableHead>
+                      <TableHead>{t("communication.columns.channel", "Channel")}</TableHead>
+                      <TableHead>{t("communication.columns.to", "To")}</TableHead>
+                      <TableHead>
+                        {t("communication.columns.subjectEntity", "Subject / Entity")}
+                      </TableHead>
+                      <TableHead>{t("common.status", "Status")}</TableHead>
+                      <TableHead>{t("communication.columns.attempts", "Attempts")}</TableHead>
+                      <TableHead>{t("communication.columns.created", "Created")}</TableHead>
+                      <TableHead className="text-right">{t("common.actions", "Actions")}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {rows.map((r) => (
+                      <TableRow key={r.id}>
+                        <TableCell className="font-mono text-xs">
+                          {r.message_no ?? r.id.slice(0, 8)}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
                             variant="outline"
-                            className="h-8 border-emerald-500/50 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/40"
-                            title="Open in WhatsApp and mark as sent"
-                            disabled={busyId === r.id}
-                            onClick={() => handleOpenWhatsapp(r)}
+                            className={
+                              r.channel === "whatsapp"
+                                ? "border-emerald-500/40 text-emerald-700 dark:text-emerald-400"
+                                : ""
+                            }
                           >
-                            <MessageCircle className="mr-1.5 h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                            Open in WhatsApp
-                          </Button>
-                        )}
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-8 px-2 text-muted-foreground hover:text-foreground"
-                          title="View message text"
-                          onClick={() => setViewingMessage(r)}
+                            {r.channel}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="max-w-[220px] truncate" title={r.to_address}>
+                          {r.to_address}
+                        </TableCell>
+                        <TableCell className="max-w-[280px] truncate" title={r.subject ?? ""}>
+                          {r.subject ?? <span className="text-muted-foreground">—</span>}
+                          {r.related_type && (
+                            <span className="ml-2 text-xs text-muted-foreground">
+                              ({r.related_type})
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {r.status === "failed" &&
+                          r.channel === "whatsapp" &&
+                          r.last_error?.includes("Meta Cloud API not configured") ? (
+                            <>
+                              <Badge variant="secondary">ready</Badge>
+                              <div className="mt-1 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                                Direct WhatsApp ready
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <Badge variant={statusVariant(r.status, r)}>{r.status}</Badge>
+                              {r.last_error && (
+                                <div
+                                  className="mt-1 max-w-[220px] truncate text-xs text-destructive"
+                                  title={r.last_error}
+                                >
+                                  {r.last_error}
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </TableCell>
+                        <TableCell>{r.attempts}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {r.channel === "whatsapp" && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-8 border-emerald-500/50 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/40"
+                                title="Open in WhatsApp and mark as sent"
+                                disabled={busyId === r.id}
+                                onClick={() => handleOpenWhatsapp(r)}
+                              >
+                                <MessageCircle className="mr-1.5 h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                                Open in WhatsApp
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 px-2 text-muted-foreground hover:text-foreground"
+                              title="View message text"
+                              onClick={() => setViewingMessage(r)}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            {r.channel === "whatsapp" && r.status !== "sent" && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 px-2 text-xs text-muted-foreground hover:text-emerald-600"
+                                disabled={busyId === r.id}
+                                title="Mark as Sent"
+                                onClick={() => markSent.mutate(r.id)}
+                              >
+                                Mark sent
+                              </Button>
+                            )}
+                            {(r.status === "failed" ||
+                              r.status === "cancelled" ||
+                              r.status === "retrying") && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 px-2 text-xs"
+                                disabled={busyId === r.id}
+                                onClick={() => retry.mutate(r.id)}
+                              >
+                                {t("common.retry", "Retry")}
+                              </Button>
+                            )}
+                            {(r.status === "queued" ||
+                              r.status === "retrying" ||
+                              r.status === "failed") && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 px-2 text-xs text-muted-foreground hover:text-destructive"
+                                disabled={busyId === r.id}
+                                onClick={() => cancel.mutate(r.id)}
+                              >
+                                {t("common.cancel", "Cancel")}
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {rows.length === 0 && (
+                      <TableRow>
+                        <TableCell
+                          colSpan={8}
+                          className="py-10 text-center text-sm text-muted-foreground"
                         >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        {r.channel === "whatsapp" && r.status !== "sent" && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-8 px-2 text-xs text-muted-foreground hover:text-emerald-600"
-                            disabled={busyId === r.id}
-                            title="Mark as Sent"
-                            onClick={() => markSent.mutate(r.id)}
-                          >
-                            Mark sent
-                          </Button>
-                        )}
-                        {(r.status === "failed" ||
-                          r.status === "cancelled" ||
-                          r.status === "retrying") && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-8 px-2 text-xs"
-                            disabled={busyId === r.id}
-                            onClick={() => retry.mutate(r.id)}
-                          >
-                            {t("common.retry", "Retry")}
-                          </Button>
-                        )}
-                        {(r.status === "queued" ||
-                          r.status === "retrying" ||
-                          r.status === "failed") && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-8 px-2 text-xs text-muted-foreground hover:text-destructive"
-                            disabled={busyId === r.id}
-                            onClick={() => cancel.mutate(r.id)}
-                          >
-                            {t("common.cancel", "Cancel")}
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {rows.length === 0 && (
-                  <TableRow>
-                    <TableCell
-                      colSpan={8}
-                      className="py-10 text-center text-sm text-muted-foreground"
-                    >
-                      {filtersActive
-                        ? t("communication.noMatches", "No messages match the filters.")
-                        : t("communication.noMessages", "No messages have been sent yet.")}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+                          {filtersActive
+                            ? t("communication.noMatches", "No messages match the filters.")
+                            : t("communication.noMessages", "No messages have been sent yet.")}
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </>
+      )}
 
       {/* Message Content Viewer Modal */}
       <Dialog open={!!viewingMessage} onOpenChange={(open) => !open && setViewingMessage(null)}>
