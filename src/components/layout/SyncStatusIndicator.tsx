@@ -10,9 +10,7 @@ import { listPendingOperations } from "@/lib/pwa/sync-queue";
 import { toast } from "sonner";
 
 /**
- * Topbar connectivity pill + install affordance (Phase G.10A).
- * Mounted once in AppShell's header — stays silent while online with
- * nothing queued, so it doesn't add noise to an already busy topbar.
+ * Topbar connectivity pill and PWA install trigger.
  */
 export function SyncStatusIndicator() {
   const connectivity = useOnlineStatus();

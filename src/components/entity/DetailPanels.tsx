@@ -181,17 +181,7 @@ export function AttachmentsPanel({
   );
 }
 
-/** Generic single-entity Timeline tab — reused by every document detail
- *  page (payments, vendors, products, installations, enquiries,
- *  purchase-orders, dispatch, invoices, quotes, grns, sales-orders,
- *  inventory). Phase G.10: now backed by the shared Business Timeline
- *  engine (lib/timeline/api.ts's getEntityTimeline, the single factored-out
- *  implementation of this exact query) and the shared BusinessTimeline UI,
- *  instead of an inline ad-hoc activity_log query. Customer and Project
- *  pages use the richer useCustomerTimeline()/useProjectTimeline() +
- *  BusinessTimeline directly (see their own route files) since those
- *  scopes have many more event sources than a single entity_type/entity_id
- *  pair. */
+/** Generic single-entity timeline panel backed by getEntityTimeline. */
 export function TimelinePanel({ entityType, entityId }: { entityType: string; entityId: string }) {
   const query = useEntityTimeline(entityType, entityId);
   return (

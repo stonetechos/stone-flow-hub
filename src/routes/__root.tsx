@@ -134,9 +134,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "natural stone wall cladding, flexible stone veneer ahmedabad, gwalior mint sandstone, italian marble supplier india, cnc stone temple mandir, stone fabrication erp, dry mechanical cladding ahmedabad",
       },
       { name: "author", content: "Stone Tech" },
-      // Phase G.10A — PWA foundation. theme_color mirrors the manifest and
-      // the branding primary in src/lib/branding/index.ts; background here
-      // matches the icon tile so browser chrome doesn't clash with the mark.
+      // PWA metadata and theme color
       { name: "theme-color", content: "#0d9488" },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
@@ -171,7 +169,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         as: "style",
         href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Gujarati:wght@400;500;600;700&family=Caveat:wght@500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap",
       },
-      // Canonical URL & Phase G.10A — PWA foundation
+      // Canonical URL & PWA manifest
       { rel: "canonical", href: "https://stonetech.in" },
       { rel: "manifest", href: "/manifest.json" },
       { rel: "icon", href: "/icons/icon-192.png", type: "image/png" },
@@ -313,16 +311,7 @@ function RootComponent() {
     if (!configStatus.ok) return;
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_OUT") {
-        // Phase G.8.9 root-cause fix: clearing the query cache in place
-        // (queryClient.clear()) synchronously drops every mounted query's
-        // `data` to undefined for one render before a refetch can start.
-        // Many screens only guard on `isLoading`/`error` before asserting
-        // `query.data!`, so that transient render was throwing straight
-        // through to the root error boundary instead of the intended
-        // redirect. When we're about to hard-navigate away anyway, the
-        // in-memory cache is moot the instant the page unloads — so do the
-        // navigation first and skip the doomed re-render entirely. Only
-        // mutate the cache in place when we're NOT navigating (i.e.
+        // Navigate first on sign-out to prevent flash of unauthenticated error boundaries.
         // already on /auth, so nothing will unmount the tree for us).
         // One exception to all of the above: when a route signed the user
         // out itself in order to redirect somewhere specific (see

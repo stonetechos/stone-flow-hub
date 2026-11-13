@@ -10,13 +10,7 @@ export type PaymentListItem = PaymentRow & {
 };
 
 /**
- * A row from `public.payment_register` (Phase G.9A.2) -- the view unioning
- * `receipts` (the complete, ledger-integrated system) with legacy
- * `payments` rows, so the Payments page can show every real transaction
- * without a second write path. `source` tells the UI which detail route to
- * link to: "receipt" rows only ever exist in `receipts` (open via
- * `/receipts/$receiptId`); "payment" rows are legacy direct entries (open
- * via the existing `/payments/$id`).
+ * A row from `public.payment_register` -- unions `receipts` with legacy `payments`.
  */
 export interface PaymentRegisterRow {
   id: string;
@@ -43,8 +37,7 @@ const SELECT = "*, invoice:invoices!payments_invoice_id_fkey(id,invoice_no)";
 // page reads `listPaymentRegister` and nothing else called it, so it was a
 // second, silently-diverging source of truth.
 
-/** The Payments page's real data source (Phase G.9A.2) -- every active
- *  receipt plus every legacy payment, newest first. */
+/** Data source for Payments page -- active receipts plus legacy payments. */
 export async function listPaymentRegister(query = ""): Promise<PaymentRegisterRow[]> {
   let q = supabase
     .from("payment_register" as never)
@@ -115,12 +108,7 @@ export async function createPayment(input: PaymentCreateInput): Promise<PaymentR
   const { data, error } = await supabase
     .from("payments")
     .insert({
-      // Phase G.9A.2 fix: was `PAY-${Date.now()}`, which bypassed the
-      // assign_payment_code trigger entirely (it only assigns a code when
-      // payment_no is empty) -- every payment created here got a
-      // non-sequential PAY-<timestamp> number instead of the real
-      // PAY-000123 sequence. An empty string lets the trigger do its job,
-      // same as recordManualPayment already does in lib/invoices/api.ts.
+      // Empty string lets the assign_payment_code trigger assign the sequence number.
       payment_no: "",
       invoice_id: p.invoice_id,
       amount: p.amount,

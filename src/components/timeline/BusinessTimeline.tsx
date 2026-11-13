@@ -1,14 +1,5 @@
 /**
- * BusinessTimeline — Phase G.10 shared timeline UI.
- *
- * One rendering component for `TimelineEvent[]`, generalized from
- * `vendors/$vendorId.timeline.tsx`'s original EventCard/kindIcon pattern
- * (same vertical rail, icon-in-circle, Card-per-event look) so every
- * consumer — Customer, Project, Vendor, and the generic per-entity
- * fallback in DetailPanels.tsx — renders history identically. Per Task 5:
- * chronological, filterable by kind, collapsible past a threshold so a
- * busy customer/project doesn't dump 100 rows on screen at once, and
- * never invents anything — it only ever renders events it was given.
+ * BusinessTimeline — shared timeline component rendering chronological business events.
  */
 import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";

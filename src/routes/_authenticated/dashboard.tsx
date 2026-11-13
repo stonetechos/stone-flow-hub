@@ -9,20 +9,11 @@ import { createFileRoute } from "@tanstack/react-router";
  *   4. What should I approve today?
  *   5. How healthy is the business?
  *
- * Presentation-only redesign of `/dashboard`. All numbers come from the
- * existing dashboard KPIs, tasks, activity and follow-ups APIs — no new
- * queries, no schema changes.
+ * Presentation redesign of `/dashboard`. All numbers come from dashboard
+ * KPIs, tasks, activity and follow-ups APIs.
  *
- * Phase G.8.8: the "Executive brief" bullet list and "Suggested actions"
- * panel used to be generated locally by `buildBrief`/`buildSuggestions` —
- * hand-rolled threshold judgments over DashboardKpis ("if outstanding >
- * 1,000,000, mention it"), independent of and less rigorous than the real
- * Insight Providers already computing the same category of judgment
- * (CollectionPriorityProvider, ColdEnquiryProvider, etc.). Both sections
- * now render the top processed insights from the same registry every
- * other Intelligence surface reads — Copilot, EntityInsightPanel,
- * DangerNotifications, Business Priorities — via `useExecutiveInsights()`.
- * `computeHealth`/`pickHeadline` (the health gauge and headline KPI) are
+ * The "Executive brief" and "Suggested actions" render top processed insights
+ * from the shared insight registry via `useExecutiveInsights()`.
  * a different concern — a single composite score / KPI pick, not a list
  * of discrete business-rule judgments — and were out of this phase's
  * named scope (risk.ts, OwnerInsight, and specifically buildBrief/
@@ -1430,14 +1421,8 @@ function pickHeadline(k: DashboardKpis, t: TFunction): HeadlineMetric {
 }
 
 /**
- * Phase G.8.8: the headline lines now come directly from the top
- * processed insights (already complete, readable sentences by provider
- * convention — every provider writes `title` as a full sentence, e.g.
- * "ENQ-000001 has no salesperson assigned") instead of re-deciding
- * locally which KPI thresholds are "worth mentioning." Urgent-task count
- * is kept as a direct, judgment-free count — Tasks aren't part of the
- * Insight registry and nothing else in the app computes this, so it
- * isn't duplicate logic, just a plain tally appended to the same list. */
+ * Headline brief derived from top processed insights and urgent tasks.
+ */
 function buildBrief(
   topInsights: ProcessedInsight[],
   tasks: TaskRow[],
@@ -1711,9 +1696,7 @@ function formatActivitySummary(summary: string, _entityType: string | null, t: T
 }
 
 /**
- * Phase G.8.8: suggestions now come directly from the top processed
- * insights' own `action` field — every Insight already carries exactly
- * this {label, href} shape for its single primary call-to-action.
+ * Primary suggested actions derived from top processed insights.
  */
 function buildSuggestions(
   topInsights: ProcessedInsight[],

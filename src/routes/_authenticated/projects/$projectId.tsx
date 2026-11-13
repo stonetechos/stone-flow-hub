@@ -515,12 +515,7 @@ function ProjectHub() {
   );
 }
 
-/** Phase G.10 — full Business Timeline for this project: enquiries,
- *  quotations, sales orders, purchase orders, invoices, dispatches,
- *  installations, follow-ups, completed tasks and the project's own
- *  activity log, unioned and sorted chronologically by the shared
- *  lib/timeline engine. Answers "summarize this project's history"
- *  directly on the project page itself. */
+/** Project timeline showing chronological history across enquiries, orders, and site execution. */
 function ProjectTimelineTab({ projectId }: { projectId: string }) {
   const timelineQ = useProjectTimeline(projectId);
   return (

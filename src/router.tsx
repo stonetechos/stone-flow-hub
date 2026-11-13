@@ -21,14 +21,7 @@ export const getRouter = () => {
         // keeps the previous `data` until the new response lands, it never
         // clears it first, so this cannot itself blank out rendered state.
         refetchOnReconnect: true,
-        // Phase G.8.9 Task A3/A6: distinguish transient failures (worth one
-        // retry) from deterministic ones (retrying just delays the same
-        // outcome). Every backend/database failure in this app is thrown as
-        // an `AppError` (see lib/errors.ts's `mapDbError` call sites) —
-        // validation errors, RLS/permission denials, constraint violations.
-        // None of those change on retry. A raw, non-AppError throw (network
-        // failure, fetch aborted, DNS hiccup, Supabase client transport
-        // error) is exactly the transient case retrying helps with.
+        // Distinguish transient network failures (worth one retry) from deterministic errors (AppError).
         retry: (failureCount, error) => {
           if (error instanceof AppError) return false;
           return failureCount < 1;

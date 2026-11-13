@@ -3,10 +3,7 @@ import { useEffect, useState } from "react";
 export type ConnectivityState = "online" | "offline" | "reconnected";
 
 /**
- * Tracks browser connectivity for the sync indicator (Phase G.10A).
- * Emits a transient "reconnected" state for a few seconds after coming
- * back online so the UI can show a brief confirmation instead of
- * jumping straight back to a silent "online" look.
+ * Tracks browser connectivity with transient reconnected state.
  */
 export function useOnlineStatus(): ConnectivityState {
   const [state, setState] = useState<ConnectivityState>(() =>

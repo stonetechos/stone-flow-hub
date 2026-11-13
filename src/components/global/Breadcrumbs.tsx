@@ -7,35 +7,54 @@ import { useCustomNavRenames } from "@/lib/nav/custom-renames";
 type TFunc = ReturnType<typeof useTranslation>["t"];
 
 const LABELS: Record<string, string> = {
+  // 1. Home / Overview
   dashboard: "Dashboard",
-  enquiries: "Enquiries",
-  followups: "Follow-ups",
-  calendar: "Calendar",
-  quotes: "Quotations",
-  "sales-orders": "Sales Orders",
-  "purchase-orders": "Purchase Orders",
-  inventory: "Inventory",
-  dispatch: "Dispatch",
-  invoices: "Invoices",
-  payments: "Payments",
-  customers: "Customers",
-  projects: "Projects",
-  vendors: "Vendors",
-  products: "Products",
-  reports: "Reports",
-  settings: "Settings",
+  profitability: "Profit Target",
   activity: "Activity",
   tasks: "Tasks",
-  documents: "Documents",
-  notifications: "Notifications",
+  calendar: "Calendar",
   favorites: "Favorites",
-  communication: "Communication",
-  messages: "Notifications Queue",
-  "message-templates": "Message Templates",
-  "notification-settings": "Notification Settings",
-  dashboards: "Role Dashboards",
-  "command-center": "Command Center",
-  "control-centre": "Control Centre",
+
+  // 2. Website CMS
+  website: "Website CMS",
+
+  // 3. Items & Materials
+  products: "Products",
+  inventory: "Inventory",
+  masters: "Price Lists & Masters",
+
+  // 4. Sales & CRM (Customers -> Enquiries -> Projects -> Estimates -> Quotes -> Orders -> Invoices -> Dispatch -> Payments)
+  customers: "Customers",
+  enquiries: "Enquiries",
+  followups: "Follow-ups",
+  projects: "Projects",
+  estimates: "Estimates",
+  quotes: "Quotations",
+  "sales-orders": "Sales Orders",
+  invoices: "Invoices",
+  dispatch: "Dispatch",
+  payments: "Payments",
+  receipts: "Receipts",
+
+  // 5. Purchases & Procurement (Vendors -> RFQs -> POs -> Invoices -> Payments -> Ledger)
+  vendors: "Vendors",
+  rfqs: "RFQ",
+  "purchase-orders": "Purchase Orders",
+  "purchase-invoices": "Purchase Invoices",
+  "vendor-payments": "Vendor Payments",
+  "purchase-ledger": "Suppliers Ledger",
+
+  // 6. Executions & Cartings (Installations -> Teams -> Payments -> Ledger -> Transport)
+  installations: "Site Installations",
+  "installation-agencies": "Installation Agencies",
+  "installation-teams": "Application Partners",
+  "agency-payments": "Agency Payments",
+  "installation-ledger": "Installation Ledger",
+  "purchase-transport": "Transport Partners",
+
+  // 7. HR & Workforce (Employees -> Attendance -> Payroll)
+  "workforce-intelligence": "Workforce Intelligence",
+  employees: "Employees",
   hr: "Human Resources",
   attendance: "Attendance",
   shifts: "Shifts",
@@ -46,22 +65,35 @@ const LABELS: Record<string, string> = {
   payroll: "Payroll",
   loans: "Loans & Claims",
 
+  // 8. Filing & Compliance
+  gst: "Pay GST & Filing",
+
+  // 9. Accountant (Ledgers -> Money Flow -> Expenses -> Liabilities -> Cashbook -> Transfers)
+  ledger: "Ledger",
+  "money-flow": "Money Flow",
+  "business-expenses": "Business Expenses",
+  liabilities: "Liabilities",
+  "ramans-cashbook": "Raman's Cashbook",
+  "personal-transfers": "Personal Transfers",
+
+  // 10. Reports
+  reports: "Reports",
+  dashboards: "Role Dashboards",
+
+  // 11. Documents
+  documents: "Documents",
+
+  // 12. Settings & Admin
+  communication: "Communication",
+  messages: "Notifications Queue",
+  notifications: "Notifications",
+  "message-templates": "Message Templates",
+  "notification-settings": "Notification Settings",
   admin: "Admin",
   users: "Users",
-  "workforce-intelligence": "Workforce Intelligence",
-  employees: "Employees",
-  "vendor-payments": "Vendor Payments",
-  "money-flow": "Money Flow",
-  ledger: "Ledger",
-  receipts: "Receipts",
-  estimates: "Estimates",
-  "business-expenses": "Business Expenses",
-  "ramans-cashbook": "Raman's Cashbook",
-  liabilities: "Liabilities",
-  "installation-agencies": "Installation Agencies",
-  "installation-ledger": "Installation Ledger",
-  "agency-payments": "Agency Payments",
+  settings: "Settings",
 
+  // Common Action Suffixes
   new: "New",
   edit: "Edit",
 };

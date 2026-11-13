@@ -1,22 +1,6 @@
 /**
- * useExecutiveInsights — Phase G.7 UI integration point for the completed
- * Insight Framework (G.1-G.6).
- *
- * Wires together, in order: `useInsights()` (G.1, polls every registered
- * provider), `processInsights()` (G.5.5, merge/dedupe/conflict-resolve/
- * normalize/summarize), and `buildExecutiveBrief()` (G.6, one Executive
- * Brief). No business logic lives here — this only calls the existing
- * pipeline functions and memoizes their output.
- *
- * Registers every provider pack (Sales, Finance, Operations, Customer)
- * exactly once per module load. None of the G.2-G.5 phases wired their
- * own `register*InsightProviders()` into the running app yet (each phase
- * explicitly excluded dashboard wiring) — `registry.ts` says as much:
- * "later phases call registerInsightProvider from their own module init
- * (e.g. a feature's api.ts or a top-level bootstrap file)". This hook is
- * that bootstrap file. `registerInsightProvider` replaces by id, so
- * calling this on every import (including hot-reload) is safe and
- * idempotent — it never double-registers.
+ * Shared executive insights hook.
+ * Wires together provider registry polling, pipeline processing, and executive brief.
  */
 import { useMemo } from "react";
 import { useInsights } from "@/lib/insights/hooks";

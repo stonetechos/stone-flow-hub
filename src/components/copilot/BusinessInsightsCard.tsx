@@ -1,23 +1,6 @@
 /**
  * Business Priorities card — deterministic list of actionable priorities.
- *
- * Phase G.8.8: previously sourced from `getCommandCenter()`'s ad-hoc
- * `OwnerInsight[]` (lib/executive/command-center.ts), a private aggregator
- * with no stable identity that duplicated two existing Insight Providers
- * (CollectionPriorityProvider for "payment needing attention",
- * InventoryShortageProvider for "material shortage") and had one genuine
- * gap ("biggest delayed project", now covered by the new
- * ProjectDelayProvider). Now sources directly from the same Insight
- * Provider registry every other Intelligence surface reads — Copilot's
- * own Insights panel, EntityInsightPanel, DangerNotifications,
- * smart-notifications, daily-action — via `useExecutiveInsights()`, and
- * shares the same dismiss lifecycle (`useInsightLifecycle`) so dismissing
- * a priority here means it stops resurfacing everywhere else too.
- *
- * No LLM, no fabricated summaries, no placeholder examples. Every item
- * shown references an actual row and links to the record it describes —
- * unchanged from before, just sourced from the shared pipeline instead of
- * a private one.
+ * Sources from the insight provider registry with shared dismissal lifecycle.
  */
 import { Link } from "@tanstack/react-router";
 import {

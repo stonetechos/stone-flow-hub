@@ -203,16 +203,7 @@ export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedLayout,
 });
 
-/**
- * Phase G.8.9 Task A4: a route-level `CatchBoundary` around `<Outlet />`
- * only, deliberately placed INSIDE `AppShell` rather than around it. If a
- * child route throws (e.g. an unguarded `query.data!` hitting a transient
- * undefined-data render), only the content area is replaced — the sidebar,
- * top bar and navigation stay mounted and usable, so the user can navigate
- * to a different page or retry without a full reload. `getResetKey` ties
- * the boundary to the current pathname so navigating away automatically
- * clears the error state for the next page.
- */
+// Route-level CatchBoundary around Outlet inside AppShell to keep navigation mounted on error.
 let hasSyncedOrgData = false;
 
 function AuthenticatedLayout() {

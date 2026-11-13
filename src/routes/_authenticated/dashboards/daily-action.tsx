@@ -1,14 +1,6 @@
 /**
- * Daily Action Dashboard — one page for salespeople and ops managers
- * summarising what needs attention today. Composed entirely from existing
- * data + the Insight Provider registry (risk + Next Best Action).
- * Read-only.
- *
- * Phase G.8.8: the risk-derived tiles and the "Top risks" panel used to
- * come from `getRiskSummary()` directly; they now come from
- * `getOperationalRiskCounts()` (the real Insight Providers), and "Top
- * risks" renders the same `<InsightList>` component every other
- * Intelligence surface uses instead of a bespoke local renderer.
+ * Daily Action Dashboard — summarizes priorities, pending risks, and leads
+ * needing attention today.
  */
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -104,10 +96,7 @@ function DailyActionDashboard() {
         <LoadingBlock />
       </>
     );
-  // Phase G.8.9 Task A2: each of these three queries is independent — the
-  // original guard only checked riskQ.error, so a transient failure in
-  // just fupQ or leadsQ (both still succeed for riskQ) fell through to an
-  // unguarded .data! on the failed query and crashed the whole page.
+  // Independent query guards prevent unhandled crashes on partial network failures.
   if (riskQ.error)
     return (
       <>

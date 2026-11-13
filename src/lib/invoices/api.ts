@@ -698,10 +698,7 @@ export async function listVoidInvoices(): Promise<InvoiceListItem[]> {
   return (data ?? []) as InvoiceListItem[];
 }
 
-/* ------------------------------------------------------------------ */
-/* Invoice Line Items                                                 */
-/* ------------------------------------------------------------------ */
-
+// Invoice Line Items
 export type InvoiceItemPatch = {
   description?: string;
   notes?: string | null;

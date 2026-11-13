@@ -1,20 +1,6 @@
 /**
- * DangerNotifications — Phase G.7 UI integration; lifecycle-aware as of
- * Phase G.8.6 Task 3.
- *
- * Surfaces high-confidence danger-toned insights as interactive, swipeable
- * cards in the top-right corner.
- *
- * Interactions:
- *  - Close (×) button: Immediately removes/dismisses the notification.
- *  - Swipe Right (or drag right): Fluid animation showing "Release to Remove",
- *    and on release past threshold dismisses and permanently silences it for
- *    the session.
- *  - Swipe Left (or drag left): Fluid animation showing "Release to Act & Open",
- *    and on release navigates directly to the action route (e.g. quote / order).
- *  - Direct Action Button: One-click navigation to resolve the red flag.
- *  - Auto-dismiss countdown with pause on hover/touch.
- *  - Session + Database persistence so dismissed insights never reappear.
+ * High-confidence danger-toned notifications.
+ * Interactive swipeable cards with auto-dismiss and lifecycle persistence.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useRouterState } from "@tanstack/react-router";

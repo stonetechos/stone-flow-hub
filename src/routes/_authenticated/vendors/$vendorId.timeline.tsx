@@ -39,10 +39,7 @@ function VendorTimelinePage() {
         subtitle="RFQs, quotes, purchase orders and ledger events for this vendor, newest first."
       />
 
-      {/* Phase G.10: rendered by the shared BusinessTimeline component —
-          same engine and look as Customer/Project/generic entity timelines.
-          getVendorTimeline() itself is unchanged; only the rendering moved
-          to the shared component so there is one timeline UI, not two. */}
+      {/* Rendered by the shared BusinessTimeline component */}
       <BusinessTimeline
         events={timelineQ.data}
         isLoading={timelineQ.isLoading}

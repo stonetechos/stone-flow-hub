@@ -1,22 +1,7 @@
 /**
  * Smart Notifications — surfaces overdue follow-ups, quotation expiry,
- * delayed production/dispatch/installation, outstanding payments, lead
- * inactivity, vendor delays, margin/customer/repeat-business signals and
- * upcoming site visits + installations. Never executes actions
- * automatically.
- *
- * Phase G.8.8: the risk-derived notices used to come from
- * `getRiskSummary()` (a private, 7-rule engine only this file and 2
- * others ever saw). They now come from the same Insight Provider
- * registry every other Intelligence surface reads — Copilot,
- * EntityInsightPanel, DangerNotifications — via `useExecutiveInsights()`.
- * This is a genuine capability increase, not just a refactor: Smart
- * Notifications now sees all 24 registered providers (margin watch,
- * customer lifetime value, repeat business, etc.), not just the 7 rules
- * risk.ts used to compute. Filtered to danger/warning tones only, to
- * keep this page's original "alerts, not opportunities" scope — the same
- * filter DangerNotifications and daily-action apply for their own
- * purposes.
+ * delayed production/dispatch/installation, outstanding payments, and lead inactivity.
+ * Filtered to warning and danger tones.
  */
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";

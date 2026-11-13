@@ -61,20 +61,14 @@ import { StonemanMascot } from "@/components/mascot/StonemanMascot";
 import { isNocturnalHour, getNocturnalQuip } from "@/lib/dashboard/greeting";
 
 type ChatMsg = { role: "user" | "assistant"; kind?: "text"; content: string };
-/** Phase G.9B.1 — a data-lookup answer. Rendered as one-click result
- *  cards instead of AI prose, since the results come from real API
- *  calls (see nl-search/resolve.ts), never from the LLM. */
+/** Data-lookup answer rendered as result cards from real API queries. */
 type NlResultsMsg = {
   role: "assistant";
   kind: "nl-results";
   interpretation: string;
   results: NlResultItem[];
 };
-/** Sprint AI-1 — one `vie_actions` row, staged via understandAndStage() and
- *  advanced via confirmVieAction()/completeDraftAction() as the user acts on
- *  it. Rendering lives entirely in VieActionCard.tsx; this file only owns
- *  the mutations that call the three VIE server functions and keeps the
- *  row's local copy in sync with what they return. */
+/** Staged action row updated via confirmation mutations. */
 type VieActionMsg = { role: "assistant"; kind: "vie-action"; row: VieActionRow };
 type Msg = ChatMsg | NlResultsMsg | VieActionMsg;
 
@@ -255,16 +249,10 @@ export function Copilot() {
   // avoids adding a new routing layer on top of two LLM systems that don't
   // share a decision boundary today.
   const [mode, setMode] = useState<"ask" | "do">("ask");
-  // Insights layout only (Phase G.7 data untouched): expanded by default,
-  // independently scrollable, and collapsible so it can never grow large
-  // enough to push the chat composer off-screen.
+  // Insights drawer toggle (expanded by default, collapsible).
   const [insightsOpen, setInsightsOpen] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
-  // Voice-capture foundation (Goal 5) — see useSpeechCapture.ts's header
-  // for exactly what this does and does not handle. Transcript is synced
-  // live into the same `input` state the textarea already uses below, so
-  // it flows through the unmodified understandAndStage()/askCopilot path —
-  // no new parsing added, per the brief's "do not hardcode parsing rules."
+  // Voice capture hook.
   const speech = useSpeechCapture();
   useEffect(() => {
     if (speech.isListening) setInput(speech.transcript);
@@ -282,9 +270,7 @@ export function Copilot() {
           i.entity.id === ctx.entityId,
       )
     : processedInsights;
-  // Phase G.8.6 Task 3: same shared lifecycle EntityInsightPanel and
-  // DangerNotifications read/write, so dismissing here also stops the
-  // insight from resurfacing on a customer page or as a toast.
+  // Shared lifecycle hook: dismissing here syncs across detail panels and toasts.
   const { active: activeInsights, setStatus: setInsightStatus } =
     useInsightLifecycle(scopedInsights);
   const topInsights = [...activeInsights]
@@ -294,17 +280,9 @@ export function Copilot() {
   const isNocturnal = isNocturnalHour();
   const nocturnalQuip = isNocturnal ? getNocturnalQuip() : "";
 
-  // Phase G.9B.1: Natural Language Search. This mutation is the ONLY
-  // caller of the NL Search server function — it runs one LLM
-  // classification call, then either renders real, deterministically
-  // fetched results (data question) or falls through to the existing,
-  // unmodified `askCopilot` chat mutation below (general/how-to
-  // question, or if classification itself failed). askCopilot's own
-  // STRICT DATA RULE and behavior are untouched.
+  // Natural language query mutation: classifies intent and resolves data or routes to chat.
   const nlSearchMutation = useMutation({
-    // Phase G.10: page context is passed through so "this customer"/
-    // "this project"-style timeline questions resolve to the record the
-    // user is actually looking at (see resolveTimelineIntent()).
+    // Page context passed for contextual record references.
     mutationFn: (query: string) =>
       nlSearch({ data: { query, context: { entity: ctx.entity, entityId: ctx.entityId } } }),
     onSuccess: (res, query) => {
@@ -993,11 +971,7 @@ function Bubble({ role, content, onConfigureKey }: ChatMsg & { onConfigureKey?: 
   );
 }
 
-/** Phase G.9B.1, Task 5: renders NL Search results as a concise,
- *  one-click-navigation card list — no AI prose. `interpretation` is a
- *  deterministic restatement built in nl-search.functions.ts, never a
- *  second LLM call. Every row's href comes straight from resolve.ts's
- *  real API calls, so clicking just navigates like any other app link. */
+/** Renders search results as concise clickable cards linking to records. */
 function NlResultsBubble({
   interpretation,
   results,

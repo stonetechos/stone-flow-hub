@@ -249,11 +249,7 @@ function CustomerInstallationsTab({ customerId }: { customerId: string }) {
   );
 }
 
-/** Phase G.10 — full Business Timeline for this customer: enquiries,
- *  quotations, sales orders, invoices, payments, dispatches, installations,
- *  completed tasks and the customer's own activity log, unioned and sorted
- *  chronologically by the shared lib/timeline engine. Answers "what
- *  happened with this customer" directly on the customer page itself. */
+/** Customer timeline showing unified chronological history across enquiries, orders, and payments. */
 function CustomerTimelineTab({ customerId }: { customerId: string }) {
   const timelineQ = useCustomerTimeline(customerId);
   return (

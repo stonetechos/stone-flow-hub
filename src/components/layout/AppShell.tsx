@@ -100,9 +100,7 @@ import {
   type RenameTarget,
 } from "@/components/navigation/QuickRenameTabDialog";
 
-/* --------------------------------------------------------------------- */
-/* Sidebar collapsed state (per user, persisted in localStorage)          */
-/* --------------------------------------------------------------------- */
+// Sidebar collapsed state (per user, persisted in localStorage)
 const COLLAPSE_KEY = (uid: string | null): string =>
   uid ? `st.sidebar.collapsed.${uid}` : "st.sidebar.collapsed";
 
@@ -128,9 +126,7 @@ function useSidebarCollapsed(uid: string | null): [boolean, (v: boolean) => void
   return [collapsed, set];
 }
 
-/* --------------------------------------------------------------------- */
-/* Nav row                                                                */
-/* --------------------------------------------------------------------- */
+// Nav row
 function NavLinkRow({
   id,
   to,
@@ -309,9 +305,7 @@ function NavLinkRow({
   );
 }
 
-/* --------------------------------------------------------------------- */
-/* Nav Group Accordion Item (Zoho Books Style)                            */
-/* --------------------------------------------------------------------- */
+// Nav group accordion row
 function NavGroupRow({
   group,
   isOpen,
@@ -636,9 +630,7 @@ function NavGroupRow({
   );
 }
 
-/* --------------------------------------------------------------------- */
-/* Nav list                                                               */
-/* --------------------------------------------------------------------- */
+// Nav list
 function NavList({
   path,
   onNavigate,
@@ -747,9 +739,7 @@ function NavList({
   );
 }
 
-/* --------------------------------------------------------------------- */
-/* User menu (avatar dropdown)                                            */
-/* --------------------------------------------------------------------- */
+// User menu (avatar dropdown)
 function UserMenu({
   onSignOut,
   onOpenShortcuts,
@@ -948,9 +938,7 @@ function UserMenu({
   );
 }
 
-/* --------------------------------------------------------------------- */
-/* AppShell                                                               */
-/* --------------------------------------------------------------------- */
+// App shell main layout
 export function AppShell({ children }: { children: ReactNode }) {
   const { t, i18n } = useTranslation();
   const currentLang = (i18n.language?.substring(0, 2) || "en") as LangCode;
@@ -1080,29 +1068,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         </a>
 
         {/*
-          Enterprise layout (Phase G.11 Section 1): the shell itself is
-          locked to the viewport (h-dvh + overflow-hidden) so there is no
-          page-level scroll. The sidebar and the <main> content pane below
-          are each an independent overflow-y-auto region — scrolling one
-          never moves the other, and the header/breadcrumb/demo banner
-          stay put as shrink-0 chrome instead of relying on sticky
-          positioning against a scrolling ancestor.
-
-          Sprint R0: h-dvh alone has no fallback. A browser/webview that
-          doesn't recognize the dvh unit drops the whole `height` value
-          (invalid, not partially applied), leaving this container with no
-          explicit height at all — overflow-hidden then has nothing to
-          clip, <main>'s min-h-0/overflow-y-auto lose their bounding
-          height, and the entire shell (header, breadcrumb rail, demo
-          banner, any fixed-position footer painted inside <main>) falls
-          back to one continuous page-level scroll instead of staying
-          pinned chrome around an independently-scrolling content pane —
-          this is the mechanism behind the reported "footer/banner merged
-          with page content" bug. h-screen (100vh, universally supported)
-          is now the base value, with supports-[height:100dvh]:h-dvh
-          layered on top only where the browser actually understands the
-          unit — same @supports progressive-enhancement idiom already used
-          for backdrop-filter on the header below and in FormActions.
+          Locked to viewport (h-screen / h-dvh) with independent scrolling
+          regions for sidebar and main content.
         */}
 
         {/* Desktop sidebar — Solid Dark Turquoise with live resizable width */}

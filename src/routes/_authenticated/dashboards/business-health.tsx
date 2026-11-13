@@ -90,7 +90,7 @@ function BusinessHealthDashboard() {
         </div>
       </div>
 
-      {/* ------------------- INSIGHT METRICS (Phase G.7) ------------------- */}
+      {/* Insight metrics */}
       <div className="mt-6">
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           Insight metrics

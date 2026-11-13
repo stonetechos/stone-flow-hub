@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-type MenuCategory = "Sales" | "Purchase" | "Inventory" | "Finance" | "People";
+type MenuCategory = "Inventory" | "Sales" | "Purchase" | "Finance" | "People";
 
 const ITEMS: ReadonlyArray<{
   to: string;
@@ -34,14 +34,17 @@ const ITEMS: ReadonlyArray<{
   icon: typeof Users;
   group: MenuCategory;
 }> = [
-  // Sales
+  // Items & Materials
+  { to: "/inventory/new", label: "Inventory Item", icon: PackageSearch, group: "Inventory" },
+
+  // Sales & CRM (Customers -> Quotation -> Invoice -> Dispatch -> Carting)
   { to: "/customers", label: "Customer", icon: Users, group: "Sales" },
   { to: "/quotes/new", label: "Quotation", icon: FileText, group: "Sales" },
   { to: "/invoices/new", label: "Invoice", icon: Receipt, group: "Sales" },
   { to: "/dispatch/new", label: "Dispatch", icon: Truck, group: "Sales" },
   { to: "/local-carting", label: "Local Carting", icon: Navigation, group: "Sales" },
 
-  // Purchase
+  // Purchases & Procurement (Vendor -> RFQ -> Purchase Invoice -> Transport)
   { to: "/vendors", label: "Vendor", icon: Factory, group: "Purchase" },
   { to: "/rfqs", label: "RFQ", icon: ClipboardList, group: "Purchase" },
   { to: "/purchase-invoices/new", label: "Purchase Invoice", icon: FileCheck, group: "Purchase" },
@@ -52,15 +55,12 @@ const ITEMS: ReadonlyArray<{
     group: "Purchase",
   },
 
-  // Inventory
-  { to: "/inventory/new", label: "Inventory Item", icon: PackageSearch, group: "Inventory" },
-
-  // Finance
+  // Finance & Settlements
   { to: "/receipts/new", label: "Customer Payment / Receipt", icon: Wallet, group: "Finance" },
   { to: "/vendor-payments/new", label: "Vendor Payment", icon: CreditCard, group: "Finance" },
   { to: "/agency-payments", label: "Agency Payment", icon: Landmark, group: "Finance" },
 
-  // People / HR
+  // HR & Workforce
   {
     to: "/workforce-intelligence/employees/new",
     label: "Employee",
@@ -78,9 +78,9 @@ export function QuickCreateMenu({
 } = {}) {
   const { t } = useTranslation();
   const groups: ReadonlyArray<MenuCategory> = [
+    "Inventory",
     "Sales",
     "Purchase",
-    "Inventory",
     "Finance",
     "People",
   ];

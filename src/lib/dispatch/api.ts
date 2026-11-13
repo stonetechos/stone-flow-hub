@@ -210,10 +210,7 @@ export async function deleteDispatch(id: string): Promise<void> {
   if (error) throw new AppError(mapDbError(error));
 }
 
-/* ------------------------------------------------------------------ */
-/* Dispatch (delivery challan) line items                              */
-/* ------------------------------------------------------------------ */
-
+// Dispatch (delivery challan) line items
 export async function listDispatchItems(dispatchId: string): Promise<DispatchItemRow[]> {
   const { data, error } = await getDb()
     .from("dispatch_items")
@@ -329,9 +326,7 @@ export async function getSalesOrderDeliveryStatus(soId: string): Promise<Deliver
   };
 }
 
-/* ------------------------------------------------------------------ */
-/* Committed demand by product (Phase G.4 — Operations Intelligence)   */
-/* ------------------------------------------------------------------ */
+// Committed demand by product
 export type CommittedDemandRow = {
   product_id: string;
   committed_qty: number;

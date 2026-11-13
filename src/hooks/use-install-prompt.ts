@@ -15,10 +15,7 @@ function isStandalone(): boolean {
 }
 
 /**
- * Captures the browser's `beforeinstallprompt` event so the app can offer
- * its own "Install" affordance (Phase G.10A) instead of relying solely on
- * the browser's built-in UI. No-ops gracefully on browsers that never
- * fire the event (Safari, Firefox) or once already installed.
+ * Captures browser beforeinstallprompt event for PWA installation.
  */
 export function useInstallPrompt(): {
   canInstall: boolean;

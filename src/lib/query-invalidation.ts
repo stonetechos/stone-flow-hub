@@ -1,13 +1,3 @@
-/**
- * Centralized cache invalidation helpers.
- *
- * Every mutation should call one of these instead of `qc.invalidateQueries` ad-hoc, so a
- * new dependent query key only needs to be wired in once and every mutation instantly
- * refreshes it.
- *
- * Convention: `invalidate<Entity>(qc, id?)` invalidates the list, byId, and every known
- * dependent selector for that entity.
- */
 import type { QueryClient } from "@tanstack/react-query";
 import { qk } from "./query-keys";
 
@@ -15,10 +5,8 @@ function bump(qc: QueryClient, key: readonly unknown[]) {
   qc.invalidateQueries({ queryKey: key });
 }
 
-/** Invalidate every "picker" and "global search" query — anything that lists many entities. */
 function bumpPickers(qc: QueryClient) {
   qc.invalidateQueries({ queryKey: ["search"] });
-  // EntityPicker & every list-all-rows selector across the app.
   qc.invalidateQueries({ queryKey: ["customers", "picker"] });
   qc.invalidateQueries({ queryKey: ["customers", "list"] });
   qc.invalidateQueries({ queryKey: ["vendors", "picker"] });
@@ -27,7 +15,6 @@ function bumpPickers(qc: QueryClient) {
   qc.invalidateQueries({ queryKey: ["projects", "list"] });
   qc.invalidateQueries({ queryKey: ["products", "picker"] });
   qc.invalidateQueries({ queryKey: ["products", "list"] });
-  // Stone-industry masters
   qc.invalidateQueries({ queryKey: ["stone_types", "picker"] });
   qc.invalidateQueries({ queryKey: ["stone_types", "list"] });
   qc.invalidateQueries({ queryKey: ["surface_finishes", "picker"] });
@@ -38,11 +25,6 @@ function bumpPickers(qc: QueryClient) {
   qc.invalidateQueries({ queryKey: ["product_families", "list"] });
 }
 
-/**
- * Seed a newly-created row into every relevant picker/list/byId cache so
- * open dropdowns render the new row immediately (before the background
- * refetch triggered by the matching `invalidate*` helper completes).
- */
 export function seedPickerCache(
   qc: QueryClient,
   type: "customer" | "vendor" | "project" | "product",
@@ -84,209 +66,15 @@ export function seedPickerCache(
   qc.setQueryData(byIdKey, row);
 }
 
-export function invalidateCustomer(qc: QueryClient, id?: string): void {
-  bump(qc, qk.customers.all);
-  if (id) bump(qc, qk.customers.byId(id));
-  // Downstream: projects filtered by customer, dashboard KPIs, activity.
-  qc.invalidateQueries({ queryKey: ["projects", "byCustomer"] });
-  qc.invalidateQueries({ queryKey: ["projects", "picker"] });
-  bump(qc, qk.dashboard);
-  bump(qc, qk.activity.recent);
-  // Any open SafeDeleteDialog for this or any parent must re-scan.
-  qc.invalidateQueries({ queryKey: ["mdm", "dependencies"] });
-  bumpPickers(qc);
-}
-
-export function invalidateProject(qc: QueryClient, id?: string): void {
-  bump(qc, qk.projects.all);
-  if (id) bump(qc, qk.projects.byId(id));
-  qc.invalidateQueries({ queryKey: ["projects", "byCustomer"] });
-  qc.invalidateQueries({ queryKey: ["projects", "picker"] });
-  bump(qc, qk.enquiries.all);
-  bump(qc, qk.dashboard);
-  bump(qc, qk.activity.recent);
-  qc.invalidateQueries({ queryKey: ["mdm", "dependencies"] });
-  bumpPickers(qc);
-}
-
-export function invalidateVendor(qc: QueryClient, id?: string): void {
-  bump(qc, qk.vendors.all);
-  if (id) bump(qc, qk.vendors.byId(id));
-  bump(qc, qk.dashboard);
-  bump(qc, qk.activity.recent);
-  qc.invalidateQueries({ queryKey: ["mdm", "dependencies"] });
-  bumpPickers(qc);
-}
+// --------------------------------------------------------------------------
+// 3. Items & Materials
+// --------------------------------------------------------------------------
 
 export function invalidateProduct(qc: QueryClient, id?: string): void {
   bump(qc, qk.products.all);
   if (id) qc.invalidateQueries({ queryKey: ["products", "byId", id] });
   qc.invalidateQueries({ queryKey: ["mdm", "dependencies"] });
   bumpPickers(qc);
-}
-
-export function invalidateEnquiry(qc: QueryClient, id?: string): void {
-  bump(qc, qk.enquiries.all);
-  if (id) bump(qc, qk.enquiries.byId(id));
-  bump(qc, qk.dashboard);
-  bump(qc, qk.activity.recent);
-  bump(qc, qk.followups.all);
-  qc.invalidateQueries({ queryKey: ["website-leads-dashboard"] });
-}
-
-export function invalidateRfq(qc: QueryClient, enquiryId?: string): void {
-  bump(qc, qk.rfqs.all);
-  if (enquiryId) bump(qc, qk.rfqs.byEnquiry(enquiryId));
-  bump(qc, qk.enquiries.all);
-  bump(qc, qk.dashboard);
-  bump(qc, qk.activity.recent);
-}
-
-export function invalidateQuote(qc: QueryClient, id?: string): void {
-  bump(qc, qk.quotes.all);
-  if (id) {
-    bump(qc, qk.quotes.byId(id));
-    bump(qc, qk.quotes.items(id));
-    qc.invalidateQueries({ queryKey: ["quotes", "images", id] });
-    qc.invalidateQueries({ queryKey: ["quotes", "linkedSalesOrder", id] });
-    qc.invalidateQueries({ queryKey: ["quotes", "dispatches", id] });
-  }
-  bump(qc, qk.dashboard);
-  bump(qc, qk.activity.recent);
-  qc.invalidateQueries({ queryKey: ["dash"] });
-  qc.invalidateQueries({ queryKey: ["profitability"] });
-  qc.invalidateQueries({ queryKey: ["salesperson-profitability"] });
-}
-
-export function invalidateEstimate(qc: QueryClient, id?: string): void {
-  bump(qc, qk.estimates.all);
-  if (id) {
-    bump(qc, qk.estimates.byId(id));
-    bump(qc, qk.estimates.items(id));
-    bump(qc, qk.estimates.components(id));
-    bump(qc, qk.estimates.schedule(id));
-    bump(qc, qk.estimates.documents(id));
-  }
-  bump(qc, qk.dashboard);
-  bump(qc, qk.activity.recent);
-}
-
-export function invalidatePurchaseOrder(qc: QueryClient, id?: string): void {
-  bump(qc, qk.purchaseOrders.all);
-  if (id) bump(qc, qk.purchaseOrders.byId(id));
-  bump(qc, qk.dashboard);
-  bump(qc, qk.activity.recent);
-}
-
-export function invalidatePurchaseInvoice(
-  qc: QueryClient,
-  id?: string,
-  vendorId?: string | null,
-): void {
-  bump(qc, qk.purchaseInvoices.all);
-  if (id) bump(qc, qk.purchaseInvoices.byId(id));
-  if (vendorId) bump(qc, qk.purchaseInvoices.byVendor(vendorId));
-  bump(qc, qk.dashboard);
-  bump(qc, qk.activity.recent);
-}
-
-export function invalidatePurchaseTransport(
-  qc: QueryClient,
-  id?: string,
-  vendorId?: string | null,
-): void {
-  bump(qc, qk.purchaseTransport.all);
-  if (id) {
-    bump(qc, qk.purchaseTransport.byId(id));
-    bump(qc, qk.purchaseTransport.items(id));
-  }
-  if (vendorId) bump(qc, qk.purchaseTransport.byVendor(vendorId));
-  bump(qc, qk.dashboard);
-  bump(qc, qk.activity.recent);
-}
-
-export function invalidateSalesOrder(qc: QueryClient, id?: string): void {
-  bump(qc, qk.salesOrders.all);
-  if (id) bump(qc, qk.salesOrders.byId(id));
-  bump(qc, qk.dashboard);
-  bump(qc, qk.activity.recent);
-}
-
-export function invalidateInvoice(qc: QueryClient, id?: string): void {
-  bump(qc, qk.invoices.all);
-  if (id) {
-    bump(qc, qk.invoices.byId(id));
-    bump(qc, qk.invoices.items(id));
-    bump(qc, qk.invoices.payments(id));
-  }
-  bump(qc, qk.quotes.all);
-  bump(qc, qk.dashboard);
-  bump(qc, qk.activity.recent);
-}
-
-export function invalidateDispatch(qc: QueryClient, id?: string): void {
-  bump(qc, qk.dispatch.all);
-  if (id) bump(qc, qk.dispatch.byId(id));
-  bump(qc, qk.dashboard);
-  bump(qc, qk.activity.recent);
-}
-export function invalidatePayment(qc: QueryClient, id?: string, invoiceId?: string): void {
-  bump(qc, qk.paymentsAll.all);
-  if (id) bump(qc, qk.paymentsAll.byId(id));
-  if (invoiceId) {
-    bump(qc, qk.invoices.byId(invoiceId));
-    bump(qc, qk.invoices.payments(invoiceId));
-  }
-  bump(qc, qk.invoices.all);
-  bump(qc, qk.dashboard);
-  bump(qc, qk.activity.recent);
-  // Phase G.9A.2: the Payments page reads payment_register (receipts +
-  // legacy payments), not just the payments table -- keep it in sync too.
-  bump(qc, qk.paymentRegister.all);
-}
-
-export function invalidateReceipt(qc: QueryClient, id?: string, customerId?: string): void {
-  bump(qc, qk.receipts.all);
-  if (id) {
-    bump(qc, qk.receipts.byId(id));
-    bump(qc, qk.receipts.allocations(id));
-  }
-  if (customerId) {
-    bump(qc, qk.receipts.byCustomer(customerId));
-    bump(qc, qk.customerLedger.byCustomer(customerId));
-    bump(qc, qk.customerLedger.summary(customerId));
-    bump(qc, qk.receipts.openInvoices(customerId));
-  }
-  // Allocations touch invoice totals + status.
-  bump(qc, qk.invoices.all);
-  bump(qc, qk.dashboard);
-  bump(qc, qk.activity.recent);
-  // Phase G.9A.2: the Payments page reads payment_register (receipts +
-  // legacy payments), not just the receipts table -- keep it in sync too.
-  bump(qc, qk.paymentRegister.all);
-}
-
-export function invalidateMessage(
-  qc: QueryClient,
-  id?: string,
-  entity?: { type: string; id: string },
-): void {
-  bump(qc, qk.messages.all);
-  if (id) {
-    bump(qc, qk.messages.byId(id));
-    bump(qc, qk.messages.events(id));
-  }
-  if (entity) bump(qc, qk.messages.byEntity(entity.type, entity.id));
-}
-
-export function invalidateMessageTemplate(qc: QueryClient, code?: string): void {
-  bump(qc, qk.messageTemplates.all);
-  if (code) bump(qc, qk.messageTemplates.byCode(code));
-}
-
-export function invalidateAppSetting(qc: QueryClient, key?: string): void {
-  bump(qc, qk.appSettings.all);
-  if (key) bump(qc, qk.appSettings.byKey(key));
 }
 
 export function invalidateInventory(qc: QueryClient, id?: string): void {
@@ -296,48 +84,10 @@ export function invalidateInventory(qc: QueryClient, id?: string): void {
   bump(qc, qk.activity.recent);
 }
 
-export function invalidateGrn(qc: QueryClient, id?: string): void {
-  bump(qc, qk.grns.all);
-  if (id) {
-    bump(qc, qk.grns.byId(id));
-    bump(qc, qk.grns.items(id));
-    bump(qc, qk.grns.inspections(id));
-  }
-  bump(qc, qk.inventoryMovements.all);
-  bump(qc, qk.inventoryMovements.stockLedger);
-  bump(qc, ["vendor_ledger"]);
-  bump(qc, qk.activity.recent);
-  bump(qc, qk.dashboard);
-}
-
-export function invalidateVendorPayment(qc: QueryClient, vendorId?: string, id?: string): void {
-  bump(qc, qk.vendorPayments.all);
-  if (vendorId) bump(qc, qk.vendorPayments.byVendor(vendorId));
-  if (id) bump(qc, qk.vendorPayments.byId(id));
-  bump(qc, ["vendor_ledger"]);
-  bump(qc, qk.activity.recent);
-  bump(qc, qk.dashboard);
-}
-
 export function invalidateInventoryMovements(qc: QueryClient): void {
   bump(qc, qk.inventoryMovements.all);
   bump(qc, qk.inventoryMovements.stockLedger);
 }
-
-export function invalidateFollowup(
-  qc: QueryClient,
-  scope?: { enquiryId?: string | null; entityType?: string | null; entityId?: string | null },
-): void {
-  bump(qc, qk.followups.all);
-  if (scope?.enquiryId) bump(qc, qk.followups.byEnquiry(scope.enquiryId));
-  if (scope?.entityType && scope?.entityId) {
-    bump(qc, qk.followups.byEntity(scope.entityType, scope.entityId));
-  }
-  bump(qc, qk.dashboard);
-  bump(qc, qk.activity.recent);
-}
-
-// -------- Stone-industry masters & manufacturing --------
 
 export function invalidateStoneType(qc: QueryClient, id?: string): void {
   bump(qc, qk.stoneTypes.all);
@@ -383,12 +133,227 @@ export function invalidateProductionOrder(
   bump(qc, qk.activity.recent);
 }
 
+// --------------------------------------------------------------------------
+// 4. Sales & CRM (Customers -> Enquiries -> Projects -> Estimates -> Quotes -> Orders -> Invoices -> Dispatch -> Payments)
+// --------------------------------------------------------------------------
+
+export function invalidateCustomer(qc: QueryClient, id?: string): void {
+  bump(qc, qk.customers.all);
+  if (id) bump(qc, qk.customers.byId(id));
+  qc.invalidateQueries({ queryKey: ["projects", "byCustomer"] });
+  qc.invalidateQueries({ queryKey: ["projects", "picker"] });
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+  qc.invalidateQueries({ queryKey: ["mdm", "dependencies"] });
+  bumpPickers(qc);
+}
+
+export function invalidateEnquiry(qc: QueryClient, id?: string): void {
+  bump(qc, qk.enquiries.all);
+  if (id) bump(qc, qk.enquiries.byId(id));
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+  bump(qc, qk.followups.all);
+  qc.invalidateQueries({ queryKey: ["website-leads-dashboard"] });
+}
+
+export function invalidateFollowup(
+  qc: QueryClient,
+  scope?: { enquiryId?: string | null; entityType?: string | null; entityId?: string | null },
+): void {
+  bump(qc, qk.followups.all);
+  if (scope?.enquiryId) bump(qc, qk.followups.byEnquiry(scope.enquiryId));
+  if (scope?.entityType && scope?.entityId) {
+    bump(qc, qk.followups.byEntity(scope.entityType, scope.entityId));
+  }
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+}
+
+export function invalidateProject(qc: QueryClient, id?: string): void {
+  bump(qc, qk.projects.all);
+  if (id) bump(qc, qk.projects.byId(id));
+  qc.invalidateQueries({ queryKey: ["projects", "byCustomer"] });
+  qc.invalidateQueries({ queryKey: ["projects", "picker"] });
+  bump(qc, qk.enquiries.all);
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+  qc.invalidateQueries({ queryKey: ["mdm", "dependencies"] });
+  bumpPickers(qc);
+}
+
+export function invalidateEstimate(qc: QueryClient, id?: string): void {
+  bump(qc, qk.estimates.all);
+  if (id) {
+    bump(qc, qk.estimates.byId(id));
+    bump(qc, qk.estimates.items(id));
+    bump(qc, qk.estimates.components(id));
+    bump(qc, qk.estimates.schedule(id));
+    bump(qc, qk.estimates.documents(id));
+  }
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+}
+
+export function invalidateQuote(qc: QueryClient, id?: string): void {
+  bump(qc, qk.quotes.all);
+  if (id) {
+    bump(qc, qk.quotes.byId(id));
+    bump(qc, qk.quotes.items(id));
+    qc.invalidateQueries({ queryKey: ["quotes", "images", id] });
+    qc.invalidateQueries({ queryKey: ["quotes", "linkedSalesOrder", id] });
+    qc.invalidateQueries({ queryKey: ["quotes", "dispatches", id] });
+  }
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+  qc.invalidateQueries({ queryKey: ["dash"] });
+  qc.invalidateQueries({ queryKey: ["profitability"] });
+  qc.invalidateQueries({ queryKey: ["salesperson-profitability"] });
+}
+
+export function invalidateSalesOrder(qc: QueryClient, id?: string): void {
+  bump(qc, qk.salesOrders.all);
+  if (id) bump(qc, qk.salesOrders.byId(id));
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+}
+
+export function invalidateInvoice(qc: QueryClient, id?: string): void {
+  bump(qc, qk.invoices.all);
+  if (id) {
+    bump(qc, qk.invoices.byId(id));
+    bump(qc, qk.invoices.items(id));
+    bump(qc, qk.invoices.payments(id));
+  }
+  bump(qc, qk.quotes.all);
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+}
+
+export function invalidateDispatch(qc: QueryClient, id?: string): void {
+  bump(qc, qk.dispatch.all);
+  if (id) bump(qc, qk.dispatch.byId(id));
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+}
+
+export function invalidateReceipt(qc: QueryClient, id?: string, customerId?: string): void {
+  bump(qc, qk.receipts.all);
+  if (id) {
+    bump(qc, qk.receipts.byId(id));
+    bump(qc, qk.receipts.allocations(id));
+  }
+  if (customerId) {
+    bump(qc, qk.receipts.byCustomer(customerId));
+    bump(qc, qk.customerLedger.byCustomer(customerId));
+    bump(qc, qk.customerLedger.summary(customerId));
+    bump(qc, qk.receipts.openInvoices(customerId));
+  }
+  bump(qc, qk.invoices.all);
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+  bump(qc, qk.paymentRegister.all);
+}
+
+export function invalidatePayment(qc: QueryClient, id?: string, invoiceId?: string): void {
+  bump(qc, qk.paymentsAll.all);
+  if (id) bump(qc, qk.paymentsAll.byId(id));
+  if (invoiceId) {
+    bump(qc, qk.invoices.byId(invoiceId));
+    bump(qc, qk.invoices.payments(invoiceId));
+  }
+  bump(qc, qk.invoices.all);
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+  bump(qc, qk.paymentRegister.all);
+}
+
+// --------------------------------------------------------------------------
+// 5. Purchases & Procurement
+// --------------------------------------------------------------------------
+
+export function invalidateVendor(qc: QueryClient, id?: string): void {
+  bump(qc, qk.vendors.all);
+  if (id) bump(qc, qk.vendors.byId(id));
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+  qc.invalidateQueries({ queryKey: ["mdm", "dependencies"] });
+  bumpPickers(qc);
+}
+
 export function invalidateVendorCapability(qc: QueryClient, vendorId: string): void {
   bump(qc, qk.vendorCapabilities.byVendor(vendorId));
   if (vendorId) bump(qc, qk.vendors.byId(vendorId));
 }
 
-// -------- Slice 6: Installation & Field Service --------
+export function invalidateRfq(qc: QueryClient, enquiryId?: string): void {
+  bump(qc, qk.rfqs.all);
+  if (enquiryId) bump(qc, qk.rfqs.byEnquiry(enquiryId));
+  bump(qc, qk.enquiries.all);
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+}
+
+export function invalidatePurchaseOrder(qc: QueryClient, id?: string): void {
+  bump(qc, qk.purchaseOrders.all);
+  if (id) bump(qc, qk.purchaseOrders.byId(id));
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+}
+
+export function invalidateGrn(qc: QueryClient, id?: string): void {
+  bump(qc, qk.grns.all);
+  if (id) {
+    bump(qc, qk.grns.byId(id));
+    bump(qc, qk.grns.items(id));
+    bump(qc, qk.grns.inspections(id));
+  }
+  bump(qc, qk.inventoryMovements.all);
+  bump(qc, qk.inventoryMovements.stockLedger);
+  bump(qc, ["vendor_ledger"]);
+  bump(qc, qk.activity.recent);
+  bump(qc, qk.dashboard);
+}
+
+export function invalidatePurchaseInvoice(
+  qc: QueryClient,
+  id?: string,
+  vendorId?: string | null,
+): void {
+  bump(qc, qk.purchaseInvoices.all);
+  if (id) bump(qc, qk.purchaseInvoices.byId(id));
+  if (vendorId) bump(qc, qk.purchaseInvoices.byVendor(vendorId));
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+}
+
+export function invalidateVendorPayment(qc: QueryClient, vendorId?: string, id?: string): void {
+  bump(qc, qk.vendorPayments.all);
+  if (vendorId) bump(qc, qk.vendorPayments.byVendor(vendorId));
+  if (id) bump(qc, qk.vendorPayments.byId(id));
+  bump(qc, ["vendor_ledger"]);
+  bump(qc, qk.activity.recent);
+  bump(qc, qk.dashboard);
+}
+
+export function invalidatePurchaseTransport(
+  qc: QueryClient,
+  id?: string,
+  vendorId?: string | null,
+): void {
+  bump(qc, qk.purchaseTransport.all);
+  if (id) {
+    bump(qc, qk.purchaseTransport.byId(id));
+    bump(qc, qk.purchaseTransport.items(id));
+  }
+  if (vendorId) bump(qc, qk.purchaseTransport.byVendor(vendorId));
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+}
+
+// --------------------------------------------------------------------------
+// 6. Executions & Cartings
+// --------------------------------------------------------------------------
 
 export function invalidateInstallation(
   qc: QueryClient,
@@ -415,13 +380,44 @@ export function invalidateInstallationTeam(qc: QueryClient, id?: string): void {
   if (id) bump(qc, qk.installationTeams.byId(id));
 }
 
+export function invalidateInstallationLedger(qc: QueryClient, agencyId?: string): void {
+  bump(qc, qk.installationLedger.all());
+  bump(qc, qk.installationLedger.summaries());
+  if (agencyId) bump(qc, qk.installationLedger.byAgency(agencyId));
+}
+
+// --------------------------------------------------------------------------
+// 9. Accountant / Finance
+// --------------------------------------------------------------------------
+
 export function invalidatePersonalTransfers(qc: QueryClient): void {
   bump(qc, qk.personalTransfers.all);
   bump(qc, ["personalTransfers"]);
 }
 
-export function invalidateInstallationLedger(qc: QueryClient, agencyId?: string): void {
-  bump(qc, qk.installationLedger.all());
-  bump(qc, qk.installationLedger.summaries());
-  if (agencyId) bump(qc, qk.installationLedger.byAgency(agencyId));
+// --------------------------------------------------------------------------
+// 12. Settings & Communications
+// --------------------------------------------------------------------------
+
+export function invalidateMessage(
+  qc: QueryClient,
+  id?: string,
+  entity?: { type: string; id: string },
+): void {
+  bump(qc, qk.messages.all);
+  if (id) {
+    bump(qc, qk.messages.byId(id));
+    bump(qc, qk.messages.events(id));
+  }
+  if (entity) bump(qc, qk.messages.byEntity(entity.type, entity.id));
+}
+
+export function invalidateMessageTemplate(qc: QueryClient, code?: string): void {
+  bump(qc, qk.messageTemplates.all);
+  if (code) bump(qc, qk.messageTemplates.byCode(code));
+}
+
+export function invalidateAppSetting(qc: QueryClient, key?: string): void {
+  bump(qc, qk.appSettings.all);
+  if (key) bump(qc, qk.appSettings.byKey(key));
 }

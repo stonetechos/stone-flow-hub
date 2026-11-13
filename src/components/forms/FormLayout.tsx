@@ -28,10 +28,7 @@ import { Loader2 } from "lucide-react";
 import type { FormEvent, ReactNode, RefObject } from "react";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 
-/* -------------------------------------------------------------------- */
-/* Root form                                                             */
-/* -------------------------------------------------------------------- */
-
+// Root form
 export function FormLayout({
   onSubmit,
   busy,
@@ -69,10 +66,7 @@ export function FormLayout({
   );
 }
 
-/* -------------------------------------------------------------------- */
-/* Section                                                               */
-/* -------------------------------------------------------------------- */
-
+// Section
 export function FormSection({
   title,
   description,
@@ -105,10 +99,7 @@ export function FormSection({
   );
 }
 
-/* -------------------------------------------------------------------- */
-/* Grid                                                                  */
-/* -------------------------------------------------------------------- */
-
+// Grid
 export function FormGrid({
   columns = 2,
   children,
@@ -124,10 +115,7 @@ export function FormGrid({
   return <div className={cn("grid grid-cols-1 gap-x-6 gap-y-5", cols, className)}>{children}</div>;
 }
 
-/* -------------------------------------------------------------------- */
-/* Sticky action bar                                                     */
-/* -------------------------------------------------------------------- */
-
+// Sticky action bar
 export function FormActions({
   primary,
   secondary,
@@ -178,10 +166,7 @@ export function FormActions({
   );
 }
 
-/* -------------------------------------------------------------------- */
-/* Summary rail — reusable read-only "totals" panel                     */
-/* -------------------------------------------------------------------- */
-
+// Summary rail
 export function FormSummary({
   title = "Summary",
   children,

@@ -5,12 +5,8 @@
  * "action" or a raw Tone). The card resolves that to STDL status tokens so
  * every theme restyles it consistently.
  *
- * `onDismiss` (Phase G.8.6 Task 3, optional/additive — every existing
- * caller is unaffected): when provided, renders a small dismiss control in
- * the header that stops propagation so it never triggers the card's own
- * `to` navigation. Callers wire this to the shared insight lifecycle
- * (`useInsightLifecycle`) so dismissing here is reflected everywhere else
- * that insight is shown, instead of being a private per-surface dismiss.
+ * `onDismiss`: when provided, renders a dismiss control in the header
+ * wired to the shared insight lifecycle (`useInsightLifecycle`).
  */
 import type { ElementType, ReactNode } from "react";
 import { Link } from "@tanstack/react-router";

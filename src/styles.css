@@ -295,10 +295,7 @@
    * Material (material-basalt / material-granite: sidebar, hero cards,
    * popovers with a stone header, the auth screen's branding panel) must
    * use --text-on-material / --text-on-material-muted instead — those
-   * stay light in every theme because the material never lightens.
-   * Phase G.11 Section 3: two dark themes previously reused
-   * --text-inverse for material text too, which flips it dark exactly
-   * when the surface stays dark — that was the contrast bug. */
+   * stay light in every theme because the material never lightens. */
   --text-inverse: var(--stone-limestone-50);
   --text-inverse-muted: oklch(0.75 0.01 250);
   --text-on-material: var(--stone-limestone-50);
@@ -1088,17 +1085,7 @@
   scrollbar-gutter: stable;
 }
 
-/* ============================================================
- *  Tab Strip Scroll Strategy — global, reusable (Phase G.11, Section 5)
- *  Applied to TabsList. Several detail pages (Customers, Vendors,
- *  Projects, ...) register 10-15 tabs — more than fits at any viewport,
- *  including desktop widths like 1366px. Without this, TabsList's
- *  `inline-flex` + `w-full` simply overflows its container with no way
- *  to reach the later tabs. This makes the strip horizontally
- *  scrollable (touch + trackpad) with hidden scrollbar chrome instead
- *  of a visible scrollbar, matching the rest of the app's overlay-scroll
- *  surfaces.
- * ============================================================ */
+/* Horizontal scroll for wide multi-tab lists */
 @utility tabstrip-scroll {
   overflow-x: auto;
   overflow-y: hidden;

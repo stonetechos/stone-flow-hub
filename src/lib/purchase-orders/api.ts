@@ -94,17 +94,7 @@ export async function deletePurchaseOrder(id: string): Promise<void> {
   if (error) throw new AppError(mapDbError(error));
 }
 
-/* ------------------------------------------------------------------ */
-/* Open-PO product lookup (Phase G.4 — Operations Intelligence)        */
-/* ------------------------------------------------------------------ */
-
-/**
- * Product ids that already have an open (not received/cancelled) purchase
- * order somewhere in the pipeline. `purchase_orders` has no per-line item
- * table of its own — it links to a single `vendor_quote_id` — so this
- * follows that existing relationship (PO -> vendor_quote -> vendor_quote_items)
- * rather than inventing a new one.
- */
+// Open-PO product lookup
 export async function listOpenPurchaseProductIds(): Promise<Set<string>> {
   const { data: openPOs, error: poErr } = await getDb()
     .from("purchase_orders")

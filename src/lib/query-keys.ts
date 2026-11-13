@@ -1,58 +1,16 @@
-/** Centralized React Query key factories. Single source of truth for cache invalidation. */
 export const qk = {
+  // 1. Home / Overview
   me: ["me"] as const,
   dashboard: ["dashboard"] as const,
-
   insights: {
     all: ["insights"] as const,
     provider: (id: string) => ["insights", "provider", id] as const,
   },
+  insightStates: {
+    all: ["insightStates", "me"] as const,
+  },
   notifications: {
     all: ["notifications"] as const,
-  },
-
-  customers: {
-    all: ["customers"] as const,
-    list: (q?: string) => ["customers", "list", q ?? ""] as const,
-    byId: (id: string) => ["customers", "byId", id] as const,
-    picker: (q?: string) => ["customers", "picker", q ?? ""] as const,
-    contacts: (customerId: string) => ["customers", "contacts", customerId] as const,
-  },
-  projects: {
-    all: ["projects"] as const,
-    list: (q?: string) => ["projects", "list", q ?? ""] as const,
-    byId: (id: string) => ["projects", "byId", id] as const,
-    byCustomer: (customerId: string) => ["projects", "byCustomer", customerId] as const,
-    picker: (q?: string, customerId?: string | null) =>
-      ["projects", "picker", q ?? "", customerId ?? ""] as const,
-  },
-  vendors: {
-    all: ["vendors"] as const,
-    list: (q?: string) => ["vendors", "list", q ?? ""] as const,
-    byId: (id: string) => ["vendors", "byId", id] as const,
-    picker: (q?: string) => ["vendors", "picker", q ?? ""] as const,
-  },
-  products: {
-    all: ["products"] as const,
-    list: (q?: string) => ["products", "list", q ?? ""] as const,
-    picker: (q?: string) => ["products", "picker", q ?? ""] as const,
-  },
-  enquiries: {
-    all: ["enquiries"] as const,
-    list: (q?: string) => ["enquiries", "list", q ?? ""] as const,
-    byId: (id: string) => ["enquiries", "byId", id] as const,
-    pipeline: ["enquiries", "pipeline"] as const,
-  },
-  rfqs: {
-    all: ["rfqs"] as const,
-    byEnquiry: (enquiryId: string) => ["rfqs", "byEnquiry", enquiryId] as const,
-  },
-  followups: {
-    all: ["followups"] as const,
-    scope: (scope: "pending" | "today" | "all") => ["followups", "scope", scope] as const,
-    byEnquiry: (id: string) => ["followups", "byEnquiry", id] as const,
-    byEntity: (entityType: string, entityId: string) =>
-      ["followups", "byEntity", entityType, entityId] as const,
   },
   activity: {
     recent: ["activity", "recent"] as const,
@@ -60,167 +18,6 @@ export const qk = {
     global: (filters: Record<string, string | null | undefined>) =>
       ["activity", "global", filters] as const,
   },
-  quotes: {
-    all: ["quotes"] as const,
-    list: (q?: string) => ["quotes", "list", q ?? ""] as const,
-    byId: (id: string) => ["quotes", "byId", id] as const,
-    byProject: (id: string) => ["quotes", "byProject", id] as const,
-    items: (id: string) => ["quotes", "items", id] as const,
-  },
-  estimates: {
-    all: ["estimates"] as const,
-    list: (q?: string) => ["estimates", "list", q ?? ""] as const,
-    byId: (id: string) => ["estimates", "byId", id] as const,
-    items: (id: string) => ["estimates", "items", id] as const,
-    components: (id: string) => ["estimates", "components", id] as const,
-    schedule: (id: string) => ["estimates", "schedule", id] as const,
-    documents: (id: string) => ["estimates", "documents", id] as const,
-  },
-  invoices: {
-    all: ["invoices"] as const,
-    list: (q?: string) => ["invoices", "list", q ?? ""] as const,
-    byId: (id: string) => ["invoices", "byId", id] as const,
-    byProject: (id: string) => ["invoices", "byProject", id] as const,
-    items: (id: string) => ["invoices", "items", id] as const,
-    payments: (id: string) => ["invoices", "payments", id] as const,
-    links: (id: string) => ["invoices", "links", id] as const,
-  },
-  salesOrders: {
-    all: ["salesOrders"] as const,
-    list: (q?: string, status?: string) => ["salesOrders", "list", q ?? "", status ?? ""] as const,
-    byId: (id: string) => ["salesOrders", "byId", id] as const,
-    items: (id: string) => ["salesOrders", "items", id] as const,
-  },
-  purchaseOrders: {
-    all: ["purchaseOrders"] as const,
-    list: (q?: string, status?: string) =>
-      ["purchaseOrders", "list", q ?? "", status ?? ""] as const,
-    byId: (id: string) => ["purchaseOrders", "byId", id] as const,
-    picker: (q?: string, vendorId?: string | null) =>
-      ["purchaseOrders", "picker", q ?? "", vendorId ?? ""] as const,
-  },
-  purchaseInvoices: {
-    all: ["purchaseInvoices"] as const,
-    list: (q?: string, status?: string) =>
-      ["purchaseInvoices", "list", q ?? "", status ?? ""] as const,
-    byId: (id: string) => ["purchaseInvoices", "byId", id] as const,
-    byVendor: (vendorId: string) => ["purchaseInvoices", "byVendor", vendorId] as const,
-  },
-  gst: {
-    all: ["gst"] as const,
-    period: (year: number, month: number) => ["gst", "period", year, month] as const,
-  },
-  inventory: {
-    all: ["inventory"] as const,
-    list: (q?: string) => ["inventory", "list", q ?? ""] as const,
-    byId: (id: string) => ["inventory", "byId", id] as const,
-  },
-  purchaseTransport: {
-    all: ["purchaseTransport"] as const,
-    list: (q?: string, status?: string) =>
-      ["purchaseTransport", "list", q ?? "", status ?? ""] as const,
-    byId: (id: string) => ["purchaseTransport", "byId", id] as const,
-    items: (id: string) => ["purchaseTransport", "items", id] as const,
-    byPO: (id: string) => ["purchaseTransport", "byPO", id] as const,
-    byVendor: (id: string) => ["purchaseTransport", "byVendor", id] as const,
-  },
-  cartingAgencies: {
-    list: () => ["cartingAgencies", "list"] as const,
-  },
-  liabilities: {
-    list: () => ["liabilities", "list"] as const,
-    payments: (liabilityId?: string) =>
-      liabilityId
-        ? (["liabilities", "payments", liabilityId] as const)
-        : (["liabilities", "payments"] as const),
-    rentRegister: () => ["liabilities", "rentRegister"] as const,
-  },
-  businessExpenses: {
-    list: (from?: string, to?: string) =>
-      ["businessExpenses", "list", from ?? "", to ?? ""] as const,
-  },
-  cashbook: {
-    all: ["cashbook"] as const,
-    list: (from?: string, to?: string) => ["cashbook", "list", from ?? "", to ?? ""] as const,
-  },
-  personalTransfers: {
-    all: ["personalTransfers"] as const,
-    list: (from?: string, to?: string) =>
-      ["personalTransfers", "list", from ?? "", to ?? ""] as const,
-  },
-  annualGoal: {
-    current: () => ["appSettings", "finance.annual_net_margin_goal"] as const,
-  },
-  installationAgencies: {
-    list: () => ["installationAgencies", "list"] as const,
-  },
-  installationLedger: {
-    all: () => ["installationLedger"] as const,
-    summaries: () => ["installationLedger", "summaries"] as const,
-    byAgency: (agencyId: string) => ["installationLedger", "byAgency", agencyId] as const,
-  },
-  dispatch: {
-    all: ["dispatch"] as const,
-    list: (q?: string, status?: string) => ["dispatch", "list", q ?? "", status ?? ""] as const,
-    byId: (id: string) => ["dispatch", "byId", id] as const,
-    items: (id: string) => ["dispatch", "items", id] as const,
-    bySalesOrder: (id: string) => ["dispatch", "bySalesOrder", id] as const,
-    byCustomer: (id: string) => ["dispatch", "byCustomer", id] as const,
-    byProject: (id: string) => ["dispatch", "byProject", id] as const,
-    deliveryStatus: (id: string) => ["dispatch", "deliveryStatus", id] as const,
-  },
-
-  paymentsAll: {
-    all: ["paymentsAll"] as const,
-    list: (q?: string) => ["paymentsAll", "list", q ?? ""] as const,
-    byId: (id: string) => ["paymentsAll", "byId", id] as const,
-  },
-  /** Phase G.9A.2 -- the payment_register view (receipts + legacy
-   *  payments), the Payments page's actual data source. Separate from
-   *  `paymentsAll` (which still reads the raw `payments` table for the
-   *  detail/edit routes) so invalidating one doesn't force-refetch the
-   *  other unnecessarily. */
-  paymentRegister: {
-    all: ["paymentRegister"] as const,
-    list: (q?: string) => ["paymentRegister", "list", q ?? ""] as const,
-  },
-  receipts: {
-    all: ["receipts"] as const,
-    list: (q?: string) => ["receipts", "list", q ?? ""] as const,
-    byId: (id: string) => ["receipts", "byId", id] as const,
-    byCustomer: (id: string) => ["receipts", "byCustomer", id] as const,
-    allocations: (id: string) => ["receipts", "allocations", id] as const,
-    openInvoices: (customerId: string) => ["receipts", "openInvoices", customerId] as const,
-  },
-  customerLedger: {
-    byCustomer: (id: string) => ["customer_ledger", id] as const,
-    summary: (id: string) => ["customer_ledger", "summary", id] as const,
-  },
-  vendorLedger: {
-    byVendor: (id: string) => ["vendor_ledger", id] as const,
-    /** Every vendor_ledger row across all vendors, grouped client-side into
-     *  a per-vendor outstanding-balance summary for the Purchase Ledger
-     *  index page (mirrors receipts/index.tsx's client-side aggregation). */
-    allSummaries: ["vendor_ledger", "allSummaries"] as const,
-  },
-  messages: {
-    all: ["messages"] as const,
-    list: (q?: string, channel?: string) => ["messages", "list", q ?? "", channel ?? ""] as const,
-    byId: (id: string) => ["messages", "byId", id] as const,
-    byEntity: (type: string, id: string) => ["messages", "byEntity", type, id] as const,
-    events: (id: string) => ["messages", "events", id] as const,
-  },
-  messageTemplates: {
-    all: ["message_templates"] as const,
-    byCode: (code: string) => ["message_templates", "byCode", code] as const,
-  },
-  appSettings: {
-    all: ["app_settings"] as const,
-    byKey: (key: string) => ["app_settings", "byKey", key] as const,
-  },
-  tags: ["tags"] as const,
-  productCategories: ["product_categories"] as const,
-
   tasks: {
     all: ["tasks"] as const,
     list: (filters: Record<string, string | null | undefined>) =>
@@ -236,17 +33,34 @@ export const qk = {
     byUser: ["favorites", "me"] as const,
     check: (type: string, id: string) => ["favorites", "check", type, id] as const,
   },
-  insightStates: {
-    all: ["insightStates", "me"] as const,
+  timeline: {
+    customer: (id: string) => ["timeline", "customer", id] as const,
+    project: (id: string) => ["timeline", "project", id] as const,
+    entity: (entityType: string, entityId: string) =>
+      ["timeline", "entity", entityType, entityId] as const,
   },
-  search: {
-    global: (q: string) => ["search", "global", q] as const,
+  companyProfile: {
+    active: ["company_profile", "active"] as const,
   },
-  documents: {
-    all: (filters: Record<string, string | null | undefined>) =>
-      ["documents", "all", filters] as const,
+
+  // 3. Items & Materials (Products -> Inventory -> Masters -> Production)
+  products: {
+    all: ["products"] as const,
+    list: (q?: string) => ["products", "list", q ?? ""] as const,
+    picker: (q?: string) => ["products", "picker", q ?? ""] as const,
   },
-  // Stone-industry masters
+  productCategories: ["product_categories"] as const,
+  tags: ["tags"] as const,
+  inventory: {
+    all: ["inventory"] as const,
+    list: (q?: string) => ["inventory", "list", q ?? ""] as const,
+    byId: (id: string) => ["inventory", "byId", id] as const,
+  },
+  inventoryMovements: {
+    all: ["inventory_movements"] as const,
+    list: (productId?: string | null) => ["inventory_movements", "list", productId ?? ""] as const,
+    stockLedger: ["inventory_movements", "stock_ledger"] as const,
+  },
   stoneTypes: {
     all: ["stone_types"] as const,
     list: (q?: string) => ["stone_types", "list", q ?? ""] as const,
@@ -276,7 +90,6 @@ export const qk = {
     list: ["manufacturing_stages", "list"] as const,
     byId: (id: string) => ["manufacturing_stages", "byId", id] as const,
   },
-  // Manufacturing
   productionOrders: {
     all: ["production_orders"] as const,
     list: (filters?: Record<string, string | null | undefined>) =>
@@ -285,11 +98,121 @@ export const qk = {
     bySalesOrder: (id: string) => ["production_orders", "bySalesOrder", id] as const,
     stages: (id: string) => ["production_orders", "stages", id] as const,
   },
-  // Procurement — vendor capabilities
+
+  // 4. Sales & CRM (Customers -> Enquiries -> Projects -> Estimates -> Quotes -> Orders -> Invoices -> Dispatch -> Payments)
+  customers: {
+    all: ["customers"] as const,
+    list: (q?: string) => ["customers", "list", q ?? ""] as const,
+    byId: (id: string) => ["customers", "byId", id] as const,
+    picker: (q?: string) => ["customers", "picker", q ?? ""] as const,
+    contacts: (customerId: string) => ["customers", "contacts", customerId] as const,
+  },
+  enquiries: {
+    all: ["enquiries"] as const,
+    list: (q?: string) => ["enquiries", "list", q ?? ""] as const,
+    byId: (id: string) => ["enquiries", "byId", id] as const,
+    pipeline: ["enquiries", "pipeline"] as const,
+  },
+  followups: {
+    all: ["followups"] as const,
+    scope: (scope: "pending" | "today" | "all") => ["followups", "scope", scope] as const,
+    byEnquiry: (id: string) => ["followups", "byEnquiry", id] as const,
+    byEntity: (entityType: string, entityId: string) =>
+      ["followups", "byEntity", entityType, entityId] as const,
+  },
+  projects: {
+    all: ["projects"] as const,
+    list: (q?: string) => ["projects", "list", q ?? ""] as const,
+    byId: (id: string) => ["projects", "byId", id] as const,
+    byCustomer: (customerId: string) => ["projects", "byCustomer", customerId] as const,
+    picker: (q?: string, customerId?: string | null) =>
+      ["projects", "picker", q ?? "", customerId ?? ""] as const,
+  },
+  estimates: {
+    all: ["estimates"] as const,
+    list: (q?: string) => ["estimates", "list", q ?? ""] as const,
+    byId: (id: string) => ["estimates", "byId", id] as const,
+    items: (id: string) => ["estimates", "items", id] as const,
+    components: (id: string) => ["estimates", "components", id] as const,
+    schedule: (id: string) => ["estimates", "schedule", id] as const,
+    documents: (id: string) => ["estimates", "documents", id] as const,
+  },
+  quotes: {
+    all: ["quotes"] as const,
+    list: (q?: string) => ["quotes", "list", q ?? ""] as const,
+    byId: (id: string) => ["quotes", "byId", id] as const,
+    byProject: (id: string) => ["quotes", "byProject", id] as const,
+    items: (id: string) => ["quotes", "items", id] as const,
+  },
+  salesOrders: {
+    all: ["salesOrders"] as const,
+    list: (q?: string, status?: string) => ["salesOrders", "list", q ?? "", status ?? ""] as const,
+    byId: (id: string) => ["salesOrders", "byId", id] as const,
+    items: (id: string) => ["salesOrders", "items", id] as const,
+  },
+  invoices: {
+    all: ["invoices"] as const,
+    list: (q?: string) => ["invoices", "list", q ?? ""] as const,
+    byId: (id: string) => ["invoices", "byId", id] as const,
+    byProject: (id: string) => ["invoices", "byProject", id] as const,
+    items: (id: string) => ["invoices", "items", id] as const,
+    payments: (id: string) => ["invoices", "payments", id] as const,
+    links: (id: string) => ["invoices", "links", id] as const,
+  },
+  dispatch: {
+    all: ["dispatch"] as const,
+    list: (q?: string, status?: string) => ["dispatch", "list", q ?? "", status ?? ""] as const,
+    byId: (id: string) => ["dispatch", "byId", id] as const,
+    items: (id: string) => ["dispatch", "items", id] as const,
+    bySalesOrder: (id: string) => ["dispatch", "bySalesOrder", id] as const,
+    byCustomer: (id: string) => ["dispatch", "byCustomer", id] as const,
+    byProject: (id: string) => ["dispatch", "byProject", id] as const,
+    deliveryStatus: (id: string) => ["dispatch", "deliveryStatus", id] as const,
+  },
+  receipts: {
+    all: ["receipts"] as const,
+    list: (q?: string) => ["receipts", "list", q ?? ""] as const,
+    byId: (id: string) => ["receipts", "byId", id] as const,
+    byCustomer: (id: string) => ["receipts", "byCustomer", id] as const,
+    allocations: (id: string) => ["receipts", "allocations", id] as const,
+    openInvoices: (customerId: string) => ["receipts", "openInvoices", customerId] as const,
+  },
+  paymentsAll: {
+    all: ["paymentsAll"] as const,
+    list: (q?: string) => ["paymentsAll", "list", q ?? ""] as const,
+    byId: (id: string) => ["paymentsAll", "byId", id] as const,
+  },
+  paymentRegister: {
+    all: ["paymentRegister"] as const,
+    list: (q?: string) => ["paymentRegister", "list", q ?? ""] as const,
+  },
+  customerLedger: {
+    byCustomer: (id: string) => ["customer_ledger", id] as const,
+    summary: (id: string) => ["customer_ledger", "summary", id] as const,
+  },
+
+  // 5. Purchases & Procurement (Vendors -> RFQs -> POs -> GRNs -> Bills -> Payments -> Ledger)
+  vendors: {
+    all: ["vendors"] as const,
+    list: (q?: string) => ["vendors", "list", q ?? ""] as const,
+    byId: (id: string) => ["vendors", "byId", id] as const,
+    picker: (q?: string) => ["vendors", "picker", q ?? ""] as const,
+  },
   vendorCapabilities: {
     byVendor: (id: string) => ["vendor_capabilities", id] as const,
   },
-  // Slice 4 — Procurement execution
+  rfqs: {
+    all: ["rfqs"] as const,
+    byEnquiry: (enquiryId: string) => ["rfqs", "byEnquiry", enquiryId] as const,
+  },
+  purchaseOrders: {
+    all: ["purchaseOrders"] as const,
+    list: (q?: string, status?: string) =>
+      ["purchaseOrders", "list", q ?? "", status ?? ""] as const,
+    byId: (id: string) => ["purchaseOrders", "byId", id] as const,
+    picker: (q?: string, vendorId?: string | null) =>
+      ["purchaseOrders", "picker", q ?? "", vendorId ?? ""] as const,
+  },
   grns: {
     all: ["grns"] as const,
     list: (q?: string) => ["grns", "list", q ?? ""] as const,
@@ -297,19 +220,38 @@ export const qk = {
     items: (grnId: string) => ["grns", "items", grnId] as const,
     inspections: (grnId: string) => ["grns", "inspections", grnId] as const,
   },
+  purchaseInvoices: {
+    all: ["purchaseInvoices"] as const,
+    list: (q?: string, status?: string) =>
+      ["purchaseInvoices", "list", q ?? "", status ?? ""] as const,
+    byId: (id: string) => ["purchaseInvoices", "byId", id] as const,
+    byVendor: (vendorId: string) => ["purchaseInvoices", "byVendor", vendorId] as const,
+  },
   vendorPayments: {
     all: ["vendor_payments"] as const,
     list: (q?: string) => ["vendor_payments", "list", q ?? ""] as const,
     byId: (id: string) => ["vendor_payments", "byId", id] as const,
     byVendor: (id: string) => ["vendor_payments", "byVendor", id] as const,
   },
-  inventoryMovements: {
-    all: ["inventory_movements"] as const,
-    list: (productId?: string | null) => ["inventory_movements", "list", productId ?? ""] as const,
-    stockLedger: ["inventory_movements", "stock_ledger"] as const,
+  vendorLedger: {
+    byVendor: (id: string) => ["vendor_ledger", id] as const,
+    allSummaries: ["vendor_ledger", "allSummaries"] as const,
   },
   procurementCalendar: (from: string, to: string) => ["procurement_calendar", from, to] as const,
-  // Slice 6 — Installation & Field Service
+  purchaseTransport: {
+    all: ["purchaseTransport"] as const,
+    list: (q?: string, status?: string) =>
+      ["purchaseTransport", "list", q ?? "", status ?? ""] as const,
+    byId: (id: string) => ["purchaseTransport", "byId", id] as const,
+    items: (id: string) => ["purchaseTransport", "items", id] as const,
+    byPO: (id: string) => ["purchaseTransport", "byPO", id] as const,
+    byVendor: (id: string) => ["purchaseTransport", "byVendor", id] as const,
+  },
+  cartingAgencies: {
+    list: () => ["cartingAgencies", "list"] as const,
+  },
+
+  // 6. Executions & Cartings (Installations -> Teams -> Ledger)
   installations: {
     all: ["installations"] as const,
     list: (q?: string, status?: string) =>
@@ -327,13 +269,70 @@ export const qk = {
     picker: ["installation_teams", "picker"] as const,
     byId: (id: string) => ["installation_teams", "byId", id] as const,
   },
-  companyProfile: {
-    active: ["company_profile", "active"] as const,
+  installationAgencies: {
+    list: () => ["installationAgencies", "list"] as const,
   },
-  timeline: {
-    customer: (id: string) => ["timeline", "customer", id] as const,
-    project: (id: string) => ["timeline", "project", id] as const,
-    entity: (entityType: string, entityId: string) =>
-      ["timeline", "entity", entityType, entityId] as const,
+  installationLedger: {
+    all: () => ["installationLedger"] as const,
+    summaries: () => ["installationLedger", "summaries"] as const,
+    byAgency: (agencyId: string) => ["installationLedger", "byAgency", agencyId] as const,
+  },
+
+  // 8. Filing & Compliance
+  gst: {
+    all: ["gst"] as const,
+    period: (year: number, month: number) => ["gst", "period", year, month] as const,
+  },
+
+  // 9. Accountant (Ledgers -> Expenses -> Liabilities -> Cashbook -> Transfers)
+  businessExpenses: {
+    list: (from?: string, to?: string) =>
+      ["businessExpenses", "list", from ?? "", to ?? ""] as const,
+  },
+  liabilities: {
+    list: () => ["liabilities", "list"] as const,
+    payments: (liabilityId?: string) =>
+      liabilityId
+        ? (["liabilities", "payments", liabilityId] as const)
+        : (["liabilities", "payments"] as const),
+    rentRegister: () => ["liabilities", "rentRegister"] as const,
+  },
+  cashbook: {
+    all: ["cashbook"] as const,
+    list: (from?: string, to?: string) => ["cashbook", "list", from ?? "", to ?? ""] as const,
+  },
+  personalTransfers: {
+    all: ["personalTransfers"] as const,
+    list: (from?: string, to?: string) =>
+      ["personalTransfers", "list", from ?? "", to ?? ""] as const,
+  },
+  annualGoal: {
+    current: () => ["appSettings", "finance.annual_net_margin_goal"] as const,
+  },
+
+  // 11. Documents & Search
+  documents: {
+    all: (filters: Record<string, string | null | undefined>) =>
+      ["documents", "all", filters] as const,
+  },
+  search: {
+    global: (q: string) => ["search", "global", q] as const,
+  },
+
+  // 12. Settings & Communications
+  messages: {
+    all: ["messages"] as const,
+    list: (q?: string, channel?: string) => ["messages", "list", q ?? "", channel ?? ""] as const,
+    byId: (id: string) => ["messages", "byId", id] as const,
+    byEntity: (type: string, id: string) => ["messages", "byEntity", type, id] as const,
+    events: (id: string) => ["messages", "events", id] as const,
+  },
+  messageTemplates: {
+    all: ["message_templates"] as const,
+    byCode: (code: string) => ["message_templates", "byCode", code] as const,
+  },
+  appSettings: {
+    all: ["app_settings"] as const,
+    byKey: (key: string) => ["app_settings", "byKey", key] as const,
   },
 } as const;

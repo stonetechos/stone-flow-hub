@@ -729,10 +729,7 @@ export async function getEstimateForQuote(
   return data ?? null;
 }
 
-/* ------------------------------------------------------------------ */
-/* Draft-only line item editing                                        */
-/* ------------------------------------------------------------------ */
-/** Only the writable fields of a quote line item. */
+// Draft-only line item editing
 export type QuoteItemPatch = {
   description?: string;
   notes?: string | null;

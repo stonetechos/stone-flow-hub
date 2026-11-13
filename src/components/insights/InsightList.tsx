@@ -1,20 +1,5 @@
 /**
- * <InsightList> — a pure layout component that arranges `Insight`s in a
- * responsive grid, delegating all actual rendering to <InsightCard>.
- *
- * Deliberately minimal (Phase G.1.1 refinement): earlier drafts of this
- * component also owned loading / empty / error states, which duplicated
- * responsibility that belongs to whichever page consumes `useInsights()` —
- * exactly as every other list/table screen in this app already handles its
- * own loading/empty/error via the shared `components/layout/States`
- * primitives (see e.g. `routes/_authenticated/invoices/new.tsx`). Keeping
- * that logic out of InsightList keeps it a true layout-only primitive that
- * any Intelligence surface can drop resolved insights into.
- *
- * `onDismiss` (Phase G.8.6 Task 3, optional/additive): forwarded to each
- * `InsightCard` so a caller wired to the shared insight lifecycle
- * (`useInsightLifecycle`) can let a user dismiss/acknowledge directly from
- * the list, reflected everywhere else that insight is shown.
+ * Renders a responsive grid of insights via InsightCard.
  */
 import { InsightCard } from "@/components/dashboard/InsightCard";
 import { cn } from "@/lib/utils";
