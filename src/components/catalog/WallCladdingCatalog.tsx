@@ -15,6 +15,7 @@
  */
 
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Search,
   Download,
@@ -66,6 +67,63 @@ interface WallCladdingCatalogProps {
   showAdminBanner?: boolean;
 }
 
+const CATALOG_TEXTS = {
+  en: {
+    heading: "Natural Stone Wall Cladding & Architectural Mosaics",
+    patternsCount: "Patterns",
+    allCollections: "All Collections",
+    allStones: "All Stones",
+    allPatterns: "All Patterns",
+    searchPlaceholder: "Search...",
+    pdf: "PDF",
+    noMatching: "No matching patterns",
+    noMatchingDesc: "Try clearing your search or changing the collection filter.",
+    resetFilters: "Reset Filters",
+    categories: {
+      "Stone Wall Cladding": "Stone Wall Cladding",
+      "Stone Wall Mural Artwork": "Stone Wall Mural Artwork",
+      "Horizontal Strip & Ledgestone Panels": "Horizontal Strip & Ledgestone Panels",
+      "Stone Inlay": "Stone Inlay",
+    } as Record<string, string>,
+  },
+  hi: {
+    heading: "नेचुरल स्टोन वॉल क्लैडिंग एवं आर्किटेक्चरल मोज़ेक",
+    patternsCount: "पैटर्न्स",
+    allCollections: "सभी संग्रह",
+    allStones: "सभी पत्थर",
+    allPatterns: "सभी पैटर्न्स",
+    searchPlaceholder: "खोजें...",
+    pdf: "PDF",
+    noMatching: "कोई मेल खाता पैटर्न नहीं मिला",
+    noMatchingDesc: "अपनी खोज साफ़ करने या संग्रह फ़िल्टर बदलने का प्रयास करें।",
+    resetFilters: "फ़िल्टर रीसेट करें",
+    categories: {
+      "Stone Wall Cladding": "स्टोन वॉल क्लैडिंग",
+      "Stone Wall Mural Artwork": "स्टोन वॉल म्यूरल आर्टवर्क",
+      "Horizontal Strip & Ledgestone Panels": "हॉरिजॉन्टल स्ट्रिप एवं लेजस्टोन पैनल्स",
+      "Stone Inlay": "स्टोन इनले (जड़ाई कार्य)",
+    } as Record<string, string>,
+  },
+  gu: {
+    heading: "કુદરતી સ્ટોન વોલ ક્લેડિંગ અને આર્કિટેક્ચરલ મોઝેઇક",
+    patternsCount: "પેટર્ન",
+    allCollections: "બધા સંગ્રહ",
+    allStones: "બધા પથ્થરો",
+    allPatterns: "બધી પેટર્ન",
+    searchPlaceholder: "શોધો...",
+    pdf: "PDF",
+    noMatching: "કોઈ મેળ ખાતી પેટર્ન મળી નથી",
+    noMatchingDesc: "તમારી શોધ સાફ કરવાનો અથવા સંગ્રહ ફિલ્ટર બદલવાનો પ્રયાસ કરો.",
+    resetFilters: "ફિલ્ટર્સ રીસેટ કરો",
+    categories: {
+      "Stone Wall Cladding": "સ્ટોન વોલ ક્લેડિંગ",
+      "Stone Wall Mural Artwork": "સ્ટોન વોલ મ્યુરલ આર્ટવર્ક",
+      "Horizontal Strip & Ledgestone Panels": "હોરિઝોન્ટલ સ્ટ્રીપ અને લેજસ્ટોન પેનલ્સ",
+      "Stone Inlay": "સ્ટોન ઇનલે (જડતર કામ)",
+    } as Record<string, string>,
+  },
+};
+
 const INITIAL_BATCH = 18;
 const BATCH_SIZE = 18;
 
@@ -76,6 +134,10 @@ export function WallCladdingCatalog({
   showAdminBanner = false,
 }: WallCladdingCatalogProps) {
   const { isSuperAdmin: userIsSuperAdmin } = useRoles();
+  const { i18n } = useTranslation();
+  const lang = (i18n.language?.substring(0, 2) || "en") as "en" | "hi" | "gu";
+  const t = CATALOG_TEXTS[lang] || CATALOG_TEXTS.en;
+  const getCategoryLabel = (cat: string) => t.categories[cat] || cat;
   const siteSettings = useSiteSettingsValue();
   const { products, updateProduct } = useWebsiteCatalog(siteSettings);
   const {
@@ -339,10 +401,10 @@ export function WallCladdingCatalog({
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
             </span>
             <span className="text-xs font-bold uppercase tracking-wider text-foreground">
-              Natural Stone Wall Cladding &amp; Architectural Mosaics
+              {t.heading}
             </span>
             <span className="text-[11px] text-muted-foreground hidden md:inline">
-              ({filteredItems.length} Patterns)
+              ({filteredItems.length} {t.patternsCount})
             </span>
           </div>
 
@@ -357,17 +419,17 @@ export function WallCladdingCatalog({
               }}
             >
               <SelectTrigger className="h-8 text-xs bg-background/80 w-[150px] sm:w-[180px]">
-                <SelectValue placeholder="All Collections" />
+                <SelectValue placeholder={t.allCollections} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all" className="text-xs">
-                  All Collections ({products.length})
+                  {t.allCollections} ({products.length})
                 </SelectItem>
                 {categories
                   .filter((s) => s !== "all")
                   .map((cat) => (
                     <SelectItem key={cat} value={cat} className="text-xs">
-                      {cat} ({products.filter((p) => p.category === cat).length})
+                      {getCategoryLabel(cat)} ({products.filter((p) => p.category === cat).length})
                     </SelectItem>
                   ))}
               </SelectContent>
@@ -382,11 +444,11 @@ export function WallCladdingCatalog({
               }}
             >
               <SelectTrigger className="h-8 text-xs bg-background/80 w-[120px] sm:w-[140px] hidden sm:flex">
-                <SelectValue placeholder="All Stones" />
+                <SelectValue placeholder={t.allStones} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all" className="text-xs">
-                  All Stones
+                  {t.allStones}
                 </SelectItem>
                 {stoneTypes
                   .filter((s) => s !== "all")
@@ -407,7 +469,7 @@ export function WallCladdingCatalog({
                   setSearch(e.target.value);
                   setVisibleCount(INITIAL_BATCH);
                 }}
-                placeholder="Search..."
+                placeholder={t.searchPlaceholder}
                 className="pl-7 pr-6 h-8 text-xs bg-background/80"
               />
               {search && (
@@ -458,7 +520,7 @@ export function WallCladdingCatalog({
                 : "bg-muted/50 text-muted-foreground border-border/60 hover:text-foreground hover:bg-muted",
             )}
           >
-            All Patterns ({products.length})
+            {t.allPatterns} ({products.length})
           </button>
           {categories
             .filter((c) => c !== "all")
@@ -481,7 +543,7 @@ export function WallCladdingCatalog({
                   )}
                 >
                   {cat === "Horizontal Strip & Ledgestone Panels" && <Layers className="h-3 w-3" />}
-                  <span>{cat}</span>
+                  <span>{getCategoryLabel(cat)}</span>
                   <span
                     className={cn(
                       "text-[10px] px-1.5 py-0.2 rounded-full",
@@ -505,10 +567,8 @@ export function WallCladdingCatalog({
           {filteredItems.length === 0 ? (
             <div className="text-center py-16 border rounded-2xl bg-muted/20 space-y-3">
               <Layers className="h-10 w-10 text-muted-foreground mx-auto" />
-              <h4 className="text-base font-semibold text-foreground">No matching patterns</h4>
-              <p className="text-xs text-muted-foreground max-w-md mx-auto">
-                Try clearing your search or changing the collection filter.
-              </p>
+              <h4 className="text-base font-semibold text-foreground">{t.noMatching}</h4>
+              <p className="text-xs text-muted-foreground max-w-md mx-auto">{t.noMatchingDesc}</p>
               <Button
                 variant="outline"
                 size="sm"
@@ -519,7 +579,7 @@ export function WallCladdingCatalog({
                   setVisibleCount(INITIAL_BATCH);
                 }}
               >
-                Reset Filters
+                {t.resetFilters}
               </Button>
             </div>
           ) : (

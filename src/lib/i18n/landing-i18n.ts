@@ -136,6 +136,11 @@ export const LANDING_UI_TRANSLATIONS = {
       approvals: "Architectural Approvals",
     },
     showcase: {
+      sectionTitle: "Architectural Products & Live Executed Works",
+      sectionSubtitle:
+        "Explore our verified stone catalogue with transparent factory rates attached, or view live Instagram installation feeds from our luxury villa, hotel & mandir projects.",
+      productsTab: "Natural Stone Products & Catalogue",
+      installationsTab: "Live Installations & Executed Works (Instagram)",
       portfolioBadge: "The Architectural Atelier Portfolio",
       directMine: "Direct Mine Sourcing · Sub-Millimeter Tolerances",
       title: "Curated Natural Stone Collections",
@@ -286,10 +291,10 @@ export const LANDING_UI_TRANSLATIONS = {
       description:
         "हस्तनिर्मित स्टोन विनियर से लेकर सीएनसी-नक्काशीदार भित्तिचित्र, कस्टम फर्श और लक्जरी अग्रभाग तक—हम प्राकृतिक पत्थर को कालातीत वास्तुशिल्प बयानों में बदलते हैं।",
       benefits: {
-        quarry: "सीधी खदान सोर्सिंग (नो बिचौलिए)",
-        cnc: "सीएनसी व वॉटरजेट सब-मिमी परिशुद्धता",
-        panIndia: "संपूर्ण भारत में डिलीवरी व इंस्टॉलेशन",
-        support: "डिजाइन से अंतिम फिटिंग तक पूर्ण सहयोग",
+        quarry: "डिजाइन और वास्तुकला की समझ",
+        cnc: "अपनी सीएनसी एवं इनले वर्कशॉप्स",
+        panIndia: "अखिल भारतीय डिलीवरी",
+        support: "डिजाइन से इंस्टॉलेशन तक संपूर्ण सहयोग",
       },
       exploreProjects: "हमारे कुछ पूर्ण प्रोजेक्ट्स देखें",
     },
@@ -353,6 +358,11 @@ export const LANDING_UI_TRANSLATIONS = {
       approvals: "वास्तुशिल्प अनुमोदन",
     },
     showcase: {
+      sectionTitle: "आर्किटेक्चरल प्रोडक्ट्स और लाइव निष्पादित कार्य",
+      sectionSubtitle:
+        "पारदर्शी फैक्ट्री दरों के साथ हमारे सत्यापित स्टोन कैटलॉग को देखें, या हमारे लक्जरी विला, होटल और मंदिर प्रोजेक्ट्स के लाइव इंस्टाग्राम इंस्टॉलेशन फीड्स देखें।",
+      productsTab: "नेचुरल स्टोन प्रोडक्ट्स और कैटलॉग",
+      installationsTab: "लाइव इंस्टॉलेशन और निष्पादित कार्य (इंस्टाग्राम)",
       portfolioBadge: "आर्किटेक्चरल एटलियर पोर्टफोलियो",
       directMine: "सीधी खदान सोर्सिंग · सब-मिलीमीटर परिशुद्धता",
       title: "क्यूरेटेड प्राकृतिक पत्थर संग्रह",
@@ -503,10 +513,10 @@ export const LANDING_UI_TRANSLATIONS = {
       description:
         "હસ્તનિર્મિત સ્ટોન વિનિયરથી લઈને સીએનસી-નક્શીકામ ભીંતચિત્રો, કસ્ટમ ફ્લોરિંગ અને લક્ઝરી ફેસડેસ સુધી—અમે કુદરતી પથ્થરને કાલાતીત સ્થાપત્ય કલામાં રૂપાંતરિત કરીએ છીએ.",
       benefits: {
-        quarry: "સીધા ક્વોરી સોર્સિંગ (વચેટિયા વગર)",
-        cnc: "સીએનસી અને વોટરજેટ સબ-મીમી ચોકસાઈ",
-        panIndia: "સમગ્ર ભારતમાં ડિલિવરી અને ઇન્સ્ટોલેશન",
-        support: "ડિઝાઇનથી ફિટિંગ સુધી સંપૂર્ણ સપોર્ટ",
+        quarry: "ડિઝાઇન અને આર્કિટેક્ચરની ઊંડી સમજ",
+        cnc: "પોતાની CNC અને ઇનલે વર્કશોપ્સ",
+        panIndia: "સમગ્ર ભારતમાં ડિલિવરી",
+        support: "ડિઝાઇનથી ઇન્સ્ટોલેશન સુધી સંપૂર્ણ સહાય",
       },
       exploreProjects: "અમારા કેટલાક પૂર્ણ થયેલા પ્રોજેક્ટ્સ જુઓ",
     },
@@ -570,6 +580,11 @@ export const LANDING_UI_TRANSLATIONS = {
       approvals: "આર્કિટેક્ચરલ મંજૂરીઓ",
     },
     showcase: {
+      sectionTitle: "આર્કિટેક્ચરલ પ્રોડક્ટ્સ અને લાઈવ કામગીરી",
+      sectionSubtitle:
+        "પારદર્શક ફેક્ટરી દરો સાથે અમારા વેરિફાઇડ સ્ટોન કેટલોગનું અન્વેષણ કરો, અથવા અમારા લક્ઝરી વિલા, હોટેલ અને મંદિર પ્રોજેક્ટ્સમાંથી લાઇવ ઇન્સ્ટાગ્રામ ફીડ્સ જુઓ.",
+      productsTab: "કુદરતી સ્ટોન પ્રોડક્ટ્સ અને કેટલોગ",
+      installationsTab: "લાઈવ ઇન્સ્ટોલેશન અને પ્રોજેક્ટ કામો (ઇન્સ્ટાગ્રામ)",
       portfolioBadge: "આર્કિટેક્ચરલ એટલિયર પોર્ટફોલિયો",
       directMine: "સીધા ખાણ સ્ત્રોત · સબ-મિલીમીટર ચોકસાઈ",
       title: "ક્યુરેટેડ કુદરતી પથ્થર સંગ્રહ",

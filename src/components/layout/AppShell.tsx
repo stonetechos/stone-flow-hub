@@ -840,7 +840,7 @@ function UserMenu({
                       : t("user.role.member", "Member")}
                 </span>
                 <span className="font-mono text-[10px] uppercase tracking-wider text-cyan-200">
-                  STOS
+                  {t("brand.name", "STOS")}
                 </span>
               </div>
             </div>

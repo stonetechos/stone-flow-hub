@@ -7,6 +7,7 @@
 import { useTranslation } from "react-i18next";
 
 const GUJARATI_DICT: Record<string, string> = {
+  stos: "સ્ટૉસ",
   valmiki: "વાલ્મીકિ",
   gautam: "ગૌતમ",
   himant: "હિમંત",
@@ -180,6 +181,7 @@ const GUJARATI_SUFFIXES: Record<string, string> = {
 };
 
 const HINDI_DICT: Record<string, string> = {
+  stos: "स्टाॅस",
   valmiki: "वाल्मीकि",
   gautam: "गौतम",
   himant: "हिम्मत",

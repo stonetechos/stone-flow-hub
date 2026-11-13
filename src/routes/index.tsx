@@ -366,6 +366,7 @@ function HomePage() {
   const { i18n } = useTranslation();
   const currentLang = i18n.language?.substring(0, 2) || "en";
   const texts = getLandingTexts(currentLang);
+  const isEn = currentLang === "en";
   const localizedProducts = useMemo(
     () => getLocalizedProducts(MASTER_PRODUCT_OPTIONS, currentLang),
     [currentLang],
@@ -1087,9 +1088,11 @@ function HomePage() {
             <div className="lg:col-span-6 space-y-6 sm:space-y-7 pt-1 lg:pt-2 animate-in fade-in-50 duration-300">
               {/* Main Heading */}
               <h1 className="font-serif text-3xl sm:text-4xl lg:text-[44px] xl:text-[48px] font-normal sm:font-medium tracking-tight text-[#111111] dark:text-stone-100 leading-[1.18] sm:leading-[1.14]">
-                {cmsContent.heroTitlePart1 || texts.hero.titlePart1}
+                {isEn ? cmsContent.heroTitlePart1 || texts.hero.titlePart1 : texts.hero.titlePart1}
                 <span className="text-[#0D7A7B] dark:text-[#2dd4bf] font-semibold italic sm:not-italic">
-                  {cmsContent.heroTitleHighlight || texts.hero.titleHighlight}
+                  {isEn
+                    ? cmsContent.heroTitleHighlight || texts.hero.titleHighlight
+                    : texts.hero.titleHighlight}
                 </span>
               </h1>
 
@@ -1106,7 +1109,9 @@ function HomePage() {
 
                 <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-[#E9E6E1] dark:border-stone-800 bg-white dark:bg-stone-900/90 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-sm cursor-default">
                   <div className="text-xl sm:text-2xl font-bold tracking-tight text-[#111111] dark:text-stone-100">
-                    {cmsContent.heroWarranty || texts.hero.yearsWarranty}
+                    {isEn
+                      ? cmsContent.heroWarranty || texts.hero.yearsWarranty
+                      : texts.hero.yearsWarranty}
                   </div>
                   <div className="text-[11px] sm:text-xs text-[#5F6368] dark:text-stone-400 font-medium mt-1">
                     {texts.hero.installationWarranty}
@@ -1115,7 +1120,7 @@ function HomePage() {
 
                 <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-[#E9E6E1] dark:border-stone-800 bg-white dark:bg-stone-900/90 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-sm cursor-default">
                   <div className="text-xl sm:text-2xl font-bold tracking-tight text-[#111111] dark:text-stone-100">
-                    {cmsContent.heroPricingBadge || texts.hero.direct}
+                    {isEn ? cmsContent.heroPricingBadge || texts.hero.direct : texts.hero.direct}
                   </div>
                   <div className="text-[11px] sm:text-xs text-[#5F6368] dark:text-stone-400 font-medium mt-1">
                     {texts.hero.quarryPricing}
@@ -1136,26 +1141,44 @@ function HomePage() {
               {/* Supporting Copy */}
               <div className="space-y-4 pt-1">
                 <p className="text-sm sm:text-[15px] text-[#5F6368] dark:text-stone-300 leading-relaxed max-w-xl font-normal">
-                  {cmsContent.heroDescription || texts.hero.description}
+                  {isEn
+                    ? cmsContent.heroDescription || texts.hero.description
+                    : texts.hero.description}
                 </p>
 
                 {/* Benefits Checklist */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
                   <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-[#111111] dark:text-stone-200">
                     <Check className="h-4 w-4 text-[#0D7A7B] shrink-0 stroke-[2.25]" />
-                    <span>{cmsContent.heroBenefit1 || texts.hero.benefits.quarry}</span>
+                    <span>
+                      {isEn
+                        ? cmsContent.heroBenefit1 || texts.hero.benefits.quarry
+                        : texts.hero.benefits.quarry}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-[#111111] dark:text-stone-200">
                     <Check className="h-4 w-4 text-[#0D7A7B] shrink-0 stroke-[2.25]" />
-                    <span>{cmsContent.heroBenefit2 || texts.hero.benefits.cnc}</span>
+                    <span>
+                      {isEn
+                        ? cmsContent.heroBenefit2 || texts.hero.benefits.cnc
+                        : texts.hero.benefits.cnc}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-[#111111] dark:text-stone-200">
                     <Check className="h-4 w-4 text-[#0D7A7B] shrink-0 stroke-[2.25]" />
-                    <span>{cmsContent.heroBenefit3 || texts.hero.benefits.panIndia}</span>
+                    <span>
+                      {isEn
+                        ? cmsContent.heroBenefit3 || texts.hero.benefits.panIndia
+                        : texts.hero.benefits.panIndia}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-[#111111] dark:text-stone-200">
                     <Check className="h-4 w-4 text-[#0D7A7B] shrink-0 stroke-[2.25]" />
-                    <span>{cmsContent.heroBenefit4 || texts.hero.benefits.support}</span>
+                    <span>
+                      {isEn
+                        ? cmsContent.heroBenefit4 || texts.hero.benefits.support
+                        : texts.hero.benefits.support}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -2031,11 +2054,14 @@ function HomePage() {
           {/* Section Header */}
           <div className="text-center space-y-3">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-foreground">
-              {cmsContent.showcaseSectionTitle || "Architectural Products & Live Executed Works"}
+              {isEn
+                ? cmsContent.showcaseSectionTitle || texts.showcase.sectionTitle
+                : texts.showcase.sectionTitle}
             </h2>
             <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-              {cmsContent.showcaseSectionSubtitle ||
-                "Explore our verified stone catalogue with transparent factory rates attached, or view live Instagram installation feeds from our luxury villa, hotel & mandir projects."}
+              {isEn
+                ? cmsContent.showcaseSectionSubtitle || texts.showcase.sectionSubtitle
+                : texts.showcase.sectionSubtitle}
             </p>
           </div>
 
@@ -2053,7 +2079,11 @@ function HomePage() {
                 )}
               >
                 <Sparkles className="h-4 w-4" />
-                <span>{cmsContent.productsTabTitle || "Natural Stone Products & Catalogue"}</span>
+                <span>
+                  {isEn
+                    ? cmsContent.productsTabTitle || texts.showcase.productsTab
+                    : texts.showcase.productsTab}
+                </span>
               </button>
 
               <button
@@ -2068,8 +2098,9 @@ function HomePage() {
               >
                 <Camera className="h-4 w-4" />
                 <span>
-                  {cmsContent.installationsTabTitle ||
-                    "Live Installations & Executed Works (Instagram)"}
+                  {isEn
+                    ? cmsContent.installationsTabTitle || texts.showcase.installationsTab
+                    : texts.showcase.installationsTab}
                 </span>
               </button>
             </div>
@@ -2107,7 +2138,7 @@ function HomePage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
           <div className="text-center max-w-3xl mx-auto space-y-3">
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
-              {cmsContent.whyUsSectionTitle || texts.whyUs.title}
+              {isEn ? cmsContent.whyUsSectionTitle || texts.whyUs.title : texts.whyUs.title}
             </h2>
           </div>
 
@@ -2117,10 +2148,10 @@ function HomePage() {
                 <Sparkles className="h-5 w-5" />
               </div>
               <h3 className="text-base font-bold">
-                {cmsContent.pillar1Title || texts.whyUs.p1Title}
+                {isEn ? cmsContent.pillar1Title || texts.whyUs.p1Title : texts.whyUs.p1Title}
               </h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                {cmsContent.pillar1Desc || texts.whyUs.p1Desc}
+                {isEn ? cmsContent.pillar1Desc || texts.whyUs.p1Desc : texts.whyUs.p1Desc}
               </p>
             </div>
 
@@ -2129,10 +2160,10 @@ function HomePage() {
                 <Compass className="h-5 w-5" />
               </div>
               <h3 className="text-base font-bold">
-                {cmsContent.pillar2Title || texts.whyUs.p2Title}
+                {isEn ? cmsContent.pillar2Title || texts.whyUs.p2Title : texts.whyUs.p2Title}
               </h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                {cmsContent.pillar2Desc || texts.whyUs.p2Desc}
+                {isEn ? cmsContent.pillar2Desc || texts.whyUs.p2Desc : texts.whyUs.p2Desc}
               </p>
             </div>
 
@@ -2141,10 +2172,10 @@ function HomePage() {
                 <Eye className="h-5 w-5" />
               </div>
               <h3 className="text-base font-bold">
-                {cmsContent.pillar3Title || texts.whyUs.p3Title}
+                {isEn ? cmsContent.pillar3Title || texts.whyUs.p3Title : texts.whyUs.p3Title}
               </h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                {cmsContent.pillar3Desc || texts.whyUs.p3Desc}
+                {isEn ? cmsContent.pillar3Desc || texts.whyUs.p3Desc : texts.whyUs.p3Desc}
               </p>
             </div>
 
@@ -2153,10 +2184,10 @@ function HomePage() {
                 <Palette className="h-5 w-5" />
               </div>
               <h3 className="text-base font-bold">
-                {cmsContent.pillar4Title || texts.whyUs.p4Title}
+                {isEn ? cmsContent.pillar4Title || texts.whyUs.p4Title : texts.whyUs.p4Title}
               </h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                {cmsContent.pillar4Desc || texts.whyUs.p4Desc}
+                {isEn ? cmsContent.pillar4Desc || texts.whyUs.p4Desc : texts.whyUs.p4Desc}
               </p>
             </div>
           </div>
