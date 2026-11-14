@@ -6,6 +6,7 @@
   "nav": {
     "groups": {
       "overview": "Home",
+      "website": "Website CMS",
       "items": "Items",
       "sales": "Sales",
       "purchase": "Purchases",
@@ -23,7 +24,9 @@
       "profitability": "Profit Target",
       "enquiries": "Website Leads & CRM",
       "customers": "Customers",
+      "projects": "Projects & Profit Diary",
       "quotes": "Quotations",
+      "sales-orders": "Sales Orders",
       "invoices": "Sales Invoices",
       "dispatch": "Dispatches",
       "vendors": "Supplying Partners",

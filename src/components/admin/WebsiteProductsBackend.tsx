@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import {
   PackagePlus,
   Search,
@@ -370,9 +371,93 @@ function ProductPhotoManager({
   );
 }
 
+const ADMIN_CMS_TEXTS = {
+  en: {
+    uploadNew: "Upload New Product",
+    resetOrder: "Reset Order",
+    searchPlaceholder: "Search by product name, code, stone...",
+    allCategories: "All Categories",
+    allGeologies: "All Geologies",
+    itemsPerPage: "items / page",
+    list: "List",
+    icons: "Icons",
+    seeAllIcons: "See All {{count}} Icons",
+    switchToList: "Switch to List View",
+    reorderModeActive: "Small Icons Reorder Mode:",
+    reorderModeDesc:
+      "Products are displayed as compact visual cards so you can see dozens at once. Click & drag any icon across the grid to easily position it anywhere, or type a target position number in any icon's top box and press Enter.",
+    allProductsReorderMode: "All-Products Reorder Mode Active:",
+    allProductsReorderDesc:
+      "All {{count}} items are displayed on this single page. Click & hold the drag handle (#) on any product to move it anywhere in the list.",
+    showing: "Showing",
+    of: "of",
+    products: "products",
+    perPage: "Per page:",
+    previous: "Previous",
+    next: "Next",
+    page: "Page",
+    edit: "Edit",
+  },
+  hi: {
+    uploadNew: "नया उत्पाद अपलोड करें",
+    resetOrder: "क्रम रीसेट करें",
+    searchPlaceholder: "उत्पाद नाम, कोड, पत्थर से खोजें...",
+    allCategories: "सभी श्रेणियां",
+    allGeologies: "सभी प्रकार",
+    itemsPerPage: "आइटम / पृष्ठ",
+    list: "सूची",
+    icons: "आइकन",
+    seeAllIcons: "सभी {{count}} आइकन देखें",
+    switchToList: "सूची दृश्य पर स्विच करें",
+    reorderModeActive: "लघु आइकन पुनर्गठन मोड:",
+    reorderModeDesc:
+      "उत्पादों को कॉम्पैक्ट विज़ुअल कार्ड के रूप में प्रदर्शित किया जाता है ताकि आप एक साथ दर्जनों देख सकें। किसी भी आइकन को ग्रिड पर खींचकर आसानी से कहीं भी रखें, या शीर्ष बॉक्स में लक्ष्य संख्या लिखकर एंटर दबाएं।",
+    allProductsReorderMode: "सभी उत्पाद पुनर्गठन मोड सक्रिय:",
+    allProductsReorderDesc:
+      "सभी {{count}} उत्पाद इस एकल पृष्ठ पर प्रदर्शित हैं। किसी भी उत्पाद को सूची में कहीं भी ले जाने के लिए ड्रैग हैंडल (#) को दबाकर रखें।",
+    showing: "प्रदर्शित",
+    of: "में से",
+    products: "उत्पाद",
+    perPage: "प्रति पृष्ठ:",
+    previous: "पिछला",
+    next: "अगला",
+    page: "पृष्ठ",
+    edit: "संपादित करें",
+  },
+  gu: {
+    uploadNew: "નવું ઉત્પાદન અપલોડ કરો",
+    resetOrder: "ક્રમ રીસેટ કરો",
+    searchPlaceholder: "ઉત્પાદન નામ, કોડ, પથ્થરથી શોધો...",
+    allCategories: "બધી શ્રેણીઓ",
+    allGeologies: "બધા પ્રકાર",
+    itemsPerPage: "આઇટમ / પૃષ્ઠ",
+    list: "સૂચિ",
+    icons: "આઇકન",
+    seeAllIcons: "બધા {{count}} આઇકન જુઓ",
+    switchToList: "સૂચિ વ્યૂ પર સ્વિચ કરો",
+    reorderModeActive: "નાના આઇકન પુનઃગોઠવણી મોડ:",
+    reorderModeDesc:
+      "ઉત્પાદનોને કોમ્પેક્ટ વિઝ્યુઅલ કાર્ડ તરીકે પ્રદર્શિત કરવામાં આવે છે જેથી તમે એક સાથે ડઝનબંધ જોઈ શકો. કોઈપણ આઇકનને ગ્રીડ પર ખેંચીને ગમે ત્યાં મૂકો, અથવા ટોચના બોક્સમાં નંબર લખીને એન્ટર દબાવો.",
+    allProductsReorderMode: "બધા ઉત્પાદનો પુનઃગોઠવણી મોડ સક્રિય:",
+    allProductsReorderDesc:
+      "બધી {{count}} આઇટમ્સ આ એક જ પૃષ્ઠ પર પ્રદર્શિત છે. કોઈપણ ઉત્પાદનને ખસેડવા માટે ડ્રેગ હેન્ડલ (#) પકડી રાખો.",
+    showing: "દર્શાવેલ",
+    of: "માંથી",
+    products: "ઉત્પાદનો",
+    perPage: "પૃષ્ઠ દીઠ:",
+    previous: "પાછલું",
+    next: "આગળનું",
+    page: "પૃષ્ઠ",
+    edit: "સંપાદિત કરો",
+  },
+};
+
 export function WebsiteProductsBackend() {
   const roles = useRoles();
   const isSuperAdmin = roles.isSuperAdmin || roles.isAdmin || !roles.isReady;
+  const { i18n } = useTranslation();
+  const lang = (i18n.language?.substring(0, 2) || "en") as "en" | "hi" | "gu";
+  const t = ADMIN_CMS_TEXTS[lang] || ADMIN_CMS_TEXTS.en;
 
   const {
     products,
@@ -674,7 +759,7 @@ export function WebsiteProductsBackend() {
           className="h-9 px-4 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-xs gap-1.5 cursor-pointer"
         >
           <PackagePlus className="h-4 w-4" />
-          <span>Upload New Product</span>
+          <span>{t.uploadNew}</span>
         </Button>
       </div>
 
@@ -688,7 +773,7 @@ export function WebsiteProductsBackend() {
               setSearch(e.target.value);
               setPage(1);
             }}
-            placeholder="Search by product name, code, stone..."
+            placeholder={t.searchPlaceholder}
             className="pl-9 h-9 text-xs bg-background"
           />
         </div>
@@ -712,7 +797,7 @@ export function WebsiteProductsBackend() {
             title="Reset drag-and-drop order to default sequence"
           >
             <RotateCcw className="h-3.5 w-3.5" />
-            <span className="hidden md:inline">Reset Order</span>
+            <span className="hidden md:inline">{t.resetOrder}</span>
           </Button>
 
           {/* Category Dropdown */}
@@ -724,11 +809,11 @@ export function WebsiteProductsBackend() {
             }}
           >
             <SelectTrigger className="h-9 w-44 text-xs bg-background">
-              <SelectValue placeholder="All Categories" />
+              <SelectValue placeholder={t.allCategories} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all" className="text-xs">
-                All Categories ({products.length})
+                {t.allCategories} ({products.length})
               </SelectItem>
               {categories.map((c) => (
                 <SelectItem key={c} value={c} className="text-xs">
@@ -747,11 +832,11 @@ export function WebsiteProductsBackend() {
             }}
           >
             <SelectTrigger className="h-9 w-40 text-xs bg-background">
-              <SelectValue placeholder="All Stone Types" />
+              <SelectValue placeholder={t.allGeologies} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all" className="text-xs">
-                All Geologies
+                {t.allGeologies}
               </SelectItem>
               {Array.from(new Set(products.map((p) => p.stoneType))).map((st) => (
                 <SelectItem key={st} value={st} className="text-xs">
@@ -808,7 +893,7 @@ export function WebsiteProductsBackend() {
               title="View as detailed table list"
             >
               <List className="h-3.5 w-3.5" />
-              <span>List</span>
+              <span>{t.list}</span>
             </button>
             <button
               type="button"
@@ -822,7 +907,7 @@ export function WebsiteProductsBackend() {
               title="View as small compact icons (easier to drag and position products)"
             >
               <LayoutGrid className="h-3.5 w-3.5" />
-              <span>Icons</span>
+              <span>{t.icons}</span>
             </button>
           </div>
         </div>
@@ -834,10 +919,7 @@ export function WebsiteProductsBackend() {
           <div className="flex items-center gap-2">
             <LayoutGrid className="h-4 w-4 text-cyan-600 dark:text-cyan-400 shrink-0" />
             <span>
-              <strong>Small Icons Reorder Mode:</strong> Products are displayed as compact visual
-              cards so you can see dozens at once. Click &amp; drag any icon across the grid to
-              easily position it anywhere, or type a target position number in any icon's top box
-              and press Enter.
+              <strong>{t.reorderModeActive}</strong> {t.reorderModeDesc}
             </span>
           </div>
           {pageSize !== "all" ? (
@@ -850,7 +932,7 @@ export function WebsiteProductsBackend() {
               }}
               className="h-7 px-2.5 text-[11px] bg-background border-cyan-500/30 hover:bg-cyan-500/20 shrink-0 self-start sm:self-auto font-medium"
             >
-              See All {filteredProducts.length} Icons
+              {t.seeAllIcons.replace("{{count}}", String(filteredProducts.length))}
             </Button>
           ) : (
             <Button
@@ -859,7 +941,7 @@ export function WebsiteProductsBackend() {
               onClick={() => handleSetViewMode("list")}
               className="h-7 px-2.5 text-[11px] bg-background border-cyan-500/30 hover:bg-cyan-500/20 shrink-0 self-start sm:self-auto font-medium"
             >
-              Switch to List View
+              {t.switchToList}
             </Button>
           )}
         </div>
@@ -1124,7 +1206,7 @@ export function WebsiteProductsBackend() {
                             title="Edit product"
                           >
                             <Edit2 className="h-2.5 w-2.5" />
-                            <span>Edit</span>
+                            <span>{t.edit}</span>
                           </button>
                           <button
                             type="button"
@@ -1423,15 +1505,15 @@ export function WebsiteProductsBackend() {
           <div className="flex flex-wrap items-center gap-2 text-muted-foreground">
             <span>
               {pageSize === "all"
-                ? `Showing all ${filteredProducts.length} products (Full catalog view)`
-                : `Showing ${filteredProducts.length === 0 ? 0 : (page - 1) * (pageSize as number) + 1}–${Math.min(
+                ? `${t.showing} ${filteredProducts.length} ${t.products}`
+                : `${t.showing} ${filteredProducts.length === 0 ? 0 : (page - 1) * (pageSize as number) + 1}–${Math.min(
                     page * (pageSize as number),
                     filteredProducts.length,
-                  )} of ${filteredProducts.length} products`}
+                  )} ${t.of} ${filteredProducts.length} ${t.products}`}
             </span>
 
             <div className="flex items-center gap-1 ml-0 sm:ml-3">
-              <span className="text-[11px] text-muted-foreground">Per page:</span>
+              <span className="text-[11px] text-muted-foreground">{t.perPage}</span>
               {([10, 25, 50, 100, "all"] as const).map((opt) => (
                 <button
                   key={String(opt)}
@@ -1462,10 +1544,10 @@ export function WebsiteProductsBackend() {
                 onClick={() => setPage((p) => p - 1)}
                 className="h-7 px-2 text-xs"
               >
-                Previous
+                {t.previous}
               </Button>
               <span className="px-2 font-medium">
-                Page {page} of {totalPages}
+                {t.page} {page} {t.of} {totalPages}
               </span>
               <Button
                 variant="outline"
@@ -1474,7 +1556,7 @@ export function WebsiteProductsBackend() {
                 onClick={() => setPage((p) => p + 1)}
                 className="h-7 px-2 text-xs"
               >
-                Next
+                {t.next}
               </Button>
             </div>
           )}

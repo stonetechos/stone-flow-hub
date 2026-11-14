@@ -181,15 +181,15 @@ function NavLinkRow({
             ? "py-1.5 px-2.5 text-[12.5px]"
             : "py-2 px-3 text-[13px]",
         active
-          ? "bg-cyan-600 text-white font-semibold shadow-xs"
-          : "text-cyan-100/80 hover:bg-white/12 hover:text-white font-medium",
+          ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold shadow-xs"
+          : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground font-medium",
       )}
     >
       {/* Luminous left accent indicator */}
       <span
         aria-hidden
         className={cn(
-          "absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-cyan-300 shadow-[0_0_8px_rgba(103,232,249,0.9)] transition-opacity duration-150",
+          "absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-sidebar-ring shadow-[0_0_8px_var(--sidebar-ring)] transition-opacity duration-150",
           active ? "opacity-100" : "opacity-0",
         )}
       />
@@ -199,8 +199,8 @@ function NavLinkRow({
             "shrink-0 transition-all",
             isChild ? "h-3.5 w-3.5 opacity-80" : "h-4 w-4",
             active
-              ? "text-white opacity-100 drop-shadow-[0_0_6px_rgba(255,255,255,0.6)]"
-              : "text-cyan-200/80 group-hover:text-white group-hover:opacity-100",
+              ? "text-sidebar-primary-foreground opacity-100 drop-shadow-[0_0_6px_rgba(255,255,255,0.6)]"
+              : "text-sidebar-foreground/80 group-hover:text-sidebar-foreground group-hover:opacity-100",
           )}
           aria-hidden
         />
@@ -357,13 +357,13 @@ function NavGroupRow({
         className={cn(
           "relative flex h-9 w-9 items-center justify-center rounded-lg transition-all mx-auto",
           hasActiveChild || isDirectActive
-            ? "bg-white/20 text-white border border-white/25 shadow-xs"
-            : "text-cyan-100/80 hover:bg-white/12 hover:text-white",
+            ? "bg-sidebar-accent text-sidebar-foreground border border-white/25 shadow-xs"
+            : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
         )}
       >
         <GroupIcon className="h-4 w-4" aria-hidden />
         {hasActiveChild && (
-          <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_4px_rgba(103,232,249,0.9)]" />
+          <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-sidebar-ring shadow-[0_0_4px_var(--sidebar-ring)]" />
         )}
       </button>
     );
@@ -377,9 +377,9 @@ function NavGroupRow({
                 <TooltipTrigger asChild>{collapsedBtn}</TooltipTrigger>
                 <TooltipContent
                   side="right"
-                  className="border-cyan-800 bg-cyan-950 p-2 text-xs text-white shadow-xl min-w-[170px]"
+                  className="border-sidebar-border bg-sidebar p-2 text-xs text-sidebar-foreground shadow-xl min-w-[170px]"
                 >
-                  <div className="font-semibold text-cyan-200 border-b border-cyan-800/80 pb-1 mb-1.5 flex items-center justify-between">
+                  <div className="font-semibold text-sidebar-foreground border-b border-sidebar-border pb-1 mb-1.5 flex items-center justify-between">
                     <span>{groupLabel}</span>
                   </div>
                   <div className="space-y-0.5">
@@ -393,8 +393,8 @@ function NavGroupRow({
                           className={cn(
                             "flex items-center gap-2 rounded px-2 py-1 text-[11.5px] transition-colors",
                             active
-                              ? "bg-white/20 text-white font-semibold shadow-xs"
-                              : "text-cyan-100/80 hover:bg-white/10 hover:text-white",
+                              ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold shadow-xs"
+                              : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
                           )}
                         >
                           <item.icon className="h-3 w-3 shrink-0 opacity-80" />
@@ -478,10 +478,10 @@ function NavGroupRow({
       className={cn(
         "group relative flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-[13px] font-semibold transition-all duration-150 cursor-pointer select-none",
         isStandaloneActive
-          ? "text-white bg-cyan-600 shadow-xs"
+          ? "text-sidebar-primary-foreground bg-sidebar-primary shadow-xs"
           : hasActiveChild
-            ? "text-white bg-white/15 shadow-xs border border-white/20 backdrop-blur-xs"
-            : "text-cyan-100/85 hover:bg-white/10 hover:text-white",
+            ? "text-sidebar-foreground bg-sidebar-accent shadow-xs border border-white/20 backdrop-blur-xs"
+            : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
       )}
       onClick={handleGroupClick}
       role={group.items.length > 0 ? "button" : undefined}
@@ -491,7 +491,7 @@ function NavGroupRow({
       {(hasActiveChild || isDirectActive) && (
         <span
           aria-hidden
-          className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-cyan-300 shadow-[0_0_8px_rgba(103,232,249,0.9)]"
+          className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-sidebar-ring shadow-[0_0_8px_var(--sidebar-ring)]"
         />
       )}
 
@@ -500,8 +500,8 @@ function NavGroupRow({
           className={cn(
             "h-4 w-4 shrink-0 transition-colors",
             isStandaloneActive || hasActiveChild
-              ? "text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.6)]"
-              : "text-cyan-200/80 group-hover:text-white",
+              ? "text-sidebar-primary-foreground drop-shadow-[0_0_6px_rgba(255,255,255,0.6)]"
+              : "text-sidebar-foreground/75 group-hover:text-sidebar-foreground",
           )}
           aria-hidden
         />
@@ -512,12 +512,12 @@ function NavGroupRow({
         {group.items.length > 0 &&
           (isOpen ? (
             <Minus
-              className="h-3.5 w-3.5 text-cyan-200/80 group-hover:text-white transition-colors"
+              className="h-3.5 w-3.5 text-sidebar-foreground/75 group-hover:text-sidebar-foreground transition-colors"
               aria-hidden
             />
           ) : (
             <Plus
-              className="h-3.5 w-3.5 text-cyan-200/80 group-hover:text-white transition-colors"
+              className="h-3.5 w-3.5 text-sidebar-foreground/75 group-hover:text-sidebar-foreground transition-colors"
               aria-hidden
             />
           ))}
@@ -895,7 +895,7 @@ function UserMenu({
           {/* Quick Language switcher */}
           <div className="px-2.5 py-1.5">
             <div className="flex items-center gap-1.5 text-[11px] font-semibold text-text-muted mb-1.5">
-              <Languages className="h-3.5 w-3.5 text-cyan-600 dark:text-cyan-400" />
+              <Languages className="h-3.5 w-3.5 text-primary" />
               <span>{t("common.language", "Language / भाषा")}</span>
             </div>
             <div className="grid grid-cols-3 gap-1">
@@ -915,7 +915,7 @@ function UserMenu({
                   className={cn(
                     "py-1 px-1.5 rounded text-[11px] font-bold text-center transition-all border",
                     currentLang === lang.code
-                      ? "bg-cyan-700 text-white border-cyan-700 shadow-xs"
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
                       : "bg-surface-panel text-text-primary border-border-default hover:bg-surface-elevated",
                   )}
                 >
@@ -1089,12 +1089,12 @@ export function AppShell({ children }: { children: ReactNode }) {
               onMouseDown={handleMouseDown}
               onDoubleClick={resetWidth}
               title="Drag to resize sidebar width · Double-click to reset (270px)"
-              className="group absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-cyan-400/50 active:bg-cyan-400 transition-colors z-30"
+              className="group absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-sidebar-primary/50 active:bg-sidebar-primary transition-colors z-30"
               aria-label="Resize sidebar"
               role="separator"
               aria-orientation="vertical"
             >
-              <div className="absolute right-0 top-1/2 -translate-y-1/2 h-8 w-1 rounded-l-full bg-cyan-300/30 group-hover:bg-cyan-300 transition-colors" />
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 h-8 w-1 rounded-l-full bg-sidebar-ring/30 group-hover:bg-sidebar-ring transition-colors" />
             </div>
           )}
 
@@ -1164,7 +1164,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </TooltipProvider>
                 <span className="font-mono text-[10px] uppercase tracking-wider text-cyan-200/60 font-semibold">
                   {i18n.language?.startsWith("hi")
-                    ? currentTheme.label.replace(/^ST\b/, "स्टॉस")
+                    ? currentTheme.label.replace(/^ST\b/, "स्टाॅस")
                     : i18n.language?.startsWith("gu")
                       ? currentTheme.label.replace(/^ST\b/, "સ્ટૉસ")
                       : currentTheme.label}{" "}

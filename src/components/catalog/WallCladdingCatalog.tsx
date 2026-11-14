@@ -57,6 +57,8 @@ import { AttachPriceDialog, type PatternPriceTarget } from "./AttachPriceDialog"
 import { useRoles } from "@/hooks/use-roles";
 import { useWebsiteCatalog, type CatalogProduct } from "@/lib/catalog/catalog-store";
 import { useSiteSettingsValue } from "@/lib/site-settings/use-site-settings";
+import { transliterateName } from "@/lib/i18n/transliterate";
+import { toIndicDigits } from "@/lib/format";
 
 export type WallCladdingItem = CatalogProduct;
 
@@ -76,6 +78,11 @@ const CATALOG_TEXTS = {
     allPatterns: "All Patterns",
     searchPlaceholder: "Search...",
     pdf: "PDF",
+    pdfBtn: "Catalogue in English Language",
+    pdfFile: "StoneTech_NaturalStone_WallCl_Options_English.pdf",
+    priceBtn: "Price",
+    specsBtn: "Specs",
+    sqftUnit: "/ sq.ft",
     noMatching: "No matching patterns",
     noMatchingDesc: "Try clearing your search or changing the collection filter.",
     resetFilters: "Reset Filters",
@@ -94,6 +101,11 @@ const CATALOG_TEXTS = {
     allPatterns: "सभी पैटर्न्स",
     searchPlaceholder: "खोजें...",
     pdf: "PDF",
+    pdfBtn: "हिंदी भाषा में कैटलॉग",
+    pdfFile: "StoneTech_NaturalStone_WallCl_Options_Hindi.pdf",
+    priceBtn: "मूल्य",
+    specsBtn: "विशेषताएं",
+    sqftUnit: "/ वर्गफ़ुट",
     noMatching: "कोई मेल खाता पैटर्न नहीं मिला",
     noMatchingDesc: "अपनी खोज साफ़ करने या संग्रह फ़िल्टर बदलने का प्रयास करें।",
     resetFilters: "फ़िल्टर रीसेट करें",
@@ -112,6 +124,11 @@ const CATALOG_TEXTS = {
     allPatterns: "બધી પેટર્ન",
     searchPlaceholder: "શોધો...",
     pdf: "PDF",
+    pdfBtn: "ગુજરાતી ભાષામાં કેટલોગ",
+    pdfFile: "StoneTech_NaturalStone_WallCl_Options_Gujarati.pdf",
+    priceBtn: "કિંમત",
+    specsBtn: "વિગતો",
+    sqftUnit: "/ ચો.ફૂટ",
     noMatching: "કોઈ મેળ ખાતી પેટર્ન મળી નથી",
     noMatchingDesc: "તમારી શોધ સાફ કરવાનો અથવા સંગ્રહ ફિલ્ટર બદલવાનો પ્રયાસ કરો.",
     resetFilters: "ફિલ્ટર્સ રીસેટ કરો",
@@ -486,11 +503,11 @@ export function WallCladdingCatalog({
               )}
             </div>
 
-            {/* WhatsApp PDF Download */}
+            {/* WhatsApp PDF Download — Localized 3-Language Flow */}
             <a
-              href="/catalogues/StoneTech_NaturalStone_WallCl_Options_26-27.pdf"
-              download="StoneTech_NaturalStone_WallCl_Options_26-27.pdf"
-              title="Download WhatsApp PDF Softcopy (StoneTech_NaturalStone_WallCl_Options_26-27.pdf)"
+              href={`/catalogues/${t.pdfFile}`}
+              download={t.pdfFile}
+              title={t.pdfBtn}
               className="inline-flex"
             >
               <Button
@@ -499,7 +516,8 @@ export function WallCladdingCatalog({
                 className="h-8 px-2.5 text-xs text-emerald-700 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 gap-1.5"
               >
                 <Download className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">PDF</span>
+                <span className="hidden sm:inline font-medium">{t.pdfBtn}</span>
+                <span className="sm:hidden font-medium">PDF</span>
               </Button>
             </a>
           </div>
@@ -619,7 +637,7 @@ export function WallCladdingCatalog({
                     <div className="absolute inset-0 bg-black/65 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-between p-2 text-white z-10">
                       <div className="flex items-center justify-between text-[10px]">
                         <span className="font-semibold truncate max-w-[85%] drop-shadow-xs">
-                          {item.name}
+                          {transliterateName(item.name, lang)}
                         </span>
                         <Eye className="h-3 w-3 shrink-0 opacity-80" />
                       </div>
@@ -627,9 +645,9 @@ export function WallCladdingCatalog({
                       <div className="flex items-center justify-between text-[11px] font-bold">
                         <span className="flex items-baseline gap-1 text-emerald-400">
                           <span>
-                            {price.currency} {price.price}
+                            {price.currency} {toIndicDigits(price.price, lang)}
                           </span>
-                          <span className="text-[9px] text-white/70">/{price.unit}</span>
+                          <span className="text-[9px] text-white/70">{t.sqftUnit}</span>
                         </span>
 
                         <div className="flex items-center gap-1">
@@ -644,11 +662,11 @@ export function WallCladdingCatalog({
                               title="Super Admin: Edit Price"
                             >
                               <Pencil className="h-2.5 w-2.5" />
-                              <span>Price</span>
+                              <span>{t.priceBtn}</span>
                             </button>
                           )}
                           <span className="text-[9.5px] bg-white/20 hover:bg-white/30 px-1.5 py-0.5 rounded font-medium">
-                            Specs
+                            {t.specsBtn}
                           </span>
                         </div>
                       </div>
@@ -789,16 +807,18 @@ export function WallCladdingCatalog({
 
                       <div>
                         <DialogTitle className="text-lg font-bold leading-snug">
-                          {lightboxTarget.name}
+                          {transliterateName(lightboxTarget.name, lang)}
                         </DialogTitle>
                         <div className="flex items-baseline gap-1.5 mt-1">
                           <span className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">
-                            {price.currency} {price.price}
+                            {price.currency} {toIndicDigits(price.price, lang)}
                           </span>
-                          <span className="text-xs text-muted-foreground">/ {price.unit}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {price.unit === "sq.ft" ? t.sqftUnit : `/ ${price.unit}`}
+                          </span>
                           {price.mrp && (
                             <span className="text-xs text-muted-foreground line-through ml-1">
-                              {price.currency} {price.mrp}
+                              {price.currency} {toIndicDigits(price.mrp, lang)}
                             </span>
                           )}
                           {isSuperAdmin && (
@@ -812,45 +832,77 @@ export function WallCladdingCatalog({
                               className="ml-2 px-2 py-0.5 rounded bg-cyan-600/10 hover:bg-cyan-600/20 text-cyan-700 dark:text-cyan-300 text-xs font-semibold flex items-center gap-1"
                             >
                               <Pencil className="h-3 w-3" />
-                              <span>Edit Price</span>
+                              <span>{t.priceBtn}</span>
                             </button>
                           )}
                         </div>
                       </div>
 
                       <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
-                        Precision natural {lightboxTarget.stoneType.toLowerCase()} architectural
-                        panel. Engineered for exterior elevations, boundary facades, and luxury
-                        interior feature walls.
+                        {lang === "hi"
+                          ? `प्रीमियम प्राकृतिक ${transliterateName(lightboxTarget.stoneType, lang)} वास्तुशिल्प पैनल। बाहरी एलिवेशन, बाउंड्री फसाड और लक्जरी आंतरिक दीवारों के लिए विशेष रूप से निर्मित।`
+                          : lang === "gu"
+                            ? `પ્રીમિયમ કુદરતી ${transliterateName(lightboxTarget.stoneType, lang)} આર્કિટેક્ચરલ પેનલ. બાહ્ય એલિવેશન, બાઉન્ડ્રી ફેસાડ અને લક્ઝરી આંતરિક દિવાલો માટે ખાસ નિર્મિત.`
+                            : `Precision natural ${lightboxTarget.stoneType.toLowerCase()} architectural panel. Engineered for exterior elevations, boundary facades, and luxury interior feature walls.`}
                       </DialogDescription>
 
                       <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/60 text-xs">
                         <div>
-                          <span className="text-muted-foreground block text-[10px]">Relief</span>
+                          <span className="text-muted-foreground block text-[10px]">
+                            {lang === "hi"
+                              ? "उभार / मोटाई"
+                              : lang === "gu"
+                                ? "રિલીફ / જાડાઈ"
+                                : "Relief"}
+                          </span>
                           <span className="font-medium">
-                            {lightboxTarget.thickness || "20-35mm"}
+                            {toIndicDigits(lightboxTarget.thickness || "20-35mm", lang)}
                           </span>
                         </div>
                         <div>
                           <span className="text-muted-foreground block text-[10px]">
-                            Standard Sizes
+                            {lang === "hi"
+                              ? "मानक आकार"
+                              : lang === "gu"
+                                ? "માનક કદ"
+                                : "Standard Sizes"}
                           </span>
                           <span className="font-medium truncate block">
-                            {lightboxTarget.standardSizes || "600x300mm / Custom"}
+                            {toIndicDigits(
+                              lightboxTarget.standardSizes || "600x300mm / Custom",
+                              lang,
+                            )}
                           </span>
                         </div>
                         <div>
                           <span className="text-muted-foreground block text-[10px]">
-                            Surface Finish
+                            {lang === "hi"
+                              ? "सतह फिनिश"
+                              : lang === "gu"
+                                ? "સપાટી ફિનિશ"
+                                : "Surface Finish"}
                           </span>
                           <span className="font-medium truncate block">
-                            {lightboxTarget.finishes?.join(", ") || "Natural Cleft"}
+                            {transliterateName(
+                              lightboxTarget.finishes?.join(", ") || "Natural Cleft",
+                              lang,
+                            )}
                           </span>
                         </div>
                         <div>
-                          <span className="text-muted-foreground block text-[10px]">Lead Time</span>
+                          <span className="text-muted-foreground block text-[10px]">
+                            {lang === "hi"
+                              ? "डिलीवरी समय"
+                              : lang === "gu"
+                                ? "ડિલિવરી સમય"
+                                : "Lead Time"}
+                          </span>
                           <span className="font-medium truncate block text-emerald-600 dark:text-emerald-400">
-                            {price.leadTime || "Ready to Ship"}
+                            {lang === "hi"
+                              ? "भेजने के लिए तैयार"
+                              : lang === "gu"
+                                ? "મોકલવા માટે તૈયાર"
+                                : price.leadTime || "Ready to Ship"}
                           </span>
                         </div>
                       </div>
@@ -865,12 +917,20 @@ export function WallCladdingCatalog({
                             setLightboxTarget(null);
                             onSelectPattern(lightboxTarget, price);
                             toast.success(
-                              `Selected "${lightboxTarget.name}" for your estimate inquiry!`,
+                              lang === "hi"
+                                ? `आपके अनुमान के लिए "${transliterateName(lightboxTarget.name, lang)}" चुना गया!`
+                                : lang === "gu"
+                                  ? `તમારા અંદાજ માટે "${transliterateName(lightboxTarget.name, lang)}" પસંદ કરાયું!`
+                                  : `Selected "${lightboxTarget.name}" for your estimate inquiry!`,
                             );
                           }}
                         >
                           <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-                          Add to Estimate &amp; Calculate
+                          {lang === "hi"
+                            ? "अनुमान में जोड़ें व गणना करें"
+                            : lang === "gu"
+                              ? "અંદાજમાં ઉમેરો અને ગણતરી કરો"
+                              : "Add to Estimate & Calculate"}
                         </Button>
                       )}
                       <Button
@@ -880,7 +940,11 @@ export function WallCladdingCatalog({
                         onClick={() => handleWhatsAppInquiry(lightboxTarget)}
                       >
                         <Share2 className="h-3.5 w-3.5 mr-1.5" />
-                        Inquire on WhatsApp
+                        {lang === "hi"
+                          ? "व्हाट्सएप पर तुरंत पूछताछ करें"
+                          : lang === "gu"
+                            ? "વોટ્સએપ પર તાત્કાલિક પૂછપરછ કરો"
+                            : "Inquire on WhatsApp"}
                       </Button>
                     </div>
                   </div>

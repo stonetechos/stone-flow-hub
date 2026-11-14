@@ -41,6 +41,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EntityPicker } from "@/components/forms/EntityPicker";
+import { UnitPicker } from "@/components/forms/UnitPicker";
 import { CatalogProductSelect } from "@/components/quotes/CatalogProductSelect";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
@@ -715,27 +716,10 @@ function NewInvoicePage() {
                           />
                         </TableCell>
                         <TableCell>
-                          <Select
+                          <UnitPicker
                             value={item.unit}
-                            onValueChange={(u) => updateDirectItem(item.id, { unit: u })}
-                          >
-                            <SelectTrigger className="h-8 text-xs">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="sqft">sqft</SelectItem>
-                              <SelectItem value="sqm">sqm</SelectItem>
-                              <SelectItem value="running ft">running ft</SelectItem>
-                              <SelectItem value="nos">nos</SelectItem>
-                              <SelectItem value="pcs">pcs</SelectItem>
-                              <SelectItem value="box">box</SelectItem>
-                              <SelectItem value="ton">ton</SelectItem>
-                              <SelectItem value="lot">lot</SelectItem>
-                              <SelectItem value="set">set</SelectItem>
-                              <SelectItem value="bag">bag</SelectItem>
-                              <SelectItem value="ltr">ltr</SelectItem>
-                            </SelectContent>
-                          </Select>
+                            onChange={(u) => updateDirectItem(item.id, { unit: u })}
+                          />
                         </TableCell>
                         <TableCell>
                           <Input

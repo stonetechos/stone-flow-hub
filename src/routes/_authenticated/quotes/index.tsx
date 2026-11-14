@@ -48,6 +48,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
 import { transliterateName } from "@/lib/i18n/transliterate";
+import { UnitPicker } from "@/components/forms/UnitPicker";
 import { CatalogProductSelect } from "@/components/quotes/CatalogProductSelect";
 import {
   getQuoteSaleMode,
@@ -1715,10 +1716,9 @@ function CreateQuoteDialog({
                           />
                         </LineField>
                         <LineField label="Unit" className="col-span-6 md:col-span-1">
-                          <Input
-                            placeholder="sqft"
-                            value={it.unit ?? ""}
-                            onChange={(e) => updateItem(it.key, { unit: e.target.value })}
+                          <UnitPicker
+                            value={it.unit}
+                            onChange={(val) => updateItem(it.key, { unit: val })}
                           />
                         </LineField>
                         <LineField

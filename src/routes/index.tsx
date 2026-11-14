@@ -21,6 +21,7 @@
  */
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useRef, useMemo, useEffect, type FormEvent, type ChangeEvent } from "react";
+import { toIndicDigits } from "@/lib/format";
 import {
   Sparkles,
   Upload,
@@ -1015,7 +1016,7 @@ function HomePage() {
                       <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white" />
                     </span>
                     <span className="text-[9.5px] font-black uppercase tracking-wider text-white leading-none">
-                      NEW
+                      {texts.nav.newBadge}
                     </span>
                   </span>
                 </button>
@@ -1041,9 +1042,9 @@ function HomePage() {
                     title={texts.nav.jobOpenings}
                   >
                     <Briefcase className="h-3.5 w-3.5 text-primary" />
-                    <span className="text-[11px] font-bold">Jobs</span>
+                    <span className="text-[11px] font-bold">{texts.nav.jobsShort}</span>
                     <span className="inline-flex items-center px-1 py-0.2 rounded-full bg-linear-to-r from-rose-600 to-amber-500 text-white text-[8px] font-black tracking-wider animate-attention-badge ml-0.5">
-                      NEW
+                      {texts.nav.newBadge}
                     </span>
                   </button>
                 }
@@ -1112,7 +1113,7 @@ function HomePage() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-1">
                 <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-[#E9E6E1] dark:border-stone-800 bg-white dark:bg-stone-900/90 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-sm cursor-default">
                   <div className="text-xl sm:text-2xl font-bold tracking-tight text-[#111111] dark:text-stone-100">
-                    {cmsContent.heroCustomersServed || "1500+"}
+                    {toIndicDigits(cmsContent.heroCustomersServed || "1500+", currentLang)}
                   </div>
                   <div className="text-[11px] sm:text-xs text-[#5F6368] dark:text-stone-400 font-medium mt-1">
                     {texts.hero.customersServed}
@@ -1121,9 +1122,12 @@ function HomePage() {
 
                 <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-[#E9E6E1] dark:border-stone-800 bg-white dark:bg-stone-900/90 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-sm cursor-default">
                   <div className="text-xl sm:text-2xl font-bold tracking-tight text-[#111111] dark:text-stone-100">
-                    {isEn
-                      ? cmsContent.heroWarranty || texts.hero.yearsWarranty
-                      : texts.hero.yearsWarranty}
+                    {toIndicDigits(
+                      isEn
+                        ? cmsContent.heroWarranty || texts.hero.yearsWarranty
+                        : texts.hero.yearsWarranty,
+                      currentLang,
+                    )}
                   </div>
                   <div className="text-[11px] sm:text-xs text-[#5F6368] dark:text-stone-400 font-medium mt-1">
                     {texts.hero.installationWarranty}
@@ -1141,7 +1145,7 @@ function HomePage() {
 
                 <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-[#E9E6E1] dark:border-stone-800 bg-white dark:bg-stone-900/90 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-sm cursor-default">
                   <div className="text-xl sm:text-2xl font-bold tracking-tight text-[#111111] dark:text-stone-100 flex items-center gap-1">
-                    <span>{cmsContent.heroGoogleRating || "4.6"}</span>
+                    <span>{toIndicDigits(cmsContent.heroGoogleRating || "4.6", currentLang)}</span>
                     <span className="text-[#0D7A7B] text-base sm:text-lg">★</span>
                   </div>
                   <div className="text-[11px] sm:text-xs text-[#5F6368] dark:text-stone-400 font-medium mt-1">
@@ -2245,7 +2249,7 @@ function HomePage() {
               to="/careers"
               className="hover:text-primary transition-colors cursor-pointer underline-offset-4 hover:underline"
             >
-              Careers
+              {currentLang === "hi" ? "करियर" : currentLang === "gu" ? "કારકિર્દી" : "Careers"}
             </Link>
             <span>•</span>
             <CustomerInquiryLookupDialog

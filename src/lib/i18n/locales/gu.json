@@ -7,6 +7,7 @@
   "nav": {
     "groups": {
       "overview": "હોમ",
+      "website": "વેબસાઇટ CMS",
       "items": "આઇટમ્સ",
       "sales": "વેચાણ",
       "purchase": "ખરીદી",
@@ -24,7 +25,9 @@
       "profitability": "નફા લક્ષ્ય",
       "enquiries": "વેબસાઇટ લીડ્સ અને CRM",
       "customers": "ગ્રાહકો",
+      "projects": "પ્રોજેક્ટ્સ અને નફા ડાયરી",
       "quotes": "અવતરણ",
+      "sales-orders": "વેચાણ ઓર્ડર",
       "invoices": "વેચાણ ઇન્વૉઇસ",
       "dispatch": "ડિસ્પેચ",
       "vendors": "સપ્લાય પાર્ટનર્સ",

@@ -28,6 +28,7 @@ import { EmptyState, ErrorBlock, LoadingBlock } from "@/components/layout/States
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NumericInput, PercentInput } from "@/components/forms/inputs/SmartInputs";
+import { UnitPicker } from "@/components/forms/UnitPicker";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -1008,10 +1009,12 @@ function LineItemsEditor({
                     </div>
                     <div className="col-span-1 md:col-span-1">
                       <label className="text-xs text-muted-foreground">Unit</label>
-                      <Input
-                        value={r.unit ?? ""}
-                        onChange={(e) => updateRow(r.id, "unit", e.target.value)}
-                        onBlur={() => commit(r.id, "unit", original)}
+                      <UnitPicker
+                        value={r.unit}
+                        onChange={(val) => {
+                          updateRow(r.id, "unit", val);
+                          commit(r.id, "unit", original);
+                        }}
                       />
                     </div>
                     <div className="col-span-1 md:col-span-2">
