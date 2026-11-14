@@ -3,17 +3,21 @@
 scripts/generate-wall-cladding-pdf.py
 
 Syncs product order and rotations directly from the live CMS (Supabase / site-settings),
-updates local catalog JSON & default catalog order, and compiles the high-end luxury
-architectural catalog PDF:
-  - public/catalogues/StoneTech_NaturalStone_WallCl_Options_26-27.pdf
-  - public/catalogues/stos-wall-cladding-catalogue-2026.pdf
+updates local catalog JSON & default catalog order, and compiles high-end luxury
+architectural catalog PDFs in English, Hindi, and Gujarati:
+  - public/catalogues/StoneTech_NaturalStone_WallCl_Options_English.pdf
+  - public/catalogues/StoneTech_NaturalStone_WallCl_Options_Hindi.pdf
+  - public/catalogues/StoneTech_NaturalStone_WallCl_Options_Gujarati.pdf
+  - public/catalogues/StoneTech_NaturalStone_WallCl_Options_26-27.pdf (English mirror)
+  - public/catalogues/stos-wall-cladding-catalogue-2026.pdf (English mirror)
 
 Features:
-  - Strict CMS Order & Dynamic Sequential Codes: Starts with ST-WC-001, ST-WC-002, ..., ST-WC-284.
+  - Multilingual Typography: Native Kohinoor Devanagari (Hindi), Kohinoor Gujarati (Gujarati),
+    and Optima / Avenir Next (English), rendered via headless Chrome for 100% authentic
+    complex Indic text shaping (zero broken matras/conjuncts) and sharp vector output.
+  - Strict CMS Order & Dynamic Sequential Codes: ST-WC-001 through ST-WC-275+.
   - Live Rotations: Automatically applies custom 90°/180°/270° rotations configured in CMS.
-  - Luxury Atelier Typography: Optima & Avenir Next with elegant hierarchy.
   - Balanced Card Frame: Maximizes photo display area (~80% of card) without awkward gaps.
-  - Luxury Product Metadata: Product title, stone geology, standard calibration, studio inquiries.
   - WhatsApp Safe: Optimized to stay strictly under 25 MiB.
 """
 
@@ -21,11 +25,14 @@ import json
 import math
 import os
 import re
+import shutil
+import subprocess
+import time
 import urllib.request
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
 
-PAGE_WIDTH = 1240   # A4 at 150 DPI
-PAGE_HEIGHT = 1754  # A4 at 150 DPI
+PAGE_WIDTH_MM = 210
+PAGE_HEIGHT_MM = 297
 
 CHAPTER_CONFIG = [
     {
@@ -70,17 +77,221 @@ CHAPTER_CONFIG = [
     },
 ]
 
+CHAPTER_TRANSLATIONS = {
+    "en": {
+        "3D Pyramid & Faceted Origami Relief": "3D PYRAMID & FACETED ORIGAMI",
+        "Crazy China, Slender Needle Strips & Natural Flagstone": "CRAZY CHINA & SLENDER STRIPS",
+        "Staggered Multi-Level Plank & Strip Ledgestone": "STAGGERED PLANKS & LEDGESTONE",
+        "Chevron, Herringbone & Diagonal Fluted Parquet": "CHEVRON & DIAGONAL PARQUET",
+        "Modular Ashlar, Mondrian Grid & Beveled Blocks": "MODULAR ASHLAR & BLOCKS",
+        "Fluid Waves, Dune Ripples & Kinetic Scoops": "FLUID WAVES & KINETIC RIPPLES",
+        "Circular Motifs, Sunburst Chakras & Pebble Mosaics": "CIRCULAR MOTIFS & PEBBLES",
+        "Architectural Relief Murals, Royal Jharokha & Carved Flora": "ARCHITECTURAL MURALS & FLORA",
+    },
+    "hi": {
+        "3D Pyramid & Faceted Origami Relief": "३D पिरामिड एवं ओरिगेमी",
+        "Crazy China, Slender Needle Strips & Natural Flagstone": "क्रेज़ी चाइना एवं स्प्लेंडर स्ट्रिप्स",
+        "Staggered Multi-Level Plank & Strip Ledgestone": "मल्टी-लेवल प्लैंक एवं लेजस्टोन",
+        "Chevron, Herringbone & Diagonal Fluted Parquet": "शेवरॉन एवं डायगोनल परकेट",
+        "Modular Ashlar, Mondrian Grid & Beveled Blocks": "मॉड्यूलर ऐशलर एवं बेवेल्ड ब्लॉक्स",
+        "Fluid Waves, Dune Ripples & Kinetic Scoops": "फ्लुइड वेव्स एवं रिपल्स",
+        "Circular Motifs, Sunburst Chakras & Pebble Mosaics": "सर्कुलर मोटिफ्स एवं पेबल मोज़ेक",
+        "Architectural Relief Murals, Royal Jharokha & Carved Flora": "आर्किटेक्चरल म्यूरल्स एवं झरोखा",
+    },
+    "gu": {
+        "3D Pyramid & Faceted Origami Relief": "૩D પિરામિડ અને ઓરિગેમી",
+        "Crazy China, Slender Needle Strips & Natural Flagstone": "ક્રેઝી ચાઇના અને સ્લેન્ડર સ્ટ્રિપ્સ",
+        "Staggered Multi-Level Plank & Strip Ledgestone": "મલ્ટી-લેવલ પ્લેન્ક અને લેજસ્ટોન",
+        "Chevron, Herringbone & Diagonal Fluted Parquet": "શેવરોન અને ડાયગોનલ પરકેટ",
+        "Modular Ashlar, Mondrian Grid & Beveled Blocks": "મોડ્યુલર એશલર અને બેવેલ્ડ બ્લોક્સ",
+        "Fluid Waves, Dune Ripples & Kinetic Scoops": "ફ્લુઇડ વેવ્ઝ અને રિપલ્સ",
+        "Circular Motifs, Sunburst Chakras & Pebble Mosaics": "સર્ક્યુલર મોટીફ્સ અને પેબલ મોઝેઇક",
+        "Architectural Relief Murals, Royal Jharokha & Carved Flora": "આર્કિટેક્ચરલ મ્યુરલ્સ અને ઝરૂખો",
+    },
+}
+
+def to_indic(val, lang="en"):
+    s = str(val)
+    if lang == "hi":
+        return s.translate(str.maketrans("0123456789", "०१२३४५६७८९"))
+    elif lang == "gu":
+        return s.translate(str.maketrans("0123456789", "૦૧૨૩૪૫૬૭૮૯"))
+    return s
+
+PDF_I18N = {
+    "en": {
+        "font_family": "-apple-system, BlinkMacSystemFont, 'Avenir Next', Optima, 'Segoe UI', Roboto, sans-serif",
+        "brand_title": "STONE TECH ATELIER",
+        "brand_subtitle": "ARCHITECTURAL STONE FABRICATORS & CRAFTSMEN",
+        "cover_title": "NATURAL STONE WALL CLADDING",
+        "cover_title2": "PRODUCTS OPTIONS",
+        "cover_year": "2026 – 2027 COLLECTION",
+        "cover_tagline1": "Curated Portfolio of {count} Precision-Fabricated Surfaces & 3D Architectural Textures",
+        "cover_tagline2": "Quarry-Direct Natural Sandstone, Marble, Slate, Granite & Basalt Claddings",
+        "box_title": "ARCHITECTURAL EXCELLENCE & FABRICATION CAPABILITIES",
+        "pillars": [
+            ("01.", "PRECISION CNC & ARTISANAL CRAFTSMANSHIP", "Advanced multi-axis CNC surface profiling, diamond fluting, and traditional Rajasthani stone hand-chiseling."),
+            ("02.", "AUTHENTIC QUARRY-DIRECT GEOLOGY", "Direct sourcing from certified quarries across Rajasthan and Gujarat: Mint Sandstone, Teakwood, Agra Red, Dholpur, and Marbles."),
+            ("03.", "FULL PRE-DISPATCH DRY-LAY APPROVAL", "Every order undergoes a complete pre-dispatch dry-lay mockup with high-resolution photo and video approval prior to packing."),
+            ("04.", "HEAVY-DUTY SEAWORTHY EXPORT CRATING", "ISPM-15 heat-treated fumigated wooden crates with EPE foam interleaving and corner protectors for damage-free transit."),
+        ],
+        "exp_title": "STONE TECH EXPERIENCE CENTER · AHMEDABAD",
+        "exp_addr": "E-02, Ground Floor, SG Business Hub, Vasant Nagar, Gota, Ahmedabad, Gujarat 380060",
+        "exp_contact": "Direct WhatsApp Lines: +91 77420 90866 / +91 97844 52998",
+        "exp_email": "Email: info@stonetech.in · Website: www.stonetech.in",
+        "cover_meta": "Softcopy Edition · StoneTech_NaturalStone_WallCl_Options_English.pdf",
+
+        "header_brand": "STONE TECH ATELIER",
+        "header_sub": "·  WALL CLADDING OPTIONS 2026-27",
+        "header_badge_default": "ARCHITECTURAL COLLECTION",
+        "footer_addr": "Experience Center: E-02, SG Business Hub, Gota, Ahmedabad · WhatsApp: +91 77420 90866 / +91 97844 52998 · www.stonetech.in",
+        "page_x_of_y": "Page {page} of {total}",
+
+        "card_code_label": "CODE:",
+        "card_inquire_label": "Inquire: ",
+        "card_phone": "+91 77420 90866",
+
+        "back_title": "STONE TECH ATELIER",
+        "back_sub": "ARCHITECTURAL STONE CLADDING & BESPOKE FABRICATION",
+        "order_heading": "HOW TO PLACE AN ORDER / SAMPLE REQUEST",
+        "order_steps": [
+            "1. Note Product Code: Simply share the ST-WC-XXX code shown on any catalog page.",
+            "2. Send Elevation Details: Forward required elevation area (sq.ft), CAD, or site photos.",
+            "3. Dry-Lay Approval: Full pre-dispatch dry-lay mockup photos shared prior to crating.",
+            "4. Logistics & Delivery: Direct insured transport to site across India or seaworthy container crating for export.",
+        ],
+        "pack_heading": "EXPORT PACKAGING & QUALITY ASSURANCE",
+        "pack_bullets": [
+            "• Fumigated Wooden Crates: ISPM-15 heat-treated solid pine / hardwood export crates.",
+            "• Shock Absorption: Polyethylene foam interleaving between carved stone faces.",
+            "• Edge Protection: Heavy-duty plastic corner guards and reinforced steel banding.",
+            "• Moisture Defense: VCI waterproof barrier and shrink-wrapped pallet cover.",
+            "• Calibration: Thickness calibrated within +/- 1.5mm; squareness verified with precision calipers.",
+        ],
+        "visit_heading": "VISIT OUR EXPERIENCE CENTER & STUDIO",
+        "visit_brand": "STONE TECH EXPERIENCE CENTER",
+        "studio_hours": "Studio Hours: Monday – Saturday, 10:00 AM – 7:30 PM · Port of Export Dispatch: Mundra / JNPT",
+        "copyright": "© 2026 Stone Tech OS / Stone Tech Atelier. All Rights Reserved.",
+    },
+    "hi": {
+        "font_family": "-apple-system, BlinkMacSystemFont, 'Kohinoor Devanagari', 'Noto Sans Devanagari', 'Mangal', sans-serif",
+        "brand_title": "स्टोन टेक अटेलियर",
+        "brand_subtitle": "आर्किटेक्चरल स्टोन फैब्रिकेटर्स एवं शिल्पी",
+        "cover_title": "प्राकृतिक पत्थर वॉल क्लैडिंग",
+        "cover_title2": "उत्पाद विकल्प एवं डिज़ाइन्स",
+        "cover_year": "२०२६ – २०२७ संग्रह",
+        "cover_tagline1": "{count} सटीक-निर्मित सतहों और ३D आर्किटेक्चरल टेक्सचर्स का विशेष संग्रह",
+        "cover_tagline2": "सीधी खदान से प्राकृतिक बलुआ पत्थर, संगमरमर, स्लेट, ग्रेनाइट और बेसाल्ट क्लैडिंग",
+        "box_title": "आर्किटेक्चरल उत्कृष्टता एवं निर्माण क्षमताएं",
+        "pillars": [
+            ("०१.", "सटीक सीएनसी एवं पारंपरिक शिल्पकला", "उन्नत मल्टी-एक्सिस सीएनसी सरफेस प्रोफाइलिंग, डायमंड फ्लूटिंग एवं पारंपरिक राजस्थानी हाथ की नक्काशी।"),
+            ("०२.", "प्रमाणित सीधी खदान भूविज्ञान", "राजस्थान और गुजरात की प्रमाणित खदानों से सीधी आपूर्ति: मिंट सैंडस्टोन, टीकवुड, आगरा रेड, धौलपुर और मार्बल।"),
+            ("०३.", "डिस्पैच पूर्व संपूर्ण ड्राई-ले अनुमोदन", "पैकिंग से पूर्व प्रत्येक ऑर्डर का उच्च-रिज़ॉल्यूशन फोटो एवं वीडियो अनुमोदन के साथ संपूर्ण ड्राई-ले मॉकअप।"),
+            ("०४.", "हेवी-ड्यूटी सुरक्षित निर्यात क्रेटिंग", "सुरक्षित पारगमन हेतु EPE फोम और कॉर्नर प्रोटेक्टर युक्त ISPM-15 हीट-ट्रीटेड लकड़ी के मजबूत क्रेट।"),
+        ],
+        "exp_title": "स्टोन टेक एक्सपीरियंस सेंटर · अहमदाबाद",
+        "exp_addr": "ई-०२, ग्राउंड फ्लोर, एसजी बिजनेस हब, वसंत नगर, गोता, अहमदाबाद, गुजरात ३८००६०",
+        "exp_contact": "सीधी व्हाट्सएप हेल्पलाइन: +९१ ७७४२० ९०८६६ / +९१ ९७८४४ ५२९९८",
+        "exp_email": "ईमेल: info@stonetech.in · वेबसाइट: www.stonetech.in",
+        "cover_meta": "सॉफ्टकॉपी संस्करण · StoneTech_NaturalStone_WallCl_Options_Hindi.pdf",
+
+        "header_brand": "स्टोन टेक अटेलियर",
+        "header_sub": "·  वॉल क्लैडिंग विकल्प २०२६-२७",
+        "header_badge_default": "आर्किटेक्चरल संग्रह",
+        "footer_addr": "एक्सपीरियंस सेंटर: ई-०२, एसजी बिजनेस हब, गोता, अहमदाबाद · व्हाट्सएप: +९१ ७७४२० ९०८६६ · www.stonetech.in",
+        "page_x_of_y": "पेज {page} / {total}",
+
+        "card_code_label": "कोड:",
+        "card_inquire_label": "पूछताछ: ",
+        "card_phone": "+९१ ७७४२० ९०८६६",
+
+        "back_title": "स्टोन टेक अटेलियर",
+        "back_sub": "आर्किटेक्चरल स्टोन क्लैडिंग एवं कस्टम निर्माण",
+        "order_heading": "ऑर्डर / सैंपल अनुरोध प्रक्रिया",
+        "order_steps": [
+            "१. प्रोडक्ट कोड नोट करें: कैटलॉग पेज पर दर्शाया गया ST-WC-XXX कोड हमें साझा करें।",
+            "२. एलिवेशन विवरण भेजें: आवश्यक क्षेत्रफल (वर्ग फुट), सीएडी (CAD) ड्रॉइंग या साइट फोटो साझा करें।",
+            "३. ड्राई-ले अनुमोदन: क्रेटिंग व डिस्पैच से पूर्व संपूर्ण ड्राई-ले मॉकअप फोटो/वीडियो साझा किए जाते हैं।",
+            "४. सुरक्षित डिलीवरी: संपूर्ण भारत में साइट तक सीधी बीमित डिलीवरी अथवा विदेशी निर्यात हेतु सी-वर्दी क्रेटिंग।",
+        ],
+        "pack_heading": "निर्यात पैकेजिंग एवं गुणवत्ता आश्वासन",
+        "pack_bullets": [
+            "• धूमीकृत लकड़ी के क्रेट: ISPM-15 हीट-ट्रीटेड ठोस पाइन / हार्डवुड निर्यात क्रेट।",
+            "• शॉक अवशोषण: नक्काशीदार पत्थर की सतहों के बीच पॉलीइथाइलीन फोम इंटरलीविंग।",
+            "• किनारों की सुरक्षा: हेवी-ड्यूटी प्लास्टिक कॉर्नर गार्ड्स एवं मजबूत स्टील स्ट्रैपिंग।",
+            "• नमी से सुरक्षा: VCI वाटरप्रूफ बैरियर एवं श्रिंक-रैप्ड पैलेट कवरिंग।",
+            "• परिशुद्ध कैलिब्रेशन: मोटाई ±1.5mm तक कैलिब्रेटेड; प्रिसिजन कैलिपर्स द्वारा गुनिया सत्यापन।",
+        ],
+        "visit_heading": "हमारे एक्सपीरियंस सेंटर एवं स्टूडियो पधारें",
+        "visit_brand": "स्टोन टेक एक्सपीरियंस सेंटर",
+        "studio_hours": "स्टूडियो समय: सोमवार – शनिवार, प्रातः १०:०० बजे से सायं ७:३० बजे तक · निर्यात बंदरगाह: मुंद्रा / जेएनपीटी",
+        "copyright": "© २०२६ स्टोन टेक ओएस / स्टोन टेक अटेलियर. सर्वाधिकार सुरक्षित.",
+    },
+    "gu": {
+        "font_family": "-apple-system, BlinkMacSystemFont, 'Kohinoor Gujarati', 'Noto Sans Gujarati', 'Shruti', sans-serif",
+        "brand_title": "સ્ટોન ટેક એટેલિયર",
+        "brand_subtitle": "આર્કિટેક્ચરલ સ્ટોન ફેબ્રિકેટર્સ અને કારીગરો",
+        "cover_title": "કુદરતી પથ્થર વોલ ક્લેડિંગ",
+        "cover_title2": "ઉત્પાદન વિકલ્પો અને ડિઝાઇન્સ",
+        "cover_year": "૨૦૨૬ – ૨૦૨૭ સંગ્રહ",
+        "cover_tagline1": "{count} સચોટ-નિર્મિત સપાટીઓ અને ૩D આર્કિટેક્ચરલ ટેક્સચર્સનો વિશેષ સંગ્રહ",
+        "cover_tagline2": "સીધા ક્વોરીમાંથી કુદરતી સેન્ડસ્ટોન, માર્બલ, સ્લેટ, ગ્રેનાઈટ અને બેસાલ્ટ ક્લેડિંગ",
+        "box_title": "આર્કિટેક્ચરલ શ્રેષ્ઠતા અને ઉત્પાદન ક્ષમતાઓ",
+        "pillars": [
+            ("૦૧.", "સચોટ CNC અને પરંપરાગત કારીગરી", "અદ્યતન મલ્ટી-એક્સિસ CNC સરફેસ પ્રોફાઇલિંગ, ડાયમંડ ફ્લુટિંગ અને પરંપરાગત રાજસ્થાની હાથેથી નકશીકામ."),
+            ("૦૨.", "પ્રમાણિત સીધા ક્વોરી સ્ત્રોત", "રાજસ્થાન અને ગુજરાતની પ્રમાણિત ક્વોરીમાંથી સીધો પુરવઠો: મિન્ટ સેન્ડસ્ટોન, ટીકવુડ, આગ્રા રેડ, ધોળપુર અને માર્બલ."),
+            ("૦૩.", "ડિસ્પેચ પહેલાં સંપૂર્ણ ડ્રાય-લે મંજૂરી", "પેકિંગ પહેલાં દરેક ઓર્ડરનું ઉચ્ચ-રિઝોલ્યુશન ફોટો અને વિડિયો મંજૂરી સાથે સંપૂર્ણ ડ્રાય-લે મોકઅપ."),
+            ("૦૪.", "હેવી-ડ્યુટી સુરક્ષિત નિકાસ ક્રેટીંગ", "સુરક્ષિત પરિવહન માટે EPE ફોમ અને કોર્નર પ્રોટેક્ટર સાથે ISPM-15 હીટ-ટ્રીટેડ લાકડાના મજબૂત ક્રેટ."),
+        ],
+        "exp_title": "સ્ટોન ટેક એક્સપિરિયન્સ સેન્ટર · અમદાવાદ",
+        "exp_addr": "ઇ-૦૨, ગ્રાઉન્ડ ફ્લોર, એસજી બિઝનેસ હબ, વસંત નગર, ગોતા, અમદાવાદ, ગુજરાત ૩૮૦૦૬૦",
+        "exp_contact": "સીધી વ્હોટ્સએપ હેલ્પલાઇન: +૯૧ ૭૭૪૨૦ ૯૦૮૬૬ / +૯૧ ૯૭૮૪૪ ૫૨૯૯૮",
+        "exp_email": "ઇમેઇલ: info@stonetech.in · વેબસાઇટ: www.stonetech.in",
+        "cover_meta": "સોફ્ટકોપી આવૃત્તિ · StoneTech_NaturalStone_WallCl_Options_Gujarati.pdf",
+
+        "header_brand": "સ્ટોન ટેક એટેલિયર",
+        "header_sub": "·  વોલ ક્લેડિંગ વિકલ્પો ૨૦૨૬-૨૭",
+        "header_badge_default": "આર્કિટેક્ચરલ સંગ્રહ",
+        "footer_addr": "એક્સપિરિયન્સ સેન્ટર: ઇ-૦૨, એસજી બિઝનેસ હબ, ગોતા, અમદાવાદ · વ્હોટ્સએપ: +૯૧ ૭૭૪૨૦ ૯૦૮૬૬ · www.stonetech.in",
+        "page_x_of_y": "પેજ {page} / {total}",
+
+        "card_code_label": "કોડ:",
+        "card_inquire_label": "પૂછપરછ: ",
+        "card_phone": "+૯૧ ૭૭૪૨૦ ૯૦૮૬૬",
+
+        "back_title": "સ્ટોન ટેક એટેલિયર",
+        "back_sub": "આર્કિટેક્ચરલ સ્ટોન ક્લેડિંગ અને બેસ્પોક ફેબ્રિકેશન",
+        "order_heading": "ઓર્ડર / સેમ્પલ પૂછપરછ પ્રક્રિયા",
+        "order_steps": [
+            "૧. પ્રોડક્ટ કોડ નોંધો: કેટલોગ પેજ પર દર્શાવેલ ST-WC-XXX કોડ અમને મોકલો.",
+            "૨. એલિવેશન વિગતો મોકલો: જરૂરી એરિયા (ચોરસ ફૂટ), CAD ડ્રોઇંગ અથવા સાઇટ ફોટો મોકલો.",
+            "૩. ડ્રાય-લે મંજૂરી: ક્રેટિંગ અને ડિસ્પેચ પહેલાં સંપૂર્ણ ડ્રાય-લે મોકઅપ ફોટા/વિડિયો મોકલવામાં આવે છે.",
+            "૪. સુરક્ષિત ડિલિવરી: સમગ્ર ભારતમાં સાઇટ સુધી સીધું વીમાકૃત ટ્રાન્સપોર્ટ અથવા નિકાસ માટે સી-વર્ધી કન્ટેનર ક્રેટિંગ.",
+        ],
+        "pack_heading": "નિકાસ પેકેજિંગ અને ગુણવત્તા ખાતરી",
+        "pack_bullets": [
+            "• ફ્યુમિગેટેડ લાકડાના ક્રેટ: ISPM-15 હીટ-ટ્રીટેડ સોલિડ પાઇન / હાર્ડવુડ નિકાસ ક્રેટ.",
+            "• શોક એબ્સોર્પ્શન: કોતરણીવાળી પથ્થરની સપાટીઓ વચ્ચે પોલિઇથિલિન ફોમ લેયરિંગ.",
+            "• કિનારીઓની સુરક્ષા: હેવી-ડ્યુટી પ્લાસ્ટિક કોર્નર ગાર્ડ્સ અને મજબૂત સ્ટીલ સ્ટ્રેપિંગ.",
+            "• ભેજ સામે રક્ષણ: VCI વોટરપ્રૂફ બેરિયર અને શ્રિંક-રેપ્ડ પેલેટ કવરિંગ.",
+            "• સચોટ કેલિબ્રેશન: જાડાઈ ±1.5mm સુધી કેલિબ્રેટેડ; પ્રિસિઝન કેલિપર્સ દ્વારા ખૂણા ચકાસણી.",
+        ],
+        "visit_heading": "અમારા એક્સપિરિયન્સ સેન્ટર અને સ્ટુડિયોની મુલાકાત લો",
+        "visit_brand": "સ્ટોન ટેક એક્સપિરિયન્સ સેન્ટર",
+        "studio_hours": "સ્ટુડિયો સમય: સોમવાર – શનિવાર, સવારે ૧૦:૦૦ થી સાંજે ૭:૩૦ વાગ્યા સુધી · નિકાસ બંદર: મુન્દ્રા / JNPT",
+        "copyright": "© ૨૦૨૬ સ્ટોન ટેક ઓએસ / સ્ટોન ટેક એટેલિયર. સર્વાધિકાર સુરક્ષિત.",
+    },
+}
+
 def get_chapter(item):
     pid = item.get("id", "")
     name = (item.get("name") or "").lower()
 
-    # 1. Chevron, Herringbone & Diagonal Parquet
     if pid in ["ST-WC-262", "ST-WC-263", "ST-WC-264", "ST-WC-265", "ST-WC-243", "ST-WC-164", "ST-WC-195", "ST-WC-049", "ST-WC-046", "ST-WC-070"]:
         return "Chevron, Herringbone & Diagonal Fluted Parquet"
     if any(k in name for k in ["chevron", "parquet", "herringbone", "diagonal combed", "diagonal micro-fluted"]):
         return "Chevron, Herringbone & Diagonal Fluted Parquet"
 
-    # 2. 3D Pyramid & Faceted Origami Relief
     if pid in [
         "ST-WC-001", "ST-WC-002", "ST-WC-003", "ST-WC-004", "ST-WC-005", "ST-WC-006", "ST-WC-011", "ST-WC-012", 
         "ST-WC-013", "ST-WC-069", "ST-WC-075", "ST-WC-076", "ST-WC-137", "ST-WC-157", "ST-WC-172", "ST-WC-196",
@@ -90,7 +301,6 @@ def get_chapter(item):
     if any(k in name for k in ["origami", "pyramid", "faceted", "isometric", "prism", "starburst", "pitched mosaic", "four-point faceted"]):
         return "3D Pyramid & Faceted Origami Relief"
 
-    # 3. Circular Motifs, Sunburst Chakras & Pebble Mosaics
     if pid in [
         "ST-WC-007", "ST-WC-008", "ST-WC-014", "ST-WC-066", "ST-WC-067", "ST-WC-068", "ST-WC-071", "ST-WC-120",
         "ST-WC-132", "ST-WC-203", "ST-WC-204", "ST-WC-209", "ST-WC-210", "ST-WC-219", "ST-WC-222", "ST-WC-232",
@@ -100,7 +310,6 @@ def get_chapter(item):
     if any(k in name for k in ["sunburst", "chakra", "rosette", "spiral", "vortex", "pebble", "circular", "radial fan", "quatrefoil", "kolam rangoli", "quarter-circle", "quarter circle"]):
         return "Circular Motifs, Sunburst Chakras & Pebble Mosaics"
 
-    # 4. Fluid Waves, Dune Ripples & Kinetic Scoops
     if pid in [
         "ST-WC-145", "ST-WC-152", "ST-WC-173", "ST-WC-179", "ST-WC-182", "ST-WC-201", "ST-WC-215", "ST-WC-220",
         "ST-WC-234", "ST-WC-235", "ST-WC-241", "ST-WC-255", "ST-WC-260"
@@ -109,7 +318,6 @@ def get_chapter(item):
     if any(k in name for k in ["river wave", "water-wave", "concave scoop", "kinetic fluted", "ripple", "fluted reed", "reeded", "sawn ripple"]):
         return "Fluid Waves, Dune Ripples & Kinetic Scoops"
 
-    # 5. Architectural Relief Murals, Royal Jharokha & Carved Flora
     if pid in [
         "ST-WC-023", "ST-WC-030", "ST-WC-031", "ST-WC-033", "ST-WC-035", "ST-WC-036", "ST-WC-037", "ST-WC-038",
         "ST-WC-054", "ST-WC-059", "ST-WC-133", "ST-WC-134", "ST-WC-148", "ST-WC-151", "ST-WC-183", "ST-WC-188",
@@ -122,7 +330,6 @@ def get_chapter(item):
     if any(k in name for k in ["mural", "jharokha", "buddha", "lotus", "rose bloom", "rose blossom", "monstera", "kalpavriksha", "acanthus", "palmette", "tulip", "hieroglyph", "haveli", "shankh", "arabesque", "pisces", "nautilus", "butterfly", "palm leaf", "fern", "tree of life"]):
         return "Architectural Relief Murals, Royal Jharokha & Carved Flora"
 
-    # 6. Crazy China, Slender Needle Strips & Natural Flagstone
     if pid in [
         "ST-WC-053", "ST-WC-081", "ST-WC-103", "ST-WC-104", "ST-WC-105", "ST-WC-106", "ST-WC-107", "ST-WC-108",
         "ST-WC-109", "ST-WC-121", "ST-WC-122", "ST-WC-123", "ST-WC-125", "ST-WC-127", "ST-WC-131", "ST-WC-135",
@@ -133,7 +340,6 @@ def get_chapter(item):
     if any(k in name for k in ["crazy", "needle", "micro-linear", "polygonal", "flagstone", "fieldstone", "slim strip", "slim ledger", "slim linear", "timber rustic"]):
         return "Crazy China, Slender Needle Strips & Natural Flagstone"
 
-    # 7. Staggered Multi-Level Plank & Strip Ledgestone
     if pid in [
         "ST-WC-055", "ST-WC-078", "ST-WC-141", "ST-WC-144", "ST-WC-146", "ST-WC-153", "ST-WC-154", "ST-WC-155",
         "ST-WC-156", "ST-WC-159", "ST-WC-160", "ST-WC-169", "ST-WC-177", "ST-WC-181", "ST-WC-268", "ST-WC-273", "ST-WC-284"
@@ -142,355 +348,42 @@ def get_chapter(item):
     if any(k in name for k in ["staggered", "plank", "split-face ledger", "splitface ledger", "cleft ledger", "stacked ledger", "rockface plank", "splitface brick"]):
         return "Staggered Multi-Level Plank & Strip Ledgestone"
 
-    # 8. Modular Ashlar, Mondrian Grid & Beveled Blocks
     return "Modular Ashlar, Mondrian Grid & Beveled Blocks"
 
 
-def get_luxury_fonts():
-    avenir_path = "/System/Library/Fonts/Avenir Next.ttc"
-    optima_path = "/System/Library/Fonts/Optima.ttc"
-    bask_path = "/System/Library/Fonts/Supplemental/Baskerville.ttc"
-    helv_path = "/System/Library/Fonts/HelveticaNeue.ttc"
-    arial_path = "/System/Library/Fonts/Supplemental/Arial.ttf"
-
-    def load(path, size, index=0):
-        if path and os.path.exists(path):
-            try:
-                return ImageFont.truetype(path, size, index=index)
-            except Exception:
-                pass
-        # Fallbacks
-        for alt in [avenir_path, optima_path, bask_path, helv_path, arial_path]:
-            if alt and os.path.exists(alt):
-                try:
-                    return ImageFont.truetype(alt, size, index=0)
-                except Exception:
-                    pass
-        return ImageFont.load_default()
-
-    return {
-        # Cover Page
-        "cover_brand": load(optima_path, 36, index=1),
-        "cover_subtitle": load(avenir_path, 15, index=2),
-        "cover_title": load(optima_path, 46, index=1),
-        "cover_title2": load(optima_path, 42, index=1),
-        "cover_year": load(avenir_path, 26, index=0),
-        "cover_tagline1": load(avenir_path, 18, index=2),
-        "cover_tagline2": load(avenir_path, 14, index=5),
-        "cover_pillar_num": load(avenir_path, 14, index=0),
-        "cover_pillar_title": load(avenir_path, 14, index=0),
-        "cover_pillar_desc": load(avenir_path, 12, index=7),
-        "cover_exp_title": load(optima_path, 26, index=1),
-        "cover_exp_addr": load(avenir_path, 14, index=5),
-        "cover_exp_contact": load(avenir_path, 17, index=0),
-        "cover_meta": load(avenir_path, 11, index=7),
-
-        # Page Header & Footer
-        "header_brand": load(avenir_path, 14, index=0),
-        "header_sub": load(avenir_path, 12, index=5),
-        "header_badge": load(avenir_path, 11, index=0),
-        "footer_text": load(avenir_path, 11, index=5),
-        "footer_page": load(avenir_path, 11, index=2),
-
-        # Product Card
-        "card_code": load(avenir_path, 13, index=0),
-        "card_footer_label": load(avenir_path, 12, index=5),
-        "card_footer_code": load(avenir_path, 16, index=0),
-        "card_footer_phone": load(avenir_path, 14, index=0),
-
-        # Back Cover
-        "back_title": load(optima_path, 30, index=1),
-        "back_sub": load(avenir_path, 16, index=2),
-        "back_heading": load(avenir_path, 17, index=0),
-        "back_body": load(avenir_path, 13, index=7),
-    }
-
-
-def load_brand_assets():
-    logo_path = "public/branding/stone-tech-logo-transparent.png"
-    if not os.path.exists(logo_path):
-        logo_path = "public/branding/stone-tech-logo.png"
-
-    logo = Image.open(logo_path)
-    if logo.mode != "RGBA":
-        logo = logo.convert("RGBA")
-
-    bbox = logo.getbbox()
-    logo_cropped = logo.crop(bbox) if bbox else logo
-
-    icon_h = 32
-    scale = icon_h / logo_cropped.height
-    icon_w = max(1, int(logo_cropped.width * scale))
-    header_icon = logo_cropped.resize((icon_w, icon_h), Image.Resampling.LANCZOS)
-    return logo_cropped, header_icon
-
-
-def draw_header_footer(draw, fonts, page_num, total_pages, category_name="", header_icon=None, img_canvas=None):
-    draw.line([(50, 48), (PAGE_WIDTH - 50, 48)], fill=(226, 232, 240), width=1)
-    text_x = 50
-    if header_icon and img_canvas:
-        img_canvas.paste(header_icon, (50, 10), header_icon if header_icon.mode == "RGBA" else None)
-        text_x = 50 + header_icon.width + 12
-
-    draw.text((text_x, 23), "STONE TECH ATELIER", fill=(15, 23, 42), font=fonts["header_brand"])
-    draw.text(
-        (text_x + 168, 24),
-        "·  WALL CLADDING OPTIONS 2026-27",
-        fill=(100, 116, 139),
-        font=fonts["header_sub"],
-    )
-
-    if category_name:
-        badge_text = category_name.upper()
-        bbox = draw.textbbox((0, 0), badge_text, font=fonts["header_badge"])
-        tw = bbox[2] - bbox[0]
-        bx = PAGE_WIDTH - 50 - tw - 16
-        by = 16
-        bw = tw + 16
-        bh = 24
-        draw.rounded_rectangle([(bx, by), (bx + bw, by + bh)], radius=4, fill=(241, 245, 249), outline=(203, 213, 225), width=1)
-        draw.text((bx + 8, by + 5), badge_text, fill=(14, 116, 144), font=fonts["header_badge"])
-
-    draw.line([(50, PAGE_HEIGHT - 48), (PAGE_WIDTH - 50, PAGE_HEIGHT - 48)], fill=(226, 232, 240), width=1)
-    draw.text(
-        (50, PAGE_HEIGHT - 36),
-        "Experience Center: E-02, SG Business Hub, Gota, Ahmedabad · WhatsApp: +91 77420 90866 / +91 97844 52998 · www.stonetech.in",
-        fill=(71, 85, 105),
-        font=fonts["footer_text"],
-    )
-    page_str = f"Page {page_num} of {total_pages}"
-    bbox = draw.textbbox((0, 0), page_str, font=fonts["footer_page"])
-    tw = bbox[2] - bbox[0]
-    draw.text((PAGE_WIDTH - 50 - tw, PAGE_HEIGHT - 36), page_str, fill=(100, 116, 139), font=fonts["footer_page"])
-
-
-def create_cover_page(fonts, logo_img, total_patterns=284):
-    img = Image.new("RGB", (PAGE_WIDTH, PAGE_HEIGHT), color=(15, 23, 42))
-    draw = ImageDraw.Draw(img)
-
-    # Gold borders
-    draw.rectangle([(35, 35), (PAGE_WIDTH - 35, PAGE_HEIGHT - 35)], outline=(217, 119, 6), width=2)
-    draw.rectangle([(44, 44), (PAGE_WIDTH - 44, PAGE_HEIGHT - 44)], outline=(245, 158, 11), width=1)
-
-    # Corner accents
-    for x, y, dx, dy in [
-        (55, 55, 1, 1),
-        (PAGE_WIDTH - 55, 55, -1, 1),
-        (55, PAGE_HEIGHT - 55, 1, -1),
-        (PAGE_WIDTH - 55, PAGE_HEIGHT - 55, -1, -1),
-    ]:
-        draw.line([(x, y), (x + 35 * dx, y)], fill=(251, 191, 36), width=2)
-        draw.line([(x, y), (x, y + 35 * dy)], fill=(251, 191, 36), width=2)
-
-    # Logo Medallion
-    card_w, card_h = 180, 160
-    card_x = (PAGE_WIDTH - card_w) // 2
-    card_y = 75
-    draw.rounded_rectangle([(card_x, card_y), (card_x + card_w, card_y + card_h)], radius=20, fill=(255, 255, 255), outline=(217, 119, 6), width=2)
-    logo_thumb = logo_img.copy()
-    logo_thumb.thumbnail((card_w - 28, card_h - 28), Image.Resampling.LANCZOS)
-    img.paste(logo_thumb, (card_x + (card_w - logo_thumb.width) // 2, card_y + (card_h - logo_thumb.height) // 2), logo_thumb if logo_thumb.mode == "RGBA" else None)
-
-    # Brand Title
-    draw.text((PAGE_WIDTH // 2, 275), "STONE TECH ATELIER", fill=(245, 158, 11), font=fonts["cover_brand"], anchor="mm")
-    draw.text((PAGE_WIDTH // 2, 315), "ARCHITECTURAL STONE FABRICATORS & CRAFTSMEN", fill=(148, 163, 184), font=fonts["cover_subtitle"], anchor="mm")
-    draw.line([(PAGE_WIDTH // 2 - 200, 345), (PAGE_WIDTH // 2 + 200, 345)], fill=(217, 119, 6), width=2)
-
-    # Major Heading (as explicitly requested: "Natural Stone Wall Cladding Products Options")
-    draw.text((PAGE_WIDTH // 2, 415), "NATURAL STONE WALL CLADDING", fill=(255, 255, 255), font=fonts["cover_title"], anchor="mm")
-    draw.text((PAGE_WIDTH // 2, 470), "PRODUCTS OPTIONS", fill=(251, 191, 36), font=fonts["cover_title2"], anchor="mm")
-    draw.text((PAGE_WIDTH // 2, 525), "2026 – 2027 COLLECTION", fill=(103, 232, 249), font=fonts["cover_year"], anchor="mm")
-
-    # Luxury Taglines
-    draw.text((PAGE_WIDTH // 2, 590), f"Curated Portfolio of {total_patterns} Precision-Fabricated Surfaces & 3D Architectural Textures", fill=(241, 245, 249), font=fonts["cover_tagline1"], anchor="mm")
-    draw.text((PAGE_WIDTH // 2, 625), "Quarry-Direct Natural Sandstone, Marble, Slate, Granite & Basalt Claddings", fill=(148, 163, 184), font=fonts["cover_tagline2"], anchor="mm")
-
-    # Fabrication & Quality Assurance Capabilities Box
-    box_top = 670
-    box_w = PAGE_WIDTH - 180
-    box_h = 475
-    box_x = 90
-    draw.rectangle([(box_x, box_top), (box_x + box_w, box_top + box_h)], fill=(30, 41, 59), outline=(51, 65, 85), width=2)
-    draw.text((PAGE_WIDTH // 2, box_top + 38), "ARCHITECTURAL EXCELLENCE & FABRICATION CAPABILITIES", fill=(251, 191, 36), font=fonts["cover_subtitle"], anchor="mm")
-    draw.line([(PAGE_WIDTH // 2 - 180, box_top + 60), (PAGE_WIDTH // 2 + 180, box_top + 60)], fill=(217, 119, 6), width=1)
-
-    pillars = [
-        ("01", "PRECISION CNC & ARTISANAL CRAFTSMANSHIP", "Advanced multi-axis CNC surface profiling, diamond fluting, and traditional Rajasthani stone hand-chiseling."),
-        ("02", "AUTHENTIC QUARRY-DIRECT GEOLOGY", "Direct sourcing from certified quarries across Rajasthan and Gujarat: Mint Sandstone, Teakwood, Agra Red, Dholpur, and Marbles."),
-        ("03", "FULL PRE-DISPATCH DRY-LAY APPROVAL", "Every order undergoes a complete pre-dispatch dry-lay mockup with high-resolution photo and video approval prior to packing."),
-        ("04", "HEAVY-DUTY SEAWORTHY EXPORT CRATING", "ISPM-15 heat-treated fumigated wooden crates with EPE foam interleaving and corner protectors for damage-free transit.")
+def get_chrome_executable():
+    for env_var in ["CHROME_BIN", "GOOGLE_CHROME_BIN", "PUPPETEER_EXECUTABLE_PATH"]:
+        val = os.environ.get(env_var)
+        if val and os.path.exists(val):
+            return val
+    
+    candidates = [
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        "/Applications/Chromium.app/Contents/MacOS/Chromium",
+        "/usr/bin/google-chrome",
+        "/usr/bin/google-chrome-stable",
+        "/usr/bin/chromium-browser",
+        "/usr/bin/chromium",
     ]
-
-    y_p = box_top + 95
-    for num, p_title, p_desc in pillars:
-        draw.text((box_x + 35, y_p), f"{num}.", fill=(251, 191, 36), font=fonts["cover_pillar_num"])
-        draw.text((box_x + 75, y_p), p_title, fill=(241, 245, 249), font=fonts["cover_pillar_title"])
-        draw.text((box_x + 75, y_p + 24), p_desc, fill=(148, 163, 184), font=fonts["cover_pillar_desc"])
-        y_p += 85
-
-    # Experience Center Box
-    draw.line([(90, 1180), (PAGE_WIDTH - 90, 1180)], fill=(217, 119, 6), width=2)
-    draw.text((PAGE_WIDTH // 2, 1225), "STONE TECH EXPERIENCE CENTER · AHMEDABAD", fill=(251, 191, 36), font=fonts["cover_exp_title"], anchor="mm")
-    draw.text((PAGE_WIDTH // 2, 1275), "E-02, Ground Floor, SG Business Hub, Vasant Nagar, Gota, Ahmedabad, Gujarat 380060", fill=(255, 255, 255), font=fonts["cover_exp_addr"], anchor="mm")
-    draw.text((PAGE_WIDTH // 2, 1323), "Direct WhatsApp Lines: +91 77420 90866 / +91 97844 52998", fill=(103, 232, 249), font=fonts["cover_exp_contact"], anchor="mm")
-    draw.text((PAGE_WIDTH // 2, 1368), "Email: info@stonetech.in   ·   Website: www.stonetech.in", fill=(203, 213, 225), font=fonts["cover_exp_addr"], anchor="mm")
-    draw.text((PAGE_WIDTH // 2, 1425), "Softcopy Edition · StoneTech_NaturalStone_WallCl_Options_26-27.pdf", fill=(100, 116, 139), font=fonts["cover_meta"], anchor="mm")
-
-    return img
+    for c in candidates:
+        if os.path.exists(c):
+            return c
+    
+    for name in ["google-chrome", "google-chrome-stable", "chromium", "chromium-browser"]:
+        w = shutil.which(name)
+        if w:
+            return w
+    return None
 
 
-def render_pattern_card(draw, fonts, item, img_canvas, x, y, card_w, card_h):
-    # Outer luxury card container
-    draw.rounded_rectangle(
-        [(x, y), (x + card_w, y + card_h)],
-        radius=12,
-        fill=(255, 255, 255),
-        outline=(226, 232, 240),
-        width=1,
-    )
-
-    box_x = x + 12
-    box_y = y + 12
-    box_w = card_w - 24  # 521 px
-    box_h = card_h - 76  # 714 px, gives maximum prominence to stone artwork
-
-    draw.rounded_rectangle(
-        [(box_x, box_y), (box_x + box_w, box_y + box_h)],
-        radius=8,
-        fill=(248, 250, 252),
-        outline=(241, 245, 249),
-        width=1,
-    )
-
-    photo_path = "public" + item.get("image", "")
-    if os.path.exists(photo_path):
-        try:
-            with Image.open(photo_path) as pimg:
-                if pimg.mode != "RGB":
-                    pimg = pimg.convert("RGB")
-
-                # Apply exact CMS rotation (90°, 180°, 270°)
-                rotation = item.get("rotation", 0) % 360
-                if rotation == 90:
-                    pimg = pimg.transpose(Image.Transpose.ROTATE_270)
-                elif rotation == 180:
-                    pimg = pimg.transpose(Image.Transpose.ROTATE_180)
-                elif rotation == 270:
-                    pimg = pimg.transpose(Image.Transpose.ROTATE_90)
-
-                img_w, img_h = pimg.size
-                scale = min(box_w / img_w, box_h / img_h)
-                new_w = max(1, int(img_w * scale))
-                new_h = max(1, int(img_h * scale))
-
-                thumb = pimg.resize((new_w, new_h), Image.Resampling.LANCZOS)
-                paste_x = box_x + (box_w - new_w) // 2
-                paste_y = box_y + (box_h - new_h) // 2
-                img_canvas.paste(thumb, (paste_x, paste_y))
-        except Exception:
-            pass
-
-    # Top-Left Code Tag Capsule over photo
-    code_text = item.get("code") or item.get("id", "ST-WC-001")
-    bbox = draw.textbbox((0, 0), code_text, font=fonts["card_code"])
-    tag_w = (bbox[2] - bbox[0]) + 20
-    tag_h = 26
-    draw.rounded_rectangle(
-        [(box_x + 12, box_y + 12), (box_x + 12 + tag_w, box_y + 12 + tag_h)],
-        radius=5,
-        fill=(15, 23, 42),
-    )
-    draw.text((box_x + 22, box_y + 16), code_text, fill=(251, 191, 36), font=fonts["card_code"])
-
-    # Bottom Footer Strip: Minimal luxury with only code and inquiry line
-    footer_y = y + card_h - 52
-    draw.line([(box_x, footer_y), (box_x + box_w, footer_y)], fill=(226, 232, 240), width=1)
-
-    # Left: CODE: ST-WC-XXX
-    draw.text((box_x + 4, footer_y + 15), "CODE:", fill=(100, 116, 139), font=fonts["card_footer_label"])
-    c_bbox = draw.textbbox((0, 0), "CODE:", font=fonts["card_footer_label"])
-    c_w = c_bbox[2] - c_bbox[0]
-    draw.text((box_x + 4 + c_w + 8, footer_y + 13), code_text, fill=(15, 23, 42), font=fonts["card_footer_code"])
-
-    # Right: Inquire: +91 77420 90866
-    inq_phone = "+91 77420 90866"
-    p_bbox = draw.textbbox((0, 0), inq_phone, font=fonts["card_footer_phone"])
-    p_w = p_bbox[2] - p_bbox[0]
-    i_bbox = draw.textbbox((0, 0), "Inquire: ", font=fonts["card_footer_label"])
-    i_w = i_bbox[2] - i_bbox[0]
-
-    right_x = box_x + box_w - p_w
-    draw.text((right_x, footer_y + 14), inq_phone, fill=(13, 148, 136), font=fonts["card_footer_phone"])
-    draw.text((right_x - i_w, footer_y + 15), "Inquire: ", fill=(100, 116, 139), font=fonts["card_footer_label"])
-
-
-def create_back_cover_page(fonts, logo_img):
-    img = Image.new("RGB", (PAGE_WIDTH, PAGE_HEIGHT), color=(15, 23, 42))
-    draw = ImageDraw.Draw(img)
-
-    # Borders
-    draw.rectangle([(35, 35), (PAGE_WIDTH - 35, PAGE_HEIGHT - 35)], outline=(217, 119, 6), width=2)
-    draw.rectangle([(42, 42), (PAGE_WIDTH - 42, PAGE_HEIGHT - 42)], outline=(245, 158, 11), width=1)
-
-    card_w, card_h = 180, 160
-    card_x = (PAGE_WIDTH - card_w) // 2
-    card_y = 80
-    draw.rounded_rectangle([(card_x, card_y), (card_x + card_w, card_y + card_h)], radius=20, fill=(255, 255, 255), outline=(217, 119, 6), width=2)
-    logo_thumb = logo_img.copy()
-    logo_thumb.thumbnail((card_w - 28, card_h - 28), Image.Resampling.LANCZOS)
-    img.paste(logo_thumb, (card_x + (card_w - logo_thumb.width) // 2, card_y + (card_h - logo_thumb.height) // 2), logo_thumb if logo_thumb.mode == "RGBA" else None)
-
-    draw.text((PAGE_WIDTH // 2, 280), "STONE TECH ATELIER", fill=(245, 158, 11), font=fonts["back_title"], anchor="mm")
-    draw.text((PAGE_WIDTH // 2, 320), "ARCHITECTURAL STONE CLADDING & BESPOKE FABRICATION", fill=(148, 163, 184), font=fonts["back_sub"], anchor="mm")
-    draw.line([(PAGE_WIDTH // 2 - 180, 350), (PAGE_WIDTH // 2 + 180, 350)], fill=(217, 119, 6), width=2)
-
-    box_w = PAGE_WIDTH - 160
-    draw.rectangle([(80, 380), (80 + box_w, 690)], fill=(30, 41, 59), outline=(51, 65, 85), width=2)
-    draw.text((110, 410), "HOW TO PLACE AN ORDER / SAMPLE REQUEST", fill=(251, 191, 36), font=fonts["back_heading"])
-
-    steps = [
-        "1. Note Product Code: Simply share the ST-WC-XXX code shown on any catalog page.",
-        "2. Send Elevation Details: Forward required elevation area (sq.ft), CAD, or site photos.",
-        "3. Dry-Lay Approval: Full pre-dispatch dry-lay mockup photos shared prior to crating.",
-        "4. Logistics & Delivery: Direct insured transport to site across India or seaworthy container crating for export.",
-    ]
-    for idx, s in enumerate(steps):
-        draw.text((110, 465 + idx * 52), s, fill=(241, 245, 249), font=fonts["back_body"])
-
-    draw.rectangle([(80, 720), (80 + box_w, 1030)], fill=(30, 41, 59), outline=(51, 65, 85), width=2)
-    draw.text((110, 750), "EXPORT PACKAGING & QUALITY ASSURANCE", fill=(251, 191, 36), font=fonts["back_heading"])
-
-    pack_info = [
-        "· Fumigated Wooden Crates: ISPM-15 heat-treated solid pine / hardwood export crates.",
-        "· Shock Absorption: Polyethylene foam interleaving between carved stone faces.",
-        "· Edge Protection: Heavy-duty plastic corner guards and reinforced steel banding.",
-        "· Moisture Defense: VCI waterproof barrier and shrink-wrapped pallet cover.",
-        "· Calibration: Thickness calibrated within +/- 1.5mm; squareness verified with precision calipers.",
-    ]
-    for idx, p in enumerate(pack_info):
-        draw.text((110, 805 + idx * 42), p, fill=(226, 232, 240), font=fonts["back_body"])
-
-    draw.rectangle([(80, 1060), (80 + box_w, 1500)], fill=(15, 23, 42), outline=(217, 119, 6), width=2)
-    draw.text((PAGE_WIDTH // 2, 1115), "VISIT OUR EXPERIENCE CENTER & STUDIO", fill=(251, 191, 36), font=fonts["back_heading"], anchor="mm")
-    draw.text((PAGE_WIDTH // 2, 1175), "STONE TECH EXPERIENCE CENTER", fill=(255, 255, 255), font=fonts["back_heading"], anchor="mm")
-    draw.text((PAGE_WIDTH // 2, 1225), "E-02, Ground Floor, SG Business Hub, Vasant Nagar, Gota, Ahmedabad, Gujarat 380060", fill=(203, 213, 225), font=fonts["back_body"], anchor="mm")
-    draw.text((PAGE_WIDTH // 2, 1285), "WhatsApp Direct Lines: +91 77420 90866 / +91 97844 52998", fill=(103, 232, 249), font=fonts["back_sub"], anchor="mm")
-    draw.text((PAGE_WIDTH // 2, 1335), "Direct Email: info@stonetech.in   ·   Website: www.stonetech.in", fill=(203, 213, 225), font=fonts["back_body"], anchor="mm")
-    draw.text((PAGE_WIDTH // 2, 1385), "Studio Hours: Monday – Saturday, 10:00 AM – 7:30 PM", fill=(148, 163, 184), font=fonts["back_body"], anchor="mm")
-    draw.text((PAGE_WIDTH // 2, 1425), "Port of Export Dispatch: Mundra Port / JNPT, India", fill=(148, 163, 184), font=fonts["back_body"], anchor="mm")
-    draw.text((PAGE_WIDTH // 2, 1540), "© 2026 Stone Tech OS / Stone Tech Atelier. All Rights Reserved.", fill=(100, 116, 139), font=fonts["cover_meta"], anchor="mm")
-
-    return img
-
-
-def main():
-    print("Step 1: Reading src/data/wall-cladding-catalog.json...")
+def build_catalog_order_and_items():
+    print("Reading src/data/wall-cladding-catalog.json...")
     with open("src/data/wall-cladding-catalog.json", "r") as f:
         local_items = json.load(f)
     local_map = {item["id"]: dict(item) for item in local_items}
     print(f"Loaded {len(local_items)} local items.")
 
-    print("Step 2: Fetching live CMS order & rotations from Supabase site-settings...")
+    print("Fetching live CMS order & rotations from Supabase site-settings...")
     try:
         req = urllib.request.Request(
             "https://stonetech.in/api/public/site-settings",
@@ -506,9 +399,6 @@ def main():
     custom_items = site_data.get("website_catalog_items", [])
     deleted_ids = set(site_data.get("website_deleted_product_ids", []))
 
-    print(f"Remote order length: {len(order)}, Custom edited items: {len(custom_items)}, Deleted items: {len(deleted_ids)}")
-
-    # Merge custom overrides (rotations, custom titles, prices, etc.)
     for c in custom_items:
         cid = c.get("id")
         if cid in local_map:
@@ -516,7 +406,6 @@ def main():
         else:
             local_map[cid] = dict(c)
 
-    # Sort strictly according to the CMS custom order, skipping deleted products
     sorted_items = []
     seen = set()
     for pid in order:
@@ -524,13 +413,11 @@ def main():
             sorted_items.append(local_map[pid])
             seen.add(pid)
 
-    # Append any remaining items not in custom order, skipping deleted items
     for pid, item in local_map.items():
         if pid not in seen and pid not in deleted_ids:
             sorted_items.append(item)
             seen.add(pid)
 
-    # Re-assign sequential codes (1..284) to match CMS sequence exactly
     reordered_catalog = []
     all_order_ids = []
     chapter_counts = {cfg["name"]: 0 for cfg in CHAPTER_CONFIG}
@@ -547,12 +434,10 @@ def main():
         reordered_catalog.append(item_copy)
         all_order_ids.append(item["id"])
 
-    print(f"Step 3: Saving {len(reordered_catalog)} sequentially ordered items to catalog JSON...")
+    print(f"Saving {len(reordered_catalog)} sequentially ordered items to catalog JSON...")
     with open("src/data/wall-cladding-catalog.json", "w") as f:
         json.dump(reordered_catalog, f, indent=2)
 
-    # Update DEFAULT_WEBSITE_CATALOG_ORDER in types.ts
-    print("Step 4: Updating DEFAULT_WEBSITE_CATALOG_ORDER in src/lib/site-settings/types.ts...")
     types_path = "src/lib/site-settings/types.ts"
     with open(types_path, "r") as f:
         types_content = f.read()
@@ -567,68 +452,325 @@ def main():
     with open(types_path, "w") as f:
         f.write(new_types_content)
 
-    # Step 5: Render Luxury Publication PDF
-    print("Step 5: Compiling Luxury PDF with Optima & Avenir Next...")
-    fonts = get_luxury_fonts()
-    logo_img, header_icon = load_brand_assets()
+    return reordered_catalog
 
-    card_w = 545
-    card_h = 790
-    x_positions = [55, 640]
-    y_positions = [65, 885]
 
-    # Chunk into 4 items per page
-    chunks = [reordered_catalog[i : i + 4] for i in range(0, len(reordered_catalog), 4)]
-    total_catalog_pages = len(chunks)
-    total_pages = 1 + total_catalog_pages + 1
+def preload_thumbnails(catalog, thumb_dir="/tmp/catalog_thumbs"):
+    print("Pre-rendering & caching rotated product thumbnails...")
+    os.makedirs(thumb_dir, exist_ok=True)
+    count = 0
+    for item in catalog:
+        code = item.get("code") or item["id"]
+        out_path = os.path.join(thumb_dir, f"{code}.jpg")
+        photo_path = "public" + item.get("image", "")
+        if os.path.exists(photo_path):
+            try:
+                with Image.open(photo_path) as pimg:
+                    if pimg.mode != "RGB":
+                        pimg = pimg.convert("RGB")
+                    rot = item.get("rotation", 0) % 360
+                    if rot == 90:
+                        pimg = pimg.transpose(Image.Transpose.ROTATE_270)
+                    elif rot == 180:
+                        pimg = pimg.transpose(Image.Transpose.ROTATE_180)
+                    elif rot == 270:
+                        pimg = pimg.transpose(Image.Transpose.ROTATE_90)
 
-    print(f"Total Pages: {total_pages} (1 Cover + {total_catalog_pages} Product Pages + 1 Back Cover)")
+                    pimg.thumbnail((580, 580), Image.Resampling.LANCZOS)
+                    pimg.save(out_path, quality=75, optimize=True)
+                    count += 1
+            except Exception:
+                pass
+    print(f"Preloaded {count} thumbnails to {thumb_dir}.")
 
-    pages = []
-    # Cover Page
-    print("Rendering Cover Page...")
-    pages.append(create_cover_page(fonts, logo_img, len(reordered_catalog)))
 
-    # Product Pages (4 items per page)
+def generate_html_document(lang, catalog, logo_path, thumb_dir):
+    t = PDF_I18N.get(lang, PDF_I18N["en"])
+    font_fam = t["font_family"]
+
+    chunks = [catalog[i : i + 4] for i in range(0, len(catalog), 4)]
+    total_pages = 1 + len(chunks) + 1
+
+    cat_count_str = to_indic(len(catalog), lang)
+    tag1_text = t["cover_tagline1"].format(count=cat_count_str)
+
+    repo_dir = os.path.abspath(".")
+    hi_font_path = os.path.join(repo_dir, "scripts/fonts/NotoSansDevanagari-Regular.ttf")
+    gu_font_path = os.path.join(repo_dir, "scripts/fonts/NotoSansGujarati-Regular.ttf")
+
+    html_parts = []
+    html_parts.append(f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+@page {{ size: 210mm 297mm; margin: 0; }}
+* {{ box-sizing: border-box; }}
+@font-face {{
+  font-family: 'CatalogHindiFont';
+  src: url('file://{hi_font_path}');
+}}
+@font-face {{
+  font-family: 'CatalogGujaratiFont';
+  src: url('file://{gu_font_path}');
+}}
+body {{ margin: 0; font-family: {font_fam}, 'CatalogHindiFont', 'CatalogGujaratiFont'; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }}
+.page {{ width: 210mm; height: 297mm; page-break-after: always; position: relative; box-sizing: border-box; }}
+
+/* Cover */
+.cover {{ background: #0f172a; color: white; padding: 10mm; display: flex; flex-direction: column; justify-content: space-between; }}
+.cover-border {{ border: 2px solid #d97706; height: 100%; position: relative; padding: 8mm 12mm; display: flex; flex-direction: column; justify-content: space-between; text-align: center; }}
+.inner-border {{ position: absolute; inset: 2mm; border: 1px solid #f59e0b; pointer-events: none; }}
+.medallion {{ width: 35mm; height: 30mm; background: white; border: 2px solid #d97706; border-radius: 6mm; margin: 0 auto; display: flex; align-items: center; justify-content: center; padding: 3mm; }}
+.medallion img {{ max-width: 100%; max-height: 100%; object-fit: contain; }}
+.brand {{ color: #f59e0b; font-size: 20pt; font-weight: 700; margin-top: 3mm; letter-spacing: 0.5px; }}
+.sub {{ color: #94a3b8; font-size: 9pt; letter-spacing: 0.5px; margin-top: 1mm; }}
+.line {{ width: 80mm; height: 1.5px; background: #d97706; margin: 2.5mm auto; }}
+.title1 {{ font-size: 24pt; font-weight: 800; color: #ffffff; margin-top: 2mm; }}
+.title2 {{ font-size: 20pt; font-weight: 700; color: #fbbf24; margin-top: 1mm; }}
+.year {{ font-size: 14pt; font-weight: 700; color: #67e8f9; margin-top: 2mm; }}
+.tag1 {{ font-size: 9.5pt; color: #f1f5f9; margin-top: 3mm; font-weight: 500; }}
+.tag2 {{ font-size: 8pt; color: #94a3b8; margin-top: 1mm; }}
+
+.cap-box {{ background: #1e293b; border: 1.5px solid #334155; border-radius: 4px; padding: 4mm 6mm; text-align: left; margin-top: 3mm; }}
+.cap-title {{ color: #fbbf24; font-size: 9pt; font-weight: 700; text-align: center; }}
+.cap-line {{ width: 60mm; height: 1px; background: #d97706; margin: 2mm auto 3mm auto; }}
+.pillar-row {{ display: flex; gap: 8px; margin-bottom: 2mm; }}
+.p-num {{ color: #fbbf24; font-weight: 700; font-size: 8.5pt; min-width: 6mm; }}
+.p-head {{ color: #f1f5f9; font-weight: 700; font-size: 8pt; }}
+.p-desc {{ color: #94a3b8; font-size: 7pt; margin-top: 0.5mm; }}
+
+.exp-box {{ margin-top: 2mm; border-top: 1.5px solid #d97706; padding-top: 3mm; }}
+.exp-title {{ color: #fbbf24; font-size: 12pt; font-weight: 700; }}
+.exp-addr {{ color: #ffffff; font-size: 8pt; margin-top: 1mm; }}
+.exp-contact {{ color: #67e8f9; font-size: 9pt; font-weight: 700; margin-top: 1mm; }}
+.exp-email {{ color: #cbd5e1; font-size: 7.5pt; margin-top: 1mm; }}
+.exp-meta {{ color: #64748b; font-size: 6.5pt; margin-top: 1.5mm; }}
+
+/* Product Pages */
+.prod-page {{ padding: 8mm 10mm; display: flex; flex-direction: column; justify-content: space-between; }}
+.header {{ display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 2mm; }}
+.header-left {{ display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 10pt; color: #0f172a; }}
+.header-left img {{ height: 18px; }}
+.header-badge {{ background: #f1f5f9; border: 1px solid #cbd5e1; color: #0e7490; font-size: 8pt; font-weight: 700; padding: 2px 7px; border-radius: 4px; }}
+.grid {{ display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 8mm; flex: 1; padding: 4mm 0; }}
+.card {{ border: 1px solid #e2e8f0; border-radius: 8px; padding: 2.5mm; display: flex; flex-direction: column; justify-content: space-between; position: relative; background: #fff; }}
+.photo-box {{ background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 6px; flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; }}
+.photo-box img {{ max-width: 96%; max-height: 96%; object-fit: contain; }}
+.code-tag {{ position: absolute; top: 4.5mm; left: 4.5mm; background: #0f172a; color: #fbbf24; font-size: 8pt; font-weight: 700; padding: 2px 6px; border-radius: 4px; }}
+.card-footer {{ display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 2mm; margin-top: 1.5mm; font-size: 8pt; }}
+.card-footer .code {{ font-weight: 700; color: #0f172a; }}
+.card-footer .phone {{ font-weight: 700; color: #0d9488; }}
+.footer {{ display: flex; justify-content: space-between; border-top: 1px solid #e2e8f0; padding-top: 2mm; font-size: 7.5pt; color: #64748b; }}
+
+/* Back Cover */
+.back {{ background: #0f172a; color: white; padding: 10mm; display: flex; flex-direction: column; justify-content: space-between; }}
+.back-box {{ background: #1e293b; border: 1.5px solid #334155; border-radius: 6px; padding: 4mm 6mm; text-align: left; margin-bottom: 3mm; }}
+.back-heading {{ color: #fbbf24; font-size: 9.5pt; font-weight: 700; margin-bottom: 2mm; }}
+.back-item {{ color: #f1f5f9; font-size: 7.5pt; margin-bottom: 1.5mm; }}
+</style>
+</head>
+<body>
+""")
+
+    # 1. Cover
+    pillar_htmls = []
+    for num, p_title, p_desc in t["pillars"]:
+        pillar_htmls.append(f"""
+        <div class="pillar-row">
+          <div class="p-num">{num}</div>
+          <div>
+            <div class="p-head">{p_title}</div>
+            <div class="p-desc">{p_desc}</div>
+          </div>
+        </div>
+        """)
+
+    html_parts.append(f"""
+<div class="page cover">
+  <div class="cover-border">
+    <div class="inner-border"></div>
+    <div>
+      <div class="medallion"><img src="file://{logo_path}"></div>
+      <div class="brand">{t['brand_title']}</div>
+      <div class="sub">{t['brand_subtitle']}</div>
+      <div class="line"></div>
+      <div class="title1">{t['cover_title']}</div>
+      <div class="title2">{t['cover_title2']}</div>
+      <div class="year">{t['cover_year']}</div>
+      <div class="tag1">{tag1_text}</div>
+      <div class="tag2">{t['cover_tagline2']}</div>
+    </div>
+    
+    <div class="cap-box">
+      <div class="cap-title">{t['box_title']}</div>
+      <div class="cap-line"></div>
+      {''.join(pillar_htmls)}
+    </div>
+    
+    <div class="exp-box">
+      <div class="exp-title">{t['exp_title']}</div>
+      <div class="exp-addr">{t['exp_addr']}</div>
+      <div class="exp-contact">{t['exp_contact']}</div>
+      <div class="exp-email">{t['exp_email']}</div>
+      <div class="exp-meta">{t['cover_meta']}</div>
+    </div>
+  </div>
+</div>
+""")
+
+    # 2. Product Pages
     for p_idx, chunk in enumerate(chunks):
         p_num = p_idx + 2
-        p_img = Image.new("RGB", (PAGE_WIDTH, PAGE_HEIGHT), color=(255, 255, 255))
-        p_draw = ImageDraw.Draw(p_img)
+        raw_cat = chunk[0].get("patternCategory", "")
+        ch_badge = CHAPTER_TRANSLATIONS.get(lang, {}).get(raw_cat) or t["header_badge_default"]
+        cards_html = []
+        for item in chunk:
+            code = item.get("code") or item["id"]
+            t_img = os.path.join(thumb_dir, f"{code}.jpg")
+            cards_html.append(f"""
+            <div class="card">
+              <div class="photo-box"><img src="file://{t_img}"></div>
+              <div class="code-tag">{code}</div>
+              <div class="card-footer">
+                <span class="code">{t['card_code_label']} {code}</span>
+                <span class="phone">{t['card_inquire_label']}{t['card_phone']}</span>
+              </div>
+            </div>
+            """)
+        cards_joined = "".join(cards_html)
+        p_str = t["page_x_of_y"].format(page=to_indic(p_num, lang), total=to_indic(total_pages, lang))
+        html_parts.append(f"""
+        <div class="page prod-page">
+          <div class="header">
+            <div class="header-left">
+              <img src="file://{logo_path}">
+              <span>{t['header_brand']} &middot; <span style="color:#64748b;font-weight:400;">{t['header_sub']}</span></span>
+            </div>
+            <div class="header-badge">{ch_badge}</div>
+          </div>
+          <div class="grid">
+            {cards_joined}
+          </div>
+          <div class="footer">
+            <span>{t['footer_addr']}</span>
+            <span style="font-weight:700;">{p_str}</span>
+          </div>
+        </div>
+        """)
 
-        draw_header_footer(p_draw, fonts, p_num, total_pages, "ARCHITECTURAL COLLECTION", header_icon, p_img)
+    # 3. Back Cover
+    step_items = "".join([f'<div class="back-item">{s}</div>' for s in t["order_steps"]])
+    pack_items = "".join([f'<div class="back-item">{p}</div>' for p in t["pack_bullets"]])
 
-        for i, item in enumerate(chunk):
-            gx = x_positions[i % 2]
-            gy = y_positions[i // 2]
-            render_pattern_card(p_draw, fonts, item, p_img, gx, gy, card_w, card_h)
+    html_parts.append(f"""
+<div class="page back">
+  <div class="cover-border">
+    <div class="inner-border"></div>
+    <div>
+      <div class="medallion"><img src="file://{logo_path}"></div>
+      <div class="brand">{t['back_title']}</div>
+      <div class="sub">{t['back_sub']}</div>
+      <div class="line"></div>
+    </div>
+    
+    <div class="back-box" style="margin-top:2mm;">
+      <div class="back-heading">{t['order_heading']}</div>
+      {step_items}
+    </div>
+    
+    <div class="back-box">
+      <div class="back-heading">{t['pack_heading']}</div>
+      {pack_items}
+    </div>
+    
+    <div class="exp-box">
+      <div class="exp-title">{t['visit_heading']}</div>
+      <div class="exp-addr" style="font-weight:700;font-size:9pt;margin-top:1.5mm;">{t['visit_brand']}</div>
+      <div class="exp-addr">{t['exp_addr']}</div>
+      <div class="exp-contact">{t['exp_contact']}</div>
+      <div class="exp-email">{t['exp_email']}</div>
+      <div class="exp-email" style="color:#94a3b8;">{t['studio_hours']}</div>
+      <div class="exp-meta" style="color:#94a3b8;margin-top:2mm;">{t['copyright']}</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
+""")
 
-        pages.append(p_img)
+    return "".join(html_parts)
 
-    # Back Cover Page
-    print("Rendering Back Cover Page...")
-    pages.append(create_back_cover_page(fonts, logo_img))
 
+def compile_pdf_with_chrome(chrome_path, html_content, output_path):
+    temp_html = f"/tmp/catalog_{int(time.time() * 1000)}.html"
+    with open(temp_html, "w", encoding="utf-8") as f:
+        f.write(html_content)
+
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    cmd = [
+        chrome_path,
+        "--headless",
+        "--disable-gpu",
+        "--allow-file-access-from-files",
+        "--enable-local-file-accesses",
+        f"--print-to-pdf={output_path}",
+        "--print-to-pdf-no-header",
+        temp_html
+    ]
+    subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    if os.path.exists(temp_html):
+        os.remove(temp_html)
+
+    size_mb = os.path.getsize(output_path) / (1024 * 1024)
+    print(f"SUCCESS: Generated {output_path} ({size_mb:.2f} MB)")
+
+
+def main():
+    catalog = build_catalog_order_and_items()
+    repo_dir = os.path.abspath(".")
+    logo_path = os.path.join(repo_dir, "public/branding/stone-tech-logo-transparent.png")
+    thumb_dir = "/tmp/catalog_thumbs"
+    preload_thumbnails(catalog, thumb_dir)
+
+    chrome_bin = get_chrome_executable()
+    if not chrome_bin:
+        raise RuntimeError("Google Chrome / Chromium not found. Required for authentic multilingual text shaping.")
+
+    print(f"Using Chrome binary: {chrome_bin}")
     output_dir = "public/catalogues"
     os.makedirs(output_dir, exist_ok=True)
-    pdf_path_new = os.path.join(output_dir, "StoneTech_NaturalStone_WallCl_Options_26-27.pdf")
-    pdf_path_legacy = os.path.join(output_dir, "stos-wall-cladding-catalogue-2026.pdf")
 
-    print(f"Saving {len(pages)} pages to {pdf_path_new}...")
-    pages[0].save(
-        pdf_path_new,
-        save_all=True,
-        append_images=pages[1:],
-        quality=78,
-        subsampling=1,
-        optimize=True,
-    )
+    # 1. English
+    print("\n--- Compiling English Architectural Catalog PDF ---")
+    en_html = generate_html_document("en", catalog, logo_path, thumb_dir)
+    en_path = os.path.join(output_dir, "StoneTech_NaturalStone_WallCl_Options_English.pdf")
+    compile_pdf_with_chrome(chrome_bin, en_html, en_path)
 
-    size_mb = os.path.getsize(pdf_path_new) / (1024 * 1024)
-    print(f"SUCCESS: Generated {pdf_path_new} ({size_mb:.2f} MB, {len(pages)} pages)")
+    # Mirrors for backwards compatibility
+    p26 = os.path.join(output_dir, "StoneTech_NaturalStone_WallCl_Options_26-27.pdf")
+    shutil.copyfile(en_path, p26)
+    p_legacy = os.path.join(output_dir, "stos-wall-cladding-catalogue-2026.pdf")
+    shutil.copyfile(en_path, p_legacy)
+    print(f"Mirrored English PDF to {p26} and {p_legacy}")
 
-    import shutil
-    shutil.copyfile(pdf_path_new, pdf_path_legacy)
-    print(f"Mirrored copy to {pdf_path_legacy}")
+    # 2. Hindi
+    print("\n--- Compiling Hindi Architectural Catalog PDF ---")
+    hi_html = generate_html_document("hi", catalog, logo_path, thumb_dir)
+    hi_path = os.path.join(output_dir, "StoneTech_NaturalStone_WallCl_Options_Hindi.pdf")
+    compile_pdf_with_chrome(chrome_bin, hi_html, hi_path)
+
+    # 3. Gujarati
+    print("\n--- Compiling Gujarati Architectural Catalog PDF ---")
+    gu_html = generate_html_document("gu", catalog, logo_path, thumb_dir)
+    gu_path = os.path.join(output_dir, "StoneTech_NaturalStone_WallCl_Options_Gujarati.pdf")
+    compile_pdf_with_chrome(chrome_bin, gu_html, gu_path)
+
+    print("\n=======================================================")
+    print("ALL THREE CATALOG PDFS GENERATED WITH AUTHENTIC INDIC")
+    print("TYPOGRAPHY, LOCALIZED CODES, NUMERALS, AND HEADINGS!")
+    print("=======================================================")
+
 
 if __name__ == "__main__":
     main()
