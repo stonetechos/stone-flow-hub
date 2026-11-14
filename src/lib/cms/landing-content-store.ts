@@ -74,7 +74,7 @@ export const DEFAULT_LANDING_CONTENT: WebsiteLandingContent = {
     "From handcrafted stone veneers to CNC-carved murals, custom flooring and luxury facades—we transform natural stone into timeless architectural statements.",
   heroCustomersServed: "1500+",
   heroWarranty: "3 Years",
-  heroPricingBadge: "Direct Quarry Pricing",
+  heroPricingBadge: "Fair Pricing",
   heroGoogleRating: "4.6",
 
   heroBenefit1: "Design Understanding",

@@ -66,8 +66,8 @@ export const LANDING_UI_TRANSLATIONS = {
       customersServed: "Customers Served",
       installationWarranty: "Installation Warranty",
       yearsWarranty: "3 Years",
-      quarryPricing: "Quarry Pricing",
-      direct: "Direct",
+      quarryPricing: "Honest & Direct",
+      direct: "Fair Pricing",
       googleRating: "Google Rating",
       description:
         "From handcrafted stone veneers to CNC-carved murals, custom flooring and luxury facades—we transform natural stone into timeless architectural statements.",

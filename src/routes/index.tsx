@@ -1142,7 +1142,13 @@ function HomePage() {
 
                 <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-[#E9E6E1] dark:border-stone-800 bg-white dark:bg-stone-900/90 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-sm cursor-default">
                   <div className="text-xl sm:text-2xl font-bold tracking-tight text-[#111111] dark:text-stone-100">
-                    {isEn ? cmsContent.heroPricingBadge || texts.hero.direct : texts.hero.direct}
+                    {isEn
+                      ? cmsContent.heroPricingBadge &&
+                        cmsContent.heroPricingBadge !== "Direct" &&
+                        cmsContent.heroPricingBadge !== "Direct Quarry Pricing"
+                        ? cmsContent.heroPricingBadge
+                        : texts.hero.direct
+                      : texts.hero.direct}
                   </div>
                   <div className="text-[11px] sm:text-xs text-[#5F6368] dark:text-stone-400 font-medium mt-1">
                     {texts.hero.quarryPricing}
