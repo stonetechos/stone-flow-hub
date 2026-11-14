@@ -60,7 +60,7 @@ import { listFollowups, type FollowupWithEnquiry } from "@/lib/followups/api";
 import { useAuthReady } from "@/hooks/use-auth-ready";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { formatInr } from "@/lib/format";
+import { formatInr, formatMoneyCompact } from "@/lib/format";
 import {
   ZohoDashboardHeader,
   type DashboardViewTab,
@@ -207,7 +207,7 @@ function DashboardPage() {
     i18n.language,
   );
   const headline = kpis
-    ? pickHeadline(kpis, t)
+    ? pickHeadline(kpis, t, i18n.language)
     : {
         label: t("dashboard.systemStatus", "System Status"),
         value: t("dashboard.ready", "Ready"),
@@ -414,7 +414,7 @@ function ExecutiveHero({
 /* -------------------------------------------------------------------------- */
 
 function BusinessHealthGrid({ kpis }: { kpis: DashboardKpis }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const totalVolume =
     (kpis.customers ?? 0) +
     (kpis.activeEnquiries ?? 0) +
@@ -444,9 +444,9 @@ function BusinessHealthGrid({ kpis }: { kpis: DashboardKpis }) {
           to="/dashboards/sales"
           icon={<TrendingUp className="h-4 w-4" />}
           label={t("dashboard.sales", "Sales")}
-          value={"₹" + formatMoney(kpis.salesTodayInr)}
+          value={"₹" + formatMoney(kpis.salesTodayInr, i18n.language)}
           trend={t("dashboard.today", "today")}
-          target={`${t("dashboard.pipeline", "pipeline")} ₹${formatMoney(kpis.revenuePipelineInr)}`}
+          target={`${t("dashboard.pipeline", "pipeline")} ₹${formatMoney(kpis.revenuePipelineInr, i18n.language)}`}
           tone={salesTone}
           insight={
             kpis.pendingQuotes
@@ -478,15 +478,15 @@ function BusinessHealthGrid({ kpis }: { kpis: DashboardKpis }) {
           to="/invoices"
           icon={<Wallet className="h-4 w-4" />}
           label={t("dashboard.finance", "Finance")}
-          value={"₹" + formatMoney(kpis.outstandingInr)}
+          value={"₹" + formatMoney(kpis.outstandingInr, i18n.language)}
           trend={t("dashboard.outstandingTrend", "outstanding")}
-          target={`${t("dashboard.collectedMtd", "collected MTD")} ₹${formatMoney(kpis.paymentsThisMonthInr)}`}
+          target={`${t("dashboard.collectedMtd", "collected MTD")} ₹${formatMoney(kpis.paymentsThisMonthInr, i18n.language)}`}
           tone={financeTone}
           insight={
             kpis.collectionsTodayInr > 0
               ? t("dashboard.collectedTodayAmount", {
-                  amount: formatMoney(kpis.collectionsTodayInr),
-                  defaultValue: `₹${formatMoney(kpis.collectionsTodayInr)} collected today`,
+                  amount: formatMoney(kpis.collectionsTodayInr, i18n.language),
+                  defaultValue: `₹${formatMoney(kpis.collectionsTodayInr, i18n.language)} collected today`,
                 })
               : t("dashboard.noCollectionsToday", "No collections logged yet today")
           }
@@ -533,7 +533,7 @@ function OperationalRadar({
   followups: FollowupWithEnquiry[];
   topInsights?: ProcessedInsight[];
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const critical: RadarItem[] = [];
 
   const redFlags = (topInsights || []).filter(
@@ -559,8 +559,8 @@ function OperationalRadar({
   if (kpis.outstandingInr > 5_000_000)
     critical.push({
       label: t("dashboard.radar.receivablesRisk", {
-        amount: formatMoney(kpis.outstandingInr),
-        defaultValue: `₹${formatMoney(kpis.outstandingInr)} receivables at risk`,
+        amount: formatMoney(kpis.outstandingInr, i18n.language),
+        defaultValue: `₹${formatMoney(kpis.outstandingInr, i18n.language)} receivables at risk`,
       }),
       to: "/invoices",
       sub: t("dashboard.radar.exceedsThreshold", "Exceeds ₹50L threshold"),
@@ -638,8 +638,8 @@ function OperationalRadar({
   if (kpis.collectionsTodayInr > 0)
     completed.push({
       label: t("dashboard.radar.collected", {
-        amount: formatMoney(kpis.collectionsTodayInr),
-        defaultValue: `₹${formatMoney(kpis.collectionsTodayInr)} collected`,
+        amount: formatMoney(kpis.collectionsTodayInr, i18n.language),
+        defaultValue: `₹${formatMoney(kpis.collectionsTodayInr, i18n.language)} collected`,
       }),
       to: "/payments",
       sub: t("dashboard.today", "Today"),
@@ -647,8 +647,8 @@ function OperationalRadar({
   if (kpis.salesTodayInr > 0)
     completed.push({
       label: t("dashboard.radar.invoiced", {
-        amount: formatMoney(kpis.salesTodayInr),
-        defaultValue: `₹${formatMoney(kpis.salesTodayInr)} invoiced`,
+        amount: formatMoney(kpis.salesTodayInr, i18n.language),
+        defaultValue: `₹${formatMoney(kpis.salesTodayInr, i18n.language)} invoiced`,
       }),
       to: "/invoices",
       sub: t("dashboard.today", "Today"),
@@ -765,36 +765,36 @@ function RadarColumn({
 /* -------------------------------------------------------------------------- */
 
 function CashFlowSnapshot({ kpis }: { kpis: DashboardKpis }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const rows: Array<{ label: string; value: string; to: string; tone?: "in" | "out" }> = [
     {
       label: t("dashboard.grid.receivables"),
-      value: "₹" + formatMoney(kpis.outstandingInr),
+      value: "₹" + formatMoney(kpis.outstandingInr, i18n.language),
       to: "/invoices",
       tone: "in",
     },
     {
       label: t("dashboard.grid.collectedMonth"),
-      value: "₹" + formatMoney(kpis.paymentsThisMonthInr),
+      value: "₹" + formatMoney(kpis.paymentsThisMonthInr, i18n.language),
       to: "/payments",
       tone: "in",
     },
     {
       label: t("dashboard.grid.collectedToday"),
-      value: "₹" + formatMoney(kpis.collectionsTodayInr),
+      value: "₹" + formatMoney(kpis.collectionsTodayInr, i18n.language),
       to: "/payments",
       tone: "in",
     },
     {
       label: t("dashboard.grid.salesInvoicedToday"),
-      value: "₹" + formatMoney(kpis.salesTodayInr),
+      value: "₹" + formatMoney(kpis.salesTodayInr, i18n.language),
       to: "/invoices",
       tone: "in",
     },
     {
       label: t("dashboard.grid.revenuePipeline"),
-      value: "₹" + formatMoney(kpis.revenuePipelineInr),
+      value: "₹" + formatMoney(kpis.revenuePipelineInr, i18n.language),
       to: "/quotes",
     },
   ];
@@ -904,7 +904,7 @@ function DispatchAndInstallation({ kpis }: { kpis: DashboardKpis }) {
 /* -------------------------------------------------------------------------- */
 
 function SalesCommandCentre({ kpis }: { kpis: DashboardKpis }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const conversion =
     kpis.activeEnquiries > 0
@@ -926,10 +926,14 @@ function SalesCommandCentre({ kpis }: { kpis: DashboardKpis }) {
       value: `${conversion}%`,
       to: "/dashboards/sales-funnel",
     },
-    { label: t("dashboard.grid.avgQuoteValue"), value: "₹" + formatMoney(aov), to: "/quotes" },
+    {
+      label: t("dashboard.grid.avgQuoteValue"),
+      value: "₹" + formatMoney(aov, i18n.language),
+      to: "/quotes",
+    },
     {
       label: t("dashboard.grid.pipelineValue"),
-      value: "₹" + formatMoney(kpis.revenuePipelineInr),
+      value: "₹" + formatMoney(kpis.revenuePipelineInr, i18n.language),
       to: "/quotes",
     },
   ];
@@ -1377,7 +1381,7 @@ function computeHealth(k: DashboardKpis): HealthScore {
 
 type HeadlineMetric = { label: string; value: string; context: string; to: string };
 
-function pickHeadline(k: DashboardKpis, t: TFunction): HeadlineMetric {
+function pickHeadline(k: DashboardKpis, t: TFunction, lang?: string): HeadlineMetric {
   const totalVolume =
     (k.customers ?? 0) +
     (k.activeEnquiries ?? 0) +
@@ -1399,10 +1403,10 @@ function pickHeadline(k: DashboardKpis, t: TFunction): HeadlineMetric {
   if (k.outstandingInr > 1_000_000)
     return {
       label: t("dashboard.outstandingReceivables"),
-      value: "₹" + formatMoney(k.outstandingInr),
+      value: "₹" + formatMoney(k.outstandingInr, lang),
       context: t("dashboard.collectedThisMonth", {
-        amount: formatMoney(k.paymentsThisMonthInr),
-        defaultValue: `₹${formatMoney(k.paymentsThisMonthInr)} collected this month`,
+        amount: formatMoney(k.paymentsThisMonthInr, lang),
+        defaultValue: `₹${formatMoney(k.paymentsThisMonthInr, lang)} collected this month`,
       }),
       to: "/invoices",
     };
@@ -1415,7 +1419,7 @@ function pickHeadline(k: DashboardKpis, t: TFunction): HeadlineMetric {
     };
   return {
     label: t("dashboard.revenuePipeline"),
-    value: "₹" + formatMoney(k.revenuePipelineInr),
+    value: "₹" + formatMoney(k.revenuePipelineInr, lang),
     context: t("dashboard.quotesInPlay", { count: k.pendingQuotes }),
     to: "/quotes",
   };
@@ -1496,7 +1500,7 @@ function buildBrief(
           "dashboard.briefPipeline",
           "Pipeline: ₹{{amount}} active across {{count}} quote(s) in play.",
           {
-            amount: formatMoney(kpis.revenuePipelineInr),
+            amount: formatMoney(kpis.revenuePipelineInr, lang),
             count: kpis.pendingQuotes,
           },
         ),
@@ -1508,7 +1512,7 @@ function buildBrief(
           "dashboard.briefReceivables",
           "Receivables: ₹{{amount}} outstanding balance pending customer collection.",
           {
-            amount: formatMoney(kpis.outstandingInr),
+            amount: formatMoney(kpis.outstandingInr, lang),
           },
         ),
       );
@@ -1847,10 +1851,6 @@ function displayName(
   return "Rishi";
 }
 
-function formatMoney(n: number): string {
-  if (!n || n === 0) return "0";
-  if (n >= 1_00_00_000) return (n / 1_00_00_000).toFixed(1) + " Cr";
-  if (n >= 1_00_000) return (n / 1_00_000).toFixed(1) + " L";
-  if (n >= 1_000) return (n / 1_000).toFixed(1) + "K";
-  return n.toLocaleString(undefined);
+function formatMoney(n: number, lang?: string): string {
+  return formatMoneyCompact(n, lang);
 }

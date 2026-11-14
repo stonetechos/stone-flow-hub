@@ -785,6 +785,7 @@
     "balanceDue": "બાકી રકમ",
     "assignSalesperson": "વેચાણકર્તા સોંપો",
     "unassignCustomer": "ગ્રાહકને અનઅસાઇન કરો",
+    "allCustomers": "બધા ગ્રાહકો",
     "orderPipeline": "ઓર્ડર પાઇપલાઇન",
     "deadlinesBadge": "વેપારી અને ગ્રાહક સમયમર્યાદા",
     "table": {

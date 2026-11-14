@@ -21,6 +21,7 @@ import {
   type CompanyProfitabilityOverview,
 } from "@/lib/executive/salesperson-profitability";
 import { formatInr } from "@/lib/format";
+import { transliterateName } from "@/lib/i18n/transliterate";
 import { cn } from "@/lib/utils";
 
 const PROFIT_TEXTS = {
@@ -38,6 +39,7 @@ const PROFIT_TEXTS = {
     closedProjects: "Closed Projects",
     projects: "projects",
     target: "Target",
+    target25Lakhs: "₹25 Lakhs",
     goal: "Goal",
     profitEarned: "Profit Earned",
     cashCollected: "Cash Collected",
@@ -56,6 +58,7 @@ const PROFIT_TEXTS = {
     closedProjects: "पूर्ण प्रोजेक्ट्स",
     projects: "प्रोजेक्ट्स",
     target: "लक्ष्य",
+    target25Lakhs: "₹25 लाख",
     goal: "लक्ष्य",
     profitEarned: "अर्जित लाभ",
     cashCollected: "प्राप्त नकदी",
@@ -74,6 +77,7 @@ const PROFIT_TEXTS = {
     closedProjects: "પૂર્ણ પ્રોજેક્ટ્સ",
     projects: "પ્રોજેક્ટ્સ",
     target: "લક્ષ્ય",
+    target25Lakhs: "₹25 લાખ",
     goal: "ધ્યેય",
     profitEarned: "મેળવેલ નફો",
     cashCollected: "રોકડ વસૂલાત",
@@ -108,10 +112,12 @@ export function localizeCoachingSuggestion(text: string, lang: string): string {
     const [_, avgProfit, gap, target, dealsNeeded, weeklyDeals, totalSqft, weeklySqft, quotes] =
       mCoach;
     if (lang === "hi") {
-      return `प्रति सौदा आपके औसत लाभ ${avgProfit} के आधार पर: आपके ${target} लक्ष्य के शेष ${gap} अंतर को पाटने के लिए, आपको लगभग ${dealsNeeded} और सौदे क्लोज़ करने की आवश्यकता है (~${weeklyDeals} डील/सप्ताह) जो कुल ${totalSqft} वर्गफ़ुट (~${weeklySqft} वर्गफ़ुट/सप्ताह) होगी। अपने ${quotes} लंबित कोटेशन पर फ़ॉलो-अप पर ध्यान दें।`;
+      const locTarget = target.replace(/L$/i, " लाख");
+      return `प्रति सौदा आपके औसत लाभ ${avgProfit} के आधार पर: आपके ${locTarget} लक्ष्य के शेष ${gap} अंतर को पाटने के लिए, आपको लगभग ${dealsNeeded} और सौदे क्लोज़ करने की आवश्यकता है (~${weeklyDeals} डील/सप्ताह) जो कुल ${totalSqft} वर्गफ़ुट (~${weeklySqft} वर्गफ़ुट/सप्ताह) होगी। अपने ${quotes} लंबित कोटेशन पर फ़ॉलो-अप पर ध्यान दें।`;
     }
     if (lang === "gu") {
-      return `ડીલ દીઠ તમારા સરેરાશ નફા ${avgProfit} ના આધારે: તમારા ${target} લક્ષ્યાંકના બાકી ${gap} તફાવતને પહોંચી વળવા માટે, તમારે આશરે ${dealsNeeded} વધુ ક્લાયન્ટ ડીલ્સ (~${weeklyDeals} ડીલ/અઠવાડિયે) ક્લોઝ કરવાની જરૂર છે જે કુલ ${totalSqft} ચોરસ ફૂટ (~${weeklySqft} ચોરસ ફૂટ/અઠવાડિયે) થાય છે. તમારા ${quotes} પેન્ડિંગ ક્વોટેશન પર ફોલો-અપ પર ધ્યાન આપો.`;
+      const locTarget = target.replace(/L$/i, " લાખ");
+      return `ડીલ દીઠ તમારા સરેરાશ નફા ${avgProfit} ના આધારે: તમારા ${locTarget} લક્ષ્યાંકના બાકી ${gap} તફાવતને પહોંચી વળવા માટે, તમારે આશરે ${dealsNeeded} વધુ ક્લાયન્ટ ડીલ્સ (~${weeklyDeals} ડીલ/અઠવાડિયે) ક્લોઝ કરવાની જરૂર છે જે કુલ ${totalSqft} ચોરસ ફૂટ (~${weeklySqft} ચોરસ ફૂટ/અઠવાડિયે) થાય છે. તમારા ${quotes} પેન્ડિંગ ક્વોટેશન પર ફોલો-અપ પર ધ્યાન આપો.`;
     }
   }
 
@@ -253,8 +259,12 @@ export function ProfitTargetDashboardCard() {
                     R
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-foreground">Rishi Rai</h4>
-                    <p className="text-[10px] text-muted-foreground">{t.target}: ₹25 Lakhs</p>
+                    <h4 className="text-xs font-bold text-foreground">
+                      {transliterateName("Rishi Rai", lang)}
+                    </h4>
+                    <p className="text-[10px] text-muted-foreground">
+                      {t.target}: {t.target25Lakhs}
+                    </p>
                   </div>
                 </div>
                 <Badge
@@ -300,8 +310,12 @@ export function ProfitTargetDashboardCard() {
                     RP
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-foreground">Raman Pupneja</h4>
-                    <p className="text-[10px] text-muted-foreground">{t.target}: ₹25 Lakhs</p>
+                    <h4 className="text-xs font-bold text-foreground">
+                      {transliterateName("Raman Pupneja", lang)}
+                    </h4>
+                    <p className="text-[10px] text-muted-foreground">
+                      {t.target}: {t.target25Lakhs}
+                    </p>
                   </div>
                 </div>
                 <Badge

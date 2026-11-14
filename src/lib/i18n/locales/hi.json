@@ -784,6 +784,7 @@
     "balanceDue": "बकाया राशि",
     "assignSalesperson": "विक्रेता नियुक्त करें",
     "unassignCustomer": "ग्राहक को असाइन न करें",
+    "allCustomers": "सभी ग्राहक",
     "orderPipeline": "ऑर्डर पाइपलाइन",
     "deadlinesBadge": "सप्लायर और ग्राहक समय सीमा",
     "table": {

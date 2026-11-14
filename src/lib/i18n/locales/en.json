@@ -774,6 +774,7 @@
     "balanceDue": "Balance Due",
     "assignSalesperson": "Assign Salesperson",
     "unassignCustomer": "Unassign customer",
+    "allCustomers": "All Customers",
     "orderPipeline": "Order Pipeline",
     "deadlinesBadge": "Vendor & Customer Deadlines",
     "table": {
