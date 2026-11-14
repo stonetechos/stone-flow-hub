@@ -60,7 +60,7 @@ import { listFollowups, type FollowupWithEnquiry } from "@/lib/followups/api";
 import { useAuthReady } from "@/hooks/use-auth-ready";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { formatInr, formatMoneyCompact } from "@/lib/format";
+import { formatInr, formatMoneyCompact, toIndicDigits } from "@/lib/format";
 import {
   ZohoDashboardHeader,
   type DashboardViewTab,
@@ -240,7 +240,7 @@ function DashboardPage() {
                   greeting={greeting}
                   name={name}
                   today={today}
-                  headline={pickHeadline(kpisQ.data, t)}
+                  headline={pickHeadline(kpisQ.data, t, i18n.language)}
                   brief={brief}
                   nocturnalQuip={nocturnalQuip}
                 />
@@ -1413,14 +1413,14 @@ function pickHeadline(k: DashboardKpis, t: TFunction, lang?: string): HeadlineMe
   if (k.ordersToStart > 3)
     return {
       label: t("dashboard.ordersQueued"),
-      value: String(k.ordersToStart),
-      context: t("dashboard.dispatchesToday", { count: k.deliveriesToday }),
+      value: toIndicDigits(String(k.ordersToStart), lang),
+      context: t("dashboard.dispatchesToday", { count: toIndicDigits(k.deliveriesToday, lang) }),
       to: "/sales-orders",
     };
   return {
     label: t("dashboard.revenuePipeline"),
     value: "₹" + formatMoney(k.revenuePipelineInr, lang),
-    context: t("dashboard.quotesInPlay", { count: k.pendingQuotes }),
+    context: t("dashboard.quotesInPlay", { count: toIndicDigits(k.pendingQuotes, lang) }),
     to: "/quotes",
   };
 }

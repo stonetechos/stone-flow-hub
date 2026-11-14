@@ -231,9 +231,9 @@ export function WebsiteLeadsDashboardCard() {
   return (
     <div className="card-3d-milky overflow-hidden border border-teal-800/20 shadow-sm w-full max-w-full min-w-0">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 bg-gradient-to-r from-cyan-950/[0.04] via-transparent to-transparent px-3 py-3 sm:px-6 min-w-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 bg-gradient-to-r from-primary/[0.04] via-transparent to-transparent px-3 py-3 sm:px-6 min-w-0">
         <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-          <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-cyan-700 text-white shadow-md shadow-cyan-700/25">
+          <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md shadow-primary/20">
             <Globe className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
           </div>
           <div className="min-w-0 flex-1">
@@ -242,8 +242,8 @@ export function WebsiteLeadsDashboardCard() {
                 {t("crm.leadsTitle", "Visitor Inquiries & CRM Leads")}
               </h3>
               <span className="relative flex h-2 w-2 shrink-0">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-600" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sidebar-ring opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
               </span>
             </div>
             <p className="font-mono text-[10px] sm:text-xs font-semibold text-engraved-kicker truncate">
@@ -261,7 +261,7 @@ export function WebsiteLeadsDashboardCard() {
               className={cn(
                 "rounded-md px-2 sm:px-2.5 py-1 text-[11px] sm:text-xs font-bold transition-all",
                 filterMode === "all"
-                  ? "bg-cyan-700 text-white shadow-xs"
+                  ? "bg-primary text-primary-foreground shadow-xs"
                   : "text-slate-600 hover:text-slate-900",
               )}
             >
@@ -273,7 +273,7 @@ export function WebsiteLeadsDashboardCard() {
               className={cn(
                 "rounded-md px-2 sm:px-2.5 py-1 text-[11px] sm:text-xs font-bold transition-all",
                 filterMode === "web"
-                  ? "bg-cyan-700 text-white shadow-xs"
+                  ? "bg-primary text-primary-foreground shadow-xs"
                   : "text-slate-600 hover:text-slate-900",
               )}
             >
@@ -285,7 +285,7 @@ export function WebsiteLeadsDashboardCard() {
             variant="outline"
             size="sm"
             onClick={handleCopyLink}
-            className="engraved-well h-7 sm:h-8 gap-1 sm:gap-1.5 rounded-lg px-2 sm:px-2.5 text-[11px] sm:text-xs font-semibold text-slate-700 hover:border-cyan-400"
+            className="engraved-well h-7 sm:h-8 gap-1 sm:gap-1.5 rounded-lg px-2 sm:px-2.5 text-[11px] sm:text-xs font-semibold text-slate-700 hover:border-primary/60"
             title="Copy public website link"
           >
             {copiedLink ? (
@@ -299,7 +299,7 @@ export function WebsiteLeadsDashboardCard() {
           <Button
             asChild
             size="sm"
-            className="h-7 sm:h-8 gap-1 sm:gap-1.5 rounded-lg bg-cyan-700 px-2.5 sm:px-3 text-[11px] sm:text-xs font-bold text-white shadow-xs hover:bg-cyan-800"
+            className="h-7 sm:h-8 gap-1 sm:gap-1.5 rounded-lg bg-primary px-2.5 sm:px-3 text-[11px] sm:text-xs font-bold text-primary-foreground shadow-xs hover:bg-primary/90"
           >
             <Link to="/enquiries">
               <span>{t("crm.viewFull", "View All CRM")}</span>
@@ -325,22 +325,22 @@ export function WebsiteLeadsDashboardCard() {
           </div>
         </div>
 
-        <div className="engraved-well flex flex-col rounded-xl p-2.5 sm:p-3 border-cyan-200/80 bg-cyan-50/30 min-w-0 overflow-hidden">
+        <div className="engraved-well flex flex-col rounded-xl p-2.5 sm:p-3 border-primary/20 bg-primary/5 min-w-0 overflow-hidden">
           <div className="flex items-center justify-between min-w-0 gap-1">
-            <span className="font-mono text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-cyan-800 truncate">
+            <span className="font-mono text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-primary truncate">
               {t("crm.newUncontacted", "New Uncontacted")}
             </span>
             {newCount > 0 && (
-              <span className="inline-flex items-center gap-0.5 rounded-full bg-cyan-600 px-1.5 py-0.5 text-[8px] font-bold text-white shrink-0 animate-pulse">
+              <span className="inline-flex items-center gap-0.5 rounded-full bg-primary px-1.5 py-0.5 text-[8px] font-bold text-primary-foreground shrink-0 animate-pulse">
                 <Flame className="h-2 w-2" /> Action
               </span>
             )}
           </div>
           <div className="mt-1 flex items-baseline gap-1 sm:gap-1.5 min-w-0">
-            <span className="font-display text-xl sm:text-2xl font-black tabular-nums text-cyan-800">
+            <span className="font-display text-xl sm:text-2xl font-black tabular-nums text-primary">
               {newCount}
             </span>
-            <span className="text-[10px] sm:text-[11px] font-medium text-cyan-700 truncate">
+            <span className="text-[10px] sm:text-[11px] font-medium text-primary/80 truncate">
               {t("crm.awaitingReply", "awaiting contact")}
             </span>
           </div>

@@ -292,7 +292,7 @@ export const LANDING_UI_TRANSLATIONS = {
       installationWarranty: "इंस्टॉलेशन वारंटी",
       yearsWarranty: "३ वर्ष",
       quarryPricing: "सीधी खदान दरें",
-      direct: "वाजिब दाम",
+      direct: "व्याजबी भाव",
       googleRating: "गूगल रेटिंग",
       description:
         "हस्तनिर्मित स्टोन विनियर से लेकर सीएनसी-नक्काशीदार भित्तिचित्र, कस्टम फर्श और लक्जरी अग्रभाग तक—हम प्राकृतिक पत्थर को कालातीत वास्तुशिल्प बयानों में बदलते हैं।",

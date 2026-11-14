@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import {
   PhoneCall,
   Calendar,
@@ -53,6 +54,7 @@ import {
   getCustomerResponseStatus,
   getCustomerSalesperson,
   getCustomerStatusNotificationInfo,
+  getCustomerResponseStatusLabel,
   type CustomerResponseStatus,
 } from "@/lib/customers/crm-status";
 import { buildWhatsappUrl } from "@/lib/whatsapp";
@@ -70,6 +72,7 @@ interface CustomerCrmFollowupCardProps {
 }
 
 export function CustomerCrmFollowupCard({ customer }: CustomerCrmFollowupCardProps) {
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const customerId = customer.id;
 
@@ -358,14 +361,18 @@ export function CustomerCrmFollowupCard({ customer }: CustomerCrmFollowupCardPro
               <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
               <div>
                 <p className="text-xs font-bold text-amber-950">
-                  The customer is not updated with the current status
+                  {t("crm.notUpdatedStatus", "The customer is not updated with current status")}
                 </p>
                 <p className="text-[11px] text-amber-800 mt-0.5 leading-snug">
-                  CRM status is set to{" "}
+                  {t("crm.statusSetToPrefix", "CRM status is set to")}{" "}
                   <span className="font-semibold text-amber-950">
-                    {statusNotification.statusLabel}
+                    {getCustomerResponseStatusLabel(statusNotification.status, i18n.language) ||
+                      statusNotification.statusLabel}
                   </span>
-                  , but the WhatsApp notification has not yet been sent to the client.
+                  {t(
+                    "crm.statusSetToSuffix",
+                    ", but the WhatsApp notification has not yet been sent to the client.",
+                  )}
                 </p>
               </div>
             </div>

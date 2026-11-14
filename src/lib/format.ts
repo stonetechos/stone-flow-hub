@@ -46,11 +46,12 @@ export function formatRelative(iso: string | Date | null | undefined, lang?: str
   return d.toLocaleDateString();
 }
 
-export function formatDate(iso: string | Date | null | undefined): string {
+export function formatDate(iso: string | Date | null | undefined, lang?: string): string {
   if (!iso) return "—";
   const d = typeof iso === "string" ? new Date(iso) : iso;
   if (!Number.isFinite(d.getTime())) return "—";
-  return d.toLocaleDateString();
+  const res = d.toLocaleDateString();
+  return lang ? toIndicDigits(res, lang) : res;
 }
 
 /** Business date formatting in Indian standard (e.g. "20 Oct 2026"). Avoids MM/DD vs DD/MM ambiguity. */

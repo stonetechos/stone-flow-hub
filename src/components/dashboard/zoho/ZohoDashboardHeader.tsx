@@ -25,7 +25,7 @@ export function ZohoDashboardHeader({
       <div className="flex items-center justify-between gap-3 pb-3 sm:pb-4 flex-wrap sm:flex-nowrap">
         <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
           {/* Stone Tech Official Logo */}
-          <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl bg-white/95 p-1 shadow-md shadow-cyan-950/20 border border-cyan-200/60 ring-1 ring-cyan-500/20">
+          <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl bg-white/95 p-1 shadow-md shadow-primary/10 border border-border/80 ring-1 ring-primary/20">
             <img
               src="/branding/stone-tech-logo.png"
               alt="Stone Tech"
@@ -50,12 +50,10 @@ export function ZohoDashboardHeader({
             size="sm"
             onClick={onRefresh}
             disabled={isRefreshing}
-            className="engraved-well h-8 sm:h-9 gap-1.5 rounded-xl px-2.5 sm:px-3 text-xs font-bold text-engraved-blue shadow-xs transition-all hover:scale-[1.02] hover:border-cyan-400"
+            className="engraved-well h-8 sm:h-9 gap-1.5 rounded-xl px-2.5 sm:px-3 text-xs font-bold text-engraved-blue shadow-xs transition-all hover:scale-[1.02] hover:border-primary/60"
             title={t("common.refresh", "Refresh")}
           >
-            <RefreshCw
-              className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin text-cyan-600")}
-            />
+            <RefreshCw className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin text-primary")} />
             <span>
               {isRefreshing
                 ? t("common.refreshing", "Refreshing...")
@@ -73,8 +71,8 @@ export function ZohoDashboardHeader({
           className={cn(
             "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 sm:px-3.5 py-1.5 font-bold transition-all shrink-0",
             activeTab === "operations"
-              ? "bg-gradient-to-r from-cyan-800 to-cyan-700 text-white shadow-md shadow-cyan-800/35 border-t border-white/40"
-              : "text-slate-600 hover:bg-white hover:text-cyan-800",
+              ? "bg-primary text-primary-foreground shadow-md shadow-primary/30 border-t border-white/30"
+              : "text-slate-600 hover:bg-white hover:text-primary",
           )}
         >
           <Gauge className="h-4 w-4" />
@@ -87,13 +85,13 @@ export function ZohoDashboardHeader({
           className={cn(
             "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 sm:px-3.5 py-1.5 font-bold transition-all shrink-0",
             activeTab === "announcements"
-              ? "bg-gradient-to-r from-cyan-800 to-cyan-700 text-white shadow-md shadow-cyan-800/35 border-t border-white/40"
-              : "text-slate-600 hover:bg-white hover:text-cyan-800",
+              ? "bg-primary text-primary-foreground shadow-md shadow-primary/30 border-t border-white/30"
+              : "text-slate-600 hover:bg-white hover:text-primary",
           )}
         >
           <Megaphone className="h-4 w-4" />
           <span>{t("dashboard.zoho.announcementsTab", "Announcements")}</span>
-          {hasUnread && <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />}
+          {hasUnread && <span className="h-1.5 w-1.5 rounded-full bg-sidebar-ring" />}
         </button>
 
         <button
@@ -102,8 +100,8 @@ export function ZohoDashboardHeader({
           className={cn(
             "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 sm:px-3.5 py-1.5 font-bold transition-all shrink-0",
             activeTab === "help"
-              ? "bg-gradient-to-r from-cyan-800 to-cyan-700 text-white shadow-md shadow-cyan-800/35 border-t border-white/40"
-              : "text-slate-600 hover:bg-white hover:text-cyan-800",
+              ? "bg-primary text-primary-foreground shadow-md shadow-primary/30 border-t border-white/30"
+              : "text-slate-600 hover:bg-white hover:text-primary",
           )}
         >
           <HelpCircle className="h-4 w-4" />

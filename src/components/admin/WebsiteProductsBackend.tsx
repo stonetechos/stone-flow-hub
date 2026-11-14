@@ -57,6 +57,8 @@ import {
 } from "@/lib/catalog/catalog-store";
 import { STONE_TYPES, PRODUCT_UNITS } from "@/lib/products/schema";
 import { useRoles } from "@/hooks/use-roles";
+import { toIndicDigits } from "@/lib/format";
+import { transliterateName } from "@/lib/i18n/transliterate";
 
 function ProductImageZoomPreview({
   src,
@@ -750,7 +752,7 @@ export function WebsiteProductsBackend() {
           variant="outline"
           className="text-xs bg-muted/60 text-muted-foreground border-border/60 font-mono"
         >
-          {products.length} Products
+          {toIndicDigits(products.length, lang)} {t.products}
         </Badge>
 
         <Button
@@ -813,11 +815,12 @@ export function WebsiteProductsBackend() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all" className="text-xs">
-                {t.allCategories} ({products.length})
+                {t.allCategories} ({toIndicDigits(products.length, lang)})
               </SelectItem>
               {categories.map((c) => (
                 <SelectItem key={c} value={c} className="text-xs">
-                  {c} ({products.filter((p) => p.category === c).length})
+                  {transliterateName(c, lang)} (
+                  {toIndicDigits(products.filter((p) => p.category === c).length, lang)})
                 </SelectItem>
               ))}
             </SelectContent>
@@ -840,7 +843,7 @@ export function WebsiteProductsBackend() {
               </SelectItem>
               {Array.from(new Set(products.map((p) => p.stoneType))).map((st) => (
                 <SelectItem key={st} value={st} className="text-xs">
-                  {st}
+                  {transliterateName(st, lang)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -859,22 +862,19 @@ export function WebsiteProductsBackend() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="10" className="text-xs">
-                10 items / page
+                {toIndicDigits("10", lang)} {t.itemsPerPage}
               </SelectItem>
               <SelectItem value="25" className="text-xs">
-                25 items / page
+                {toIndicDigits("25", lang)} {t.itemsPerPage}
               </SelectItem>
               <SelectItem value="50" className="text-xs">
-                50 items / page
+                {toIndicDigits("50", lang)} {t.itemsPerPage}
               </SelectItem>
               <SelectItem value="100" className="text-xs">
-                100 items / page
+                {toIndicDigits("100", lang)} {t.itemsPerPage}
               </SelectItem>
-              <SelectItem
-                value="all"
-                className="text-xs font-semibold text-cyan-600 dark:text-cyan-400"
-              >
-                ✨ See All ({filteredProducts.length}) at once
+              <SelectItem value="all" className="text-xs font-semibold text-primary">
+                ✨ {t.allCategories} ({toIndicDigits(filteredProducts.length, lang)})
               </SelectItem>
             </SelectContent>
           </Select>
@@ -901,7 +901,7 @@ export function WebsiteProductsBackend() {
               className={cn(
                 "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all cursor-pointer",
                 viewMode === "icons"
-                  ? "bg-cyan-600 text-white shadow-xs font-semibold"
+                  ? "bg-primary text-primary-foreground shadow-xs font-semibold"
                   : "text-muted-foreground hover:text-foreground",
               )}
               title="View as small compact icons (easier to drag and position products)"
@@ -915,9 +915,9 @@ export function WebsiteProductsBackend() {
 
       {/* Re-order Helper Banner */}
       {viewMode === "icons" ? (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-2.5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-950 dark:text-cyan-100 text-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-2.5 rounded-xl border border-primary/30 bg-primary/10 text-foreground text-xs">
           <div className="flex items-center gap-2">
-            <LayoutGrid className="h-4 w-4 text-cyan-600 dark:text-cyan-400 shrink-0" />
+            <LayoutGrid className="h-4 w-4 text-primary shrink-0" />
             <span>
               <strong>{t.reorderModeActive}</strong> {t.reorderModeDesc}
             </span>
@@ -930,30 +930,31 @@ export function WebsiteProductsBackend() {
                 setPageSize("all");
                 setPage(1);
               }}
-              className="h-7 px-2.5 text-[11px] bg-background border-cyan-500/30 hover:bg-cyan-500/20 shrink-0 self-start sm:self-auto font-medium"
+              className="h-7 px-2.5 text-[11px] bg-background border-primary/30 hover:bg-primary/20 shrink-0 self-start sm:self-auto font-medium"
             >
-              {t.seeAllIcons.replace("{{count}}", String(filteredProducts.length))}
+              {t.seeAllIcons.replace("{{count}}", toIndicDigits(filteredProducts.length, lang))}
             </Button>
           ) : (
             <Button
               variant="outline"
               size="sm"
               onClick={() => handleSetViewMode("list")}
-              className="h-7 px-2.5 text-[11px] bg-background border-cyan-500/30 hover:bg-cyan-500/20 shrink-0 self-start sm:self-auto font-medium"
+              className="h-7 px-2.5 text-[11px] bg-background border-primary/30 hover:bg-primary/20 shrink-0 self-start sm:self-auto font-medium"
             >
               {t.switchToList}
             </Button>
           )}
         </div>
       ) : pageSize === "all" ? (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-2.5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-950 dark:text-cyan-100 text-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-2.5 rounded-xl border border-primary/30 bg-primary/10 text-foreground text-xs">
           <div className="flex items-center gap-2">
-            <ArrowUpDown className="h-4 w-4 text-cyan-600 dark:text-cyan-400 shrink-0" />
+            <ArrowUpDown className="h-4 w-4 text-primary shrink-0" />
             <span>
-              <strong>All-Products Reorder Mode Active:</strong> All {filteredProducts.length} items
-              are displayed on this single page. Click &amp; hold the drag handle (
-              <strong>#</strong>) on any product to move it anywhere in the list or club
-              similar-looking products together.
+              <strong>{t.allProductsReorderMode}</strong>{" "}
+              {t.allProductsReorderDesc.replace(
+                "{{count}}",
+                toIndicDigits(filteredProducts.length, lang),
+              )}
             </span>
           </div>
           <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
@@ -961,10 +962,10 @@ export function WebsiteProductsBackend() {
               variant="outline"
               size="sm"
               onClick={() => handleSetViewMode("icons")}
-              className="h-7 px-2.5 text-[11px] bg-cyan-600 text-white hover:bg-cyan-700 font-medium gap-1"
+              className="h-7 px-2.5 text-[11px] bg-primary text-primary-foreground hover:bg-primary/90 font-medium gap-1"
             >
               <LayoutGrid className="h-3 w-3" />
-              <span>Switch to Icons Grid</span>
+              <span>{t.icons}</span>
             </Button>
             <Button
               variant="outline"
@@ -1202,7 +1203,7 @@ export function WebsiteProductsBackend() {
                               e.stopPropagation();
                               handleOpenEdit(p);
                             }}
-                            className="h-5 px-1.5 text-[9px] rounded text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-950/40 flex items-center gap-0.5 cursor-pointer font-medium"
+                            className="h-5 px-1.5 text-[9px] rounded text-primary hover:bg-primary/10 flex items-center gap-0.5 cursor-pointer font-medium"
                             title="Edit product"
                           >
                             <Edit2 className="h-2.5 w-2.5" />
@@ -1459,10 +1460,10 @@ export function WebsiteProductsBackend() {
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => handleOpenEdit(p)}
-                                  className="h-7 px-2 text-xs text-cyan-600 hover:bg-cyan-50"
+                                  className="h-7 px-2 text-xs text-primary hover:bg-primary/10"
                                 >
                                   <Edit2 className="h-3.5 w-3.5 mr-1" />
-                                  Edit
+                                  {t.edit}
                                 </Button>
                                 <Button
                                   variant="ghost"
@@ -1505,11 +1506,11 @@ export function WebsiteProductsBackend() {
           <div className="flex flex-wrap items-center gap-2 text-muted-foreground">
             <span>
               {pageSize === "all"
-                ? `${t.showing} ${filteredProducts.length} ${t.products}`
-                : `${t.showing} ${filteredProducts.length === 0 ? 0 : (page - 1) * (pageSize as number) + 1}–${Math.min(
-                    page * (pageSize as number),
-                    filteredProducts.length,
-                  )} ${t.of} ${filteredProducts.length} ${t.products}`}
+                ? `${t.showing} ${toIndicDigits(filteredProducts.length, lang)} ${t.products}`
+                : `${t.showing} ${filteredProducts.length === 0 ? toIndicDigits(0, lang) : toIndicDigits((page - 1) * (pageSize as number) + 1, lang)}–${toIndicDigits(
+                    Math.min(page * (pageSize as number), filteredProducts.length),
+                    lang,
+                  )} ${t.of} ${toIndicDigits(filteredProducts.length, lang)} ${t.products}`}
             </span>
 
             <div className="flex items-center gap-1 ml-0 sm:ml-3">
@@ -1525,11 +1526,13 @@ export function WebsiteProductsBackend() {
                   className={cn(
                     "px-2 py-0.5 rounded text-[11px] transition-colors border cursor-pointer",
                     pageSize === opt
-                      ? "bg-cyan-600 text-white border-cyan-600 font-bold shadow-xs"
+                      ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
                       : "bg-background text-muted-foreground border-border hover:text-foreground hover:bg-muted font-medium",
                   )}
                 >
-                  {opt === "all" ? `All (${filteredProducts.length})` : opt}
+                  {opt === "all"
+                    ? `${t.allCategories} (${toIndicDigits(filteredProducts.length, lang)})`
+                    : toIndicDigits(opt, lang)}
                 </button>
               ))}
             </div>
@@ -1547,7 +1550,7 @@ export function WebsiteProductsBackend() {
                 {t.previous}
               </Button>
               <span className="px-2 font-medium">
-                {t.page} {page} {t.of} {totalPages}
+                {t.page} {toIndicDigits(page, lang)} {t.of} {toIndicDigits(totalPages, lang)}
               </span>
               <Button
                 variant="outline"

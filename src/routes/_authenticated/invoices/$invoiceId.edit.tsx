@@ -26,6 +26,7 @@ import {
 } from "@/lib/invoices/api";
 import type { InvoiceUpdateInput } from "@/lib/invoices/schema";
 import { invalidateInvoice } from "@/lib/query-invalidation";
+import { UnitPicker } from "@/components/forms/UnitPicker";
 
 export const Route = createFileRoute("/_authenticated/invoices/$invoiceId/edit")({
   ssr: false,
@@ -363,10 +364,15 @@ function InvoiceLineItemsEditor({ invoiceId }: { invoiceId: string }) {
                     </div>
                     <div className="md:col-span-1">
                       <label className="text-xs text-muted-foreground">Unit</label>
-                      <Input
+                      <UnitPicker
                         value={r.unit ?? ""}
-                        onChange={(e) => updateRow(r.id, "unit", e.target.value)}
-                        onBlur={() => commit(r.id, "unit", original)}
+                        onChange={(val) => {
+                          updateRow(r.id, "unit", val);
+                          const orig = original?.unit ?? null;
+                          if (val !== orig) {
+                            patchMut.mutate({ id: r.id, patch: { unit: val || null } });
+                          }
+                        }}
                       />
                     </div>
                     <div className="md:col-span-2">

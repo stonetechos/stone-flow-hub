@@ -328,7 +328,7 @@ function NavGroupRow({
   collapsed?: boolean;
   onNavigate?: () => void;
   checkActive: (item: NavItemDef) => boolean;
-  getLabel: (id: string, fallback: string) => string;
+  getLabel: (id: string, fallback: string, defaultEnglishLabel?: string) => string;
   onStartRename?: (target: RenameTarget) => void;
   onResetRename?: (id: string) => void;
   onOpenCustomizeNav?: () => void;
@@ -337,7 +337,7 @@ function NavGroupRow({
   const navigate = useNavigate();
   const GroupIcon = group.icon;
   const defaultGroupLabel = t(`nav.groups.${group.id}`, group.label);
-  const groupLabel = getLabel(group.id, defaultGroupLabel);
+  const groupLabel = getLabel(group.id, defaultGroupLabel, group.label);
   const isGroupCustomized = groupLabel !== defaultGroupLabel;
 
   if (collapsed) {
@@ -399,7 +399,7 @@ function NavGroupRow({
                         >
                           <item.icon className="h-3 w-3 shrink-0 opacity-80" />
                           <span className="truncate">
-                            {getLabel(item.id, t(`nav.items.${item.id}`, item.label))}
+                            {getLabel(item.id, t(`nav.items.${item.id}`, item.label), item.label)}
                           </span>
                         </Link>
                       );
@@ -605,7 +605,7 @@ function NavGroupRow({
         <div className="ml-3.5 border-l border-white/15 pl-1.5 space-y-0.5 py-0.5 my-0.5">
           {group.items.map((item) => {
             const defaultItemLabel = t(`nav.items.${item.id}`, item.label);
-            const itemLabel = getLabel(item.id, defaultItemLabel);
+            const itemLabel = getLabel(item.id, defaultItemLabel, item.label);
             return (
               <NavLinkRow
                 key={item.id}
@@ -1076,7 +1076,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <aside
           className={cn(
             "material-sapphire relative",
-            "hidden shrink-0 flex-col border-r border-teal-950/60 text-white md:flex",
+            "hidden shrink-0 flex-col border-r border-sidebar-border text-white md:flex",
             "pt-[env(safe-area-inset-top)]",
             isResizing ? "transition-none select-none" : "transition-[width] duration-200 ease-out",
           )}

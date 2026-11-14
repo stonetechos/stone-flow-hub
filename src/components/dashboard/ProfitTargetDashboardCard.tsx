@@ -20,7 +20,7 @@ import {
   getCompanyProfitabilityAndTargets,
   type CompanyProfitabilityOverview,
 } from "@/lib/executive/salesperson-profitability";
-import { formatInr } from "@/lib/format";
+import { formatInr, toIndicDigits } from "@/lib/format";
 import { transliterateName } from "@/lib/i18n/transliterate";
 import { cn } from "@/lib/utils";
 
@@ -252,10 +252,10 @@ export function ProfitTargetDashboardCard() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-0.5">
           {/* Rishi Rai */}
           {rishi && (
-            <div className="rounded-xl border border-cyan-500/25 bg-card/60 p-3 space-y-2 hover:border-cyan-500/40 transition-colors">
+            <div className="rounded-xl border border-primary/25 bg-card/60 p-3 space-y-2 hover:border-primary/40 transition-colors">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-600 text-white font-black text-xs">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground font-black text-xs">
                     R
                   </div>
                   <div>
@@ -269,30 +269,30 @@ export function ProfitTargetDashboardCard() {
                 </div>
                 <Badge
                   variant="secondary"
-                  className="bg-cyan-100 text-cyan-900 dark:bg-cyan-950/60 dark:text-cyan-200 font-bold text-[10px]"
+                  className="bg-primary/15 text-primary font-bold text-[10px]"
                 >
-                  {Math.round(rishi.targetProgressPct)}% {t.goal}
+                  {toIndicDigits(Math.round(rishi.targetProgressPct), lang)}% {t.goal}
                 </Badge>
               </div>
 
               <div className="grid grid-cols-2 gap-1.5 text-xs">
                 <div>
                   <span className="text-[10px] text-muted-foreground block">{t.profitEarned}</span>
-                  <span className="font-bold text-cyan-700 dark:text-cyan-300 tabular-nums">
-                    {formatInr(rishi.netProfit)}
+                  <span className="font-bold text-primary tabular-nums">
+                    {formatInr(rishi.netProfit, lang)}
                   </span>
                 </div>
                 <div>
                   <span className="text-[10px] text-muted-foreground block">{t.cashCollected}</span>
                   <span className="font-bold text-foreground tabular-nums">
-                    {formatInr(rishi.moneyCollected)}
+                    {formatInr(rishi.moneyCollected, lang)}
                   </span>
                 </div>
               </div>
 
               {rishi.coachingSuggestion && (
                 <div className="text-[11px] text-muted-foreground bg-muted/40 rounded-lg p-2 flex items-start gap-1.5 leading-snug">
-                  <Sparkles className="h-3.5 w-3.5 text-cyan-600 shrink-0 mt-0.5" />
+                  <Sparkles className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
                   <span className="line-clamp-2">
                     {localizeCoachingSuggestion(rishi.coachingSuggestion, lang)}
                   </span>
@@ -322,7 +322,7 @@ export function ProfitTargetDashboardCard() {
                   variant="secondary"
                   className="bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-200 font-bold text-[10px]"
                 >
-                  {Math.round(raman.targetProgressPct)}% {t.goal}
+                  {toIndicDigits(Math.round(raman.targetProgressPct), lang)}% {t.goal}
                 </Badge>
               </div>
 
@@ -330,13 +330,13 @@ export function ProfitTargetDashboardCard() {
                 <div>
                   <span className="text-[10px] text-muted-foreground block">{t.profitEarned}</span>
                   <span className="font-bold text-amber-700 dark:text-amber-300 tabular-nums">
-                    {formatInr(raman.netProfit)}
+                    {formatInr(raman.netProfit, lang)}
                   </span>
                 </div>
                 <div>
                   <span className="text-[10px] text-muted-foreground block">{t.cashCollected}</span>
                   <span className="font-bold text-foreground tabular-nums">
-                    {formatInr(raman.moneyCollected)}
+                    {formatInr(raman.moneyCollected, lang)}
                   </span>
                 </div>
               </div>

@@ -83,6 +83,7 @@ import { useWebsiteContent } from "@/lib/cms/landing-content-store";
 import { StonemanMascot } from "@/components/mascot/StonemanMascot";
 import { StonemanCustomerDialog } from "@/components/mascot/StonemanCustomerDialog";
 import { LanguageToggle } from "@/components/global/LanguageToggle";
+import { removeThemes } from "@/components/global/ThemeSwitcher";
 import { useTranslation } from "react-i18next";
 import {
   getLandingTexts,
@@ -384,6 +385,11 @@ function HomePage() {
     () => getLocalizedQuickIdeas(QUICK_IDEA_SUGGESTIONS, currentLang),
     [currentLang],
   );
+
+  useEffect(() => {
+    // The public website must always retain its authentic natural stone atelier design and never inherit internal STOS themes
+    removeThemes();
+  }, []);
 
   useEffect(() => {
     if (typeof document !== "undefined") {

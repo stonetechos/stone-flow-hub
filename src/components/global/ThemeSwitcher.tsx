@@ -72,6 +72,23 @@ const ALL_THEME_CLASSES = [
   "dark",
 ];
 
+const THEME_META_COLORS: Record<ThemeId, string> = {
+  "st-og": "#083b43",
+  "st-bw": "#09090b",
+  "st-pop": "#1e1b4b",
+  "st-pastel": "#283e39",
+};
+
+export function removeThemes(): void {
+  if (typeof document === "undefined") return;
+  const root = document.documentElement;
+  ALL_THEME_CLASSES.forEach((cls) => root.classList.remove(cls));
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) {
+    meta.setAttribute("content", "#083b43");
+  }
+}
+
 export function applyTheme(id: ThemeId): void {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
@@ -79,6 +96,10 @@ export function applyTheme(id: ThemeId): void {
   root.classList.add(`theme-${id}`);
   const dark = THEMES.find((t) => t.id === id)?.dark ?? false;
   if (dark) root.classList.add("dark");
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) {
+    meta.setAttribute("content", THEME_META_COLORS[id] || "#083b43");
+  }
 }
 
 export function readInitialTheme(): ThemeId {

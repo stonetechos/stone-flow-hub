@@ -264,7 +264,7 @@ export function NotificationsBell() {
         <div className="material-sapphire relative">
           <div className="relative z-10 flex items-center justify-between px-3.5 py-3">
             <div className="flex items-center gap-2">
-              <Inbox className="h-3.5 w-3.5 text-cyan-100" aria-hidden />
+              <Inbox className="h-3.5 w-3.5 text-sidebar-foreground/90" aria-hidden />
               <span className="font-display text-[13px] font-bold tracking-tight text-white">
                 {t.heading}
               </span>
@@ -280,7 +280,7 @@ export function NotificationsBell() {
               disabled={unread === 0}
               className={cn(
                 "flex items-center gap-1 rounded-sm px-1.5 py-1 text-[11px]",
-                "text-cyan-100 transition-colors",
+                "text-sidebar-foreground/80 transition-colors",
                 "hover:bg-white/10 hover:text-white",
                 "disabled:opacity-40 disabled:hover:bg-transparent",
               )}
@@ -295,7 +295,7 @@ export function NotificationsBell() {
         <div className="bg-slate-900 border-b border-slate-800 px-3 py-1.5 flex items-center justify-between text-[11px] text-slate-300">
           <div className="flex items-center gap-1.5">
             <Volume2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-            <Smartphone className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
+            <Smartphone className="h-3.5 w-3.5 text-sidebar-ring shrink-0" />
             <span className="font-semibold text-xs text-slate-200">{t.phoneLaptopAlerts}</span>
           </div>
           <button
@@ -308,7 +308,7 @@ export function NotificationsBell() {
                 toast.success(t.playedToast);
               }
             }}
-            className="flex items-center gap-1 text-[10px] font-bold text-cyan-300 hover:text-white bg-white/10 hover:bg-white/20 px-2 py-0.5 rounded cursor-pointer transition-colors"
+            className="flex items-center gap-1 text-[10px] font-bold text-sidebar-ring hover:text-white bg-white/10 hover:bg-white/20 px-2 py-0.5 rounded cursor-pointer transition-colors"
             title={t.testAlertTitle}
           >
             <BellRing className="h-3 w-3" />

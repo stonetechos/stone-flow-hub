@@ -178,7 +178,7 @@ export function AnnouncementsView() {
               className={cn(
                 "border border-border/80 shadow-xs transition-all",
                 item.unread
-                  ? "bg-cyan-50/20 dark:bg-cyan-950/10 border-cyan-200/80 ring-1 ring-cyan-500/20 cursor-pointer"
+                  ? "bg-primary/5 border-primary/30 ring-1 ring-primary/20 cursor-pointer"
                   : "opacity-90",
               )}
             >
@@ -208,7 +208,7 @@ export function AnnouncementsView() {
                       markAsRead(item.id);
                       toast.info(t.markedOneSuccess);
                     }}
-                    className="shrink-0 text-[11px] font-semibold text-cyan-700 hover:text-cyan-900 hover:underline dark:text-cyan-400"
+                    className="shrink-0 text-[11px] font-semibold text-primary hover:underline"
                   >
                     {t.markAsRead}
                   </button>
@@ -239,7 +239,7 @@ export function HelpView() {
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card className="border border-border/80 p-4 space-y-2">
-          <div className="h-8 w-8 rounded-md bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 flex items-center justify-center">
+          <div className="h-8 w-8 rounded-md bg-primary/10 text-primary flex items-center justify-center">
             <BookOpen className="h-4 w-4" />
           </div>
           <h3 className="font-semibold text-sm text-foreground">{t.manualTitle}</h3>

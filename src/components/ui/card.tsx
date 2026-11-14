@@ -23,7 +23,7 @@ const cardVariants = cva("text-card-foreground", {
       subtle: "rounded-xl bg-surface-panel",
       elevated: "card-3d-milky shadow-e2",
       interactive:
-        "card-3d-milky cursor-pointer transition-[border-color,box-shadow,transform] duration-[var(--duration-base)] ease-[var(--ease-out)] hover:border-cyan-400 hover:shadow-e2 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--intent-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        "card-3d-milky cursor-pointer transition-[border-color,box-shadow,transform] duration-[var(--duration-base)] ease-[var(--ease-out)] hover:border-[var(--card-hover-border,var(--primary))] hover:shadow-e2 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--intent-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-background",
     },
   },
   defaultVariants: { variant: "default" },
@@ -44,7 +44,7 @@ const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
     <div
       ref={ref}
       className={cn(
-        "flex flex-col space-y-1.5 px-5 pt-4 pb-3 border-b border-cyan-50/60",
+        "flex flex-col space-y-1.5 px-5 pt-4 pb-3 border-b border-border/60",
         className,
       )}
       {...props}

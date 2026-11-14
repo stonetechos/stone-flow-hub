@@ -55,7 +55,7 @@ import { CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
-import { formatDate } from "@/lib/format";
+import { formatDate, toIndicDigits } from "@/lib/format";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -778,7 +778,10 @@ function CustomersPage() {
                             params={{ customerId: c.id }}
                             className="hover:underline font-semibold text-slate-700"
                           >
-                            {serial !== null ? serial : rows.length - ((page - 1) * pageSize + i)}
+                            {toIndicDigits(
+                              serial !== null ? serial : rows.length - ((page - 1) * pageSize + i),
+                              i18n.language,
+                            )}
                           </Link>
                         </TableCell>
                         <TableCell className="min-w-[180px] font-medium px-2">
@@ -793,7 +796,7 @@ function CustomersPage() {
                               </span>
                               {c.customer_code && (
                                 <span className="font-mono text-[11px] text-muted-foreground shrink-0">
-                                  ({c.customer_code})
+                                  ({toIndicDigits(c.customer_code, i18n.language)})
                                 </span>
                               )}
                               {orderInfo?.nearestDeadline &&
@@ -814,7 +817,7 @@ function CustomersPage() {
                                     title={`Order #${orderInfo.urgentOrderNo ?? ""}`}
                                   >
                                     ⏳ {t("common.due", "Due")}:{" "}
-                                    {formatDate(orderInfo.nearestDeadline)}
+                                    {formatDate(orderInfo.nearestDeadline, i18n.language)}
                                   </span>
                                 )}
                               {(() => {
@@ -863,7 +866,7 @@ function CustomersPage() {
                           </Link>
                         </TableCell>
                         <TableCell className="w-22 text-xs text-muted-foreground whitespace-nowrap px-1.5">
-                          {c.created_at ? formatDate(c.created_at) : "—"}
+                          {c.created_at ? formatDate(c.created_at, i18n.language) : "—"}
                         </TableCell>
                         <TableCell className="w-26 whitespace-nowrap px-1.5">
                           {(() => {
@@ -938,7 +941,9 @@ function CustomersPage() {
                                 className="inline-flex items-center gap-1 text-slate-700 hover:text-primary font-mono transition-colors"
                               >
                                 <Phone className="h-3 w-3 text-emerald-600 shrink-0" />
-                                <span className="truncate">{phone}</span>
+                                <span className="truncate">
+                                  {toIndicDigits(phone, i18n.language)}
+                                </span>
                               </a>
                               {(cleanWaPhone || cleanPhone) && (
                                 <a

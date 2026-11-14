@@ -155,8 +155,16 @@ export function useCustomNavRenames() {
   }, []);
 
   const getLabel = useCallback(
-    (id: string, fallback: string) => {
-      return renames[id] || fallback;
+    (id: string, fallback: string, defaultEnglishLabel?: string) => {
+      const custom = renames[id];
+      if (!custom) return fallback;
+      if (
+        defaultEnglishLabel &&
+        custom.trim().toLowerCase() === defaultEnglishLabel.trim().toLowerCase()
+      ) {
+        return fallback;
+      }
+      return custom;
     },
     [renames],
   );

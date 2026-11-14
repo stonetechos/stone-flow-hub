@@ -16,6 +16,7 @@ import { beginManagedSignOut } from "@/lib/auth/managed-sign-out";
 import { getStoredAuthSessionSync, isStoredSessionValid } from "@/lib/auth/stored-session";
 import { useAuthReady } from "@/hooks/use-auth-ready";
 import { isChunkLoadError, recoverFromChunkError } from "@/lib/router/chunk-recovery";
+import { applyTheme, readInitialTheme, removeThemes } from "@/components/global/ThemeSwitcher";
 import { toast } from "sonner";
 
 // In-memory verification cache: once verified for this browser session, subsequent internal route/tab
@@ -228,6 +229,14 @@ function AuthenticatedLayout() {
         .catch(() => {});
     }
   }, [isReady, activeUser]);
+
+  useEffect(() => {
+    // STOS themes are strictly for the software operations experience
+    applyTheme(readInitialTheme());
+    return () => {
+      removeThemes();
+    };
+  }, []);
 
   if (!activeUser && !isReady) {
     return <LoadingBlock />;

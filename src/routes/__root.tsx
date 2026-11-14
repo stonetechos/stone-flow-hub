@@ -27,7 +27,7 @@ import { ConfigurationRequiredScreen } from "@/components/global/ConfigurationRe
 import { consumeManagedSignOut } from "@/lib/auth/managed-sign-out";
 import "@/lib/i18n";
 import { isChunkLoadError, recoverFromChunkError } from "@/lib/router/chunk-recovery";
-import { applyTheme, readInitialTheme } from "@/components/global/ThemeSwitcher";
+import { applyTheme, readInitialTheme, removeThemes } from "@/components/global/ThemeSwitcher";
 
 // Installs the Capacitor server-fn fetch patch (no-op outside the
 // Capacitor build — see that file for why this exists). Called at
@@ -267,6 +267,21 @@ function RootComponent() {
     document.title = t("brand.fullTitle", "Stone Tech-Architectural Stone Atelier");
     document.documentElement.lang = i18n.language || "en";
   }, [t, i18n.language]);
+
+  // Dynamically enforce that STOS themes only apply to internal software operations, never to public website
+  useEffect(() => {
+    try {
+      const path = router.state.location.pathname;
+      const isPublic = path === "/" || path.startsWith("/careers");
+      if (isPublic) {
+        removeThemes();
+      } else {
+        applyTheme(readInitialTheme());
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [router.state.location.pathname]);
   // Computed once (module-level memoized in
   // config-status.ts), checked here before any child route mounts. When
   // misconfigured, the effects below skip touching `supabase` entirely and
@@ -278,13 +293,6 @@ function RootComponent() {
   useEffect(() => {
     void installToastDiagnostics();
     registerServiceWorker();
-
-    // Apply active theme (ST OG, ST BW, ST POP, ST Pastel)
-    try {
-      applyTheme(readInitialTheme());
-    } catch {
-      /* ignore */
-    }
 
     // Guard against unhandled chunk load errors when a new deployment is shipped
     const onPreloadError = (e: Event) => {
