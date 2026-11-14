@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import {
   Plus,
   ShoppingCart,
@@ -54,6 +55,7 @@ import {
 } from "@/lib/sales-orders/api";
 import { SALES_ORDER_STATUSES } from "@/lib/sales-orders/schema";
 import { invalidateSalesOrder } from "@/lib/query-invalidation";
+import { transliterateName } from "@/lib/i18n/transliterate";
 
 export const Route = createFileRoute("/_authenticated/sales-orders/")({
   ssr: false,
@@ -63,6 +65,7 @@ export const Route = createFileRoute("/_authenticated/sales-orders/")({
 });
 
 function SalesOrdersPage() {
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const nav = useNavigate();
   const search = Route.useSearch();
@@ -222,7 +225,9 @@ function SalesOrdersPage() {
                     <TableCell className="text-xs">
                       <div className="flex flex-col min-w-0">
                         <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
-                          {r.customer?.name ?? "—"}
+                          {r.customer?.name
+                            ? transliterateName(r.customer.name, i18n.language)
+                            : "—"}
                         </span>
                         <Link
                           to="/sales-orders/$id"
@@ -234,8 +239,16 @@ function SalesOrdersPage() {
                       </div>
                     </TableCell>
                   )}
-                  {!isHidden("customer") && <TableCell>{r.customer?.name ?? "—"}</TableCell>}
-                  {!isHidden("project") && <TableCell>{r.project?.name ?? "—"}</TableCell>}
+                  {!isHidden("customer") && (
+                    <TableCell>
+                      {r.customer?.name ? transliterateName(r.customer.name, i18n.language) : "—"}
+                    </TableCell>
+                  )}
+                  {!isHidden("project") && (
+                    <TableCell>
+                      {r.project?.name ? transliterateName(r.project.name, i18n.language) : "—"}
+                    </TableCell>
+                  )}
                   {!isHidden("quote") && (
                     <TableCell className="font-mono text-xs">{r.quote?.quote_no ?? "—"}</TableCell>
                   )}

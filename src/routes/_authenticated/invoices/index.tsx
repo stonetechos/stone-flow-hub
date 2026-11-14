@@ -38,6 +38,7 @@ import { toUserMessage } from "@/lib/errors";
 import { deleteInvoice, listInvoices, type InvoiceListItem } from "@/lib/invoices/api";
 import { getDispatchesForInvoices } from "@/lib/dispatch/api";
 import { formatInr } from "@/lib/format";
+import { transliterateName } from "@/lib/i18n/transliterate";
 import { invalidateInvoice } from "@/lib/query-invalidation";
 import { useRoles } from "@/hooks/use-roles";
 import { EWayBillDialog } from "@/components/invoices/EWayBillDialog";
@@ -52,7 +53,7 @@ export const Route = createFileRoute("/_authenticated/invoices/")({
 });
 
 function InvoicesPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const nav = useNavigate();
   const qc = useQueryClient();
   const roles = useRoles();
@@ -221,7 +222,9 @@ function InvoicesPage() {
                     <TableCell className="text-xs">
                       <div className="flex flex-col min-w-0">
                         <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
-                          {r.customer?.name ?? "—"}
+                          {r.customer?.name
+                            ? transliterateName(r.customer.name, i18n.language)
+                            : "—"}
                         </span>
                         <Link
                           to="/invoices/$invoiceId"
@@ -299,8 +302,16 @@ function InvoicesPage() {
                       )}
                     </TableCell>
                   )}
-                  {!isHidden("customer") && <TableCell>{r.customer?.name ?? "—"}</TableCell>}
-                  {!isHidden("project") && <TableCell>{r.project?.name ?? "—"}</TableCell>}
+                  {!isHidden("customer") && (
+                    <TableCell>
+                      {r.customer?.name ? transliterateName(r.customer.name, i18n.language) : "—"}
+                    </TableCell>
+                  )}
+                  {!isHidden("project") && (
+                    <TableCell>
+                      {r.project?.name ? transliterateName(r.project.name, i18n.language) : "—"}
+                    </TableCell>
+                  )}
                   {!isHidden("date") && (
                     <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
                       {r.issue_date ?? "—"}

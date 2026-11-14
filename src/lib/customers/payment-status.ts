@@ -80,6 +80,58 @@ export const CUSTOMER_PAYMENT_STATUS_CONFIG: Record<
   },
 };
 
+const PAYMENT_STATUS_LOCALIZED: Record<
+  CustomerPaymentStatus,
+  { hi: string; gu: string; hiShort: string; guShort: string }
+> = {
+  no_dues: {
+    hi: "कोई बकाया नहीं",
+    gu: "કોઈ બાકી નથી",
+    hiShort: "कोई बकाया नहीं",
+    guShort: "કોઈ બાકી નથી",
+  },
+  full_payment_received: {
+    hi: "पूर्ण भुगतान प्राप्त",
+    gu: "સંપૂર્ણ ચુકવણી પ્રાપ્ત",
+    hiShort: "पूर्ण भुगतान",
+    guShort: "સંપૂર્ણ ચુકવણી",
+  },
+  part_payment_received: {
+    hi: "आंशिक भुगतान प्राप्त",
+    gu: "આંશિક ચુકવણી પ્રાપ્ત",
+    hiShort: "आंशिक भुगतान",
+    guShort: "આંશિક ચુકવણી",
+  },
+  payment_received: {
+    hi: "अग्रिम / प्राप्त",
+    gu: "એડવાન્સ / પ્રાપ્ત",
+    hiShort: "अग्रिम",
+    guShort: "એડવાન્સ",
+  },
+  payment_pending: {
+    hi: "भुगतान लंबित",
+    gu: "ચુકવણી બાકી",
+    hiShort: "लंबित",
+    guShort: "બાકી",
+  },
+};
+
+export function getCustomerPaymentStatusLabel(
+  status: CustomerPaymentStatus,
+  lang: string = "en",
+  short = false,
+): string {
+  const cfg = CUSTOMER_PAYMENT_STATUS_CONFIG[status];
+  const base = short ? cfg?.shortLabel || cfg?.label || status : cfg?.label || status;
+  if (lang.startsWith("en")) return base;
+
+  const loc = PAYMENT_STATUS_LOCALIZED[status];
+  if (!loc) return base;
+  if (lang.startsWith("hi")) return short ? loc.hiShort : loc.hi;
+  if (lang.startsWith("gu")) return short ? loc.guShort : loc.gu;
+  return base;
+}
+
 /**
  * Extracts numeric serial number from customer code (e.g. "CUS-000035" -> 35, "CUS-000024" -> 24).
  */

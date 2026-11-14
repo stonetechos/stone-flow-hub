@@ -34,6 +34,7 @@ import {
   compareAgencyLedgerRows,
 } from "@/lib/ledger-sorting";
 import { AccountingGuard } from "@/components/auth/AccountingGuard";
+import { transliterateName } from "@/lib/i18n/transliterate";
 
 export const Route = createFileRoute("/_authenticated/ledger/")({
   ssr: false,
@@ -110,7 +111,7 @@ function UnifiedLedgersPage() {
 // Sales Ledger View (Customers)
 // ----------------------------------------------------------------------
 function SalesLedgerView() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
   const [page, setPage] = useState(1);
@@ -227,7 +228,9 @@ function SalesLedgerView() {
                 return (
                   <TableRow key={c.id}>
                     <TableCell>
-                      <div className="font-medium text-foreground">{c.name}</div>
+                      <div className="font-medium text-foreground">
+                        {transliterateName(c.name, i18n.language)}
+                      </div>
                       <div className="font-mono text-xs text-muted-foreground">
                         {c.customer_code}
                       </div>
@@ -274,7 +277,7 @@ function SalesLedgerView() {
 // Purchase Ledger View (Vendors)
 // ----------------------------------------------------------------------
 function PurchaseLedgerView() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
   const [page, setPage] = useState(1);
@@ -394,8 +397,12 @@ function PurchaseLedgerView() {
                 return (
                   <TableRow key={v.id}>
                     <TableCell>
-                      <div className="font-medium text-foreground">{v.company_name}</div>
-                      <div className="font-mono text-xs text-muted-foreground">{v.city || "—"}</div>
+                      <div className="font-medium text-foreground">
+                        {transliterateName(v.company_name, i18n.language)}
+                      </div>
+                      <div className="font-mono text-xs text-muted-foreground">
+                        {v.city ? transliterateName(v.city, i18n.language) : "—"}
+                      </div>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {v.gst_number || "—"}

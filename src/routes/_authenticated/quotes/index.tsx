@@ -47,6 +47,7 @@ import type { DbTable } from "@/lib/types";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
+import { transliterateName } from "@/lib/i18n/transliterate";
 import { CatalogProductSelect } from "@/components/quotes/CatalogProductSelect";
 import {
   getQuoteSaleMode,
@@ -134,7 +135,7 @@ export const Route = createFileRoute("/_authenticated/quotes/")({
 });
 
 function QuotesPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
   const params = Route.useSearch();
@@ -670,13 +671,17 @@ function QuotesPage() {
                       </TableCell>
                     )}
                     {!isHidden("project") && (
-                      <TableCell className="font-medium">{r.project?.name ?? "—"}</TableCell>
+                      <TableCell className="font-medium">
+                        {r.project?.name ? transliterateName(r.project.name, i18n.language) : "—"}
+                      </TableCell>
                     )}
                     {!isHidden("customer") && (
                       <TableCell>
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="font-medium text-xs text-foreground">
-                            {r.customer?.name ?? "—"}
+                            {r.customer?.name
+                              ? transliterateName(r.customer.name, i18n.language)
+                              : "—"}
                           </span>
                           {r.customer?.id && (
                             <CustomerAssigneeSelect

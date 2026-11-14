@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { ChevronDown, Check, Loader2, UserCheck, UserPlus, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import {
   type CustomerSalespersonKey,
 } from "@/lib/customers/crm-status";
 import { updateCustomerSalesperson } from "@/lib/customers/api";
+import { transliterateName } from "@/lib/i18n/transliterate";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { cn } from "@/lib/utils";
@@ -38,6 +40,7 @@ export function CustomerAssigneeSelect({
   size = "sm",
   variant = "badge",
 }: CustomerAssigneeSelectProps) {
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
 
@@ -58,7 +61,7 @@ export function CustomerAssigneeSelect({
       const assignedLabel = newSalesperson ? CUSTOMER_SALESPEOPLE[newSalesperson].label : null;
       toast.success(
         assignedLabel
-          ? `${customerName ?? "Customer"} assigned to ${assignedLabel}`
+          ? `${customerName ?? "Customer"} assigned to ${transliterateName(assignedLabel, i18n.language)}`
           : `${customerName ?? "Customer"} unassigned`,
       );
       void qc.invalidateQueries({ queryKey: qk.customers.byId(customerId) });
@@ -90,7 +93,7 @@ export function CustomerAssigneeSelect({
             )}
             title={
               config
-                ? `Assigned to ${config.label}. Click to reassign.`
+                ? `Assigned to ${transliterateName(config.label, i18n.language)}. Click to reassign.`
                 : "Unassigned. Click to assign to Rishi or Raman."
             }
           >
@@ -108,7 +111,11 @@ export function CustomerAssigneeSelect({
             ) : (
               <UserPlus className="h-3 w-3 shrink-0 text-slate-400" />
             )}
-            <span className="truncate">{config ? config.shortName || config.label : "Assign"}</span>
+            <span className="truncate">
+              {config
+                ? transliterateName(config.shortName, i18n.language)
+                : t("common.assign", "Assign")}
+            </span>
             <ChevronDown className="h-3 w-3 opacity-60 shrink-0" />
           </button>
         ) : (
@@ -125,7 +132,7 @@ export function CustomerAssigneeSelect({
             )}
             title={
               config
-                ? `Assigned to ${config.label}. Click to reassign.`
+                ? `Assigned to ${transliterateName(config.label, i18n.language)}. Click to reassign.`
                 : "Unassigned. Click to assign to Rishi or Raman."
             }
           >
@@ -134,7 +141,11 @@ export function CustomerAssigneeSelect({
             ) : (
               <UserCheck className="h-3.5 w-3.5 shrink-0" />
             )}
-            <span className="truncate">{config ? config.shortName || config.label : "Assign"}</span>
+            <span className="truncate">
+              {config
+                ? transliterateName(config.shortName, i18n.language)
+                : t("common.assign", "Assign")}
+            </span>
             <ChevronDown className="h-3.5 w-3.5 opacity-60 shrink-0" />
           </Button>
         )}
@@ -142,7 +153,7 @@ export function CustomerAssigneeSelect({
 
       <DropdownMenuContent align="start" className="w-56 p-1.5 z-50">
         <DropdownMenuLabel className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-          Assign Salesperson
+          {t("customers.assignSalesperson", "Assign Salesperson")}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
 
@@ -169,7 +180,9 @@ export function CustomerAssigneeSelect({
                   {person.shortName[0]}
                 </span>
                 <div>
-                  <div className="font-semibold text-slate-900">{person.label}</div>
+                  <div className="font-semibold text-slate-900">
+                    {transliterateName(person.label, i18n.language)}
+                  </div>
                   <div className="text-[10px] text-muted-foreground">{person.email}</div>
                 </div>
               </div>
@@ -187,7 +200,7 @@ export function CustomerAssigneeSelect({
               className="flex items-center gap-2 rounded-md p-2 text-xs text-rose-600 hover:bg-rose-50 cursor-pointer min-h-[38px] touch-manipulation"
             >
               <X className="h-3.5 w-3.5" />
-              <span>Unassign customer</span>
+              <span>{t("customers.unassignCustomer", "Unassign customer")}</span>
             </DropdownMenuItem>
           </>
         )}

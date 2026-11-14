@@ -702,3 +702,103 @@ export function getCustomerStatusNotificationInfo(
         : "Customer status is active",
   };
 }
+
+const CRM_STATUS_LOCALIZED: Record<
+  CustomerResponseStatus,
+  { hi: string; gu: string; hiShort: string; guShort: string }
+> = {
+  active_responsive: {
+    hi: "सक्रिय · उत्तरदायी",
+    gu: "સક્રિય · પ્રતિસાદી",
+    hiShort: "उत्तरदायी",
+    guShort: "પ્રતિસાદી",
+  },
+  payment_pending: {
+    hi: "भुगतान देय · प्रतिश्रुत तिथि",
+    gu: "ચુકવણી બાકી · વચનબદ્ધ તારીખ",
+    hiShort: "भुगतान देय",
+    guShort: "ચુકવણી બાકી",
+  },
+  order_placed: {
+    hi: "ऑर्डर दर्ज",
+    gu: "ઓર્ડર નોંધાયો",
+    hiShort: "ऑर्डर दर्ज",
+    guShort: "ઓર્ડર નોંધાયો",
+  },
+  installation_team_working: {
+    hi: "इंस्टॉलेशन टीम कार्यरत",
+    gu: "ઇન્સ્ટોલેશન ટીમ કાર્યરત",
+    hiShort: "इंस्टॉलेशन टीम",
+    guShort: "ઇન્સ્ટોલેશન ટીમ",
+  },
+  artwork_team_working: {
+    hi: "आर्टवर्क टीम कार्यरत",
+    gu: "આર્ટવર્ક ટીમ કાર્યરત",
+    hiShort: "आर्टवर्क टीम",
+    guShort: "આર્ટવર્ક ટીમ",
+  },
+  order_completed: {
+    hi: "ऑर्डर पूर्ण",
+    gu: "ઓર્ડર પૂર્ણ",
+    hiShort: "पूर्ण",
+    guShort: "પૂર્ણ",
+  },
+  order_cancelled_delay: {
+    hi: "रद्द (देरी)",
+    gu: "રદ (વિલંબ)",
+    hiShort: "रद्द (देरी)",
+    guShort: "રદ (વિલંબ)",
+  },
+  order_cancelled_change_of_plans: {
+    hi: "रद्द (योजना परिवर्तन)",
+    gu: "રદ (પ્લાન ફેરફાર)",
+    hiShort: "रद्द - योजना",
+    guShort: "રદ - પ્લાન",
+  },
+  regular_future_requirement: {
+    hi: "नियमित भविष्य की आवश्यकता",
+    gu: "નિયમિત ભવિષ્યની જરૂરિયાત",
+    hiShort: "भविष्य मांग",
+    guShort: "ભવિષ્ય જરૂરિયાત",
+  },
+  followup_pending: {
+    hi: "फॉलो-अप लंबित",
+    gu: "ફોલો-અપ બાકી",
+    hiShort: "फॉलो-अप",
+    guShort: "ફોલો-અપ",
+  },
+  awaiting_reply: {
+    hi: "ग्राहक उत्तर की प्रतीक्षा",
+    gu: "ગ્રાહક પ્રતિસાદની રાહ",
+    hiShort: "उत्तर की प्रतीक्षा",
+    guShort: "પ્રતિસાદની રાહ",
+  },
+  inactive_no_response: {
+    hi: "निष्क्रिय · कोई उत्तर नहीं",
+    gu: "નિષ્ક્રિય · કોઈ પ્રતિસાદ નથી",
+    hiShort: "कोई उत्तर नहीं",
+    guShort: "કોઈ પ્રતિસાદ નથી",
+  },
+  do_not_contact: {
+    hi: "बंद · कोई संपर्क नहीं",
+    gu: "બંધ · કોઈ સંપર્ક નહીં",
+    hiShort: "बंद",
+    guShort: "બંધ",
+  },
+};
+
+export function getCustomerResponseStatusLabel(
+  status: CustomerResponseStatus,
+  lang: string = "en",
+  short = false,
+): string {
+  const cfg = CUSTOMER_RESPONSE_STATUS_CONFIG[status];
+  const base = short ? cfg?.shortLabel || cfg?.label || status : cfg?.label || status;
+  if (lang.startsWith("en")) return base;
+
+  const loc = CRM_STATUS_LOCALIZED[status];
+  if (!loc) return base;
+  if (lang.startsWith("hi")) return short ? loc.hiShort : loc.hi;
+  if (lang.startsWith("gu")) return short ? loc.guShort : loc.gu;
+  return base;
+}

@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import {
   Search,
   AlertTriangle,
@@ -43,9 +44,11 @@ import { listCustomerLedgerSummaries } from "@/lib/customer-ledger/api";
 import { AssignQuoteVendorDialog } from "@/components/quotes/AssignQuoteVendorDialog";
 import { formatDate } from "@/lib/format";
 import { buildWhatsappUrl, normalizeWhatsappPhone } from "@/lib/whatsapp";
+import { transliterateName } from "@/lib/i18n/transliterate";
 import { cn } from "@/lib/utils";
 
 export function CustomerOrderPipeline() {
+  const { t, i18n } = useTranslation();
   const [search, setSearch] = useState("");
   const [healthFilter, setHealthFilter] = useState<string>("all");
   const [page, setPage] = useState(1);
@@ -406,7 +409,7 @@ export function CustomerOrderPipeline() {
                           }
                           className="font-medium text-slate-900 hover:text-primary hover:underline text-xs"
                         >
-                          {item.customerName}
+                          {transliterateName(item.customerName, i18n.language)}
                         </Link>
 
                         <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
@@ -416,7 +419,7 @@ export function CustomerOrderPipeline() {
                               title="Point of Contact / Representative"
                             >
                               <User className="h-2.5 w-2.5 text-teal-600" />
-                              <span>{item.contactPerson}</span>
+                              <span>{transliterateName(item.contactPerson, i18n.language)}</span>
                             </span>
                           )}
                           {item.firmName && item.firmName !== item.customerName && (
@@ -425,7 +428,7 @@ export function CustomerOrderPipeline() {
                               title="Firm Name"
                             >
                               <Building2 className="h-2.5 w-2.5 text-slate-500" />
-                              <span>{item.firmName}</span>
+                              <span>{transliterateName(item.firmName, i18n.language)}</span>
                             </span>
                           )}
                         </div>
@@ -453,7 +456,7 @@ export function CustomerOrderPipeline() {
                           <div className="flex flex-col gap-0.5">
                             <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-800">
                               <PackageCheck className="h-3.5 w-3.5 text-blue-600 shrink-0" />
-                              <span>In-House Stock</span>
+                              <span>{t("pipeline.inHouseStock", "In-House Stock")}</span>
                             </span>
                             {item.stockLocation ? (
                               <span className="text-[10px] text-blue-600/80">
@@ -488,7 +491,7 @@ export function CustomerOrderPipeline() {
                           <div className="flex flex-col gap-0.5">
                             <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-800">
                               <CheckCircle2 className="h-3 w-3 text-emerald-600 shrink-0" />
-                              <span>{item.vendorName}</span>
+                              <span>{transliterateName(item.vendorName, i18n.language)}</span>
                             </span>
                             {item.vendorCode && (
                               <span className="font-mono text-[10px] text-muted-foreground">

@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft } from "lucide-react";
 import { getCustomerTimeline, getCustomerHeader } from "@/lib/customer-timeline/api";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -7,12 +8,14 @@ import { EmptyState } from "@/components/layout/States";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatInr } from "@/lib/format";
+import { transliterateName } from "@/lib/i18n/transliterate";
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId/timeline")({
   component: TimelinePage,
 });
 
 function TimelinePage() {
+  const { t, i18n } = useTranslation();
   const { customerId } = Route.useParams();
   const header = useQuery({
     queryKey: ["customer-header", customerId],
@@ -30,11 +33,14 @@ function TimelinePage() {
         params={{ customerId }}
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
-        <ArrowLeft className="h-3 w-3" /> Back to customer
+        <ArrowLeft className="h-3 w-3" /> {t("customers.backToCustomer", "Back to customer")}
       </Link>
       <PageHeader
-        title={`${header.data?.name ?? "Customer"} — Timeline`}
-        subtitle="Every interaction, document, and message in one feed."
+        title={`${header.data?.name ? transliterateName(header.data.name, i18n.language) : t("customers.customer", "Customer")} — ${t("common.timeline", "Timeline")}`}
+        subtitle={t(
+          "customers.timelineSubtitle",
+          "Every interaction, document, and message in one feed.",
+        )}
       />
 
       <Card>

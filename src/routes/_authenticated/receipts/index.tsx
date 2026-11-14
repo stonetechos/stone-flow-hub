@@ -38,6 +38,7 @@ import {
   getPaymentMethodBadgeClass,
 } from "@/lib/payments/method-display";
 import { TransactionMessageReaderModal } from "@/components/banking/TransactionMessageReaderModal";
+import { transliterateName } from "@/lib/i18n/transliterate";
 
 export const Route = createFileRoute("/_authenticated/receipts/")({
   ssr: false,
@@ -45,7 +46,7 @@ export const Route = createFileRoute("/_authenticated/receipts/")({
 });
 
 function ReceiptsListPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const [readerOpen, setReaderOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -203,7 +204,9 @@ function ReceiptsListPage() {
                     <TableCell className="text-xs">
                       <div className="flex flex-col min-w-0">
                         <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
-                          {r.customer?.name ?? "—"}
+                          {r.customer?.name
+                            ? transliterateName(r.customer.name, i18n.language)
+                            : "—"}
                         </span>
                         <Link
                           to="/receipts/$receiptId"
@@ -219,7 +222,9 @@ function ReceiptsListPage() {
                     <TableCell className="text-sm">{formatDate(r.received_at)}</TableCell>
                   )}
                   {!isHidden("customer") && (
-                    <TableCell className="text-sm">{r.customer?.name ?? "—"}</TableCell>
+                    <TableCell className="text-sm">
+                      {r.customer?.name ? transliterateName(r.customer.name, i18n.language) : "—"}
+                    </TableCell>
                   )}
                   {!isHidden("method") && (
                     <TableCell>

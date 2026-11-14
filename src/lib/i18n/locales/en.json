@@ -503,7 +503,18 @@
     "converted": "converted",
     "noLeadsYet": "No Website Leads Yet",
     "noLeadsDesc": "Share your landing page link www.stonetech.in with customers, on Instagram, or via WhatsApp. Submissions will instantly stream into this box and your CRM pipeline.",
-    "copied": "Copied"
+    "copied": "Copied",
+    "clientResponseStatus": "Client Response Status",
+    "sendWhatsappStatusUpdate": "Send WhatsApp Status Update",
+    "accountDirectoryStatus": "Account Directory Status",
+    "markInactive": "Mark Account Inactive (Archive response)",
+    "reactivateAccount": "Reactivate Client Account",
+    "notUpdatedStatusTooltip": "The customer is not updated with the current status. Click to send WhatsApp notification.",
+    "notUpdatedStatus": "The customer is not updated with current status",
+    "customerUpdated": "Customer updated"
+  },
+  "pipeline": {
+    "inHouseStock": "In-House Stock"
   },
   "form": {
     "quickFill": "Quick Fill",
@@ -748,7 +759,46 @@
     "unassignedYet": "Unassigned Yet",
     "promisedDelivery": "Promised Delivery",
     "promisedDeliveryDate": "Promised Delivery Date",
-    "assignVendor": "Assign Team Partner"
+    "assignVendor": "Assign Team Partner",
+    "contactPrefix": "Contact",
+    "firmPrefix": "Firm",
+    "firmName": "Firm / Company Name",
+    "backToCustomers": "Back to customers",
+    "backToCustomer": "Back to customer",
+    "timelineSubtitle": "Every interaction, document, and message in one feed.",
+    "noPhone": "No phone",
+    "setPaymentStatus": "Set Payment Status",
+    "paid": "Paid",
+    "invoicedDebit": "Invoiced (Debit)",
+    "receivedCredit": "Received (Credit)",
+    "balanceDue": "Balance Due",
+    "assignSalesperson": "Assign Salesperson",
+    "unassignCustomer": "Unassign customer",
+    "orderPipeline": "Order Pipeline",
+    "deadlinesBadge": "Vendor & Customer Deadlines",
+    "table": {
+      "type": "Type",
+      "crmStatus": "CRM Status & Updates",
+      "assignedTo": "Assigned To",
+      "paymentStatus": "Payment Status",
+      "contact": "Contact"
+    },
+    "filter": {
+      "responseStatus": "Response status",
+      "allStatuses": "All statuses",
+      "allCustomerTypes": "All customer types",
+      "assignedTo": "Assigned to",
+      "allAssignees": "All assignees",
+      "unassigned": "Unassigned"
+    },
+    "payment": {
+      "promisedFlagged": "Payment Due (Flagged)",
+      "noDues": "No Dues",
+      "paymentPending": "Payment Pending",
+      "partPaymentReceived": "Part Payment Received",
+      "fullPaymentReceived": "Full Payment Received",
+      "advanceRcvd": "Advance / Rcvd"
+    }
   },
   "enquiries": {
     "searchPlaceholder": "Search by enquiry no, requirement, or notes…",

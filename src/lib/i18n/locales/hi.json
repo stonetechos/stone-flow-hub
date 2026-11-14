@@ -501,7 +501,18 @@
     "converted": "परिवर्तित",
     "noLeadsYet": "अभी कोई वेबसाइट लीड्स नहीं",
     "noLeadsDesc": "ग्राहकों, इंस्टाग्राम या व्हाट्सएप के माध्यम से अपना लैंडिंग पेज लिंक www.stonetech.in साझा करें। सबमिशन तुरंत इस बॉक्स और आपकी CRM पाइपलाइन में प्रवाहित होंगे।",
-    "copied": "कॉपी किया गया"
+    "copied": "कॉपी किया गया",
+    "clientResponseStatus": "ग्राहक प्रतिक्रिया स्थिति",
+    "sendWhatsappStatusUpdate": "व्हाट्सएप स्थिति अपडेट भेजें",
+    "accountDirectoryStatus": "खाता निर्देशिका स्थिति",
+    "markInactive": "खाता निष्क्रिय करें (आर्काइव)",
+    "reactivateAccount": "ग्राहक खाता पुनः सक्रिय करें",
+    "notUpdatedStatusTooltip": "ग्राहक को वर्तमान स्थिति से अपडेट नहीं किया गया है। व्हाट्सएप सूचना भेजने के लिए क्लिक करें।",
+    "notUpdatedStatus": "ग्राहक को वर्तमान स्थिति से अपडेट नहीं किया गया है",
+    "customerUpdated": "ग्राहक को अपडेट किया गया"
+  },
+  "pipeline": {
+    "inHouseStock": "इन-हाउस स्टॉक"
   },
   "form": {
     "quickFill": "त्वरित भरें",
@@ -758,7 +769,46 @@
     "additionalDetails": "अतिरिक्त विवरण (वैकल्पिक)",
     "deleted": "ग्राहक हटा दिया गया",
     "updated": "ग्राहक अपडेट किया गया",
-    "created": "ग्राहक बनाया गया"
+    "created": "ग्राहक बनाया गया",
+    "contactPrefix": "संपर्क",
+    "firmPrefix": "फर्म",
+    "firmName": "फर्म / कंपनी का नाम",
+    "backToCustomers": "ग्राहकों पर वापस जाएं",
+    "backToCustomer": "ग्राहक पर वापस जाएं",
+    "timelineSubtitle": "एक ही फ़ीड में हर बातचीत, दस्तावेज़ और संदेश।",
+    "noPhone": "कोई फ़ोन नहीं",
+    "setPaymentStatus": "भुगतान स्थिति सेट करें",
+    "paid": "प्राप्त",
+    "invoicedDebit": "चालान (डेबिट)",
+    "receivedCredit": "प्राप्त राशि (क्रेडिट)",
+    "balanceDue": "बकाया राशि",
+    "assignSalesperson": "विक्रेता नियुक्त करें",
+    "unassignCustomer": "ग्राहक को असाइन न करें",
+    "orderPipeline": "ऑर्डर पाइपलाइन",
+    "deadlinesBadge": "सप्लायर और ग्राहक समय सीमा",
+    "table": {
+      "type": "प्रकार",
+      "crmStatus": "CRM स्थिति व अपडेट",
+      "assignedTo": "आवंटित प्रतिनिधि",
+      "paymentStatus": "भुगतान स्थिति",
+      "contact": "संपर्क"
+    },
+    "filter": {
+      "responseStatus": "प्रतिक्रिया स्थिति",
+      "allStatuses": "सभी स्थितियां",
+      "allCustomerTypes": "सभी ग्राहक प्रकार",
+      "assignedTo": "आवंटित प्रतिनिधि",
+      "allAssignees": "सभी प्रतिनिधि",
+      "unassigned": "अनावंटित"
+    },
+    "payment": {
+      "promisedFlagged": "देय भुगतान (चिह्नित)",
+      "noDues": "कोई बकाया नहीं",
+      "paymentPending": "भुगतान लंबित",
+      "partPaymentReceived": "आंशिक भुगतान प्राप्त",
+      "fullPaymentReceived": "पूर्ण भुगतान प्राप्त",
+      "advanceRcvd": "अग्रिम / प्राप्त"
+    }
   },
   "enquiries": {
     "searchPlaceholder": "पूछताछ संख्या, आवश्यकता या नोट्स द्वारा खोजें…",

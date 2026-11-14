@@ -50,6 +50,7 @@ import {
   getProductFamily,
 } from "@/lib/masters/api";
 import { QuickCreateDialog } from "./QuickCreateDialog";
+import { transliterateName } from "@/lib/i18n/transliterate";
 
 export type EntityType =
   | "customer"
@@ -125,33 +126,53 @@ export interface EntitySourceRow {
   vendor?: { company_name?: string | null } | null;
 }
 
-function toRow(type: EntityType, r: EntitySourceRow): EntityRow {
+function toRow(type: EntityType, r: EntitySourceRow, lang?: string): EntityRow {
   switch (type) {
     case "customer":
       return {
         id: r.id,
-        label: r.name ?? "",
-        sublabel: [r.customer_code, r.primary_phone, r.city].filter(Boolean).join(" · "),
+        label: transliterateName(r.name ?? "", lang),
+        sublabel: [
+          r.customer_code,
+          r.primary_phone,
+          r.city ? transliterateName(r.city, lang) : null,
+        ]
+          .filter(Boolean)
+          .join(" · "),
       };
     case "vendor":
       return {
         id: r.id,
-        label: r.company_name ?? "",
-        sublabel: [r.vendor_code, r.contact_person, r.mobile_number, r.city]
+        label: transliterateName(r.company_name ?? "", lang),
+        sublabel: [
+          r.vendor_code,
+          r.contact_person ? transliterateName(r.contact_person, lang) : null,
+          r.mobile_number,
+          r.city ? transliterateName(r.city, lang) : null,
+        ]
           .filter(Boolean)
           .join(" · "),
       };
     case "project":
       return {
         id: r.id,
-        label: r.name ?? "",
-        sublabel: [r.project_code, r.customer?.name, r.city].filter(Boolean).join(" · "),
+        label: transliterateName(r.name ?? "", lang),
+        sublabel: [
+          r.project_code,
+          r.customer?.name ? transliterateName(r.customer.name, lang) : null,
+          r.city ? transliterateName(r.city, lang) : null,
+        ]
+          .filter(Boolean)
+          .join(" · "),
       };
     case "purchase_order":
       return {
         id: r.id,
         label: r.po_no ?? "",
-        sublabel: [r.vendor?.company_name, r.status?.replace(/_/g, " ")]
+        sublabel: [
+          r.vendor?.company_name ? transliterateName(r.vendor.company_name, lang) : null,
+          r.status?.replace(/_/g, " "),
+        ]
           .filter(Boolean)
           .join(" · "),
       };
@@ -216,6 +237,7 @@ export function EntityPicker({
 }: EntityPickerProps) {
   const [open, setOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
+  const { t, i18n } = useTranslation();
   const [query, setQuery] = useState("");
   const debounced = useDebounced(query, 250);
 
@@ -235,18 +257,17 @@ export function EntityPicker({
   });
 
   const rows: EntityRow[] = useMemo(
-    () => (listQuery.data ?? []).map((r) => toRow(type, r)),
-    [listQuery.data, type],
+    () => (listQuery.data ?? []).map((r) => toRow(type, r, i18n.language)),
+    [listQuery.data, type, i18n.language],
   );
 
   const selectedRow: EntityRow | null = useMemo(() => {
     if (!value) return null;
-    if (selectedQuery.data) return toRow(type, selectedQuery.data);
+    if (selectedQuery.data) return toRow(type, selectedQuery.data, i18n.language);
     const found = rows.find((r) => r.id === value);
     return found ?? { id: value, label: "…", sublabel: null };
-  }, [value, selectedQuery.data, rows, type]);
+  }, [value, selectedQuery.data, rows, type, i18n.language]);
 
-  const { t } = useTranslation();
   const rawPlaceholder = placeholder ?? LABEL[type].placeholder;
   const displayPlaceholder = t(`picker.${rawPlaceholder}`, rawPlaceholder);
 
@@ -370,7 +391,7 @@ export function EntityPicker({
           initialName={query.trim() || undefined}
           defaults={createDefaults}
           onCreated={(row) => {
-            const r = toRow(type, row);
+            const r = toRow(type, row, i18n.language);
             onChange(r.id, r);
             setQuery("");
           }}

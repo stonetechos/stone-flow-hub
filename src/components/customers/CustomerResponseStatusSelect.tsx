@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import {
   ChevronDown,
   Check,
@@ -25,6 +26,7 @@ import {
   CUSTOMER_RESPONSE_STATUS_CONFIG,
   getCustomerResponseStatus,
   getCustomerStatusNotificationInfo,
+  getCustomerResponseStatusLabel,
   type CustomerResponseStatus,
 } from "@/lib/customers/crm-status";
 import { updateCustomerCrmStatus } from "@/lib/customers/api";
@@ -64,6 +66,7 @@ export function CustomerResponseStatusSelect({
   variant = "badge",
   showNotificationStatus = true,
 }: CustomerResponseStatusSelectProps) {
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [waDialogOpen, setWaDialogOpen] = useState(false);
@@ -93,10 +96,11 @@ export function CustomerResponseStatusSelect({
     onSuccess: (updated, newStatus) => {
       const effStatus = getCustomerResponseStatus(updated);
       const newConfig = CUSTOMER_RESPONSE_STATUS_CONFIG[effStatus];
+      const localizedLabel = getCustomerResponseStatusLabel(effStatus, i18n.language);
       toast.success(
         customerName
-          ? `${customerName} marked as "${newConfig.label}"`
-          : `Status updated to "${newConfig.label}"`,
+          ? `${customerName} marked as "${localizedLabel}"`
+          : `Status updated to "${localizedLabel}"`,
       );
       void qc.invalidateQueries({ queryKey: qk.customers.byId(customerId) });
       void qc.invalidateQueries({ queryKey: qk.customers.all });
@@ -154,14 +158,16 @@ export function CustomerResponseStatusSelect({
                   config.badgeTone,
                   size === "sm" ? "h-6 text-[11px]" : "h-7 text-xs",
                 )}
-                title={`Customer status: ${config.label}. Click to change.`}
+                title={`Customer status: ${getCustomerResponseStatusLabel(currentStatus, i18n.language)}. Click to change.`}
               >
                 {mutation.isPending ? (
                   <Loader2 className="h-3 w-3 animate-spin text-current shrink-0" />
                 ) : (
                   <span className={cn("h-2 w-2 rounded-full shrink-0", config.dotColor)} />
                 )}
-                <span className="truncate">{config.shortLabel || config.label}</span>
+                <span className="truncate">
+                  {getCustomerResponseStatusLabel(currentStatus, i18n.language, true)}
+                </span>
                 <ChevronDown className="h-3 w-3 opacity-60 shrink-0" />
               </button>
             ) : (
@@ -176,14 +182,16 @@ export function CustomerResponseStatusSelect({
                   "gap-1.5 font-semibold max-w-full touch-manipulation cursor-pointer",
                   config.tone,
                 )}
-                title={`Customer status: ${config.label}. Click to change.`}
+                title={`Customer status: ${getCustomerResponseStatusLabel(currentStatus, i18n.language)}. Click to change.`}
               >
                 {mutation.isPending ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
                 ) : (
                   <span className={cn("h-2 w-2 rounded-full shrink-0", config.dotColor)} />
                 )}
-                <span className="truncate">{config.shortLabel || config.label}</span>
+                <span className="truncate">
+                  {getCustomerResponseStatusLabel(currentStatus, i18n.language, true)}
+                </span>
                 <ChevronDown className="h-3.5 w-3.5 opacity-60 shrink-0" />
               </Button>
             )}
@@ -191,7 +199,7 @@ export function CustomerResponseStatusSelect({
 
           <DropdownMenuContent align="start" className="w-64 p-1.5 z-50">
             <DropdownMenuLabel className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-              <span>Client Response Status</span>
+              <span>{t("crm.clientResponseStatus", "Client Response Status")}</span>
               <Sparkles className="h-3 w-3 text-cyan-600" />
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
@@ -213,7 +221,9 @@ export function CustomerResponseStatusSelect({
                     <span className={cn("mt-1 h-2 w-2 rounded-full shrink-0", item.dotColor)} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold">{item.label}</span>
+                        <span className="font-semibold">
+                          {getCustomerResponseStatusLabel(statusKey, i18n.language)}
+                        </span>
                         {isSelected && <Check className="h-3.5 w-3.5 text-cyan-700" />}
                       </div>
                       <p className="mt-0.5 text-[10px] text-muted-foreground leading-snug font-normal">
@@ -240,12 +250,12 @@ export function CustomerResponseStatusSelect({
               className="flex items-center gap-2 p-2 text-xs cursor-pointer min-h-[36px] touch-manipulation text-emerald-800 bg-emerald-50/60 font-medium"
             >
               <MessageCircle className="h-3.5 w-3.5 text-emerald-600" />
-              <span>Send WhatsApp Status Update</span>
+              <span>{t("crm.sendWhatsappStatusUpdate", "Send WhatsApp Status Update")}</span>
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-              Account Directory Status
+              {t("crm.accountDirectoryStatus", "Account Directory Status")}
             </DropdownMenuLabel>
             <DropdownMenuItem
               onSelect={() => toggleActiveMutation.mutate(!isActive)}
@@ -255,12 +265,12 @@ export function CustomerResponseStatusSelect({
               {isActive ? (
                 <>
                   <UserX className="h-3.5 w-3.5 text-amber-600" />
-                  <span>Mark Account Inactive (Archive response)</span>
+                  <span>{t("crm.markInactive", "Mark Account Inactive (Archive response)")}</span>
                 </>
               ) : (
                 <>
                   <UserCheck className="h-3.5 w-3.5 text-emerald-600" />
-                  <span>Reactivate Client Account</span>
+                  <span>{t("crm.reactivateAccount", "Reactivate Client Account")}</span>
                 </>
               )}
             </DropdownMenuItem>
@@ -278,10 +288,15 @@ export function CustomerResponseStatusSelect({
               setWaDialogOpen(true);
             }}
             className="inline-flex max-w-full items-center gap-1 rounded bg-amber-50 hover:bg-amber-100/90 border border-amber-300/90 px-1.5 py-0.5 text-[10px] font-semibold text-amber-900 transition-colors shadow-2xs cursor-pointer text-left"
-            title="The customer is not updated with the current status. Click to send WhatsApp notification."
+            title={t(
+              "crm.notUpdatedStatusTooltip",
+              "The customer is not updated with the current status. Click to send WhatsApp notification.",
+            )}
           >
             <AlertTriangle className="h-2.5 w-2.5 text-amber-600 shrink-0" />
-            <span className="truncate">The customer is not updated with the current status</span>
+            <span className="truncate">
+              {t("crm.notUpdatedStatus", "The customer is not updated with the current status")}
+            </span>
             <MessageCircle className="h-2.5 w-2.5 text-emerald-600 shrink-0 ml-0.5" />
           </button>
         )}
@@ -299,7 +314,7 @@ export function CustomerResponseStatusSelect({
             title={`Customer updated on WhatsApp (${new Date(notifInfo.sentAt).toLocaleDateString("en-IN")}). Click to re-send or edit message.`}
           >
             <CheckCircle2 className="h-2.5 w-2.5 text-emerald-600 shrink-0" />
-            <span className="truncate">Customer updated</span>
+            <span className="truncate">{t("crm.customerUpdated", "Customer updated")}</span>
           </button>
         )}
       </div>

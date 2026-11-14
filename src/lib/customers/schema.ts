@@ -21,11 +21,36 @@ export const CUSTOMER_TYPES: ReadonlyArray<{ value: DbEnum<"customer_type">; lab
   { value: "pinterest", label: "Pinterest" },
 ];
 
-export function getCustomerTypeLabel(type?: string | null): string {
+const CUSTOMER_TYPE_LOCALIZED: Record<string, { hi: string; gu: string }> = {
+  walk_in: { hi: "वॉक-इन", gu: "વૉક-ઇન" },
+  website: { hi: "वेबसाइट", gu: "વેબસાઇટ" },
+  b2b: { hi: "B2B", gu: "B2B" },
+  architect: { hi: "आर्किटेक्ट", gu: "આર્કિટેક્ટ" },
+  interior_designer: { hi: "इंटीरियर डिज़ाइनर", gu: "ઇન્ટિરિયર ડિઝાઇનર" },
+  contractor: { hi: "ठेकेदार", gu: "કોન્ટ્રાક્ટર" },
+  google_search: { hi: "गूगल सर्च", gu: "ગૂગલ સર્ચ" },
+  reference: { hi: "रेफरेंस", gu: "રેફરન્સ" },
+  instagram: { hi: "इंस्टाग्राम", gu: "ઇન્સ્ટાગ્રામ" },
+  indiamart: { hi: "इंडियामार्ट", gu: "ઇન્ડિયામાર્ટ" },
+  pinterest: { hi: "पिंटरेस्ट", gu: "પિન્ટરેસ્ટ" },
+  builder: { hi: "बिल्डर", gu: "બિલ્ડર" },
+  individual: { hi: "व्यक्तिगत", gu: "વ્યક્તિગત" },
+  company: { hi: "कंपनी", gu: "કંપની" },
+  government: { hi: "सरकारी", gu: "સરકારી" },
+  other: { hi: "अन्य", gu: "અન્ય" },
+};
+
+export function getCustomerTypeLabel(type?: string | null, lang: string = "en"): string {
   if (!type) return "—";
   const item = CUSTOMER_TYPES.find((t) => t.value === type);
-  if (item) return item.label;
-  return type.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+  const base = item ? item.label : type.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+  if (lang.startsWith("hi")) {
+    return CUSTOMER_TYPE_LOCALIZED[type]?.hi || base;
+  }
+  if (lang.startsWith("gu")) {
+    return CUSTOMER_TYPE_LOCALIZED[type]?.gu || base;
+  }
+  return base;
 }
 
 export function getCustomerTypeBadgeTone(type?: string | null): string {

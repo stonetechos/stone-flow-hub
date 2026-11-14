@@ -33,6 +33,7 @@ import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
 import { EntityPicker } from "@/components/forms/EntityPicker";
 import { RowActions } from "@/components/data/RowActions";
+import { transliterateName } from "@/lib/i18n/transliterate";
 import { SafeDeleteDialog } from "@/components/mdm/SafeDeleteDialog";
 import { DataToolbar } from "@/components/data/DataToolbar";
 import { DataTableShell } from "@/components/data/DataTableShell";
@@ -109,7 +110,7 @@ export const Route = createFileRoute("/_authenticated/enquiries/")({
 });
 
 function EnquiriesPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const nav = useNavigate();
   const { edit, umbrella, new: newParam, customer: customerParam, web_only } = Route.useSearch();
@@ -453,7 +454,9 @@ function EnquiriesPage() {
                       <TableCell className="text-xs">
                         <div className="flex flex-col gap-1 min-w-0">
                           <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
-                            {e.customer?.name ?? "—"}
+                            {e.customer?.name
+                              ? transliterateName(e.customer.name, i18n.language)
+                              : "—"}
                           </span>
                           <Link
                             to="/enquiries/$enquiryId"
@@ -475,7 +478,11 @@ function EnquiriesPage() {
                     {!isHidden("customer") && (
                       <TableCell className="font-medium">
                         <div className="flex flex-col gap-0.5">
-                          <span>{e.customer?.name ?? "—"}</span>
+                          <span>
+                            {e.customer?.name
+                              ? transliterateName(e.customer.name, i18n.language)
+                              : "—"}
+                          </span>
                           {(() => {
                             const ext =
                               typeof e.external_ref === "object" && e.external_ref !== null

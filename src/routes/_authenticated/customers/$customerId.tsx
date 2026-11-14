@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -68,6 +69,7 @@ import {
 } from "@/lib/customers/schema";
 import { hydrateMaterialInterests } from "@/lib/customers/material-interests";
 import { normalizeCustomerRow } from "@/lib/customers/normalize";
+import { transliterateName } from "@/lib/i18n/transliterate";
 import { hub } from "@/lib/hubs/api";
 import { RelatedList, InfoGrid, PlaceholderTab } from "@/components/entity/RelatedList";
 import { NotesPanel, AttachmentsPanel } from "@/components/entity/DetailPanels";
@@ -705,6 +707,7 @@ export const Route = createFileRoute("/_authenticated/customers/$customerId")({
 
 function CustomerHub() {
   const { customerId } = Route.useParams();
+  const { t, i18n } = useTranslation();
   const [tab, setTab] = useState("overview");
   const roles = useRoles();
   const canTransfer = roles.isAdmin || roles.isSalesManager;
@@ -754,29 +757,34 @@ function CustomerHub() {
           to="/customers"
           className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft className="h-3 w-3" /> Back to customers
+          <ArrowLeft className="h-3 w-3" /> {t("customers.backToCustomers", "Back to customers")}
         </Link>
       </div>
       <PageHeader
         title={(() => {
           const serial = extractCustomerSerialNumber(c.customer_code);
+          const customerDisplayName = transliterateName(c.name, i18n.language);
           return serial !== null
-            ? `${serial}. ${c.name}${c.customer_code ? ` (${c.customer_code})` : ""}`
+            ? `${serial}. ${customerDisplayName}${c.customer_code ? ` (${c.customer_code})` : ""}`
             : c.customer_code
-              ? `${c.name} (${c.customer_code})`
-              : c.name;
+              ? `${customerDisplayName} (${c.customer_code})`
+              : customerDisplayName;
         })()}
         subtitle={
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-1">
-            <Badge variant="secondary">{getCustomerTypeLabel(getEffectiveCustomerType(c))}</Badge>
+            <Badge variant="secondary">
+              {getCustomerTypeLabel(getEffectiveCustomerType(c), i18n.language)}
+            </Badge>
             {c.company_name && (
               <span className="text-xs font-medium text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
-                Firm: {c.company_name}
+                {t("customers.firmPrefix", "Firm")}:{" "}
+                {transliterateName(c.company_name, i18n.language)}
               </span>
             )}
             {c.contact_person && (
               <span className="text-xs font-medium text-teal-800 bg-teal-50 px-2 py-0.5 rounded">
-                Contact: {c.contact_person}
+                {t("customers.contactPrefix", "Contact")}:{" "}
+                {transliterateName(c.contact_person, i18n.language)}
               </span>
             )}
             <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto mt-1 sm:mt-0">
@@ -979,20 +987,23 @@ function CustomerHub() {
             <CardContent>
               <InfoGrid
                 items={[
-                  { label: "Name", value: c.name },
+                  {
+                    label: t("common.name", "Name"),
+                    value: transliterateName(c.name, i18n.language),
+                  },
                   ...(c.contact_person
                     ? [
                         {
-                          label: "Contact Person",
-                          value: c.contact_person,
+                          label: t("customers.contactPerson", "Contact Person"),
+                          value: transliterateName(c.contact_person, i18n.language),
                         },
                       ]
                     : []),
                   ...(c.company_name
                     ? [
                         {
-                          label: "Firm / Company Name",
-                          value: c.company_name,
+                          label: t("customers.firmName", "Firm / Company Name"),
+                          value: transliterateName(c.company_name, i18n.language),
                         },
                       ]
                     : []),

@@ -204,6 +204,7 @@ function DashboardPage() {
     vendorPromptCount,
     dueLiabilities,
     discrepancyCount,
+    i18n.language,
   );
   const headline = kpis
     ? pickHeadline(kpis, t)
@@ -991,8 +992,8 @@ function CopilotDock({
   }>;
   activityLoading: boolean;
 }) {
-  const { t } = useTranslation();
-  const suggestions = buildSuggestions(topInsights, t);
+  const { t, i18n } = useTranslation();
+  const suggestions = buildSuggestions(topInsights, t, i18n.language);
   return (
     <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start">
       {/* Suggested actions */}
@@ -1431,6 +1432,7 @@ function buildBrief(
   vendorPromptCount = 0,
   dueLiabilities: import("@/lib/liabilities/liability-prompts").DueLiabilityPromptItem[] = [],
   discrepancyCount = 0,
+  lang?: string,
 ): string[] {
   const lines: string[] = [];
 
@@ -1480,7 +1482,7 @@ function buildBrief(
   );
   for (const i of criticalAlerts) {
     if (lines.length >= 3) break;
-    const localizedTitle = localizeInsightTitle(i.title, t);
+    const localizedTitle = localizeInsightTitle(i.title, t, lang);
     if (!lines.includes(localizedTitle)) {
       lines.push(localizedTitle);
     }
@@ -1556,7 +1558,7 @@ function buildBrief(
   // 3. Add remaining individual insight statements (up to 6 total lines)
   for (const i of topInsights) {
     if (lines.length >= 6) break;
-    const localizedTitle = localizeInsightTitle(i.title, t);
+    const localizedTitle = localizeInsightTitle(i.title, t, lang);
     if (!lines.includes(localizedTitle)) {
       lines.push(localizedTitle);
     }
@@ -1588,7 +1590,7 @@ function buildBrief(
   return lines.slice(0, 6);
 }
 
-function localizeInsightTitle(title: string, t: TFunction): string {
+function localizeInsightTitle(title: string, t: TFunction, lang?: string): string {
   // Pattern 1: "[Name] — 0 orders · Inactive client profile ([Level])"
   const m1 = /^(.+?)\s+—\s+0\s+orders\s+·\s+Inactive\s+client\s+profile\s+\((.+?)\)$/i.exec(title);
   if (m1) {
@@ -1596,7 +1598,7 @@ function localizeInsightTitle(title: string, t: TFunction): string {
       "insights.inactiveProfile",
       "{{name}} — 0 orders · Inactive client profile ({{level}})",
       {
-        name: m1[1],
+        name: transliterateName(m1[1], lang),
         level: translateLevel(m1[2], t),
       },
     );
@@ -1611,7 +1613,7 @@ function localizeInsightTitle(title: string, t: TFunction): string {
       "insights.ordersInactiveDays",
       "{{name}} — {{orders}} orders ({{amount}}), inactive {{days}}d ({{level}})",
       {
-        name: m2[1],
+        name: transliterateName(m2[1], lang),
         orders: m2[2],
         amount: m2[3],
         days: m2[4],
@@ -1626,7 +1628,7 @@ function localizeInsightTitle(title: string, t: TFunction): string {
   );
   if (m3) {
     return t("insights.balanceOverdue", "{{name}} — {{amount}} balance ({{overdue}}{{level}})", {
-      name: m3[1],
+      name: transliterateName(m3[1], lang),
       amount: m3[2],
       overdue: m3[3] ? `${m3[3]}d overdue · ` : "",
       level: translateLevel(m3[4], t),
@@ -1682,7 +1684,7 @@ function localizeInsightTitle(title: string, t: TFunction): string {
 
     return t(baseKey, {
       defaultValue: defaultText,
-      name,
+      name: transliterateName(name, lang),
       docType,
       docNo,
       deadline: localizedDeadline,
@@ -1721,28 +1723,32 @@ function translateLevel(level: string, t: TFunction): string {
   return level;
 }
 
-function localizeInsightAction(label: string, t: TFunction): string {
+function localizeInsightAction(label: string, t: TFunction, lang?: string): string {
   if (label.startsWith("Review · ")) {
     const name = label.replace(/^Review · /, "");
-    return `${t("insights.actionReview", "Review")} · ${name}`;
+    return `${t("insights.actionReview", "Review")} · ${transliterateName(name, lang)}`;
   }
   if (label.startsWith("Follow up · ")) {
     const name = label.replace(/^Follow up · /, "");
-    return `${t("insights.actionFollowUp", "Follow up")} · ${name}`;
+    return `${t("insights.actionFollowUp", "Follow up")} · ${transliterateName(name, lang)}`;
   }
   if (label.startsWith("Collect ")) {
+    const match = /^Collect (₹[\d,.]+) · (.+)$/.exec(label);
+    if (match) {
+      return `${t("insights.actionCollect", "Collect")} ${match[1]} · ${transliterateName(match[2], lang)}`;
+    }
     return label.replace(/^Collect /, `${t("insights.actionCollect", "Collect")} `);
   }
   if (label.startsWith("Assign vendor · ") || label.startsWith("Assign partner · ")) {
     const name = label.replace(/^Assign (vendor|partner) · /, "");
-    return `${t("insights.actionAssignPartner", "Assign partner")} · ${name}`;
+    return `${t("insights.actionAssignPartner", "Assign partner")} · ${transliterateName(name, lang)}`;
   }
   if (
     label.startsWith("Assign Live Stock / Partner · ") ||
     label.startsWith("Assign Live Stock / Vendor · ")
   ) {
     const name = label.replace(/^Assign Live Stock \/ (Partner|Vendor) · /, "");
-    return `${t("insights.actionAssignLiveStock", "Assign Live Stock / Partner")} · ${name}`;
+    return `${t("insights.actionAssignLiveStock", "Assign Live Stock / Partner")} · ${transliterateName(name, lang)}`;
   }
   if (label === "Open quote") {
     return t("insights.actionOpenQuote", "Open quote");
@@ -1800,6 +1806,7 @@ function formatActivitySummary(summary: string, _entityType: string | null, t: T
 function buildSuggestions(
   topInsights: ProcessedInsight[],
   t: TFunction,
+  lang?: string,
 ): Array<{ label: string; to: string; isRedFlag?: boolean; priority?: number }> {
   return topInsights
     .filter((i) => {
@@ -1813,7 +1820,7 @@ function buildSuggestions(
       const isRedFlag =
         i.title.includes("Red Flag") || i.tone === "danger" || i.normalizedPriority >= 95;
       return {
-        label: localizeInsightAction(i.action.label, t),
+        label: localizeInsightAction(i.action.label, t, lang),
         to: i.action.href,
         isRedFlag,
         priority: i.normalizedPriority,

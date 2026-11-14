@@ -30,6 +30,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { getProductNameInLang } from "@/lib/i18n/landing-i18n";
+import { transliterateName } from "@/lib/i18n/transliterate";
 
 interface WebLead {
   id: string;
@@ -435,8 +436,11 @@ export function WebsiteLeadsDashboardCard() {
             <div className="divide-y divide-slate-100 rounded-xl border border-slate-200/80 bg-white shadow-xs">
               {displayedLeads.slice(0, 8).map((lead) => {
                 const ext = lead.external_ref || {};
-                const customerName =
-                  lead.customer?.name || t("crm.prospectiveClient", "Direct Client");
+                const rawCustomerName =
+                  lead.customer?.name || (ext.client_name as string | undefined);
+                const customerName = rawCustomerName
+                  ? transliterateName(rawCustomerName, i18n.language)
+                  : t("crm.prospectiveClient", "Direct Client");
                 const rawPhone =
                   ext.client_whatsapp ||
                   lead.customer?.whatsapp ||
@@ -445,11 +449,14 @@ export function WebsiteLeadsDashboardCard() {
                 const cleanDigits = rawPhone.replace(/\D/g, "");
                 const waLink = cleanDigits
                   ? `https://wa.me/${cleanDigits}?text=${encodeURIComponent(
-                      `Hello ${customerName}! Thank you for your inquiry ${lead.enquiry_no} at Stone Tech. We are reviewing your stone requirements.`,
+                      `Hello ${rawCustomerName || "Client"}! Thank you for your inquiry ${lead.enquiry_no} at Stone Tech. We are reviewing your stone requirements.`,
                     )}`
                   : null;
 
-                const city = ext.client_city || lead.customer?.city || "Location not stated";
+                const rawCity = ext.client_city || lead.customer?.city;
+                const city = rawCity
+                  ? transliterateName(rawCity, i18n.language)
+                  : t("crm.locationNotStated", "Location not stated");
                 const products = Array.isArray(ext.selected_products) ? ext.selected_products : [];
                 const photoCount = Array.isArray(ext.photos) ? ext.photos.length : 0;
                 const stageInfo = STAGE_CONFIG[lead.stage] || {

@@ -502,7 +502,18 @@
     "converted": "રૂપાંતરિત",
     "noLeadsYet": "હજી કોઈ વેબસાઇટ લીડ્સ નથી",
     "noLeadsDesc": "ગ્રાહકો સાથે, ઇન્સ્ટાગ્રામ પર અથવા વોટ્સએપ દ્વારા તમારી લેન્ડિંગ પૃષ્ઠ લિંક www.stonetech.in શેર કરો. સબમિશન તરત જ આ બૉક્સ અને તમારી CRM પાઇપલાઇનમાં આવશે.",
-    "copied": "કૉપિ કર્યું"
+    "copied": "કૉપિ કર્યું",
+    "clientResponseStatus": "ક્લાયન્ટ પ્રતિસાદ સ્થિતિ",
+    "sendWhatsappStatusUpdate": "વોટ્સએપ સ્ટેટસ અપડેટ મોકલો",
+    "accountDirectoryStatus": "એકાઉન્ટ ડિરેક્ટરી સ્થિતિ",
+    "markInactive": "એકાઉન્ટ નિષ્ક્રિય કરો (આર્કાઇવ)",
+    "reactivateAccount": "ક્લાયન્ટ એકાઉન્ટ ફરીથી સક્રિય કરો",
+    "notUpdatedStatusTooltip": "ગ્રાહકને વર્તમાન સ્થિતિ સાથે અપડેટ કરવામાં આવ્યો નથી. વોટ્સએપ નોટિફિકેશન મોકલવા માટે ક્લિક કરો.",
+    "notUpdatedStatus": "ગ્રાહકને વર્તમાન સ્થિતિ સાથે અપડેટ કરવામાં આવ્યો નથી",
+    "customerUpdated": "ગ્રાહક અપડેટ થયો"
+  },
+  "pipeline": {
+    "inHouseStock": "ઇન-હાઉસ સ્ટોક"
   },
   "form": {
     "quickFill": "ઝડપી ભરો",
@@ -759,7 +770,46 @@
     "additionalDetails": "વધારાની વિગતો (વૈકલ્પિક)",
     "deleted": "ગ્રાહક કાઢી નાખવામાં આવ્યો",
     "updated": "ગ્રાહક અપડેટ થયો",
-    "created": "ગ્રાહક બનાવવામાં આવ્યો"
+    "created": "ગ્રાહક બનાવવામાં આવ્યો",
+    "contactPrefix": "સંપર્ક",
+    "firmPrefix": "પેઢી",
+    "firmName": "પેઢી / કંપનીનું નામ",
+    "backToCustomers": "ગ્રાહકો પર પાછા જાઓ",
+    "backToCustomer": "ગ્રાહક પર પાછા જાઓ",
+    "timelineSubtitle": "એક જ ફીડમાં દરેક વાતચીત, દસ્તાવેજ અને સંદેશ.",
+    "noPhone": "કોઈ ફોન નથી",
+    "setPaymentStatus": "ચુકવણી સ્થિતિ સેટ કરો",
+    "paid": "ચૂકવેલ",
+    "invoicedDebit": "ઇન્વૉઇસ (ડેબિટ)",
+    "receivedCredit": "મળેલ રકમ (ક્રેડિટ)",
+    "balanceDue": "બાકી રકમ",
+    "assignSalesperson": "વેચાણકર્તા સોંપો",
+    "unassignCustomer": "ગ્રાહકને અનઅસાઇન કરો",
+    "orderPipeline": "ઓર્ડર પાઇપલાઇન",
+    "deadlinesBadge": "વેપારી અને ગ્રાહક સમયમર્યાદા",
+    "table": {
+      "type": "પ્રકાર",
+      "crmStatus": "CRM સ્થિતિ અને અપડેટ્સ",
+      "assignedTo": "સોંપાયેલ પ્રતિનિધિ",
+      "paymentStatus": "ચુકવણી સ્થિતિ",
+      "contact": "સંપર્ક"
+    },
+    "filter": {
+      "responseStatus": "પ્રતિસાદ સ્થિતિ",
+      "allStatuses": "બધી સ્થિતિઓ",
+      "allCustomerTypes": "બધા ગ્રાહક પ્રકાર",
+      "assignedTo": "સોંપાયેલ પ્રતિનિધિ",
+      "allAssignees": "બધા પ્રતિનિધિઓ",
+      "unassigned": "અનઅસાઇન કરેલ"
+    },
+    "payment": {
+      "promisedFlagged": "ચુકવણી બાકી (ફ્લેગ કરેલ)",
+      "noDues": "કોઈ બાકી નથી",
+      "paymentPending": "ચુકવણી બાકી",
+      "partPaymentReceived": "આંશિક ચુકવણી પ્રાપ્ત",
+      "fullPaymentReceived": "સંપૂર્ણ ચુકવણી પ્રાપ્ત",
+      "advanceRcvd": "એડવાન્સ / મળેલ"
+    }
   },
   "enquiries": {
     "searchPlaceholder": "પૂછપરછ નં., જરૂરિયાત અથવા નોંધ દ્વારા શોધો…",

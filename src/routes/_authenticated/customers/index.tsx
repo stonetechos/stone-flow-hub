@@ -36,14 +36,17 @@ import {
   getCustomerPaymentReminderInfo,
   getCustomerResponseStatus,
   getCustomerSalesperson,
+  getCustomerResponseStatusLabel,
   type CustomerResponseStatus,
 } from "@/lib/customers/crm-status";
+import { transliterateName } from "@/lib/i18n/transliterate";
 import { buildWhatsappUrl } from "@/lib/whatsapp";
 import {
   CUSTOMER_PAYMENT_STATUS_CONFIG,
   getCustomerPaymentStatus,
   extractCustomerSerialNumber,
   compareCustomersForDirectory,
+  getCustomerPaymentStatusLabel,
   type CustomerPaymentStatus,
 } from "@/lib/customers/payment-status";
 import { listOrderPipeline } from "@/lib/customers/order-pipeline";
@@ -132,7 +135,7 @@ export const Route = createFileRoute("/_authenticated/customers/")({
 });
 
 function CustomersPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const nav = useNavigate();
   const { edit, tab: urlTab, create } = Route.useSearch();
@@ -449,9 +452,9 @@ function CustomersPage() {
             )}
           >
             <Workflow className="h-3.5 w-3.5 text-indigo-600" />
-            <span>Order Pipeline</span>
+            <span>{t("customers.orderPipeline", "Order Pipeline")}</span>
             <span className="rounded-full bg-indigo-50 border border-indigo-200/60 px-1.5 py-0.5 text-[10px] font-bold text-indigo-700">
-              Vendor & Customer Deadlines
+              {t("customers.deadlinesBadge", "Vendor & Customer Deadlines")}
             </span>
           </button>
         </div>
@@ -465,7 +468,7 @@ function CustomersPage() {
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 mb-2.5">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mr-1 flex items-center gap-1 shrink-0">
               <CreditCard className="h-3 w-3 text-slate-400" />
-              <span>Payment:</span>
+              <span>{t("customers.paymentStatus", "Payment Status")}:</span>
             </span>
             <button
               type="button"
@@ -480,7 +483,8 @@ function CustomersPage() {
                   : "bg-slate-100/90 text-slate-600 hover:bg-slate-200/80 hover:text-slate-900",
               )}
             >
-              All <span className="ml-0.5 opacity-75 tabular-nums">({paymentCounts.all})</span>
+              {t("common.all", "All")}{" "}
+              <span className="ml-0.5 opacity-75 tabular-nums">({paymentCounts.all})</span>
             </button>
             {paymentCounts.promised_flagged > 0 && (
               <button
@@ -497,7 +501,7 @@ function CustomersPage() {
                 )}
               >
                 <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
-                💰 Payment Due (Flagged){" "}
+                💰 {t("customers.payment.promisedFlagged", "Payment Due (Flagged)")}{" "}
                 <span className="opacity-75 tabular-nums">({paymentCounts.promised_flagged})</span>
               </button>
             )}
@@ -515,7 +519,8 @@ function CustomersPage() {
               )}
             >
               <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
-              No Dues <span className="opacity-75 tabular-nums">({paymentCounts.no_dues})</span>
+              {t("customers.payment.noDues", "No Dues")}{" "}
+              <span className="opacity-75 tabular-nums">({paymentCounts.no_dues})</span>
             </button>
             <button
               type="button"
@@ -531,7 +536,7 @@ function CustomersPage() {
               )}
             >
               <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
-              Payment Pending{" "}
+              {t("customers.payment.paymentPending", "Payment Pending")}{" "}
               <span className="opacity-75 tabular-nums">({paymentCounts.payment_pending})</span>
             </button>
             <button
@@ -548,7 +553,7 @@ function CustomersPage() {
               )}
             >
               <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-              Part Payment Received{" "}
+              {t("customers.payment.partPaymentReceived", "Part Payment Received")}{" "}
               <span className="opacity-75 tabular-nums">
                 ({paymentCounts.part_payment_received})
               </span>
@@ -567,7 +572,7 @@ function CustomersPage() {
               )}
             >
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              Full Payment Received{" "}
+              {t("customers.payment.fullPaymentReceived", "Full Payment Received")}{" "}
               <span className="opacity-75 tabular-nums">
                 ({paymentCounts.full_payment_received})
               </span>
@@ -586,7 +591,7 @@ function CustomersPage() {
               )}
             >
               <span className="h-1.5 w-1.5 rounded-full bg-sky-500" />
-              Advance / Rcvd{" "}
+              {t("customers.payment.advanceRcvd", "Advance / Rcvd")}{" "}
               <span className="opacity-75 tabular-nums">({paymentCounts.payment_received})</span>
             </button>
           </div>
@@ -606,10 +611,14 @@ function CustomersPage() {
                   }}
                 >
                   <SelectTrigger className="h-8 w-40 text-xs bg-white">
-                    <SelectValue placeholder="Response status" />
+                    <SelectValue
+                      placeholder={t("customers.filter.responseStatus", "Response status")}
+                    />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All statuses</SelectItem>
+                    <SelectItem value="all">
+                      {t("customers.filter.allStatuses", "All statuses")}
+                    </SelectItem>
                     {(Object.keys(CUSTOMER_RESPONSE_STATUS_CONFIG) as CustomerResponseStatus[]).map(
                       (key) => {
                         const cfg = CUSTOMER_RESPONSE_STATUS_CONFIG[key];
@@ -619,7 +628,9 @@ function CustomersPage() {
                               <span
                                 className={cn("h-1.5 w-1.5 rounded-full shrink-0", cfg.dotColor)}
                               />
-                              <span>{cfg.shortLabel}</span>
+                              <span>
+                                {getCustomerResponseStatusLabel(key, i18n.language, true)}
+                              </span>
                             </span>
                           </SelectItem>
                         );
@@ -636,13 +647,17 @@ function CustomersPage() {
                   }}
                 >
                   <SelectTrigger className="h-8 w-36 text-xs bg-white">
-                    <SelectValue placeholder="All customer types" />
+                    <SelectValue
+                      placeholder={t("customers.filter.allCustomerTypes", "All customer types")}
+                    />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All customer types</SelectItem>
+                    <SelectItem value="all">
+                      {t("customers.filter.allCustomerTypes", "All customer types")}
+                    </SelectItem>
                     {CUSTOMER_TYPES.map((tItem) => (
                       <SelectItem key={tItem.value} value={tItem.value}>
-                        {tItem.label}
+                        {getCustomerTypeLabel(tItem.value, i18n.language)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -656,13 +671,21 @@ function CustomersPage() {
                   }}
                 >
                   <SelectTrigger className="h-8 w-40 text-xs bg-white">
-                    <SelectValue placeholder="Assigned to" />
+                    <SelectValue placeholder={t("customers.filter.assignedTo", "Assigned to")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All assignees</SelectItem>
-                    <SelectItem value="rishi">👤 Rishi Rai</SelectItem>
-                    <SelectItem value="raman">👤 Raman Pupneja</SelectItem>
-                    <SelectItem value="unassigned">Unassigned</SelectItem>
+                    <SelectItem value="all">
+                      {t("customers.filter.allAssignees", "All assignees")}
+                    </SelectItem>
+                    <SelectItem value="rishi">
+                      👤 {transliterateName("Rishi Rai", i18n.language)}
+                    </SelectItem>
+                    <SelectItem value="raman">
+                      👤 {transliterateName("Raman Pupneja", i18n.language)}
+                    </SelectItem>
+                    <SelectItem value="unassigned">
+                      {t("customers.filter.unassigned", "Unassigned")}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -711,17 +734,21 @@ function CustomersPage() {
                     <TableHead className="w-22 whitespace-nowrap px-1.5">
                       {t("common.createdDate", "Created")}
                     </TableHead>
-                    <TableHead className="w-26 whitespace-nowrap px-1.5">Type</TableHead>
+                    <TableHead className="w-26 whitespace-nowrap px-1.5">
+                      {t("customers.table.type", "Type")}
+                    </TableHead>
                     <TableHead className="min-w-[190px] whitespace-nowrap px-1.5">
-                      CRM Status & Updates
+                      {t("customers.table.crmStatus", "CRM Status & Updates")}
                     </TableHead>
                     <TableHead className="w-32 whitespace-nowrap px-1.5 overflow-hidden">
-                      Assigned To
+                      {t("customers.table.assignedTo", "Assigned To")}
                     </TableHead>
                     <TableHead className="w-34 whitespace-nowrap px-1.5 overflow-hidden">
-                      Payment Status
+                      {t("customers.table.paymentStatus", "Payment Status")}
                     </TableHead>
-                    <TableHead className="w-40 whitespace-nowrap px-1.5">Contact</TableHead>
+                    <TableHead className="w-40 whitespace-nowrap px-1.5">
+                      {t("customers.table.contact", "Contact")}
+                    </TableHead>
                     <TableHead className="w-10 text-right px-1" />
                   </TableRow>
                 </TableHeader>
@@ -762,7 +789,7 @@ function CustomersPage() {
                           >
                             <div className="flex flex-wrap items-center gap-1.5">
                               <span className="font-semibold text-slate-900 truncate">
-                                {c.name}
+                                {transliterateName(c.name, i18n.language)}
                               </span>
                               {c.customer_code && (
                                 <span className="font-mono text-[11px] text-muted-foreground shrink-0">
@@ -786,7 +813,8 @@ function CustomersPage() {
                                     )}
                                     title={`Order #${orderInfo.urgentOrderNo ?? ""}`}
                                   >
-                                    ⏳ Due: {formatDate(orderInfo.nearestDeadline)}
+                                    ⏳ {t("common.due", "Due")}:{" "}
+                                    {formatDate(orderInfo.nearestDeadline)}
                                   </span>
                                 )}
                               {(() => {
@@ -815,9 +843,9 @@ function CustomersPage() {
                                 <span className="inline-flex items-center gap-1 rounded bg-teal-50 text-teal-800 border border-teal-200/70 px-1.5 py-0.5 text-[11px] font-medium truncate max-w-full">
                                   <User className="h-3 w-3 text-teal-600 shrink-0" />
                                   <span className="truncate">
-                                    Contact:{" "}
+                                    {t("customers.contactPrefix", "Contact")}:{" "}
                                     <strong className="font-semibold text-teal-900">
-                                      {norm.contact_person}
+                                      {transliterateName(norm.contact_person, i18n.language)}
                                     </strong>
                                   </span>
                                 </span>
@@ -825,7 +853,10 @@ function CustomersPage() {
                               {norm.company_name && norm.company_name !== c.name && (
                                 <span className="inline-flex items-center gap-1 rounded bg-slate-100 text-slate-700 px-1.5 py-0.5 text-[11px] font-medium truncate max-w-full">
                                   <Building2 className="h-3 w-3 text-slate-500 shrink-0" />
-                                  <span className="truncate">Firm: {norm.company_name}</span>
+                                  <span className="truncate">
+                                    {t("customers.firmPrefix", "Firm")}:{" "}
+                                    {transliterateName(norm.company_name, i18n.language)}
+                                  </span>
                                 </span>
                               )}
                             </div>
@@ -844,7 +875,7 @@ function CustomersPage() {
                                   getCustomerTypeBadgeTone(effType),
                                 )}
                               >
-                                {getCustomerTypeLabel(effType)}
+                                {getCustomerTypeLabel(effType, i18n.language)}
                               </span>
                             );
                           })()}
@@ -922,7 +953,9 @@ function CustomersPage() {
                               )}
                             </div>
                           ) : (
-                            <span className="text-xs text-muted-foreground italic">No phone</span>
+                            <span className="text-xs text-muted-foreground italic">
+                              {t("customers.noPhone", "No phone")}
+                            </span>
                           )}
                         </TableCell>
                         <TableCell className="w-10 text-right px-1">
