@@ -116,8 +116,10 @@ describe("androidChannel", () => {
       body: "Challan #1234 on the way",
     });
     expect(localNotificationsMock.schedule).toHaveBeenCalled();
-    const calls = localNotificationsMock.schedule.mock.calls;
-    expect(calls[0][0].notifications[0].title).toBe("STOS · Material Dispatched");
+    const calls = localNotificationsMock.schedule.mock.calls as unknown as Array<
+      [{ notifications: Array<{ title: string }> }]
+    >;
+    expect(calls[0]?.[0]?.notifications[0]?.title).toBe("STOS · Material Dispatched");
   });
 });
 
