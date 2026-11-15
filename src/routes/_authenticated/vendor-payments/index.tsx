@@ -36,6 +36,8 @@ import {
 import { generateSearchTokens } from "@/lib/search-tokens";
 import { invalidateVendorPayment } from "@/lib/query-invalidation";
 import { useRoles } from "@/hooks/use-roles";
+import { formatInr, toIndicDigits } from "@/lib/format";
+import { transliterateName } from "@/lib/i18n/transliterate";
 
 export const Route = createFileRoute("/_authenticated/vendor-payments/")({
   ssr: false,
@@ -43,7 +45,7 @@ export const Route = createFileRoute("/_authenticated/vendor-payments/")({
 });
 
 function VendorPaymentsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const nav = useNavigate();
   const qc = useQueryClient();
   const roles = useRoles();
@@ -201,14 +203,14 @@ function VendorPaymentsPage() {
                     <TableCell className="text-xs">
                       <div className="flex flex-col min-w-0">
                         <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
-                          {r.vendor?.company_name ?? "—"}
+                          {transliterateName(r.vendor?.company_name, i18n.language) ?? "—"}
                         </span>
                         <Link
                           to="/vendor-payments/$id"
                           params={{ id: r.id }}
                           className="font-mono text-[11px] text-primary hover:underline truncate"
                         >
-                          {r.payment_no}
+                          {toIndicDigits(r.payment_no, i18n.language)}
                         </Link>
                       </div>
                     </TableCell>
@@ -221,7 +223,7 @@ function VendorPaymentsPage() {
                           params={{ vendorId: r.vendor.id }}
                           className="text-primary hover:underline"
                         >
-                          {r.vendor.company_name}
+                          {transliterateName(r.vendor.company_name, i18n.language)}
                         </Link>
                       ) : (
                         "—"
@@ -236,7 +238,7 @@ function VendorPaymentsPage() {
                           params={{ id: r.purchase_order.id }}
                           className="text-primary hover:underline"
                         >
-                          {r.purchase_order.po_no}
+                          {toIndicDigits(r.purchase_order.po_no, i18n.language)}
                         </Link>
                       ) : (
                         "—"
@@ -246,16 +248,21 @@ function VendorPaymentsPage() {
                   {!isHidden("type") && (
                     <TableCell>
                       <Badge variant="secondary" className="capitalize">
-                        {r.payment_type.replace(/_/g, " ")}
+                        {t(
+                          `vendorPayments.types.${r.payment_type}`,
+                          r.payment_type.replace(/_/g, " "),
+                        )}
                       </Badge>
                     </TableCell>
                   )}
                   {!isHidden("amount") && (
                     <TableCell className="text-right font-medium tabular-nums">
-                      ₹ {Number(r.amount).toLocaleString("en-IN")}
+                      {toIndicDigits(formatInr(Number(r.amount)), i18n.language)}
                     </TableCell>
                   )}
-                  {!isHidden("paid") && <TableCell>{r.paid_at}</TableCell>}
+                  {!isHidden("paid") && (
+                    <TableCell>{toIndicDigits(r.paid_at, i18n.language)}</TableCell>
+                  )}
                   <TableCell>
                     <RowActions onEdit={() => setToEdit(r)} onDelete={() => setToDelete(r)} />
                   </TableCell>

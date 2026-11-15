@@ -84,7 +84,8 @@ import {
 } from "@/lib/installation-ledger/api";
 import { invalidatePayment, invalidateVendorPayment } from "@/lib/query-invalidation";
 import { useRoles } from "@/hooks/use-roles";
-import { formatInr, formatDate } from "@/lib/format";
+import { formatInr, formatDate, toIndicDigits } from "@/lib/format";
+import { transliterateName } from "@/lib/i18n/transliterate";
 import { AccountingGuard } from "@/components/auth/AccountingGuard";
 import { useTranslation } from "react-i18next";
 
@@ -190,7 +191,7 @@ function UnifiedPaymentsPage() {
 // 1. Customer Payments Tab
 // ======================================================================
 function CustomerPaymentsTab() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const nav = useNavigate();
   const roles = useRoles();
@@ -333,24 +334,29 @@ function CustomerPaymentsTab() {
             <div className="flex items-center justify-between">
               <CardTitle className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5 uppercase tracking-wider">
                 <Landmark className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                BOB Current Account
+                {t("payments.accounts.bob", "BOB Current Account")}
               </CardTitle>
               <Badge
                 variant="secondary"
                 className="text-[10px] bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300"
               >
-                Bank / UPI
+                {t("payments.accounts.bankUpi", "Bank / UPI")}
               </Badge>
             </div>
           </CardHeader>
           <CardContent className="p-4 pt-1">
             <div className="text-2xl font-bold font-mono tracking-tight text-foreground">
-              {formatInr(accountStats.bob.total)}
+              {toIndicDigits(formatInr(accountStats.bob.total), i18n.language)}
             </div>
             <div className="flex items-center justify-between text-xs text-muted-foreground mt-1.5">
-              <span>{accountStats.bob.count} payments</span>
+              <span>
+                {toIndicDigits(accountStats.bob.count, i18n.language)}{" "}
+                {t("payments.accounts.paymentsCount", "payments")}
+              </span>
               {selectedAccountFilter === "bob_current" && (
-                <span className="text-[11px] font-medium text-primary">Active filter ✕</span>
+                <span className="text-[11px] font-medium text-primary">
+                  {t("payments.accounts.activeFilter", "Active filter ✕")}
+                </span>
               )}
             </div>
           </CardContent>
@@ -372,24 +378,29 @@ function CustomerPaymentsTab() {
             <div className="flex items-center justify-between">
               <CardTitle className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5 uppercase tracking-wider">
                 <Smartphone className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
-                UPI Personal – Rishi
+                {t("payments.accounts.rishi", "UPI Personal – Rishi")}
               </CardTitle>
               <Badge
                 variant="secondary"
                 className="text-[10px] bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-300"
               >
-                Personal UPI
+                {t("payments.accounts.personalUpi", "Personal UPI")}
               </Badge>
             </div>
           </CardHeader>
           <CardContent className="p-4 pt-1">
             <div className="text-2xl font-bold font-mono tracking-tight text-foreground">
-              {formatInr(accountStats.rishi.total)}
+              {toIndicDigits(formatInr(accountStats.rishi.total), i18n.language)}
             </div>
             <div className="flex items-center justify-between text-xs text-muted-foreground mt-1.5">
-              <span>{accountStats.rishi.count} payments</span>
+              <span>
+                {toIndicDigits(accountStats.rishi.count, i18n.language)}{" "}
+                {t("payments.accounts.paymentsCount", "payments")}
+              </span>
               {selectedAccountFilter === "upi_rishi" && (
-                <span className="text-[11px] font-medium text-primary">Active filter ✕</span>
+                <span className="text-[11px] font-medium text-primary">
+                  {t("payments.accounts.activeFilter", "Active filter ✕")}
+                </span>
               )}
             </div>
           </CardContent>
@@ -411,24 +422,29 @@ function CustomerPaymentsTab() {
             <div className="flex items-center justify-between">
               <CardTitle className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5 uppercase tracking-wider">
                 <Smartphone className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-                UPI Personal – Raman
+                {t("payments.accounts.raman", "UPI Personal – Raman")}
               </CardTitle>
               <Badge
                 variant="secondary"
                 className="text-[10px] bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300"
               >
-                Personal UPI
+                {t("payments.accounts.personalUpi", "Personal UPI")}
               </Badge>
             </div>
           </CardHeader>
           <CardContent className="p-4 pt-1">
             <div className="text-2xl font-bold font-mono tracking-tight text-foreground">
-              {formatInr(accountStats.raman.total)}
+              {toIndicDigits(formatInr(accountStats.raman.total), i18n.language)}
             </div>
             <div className="flex items-center justify-between text-xs text-muted-foreground mt-1.5">
-              <span>{accountStats.raman.count} payments</span>
+              <span>
+                {toIndicDigits(accountStats.raman.count, i18n.language)}{" "}
+                {t("payments.accounts.paymentsCount", "payments")}
+              </span>
               {selectedAccountFilter === "upi_raman" && (
-                <span className="text-[11px] font-medium text-primary">Active filter ✕</span>
+                <span className="text-[11px] font-medium text-primary">
+                  {t("payments.accounts.activeFilter", "Active filter ✕")}
+                </span>
               )}
             </div>
           </CardContent>
@@ -448,22 +464,26 @@ function CustomerPaymentsTab() {
             <div className="flex items-center justify-between">
               <CardTitle className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5 uppercase tracking-wider">
                 <Wallet className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" />
-                Total Collections
+                {t("payments.accounts.total", "Total Collections")}
               </CardTitle>
               <Badge variant="outline" className="text-[10px]">
-                All Accounts
+                {t("payments.accounts.allAccounts", "All Accounts")}
               </Badge>
             </div>
           </CardHeader>
           <CardContent className="p-4 pt-1">
             <div className="text-2xl font-bold font-mono tracking-tight text-foreground">
-              {formatInr(accountStats.grandTotal)}
+              {toIndicDigits(formatInr(accountStats.grandTotal), i18n.language)}
             </div>
             <div className="flex items-center justify-between text-xs text-muted-foreground mt-1.5">
-              <span>{accountStats.totalCount} receipts</span>
+              <span>
+                {toIndicDigits(accountStats.totalCount, i18n.language)}{" "}
+                {t("payments.accounts.receiptsCount", "receipts")}
+              </span>
               {accountStats.cash.count > 0 && (
                 <span className="text-[11px] text-muted-foreground">
-                  ({formatInr(accountStats.cash.total)} cash)
+                  ({toIndicDigits(formatInr(accountStats.cash.total), i18n.language)}{" "}
+                  {t("payments.accounts.cash", "cash")})
                 </span>
               )}
             </div>
@@ -477,9 +497,14 @@ function CustomerPaymentsTab() {
             <AlertCircle className="h-4 w-4 text-amber-600 flex-shrink-0" />
             <span>
               <strong>
-                {accountStats.other.count} payment(s) ({formatInr(accountStats.other.total)})
+                {toIndicDigits(accountStats.other.count, i18n.language)}{" "}
+                {t("payments.accounts.paymentsCount", "payment(s)")} (
+                {toIndicDigits(formatInr(accountStats.other.total), i18n.language)})
               </strong>{" "}
-              are recorded in Personal UPI without Rishi or Raman specified.
+              {t(
+                "payments.accounts.unassignedUpiWarning",
+                "are recorded in Personal UPI without Rishi or Raman specified.",
+              )}
             </span>
           </div>
           <Button
@@ -489,8 +514,8 @@ function CustomerPaymentsTab() {
             onClick={() => setSelectedAccountFilter((curr) => (curr === "other" ? "all" : "other"))}
           >
             {selectedAccountFilter === "other"
-              ? "Show All Payments"
-              : "Filter & Assign (Rishi / Raman)"}
+              ? t("payments.accounts.showAll", "Show All Payments")
+              : t("payments.accounts.filterAndAssign", "Filter & Assign (Rishi / Raman)")}
           </Button>
         </div>
       )}
@@ -595,7 +620,7 @@ function CustomerPaymentsTab() {
                     <TableCell className="text-xs">
                       <div className="flex flex-col min-w-0">
                         <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
-                          {r.customer_name || "—"}
+                          {transliterateName(r.customer_name, i18n.language) || "—"}
                         </span>
                         {r.source === "receipt" ? (
                           <Link
@@ -603,7 +628,7 @@ function CustomerPaymentsTab() {
                             params={{ receiptId: r.id }}
                             className="font-mono text-[11px] text-primary hover:underline truncate"
                           >
-                            {r.doc_no}
+                            {toIndicDigits(r.doc_no, i18n.language)}
                           </Link>
                         ) : (
                           <Link
@@ -611,17 +636,21 @@ function CustomerPaymentsTab() {
                             params={{ id: r.id }}
                             className="font-mono text-[11px] text-primary hover:underline truncate"
                           >
-                            {r.doc_no}
+                            {toIndicDigits(r.doc_no, i18n.language)}
                           </Link>
                         )}
                       </div>
                     </TableCell>
                   )}
                   {!isHidden("customer") && (
-                    <TableCell className="text-xs font-medium">{r.customer_name ?? "—"}</TableCell>
+                    <TableCell className="text-xs font-medium">
+                      {transliterateName(r.customer_name, i18n.language) ?? "—"}
+                    </TableCell>
                   )}
                   {!isHidden("invoice") && (
-                    <TableCell className="font-mono text-xs">{r.invoice_no ?? "—"}</TableCell>
+                    <TableCell className="font-mono text-xs">
+                      {r.invoice_no ? toIndicDigits(r.invoice_no, i18n.language) : "—"}
+                    </TableCell>
                   )}
                   {!isHidden("method") && (
                     <TableCell>
@@ -632,12 +661,15 @@ function CustomerPaymentsTab() {
                           bank_name: r.bank_name,
                           notes: r.notes,
                         });
-                        const label = formatPaymentMethodDisplay({
-                          method: r.method,
-                          account_used: r.account_used,
-                          bank_name: r.bank_name,
-                          notes: r.notes,
-                        });
+                        const label = formatPaymentMethodDisplay(
+                          {
+                            method: r.method,
+                            account_used: r.account_used,
+                            bank_name: r.bank_name,
+                            notes: r.notes,
+                          },
+                          i18n.language,
+                        );
                         return (
                           <Badge
                             variant="outline"
@@ -652,13 +684,19 @@ function CustomerPaymentsTab() {
                       })()}
                     </TableCell>
                   )}
-                  {!isHidden("reference") && <TableCell>{r.reference_no ?? "—"}</TableCell>}
+                  {!isHidden("reference") && (
+                    <TableCell>
+                      {r.reference_no ? toIndicDigits(r.reference_no, i18n.language) : "—"}
+                    </TableCell>
+                  )}
                   {!isHidden("date") && (
-                    <TableCell>{new Date(r.paid_at).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      {toIndicDigits(new Date(r.paid_at).toLocaleDateString(), i18n.language)}
+                    </TableCell>
                   )}
                   {!isHidden("amount") && (
                     <TableCell className="text-right font-mono tabular-nums">
-                      {formatInr(Number(r.amount))}
+                      {toIndicDigits(formatInr(Number(r.amount)), i18n.language)}
                     </TableCell>
                   )}
                   <TableCell>
@@ -726,7 +764,7 @@ function CustomerPaymentsTab() {
 // 2. Vendor Payments Tab
 // ======================================================================
 function VendorPaymentsTab() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const nav = useNavigate();
   const qc = useQueryClient();
   const roles = useRoles();
@@ -865,14 +903,14 @@ function VendorPaymentsTab() {
                     <TableCell className="text-xs">
                       <div className="flex flex-col min-w-0">
                         <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
-                          {r.vendor?.company_name || "—"}
+                          {transliterateName(r.vendor?.company_name, i18n.language) || "—"}
                         </span>
                         <Link
                           to="/vendor-payments/$id"
                           params={{ id: r.id }}
                           className="font-mono text-[11px] text-primary hover:underline truncate"
                         >
-                          {r.payment_no}
+                          {toIndicDigits(r.payment_no, i18n.language)}
                         </Link>
                       </div>
                     </TableCell>
@@ -885,7 +923,7 @@ function VendorPaymentsTab() {
                           params={{ vendorId: r.vendor.id }}
                           className="text-primary hover:underline"
                         >
-                          {r.vendor.company_name}
+                          {transliterateName(r.vendor.company_name, i18n.language)}
                         </Link>
                       ) : (
                         "—"
@@ -900,7 +938,7 @@ function VendorPaymentsTab() {
                           params={{ id: r.purchase_order.id }}
                           className="text-primary hover:underline"
                         >
-                          {r.purchase_order.po_no}
+                          {toIndicDigits(r.purchase_order.po_no, i18n.language)}
                         </Link>
                       ) : (
                         "—"
@@ -910,18 +948,21 @@ function VendorPaymentsTab() {
                   {!isHidden("type") && (
                     <TableCell>
                       <Badge variant="outline" className="capitalize">
-                        {r.payment_type.replace(/_/g, " ")}
+                        {t(
+                          `vendorPayments.types.${r.payment_type}`,
+                          r.payment_type.replace(/_/g, " "),
+                        )}
                       </Badge>
                     </TableCell>
                   )}
                   {!isHidden("amount") && (
                     <TableCell className="text-right font-mono tabular-nums">
-                      {formatInr(Number(r.amount))}
+                      {toIndicDigits(formatInr(Number(r.amount)), i18n.language)}
                     </TableCell>
                   )}
                   {!isHidden("paid") && (
                     <TableCell className="text-muted-foreground">
-                      {r.paid_at ? formatDate(r.paid_at) : "—"}
+                      {r.paid_at ? toIndicDigits(formatDate(r.paid_at), i18n.language) : "—"}
                     </TableCell>
                   )}
                   <TableCell>
@@ -964,7 +1005,7 @@ function VendorPaymentsTab() {
 // 3. Agency Payments Tab
 // ======================================================================
 function AgencyPaymentsTab() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
@@ -1112,19 +1153,19 @@ function AgencyPaymentsTab() {
                     <TableCell className="text-xs">
                       <div className="flex flex-col min-w-0">
                         <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
-                          {agency?.name ?? "Agency"}
+                          {transliterateName(agency?.name, i18n.language) ?? "Agency"}
                         </span>
                         <span className="font-mono text-[11px] text-muted-foreground whitespace-nowrap">
-                          {formatDate(p.entry_date)}
+                          {toIndicDigits(formatDate(p.entry_date), i18n.language)}
                         </span>
                       </div>
                     </TableCell>
                     <TableCell className="text-sm">{p.description}</TableCell>
                     <TableCell className="font-mono text-xs text-muted-foreground">
-                      {p.ref_no || "—"}
+                      {p.ref_no ? toIndicDigits(p.ref_no, i18n.language) : "—"}
                     </TableCell>
                     <TableCell className="text-right font-mono font-semibold text-emerald-600">
-                      {formatInr(Number(p.credit))}
+                      {toIndicDigits(formatInr(Number(p.credit)), i18n.language)}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button size="sm" variant="ghost" className="h-7 text-xs" asChild>

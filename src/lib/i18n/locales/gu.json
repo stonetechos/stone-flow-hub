@@ -32,8 +32,14 @@
       "dispatch": "ડિસ્પેચ",
       "vendors": "સપ્લાય પાર્ટનર્સ",
       "partners-directory": "કામ અને સપ્લાય ડિરેક્ટરી",
-      "rfqs": "RFQ",
-      "purchase-invoices": "ખરીદી ઇન્વૉઇસ",
+      "rfqs": "RFQ (દર પૂછપરછ)",
+      "purchase-orders": "ખરીદી ઓર્ડર",
+      "purchase-invoices": "ખરીદ એન્ટ્રીઓ",
+      "installations": "સાઇટ ઇન્સ્ટોલેશન",
+      "gst": "જીએસટી ચુકવણી અને ફાઇલિંગ",
+      "ramans-cashbook": "રમણની કેશબુક",
+      "personal-transfers": "વ્યક્તિગત ટ્રાન્સફર",
+      "hr-payments": "કર્મચારી ચુકવણી",
       "inventory": "ઇન્વેન્ટરી",
       "money-flow": "પૈસાનો પ્રવાહ",
       "payments": "ગ્રાહક ચુકવણી",
@@ -996,7 +1002,26 @@
     "active": "સક્રિય",
     "invited": "આમંત્રિત",
     "expired": "આમંત્રણ સમાપ્ત",
-    "deactivated": "નિષ્ક્રિય"
+    "deactivated": "નિષ્ક્રિય",
+    "delivered": "ડિલિવર થયેલ",
+    "in_transit": "ડિસ્પેચ કરેલ",
+    "dispatched_for_delivery": "ડિસ્પેચ કરેલ",
+    "pending": "બાકી",
+    "confirmed": "પુષ્ટ",
+    "approved": "મંજૂર",
+    "draft": "ડ્રાફ્ટ",
+    "in_production": "ઉત્પાદનમાં",
+    "in_progress": "પ્રગતિમાં",
+    "ready": "તૈયાર",
+    "received": "પ્રાપ્ત થયેલ",
+    "completed": "પૂર્ણ",
+    "paid": "ચુકવાયેલ",
+    "credit_note": "ક્રેડિટ નોટ",
+    "full": "પૂર્ણ",
+    "part": "ભાગ",
+    "advance": "એડવાન્સ",
+    "cancelled": "રદ",
+    "on_hold": "હોલ્ડ પર"
   },
   "roles": {
     "admin": "એડમિન",
@@ -1232,6 +1257,7 @@
       "message": "માલ મોકલવા માટે ડિસ્પેચ પ્લાન કરો."
     },
     "columns": {
+      "dispatchNo": "ડિસ્પેચ / ગ્રાહક",
       "so": "વેચાણ ઓર્ડર",
       "carrier": "વાહક (ટ્રાન્સપોર્ટર)",
       "tracking": "ટ્રેકિંગ"
@@ -1494,6 +1520,23 @@
       "reference": "સંદર્ભ",
       "date": "તારીખ",
       "amount": "રકમ"
+    },
+    "accounts": {
+      "bob": "બેંક ઓફ બરોડા ચાલુ ખાતું",
+      "rishi": "વ્યક્તિગત UPI – ઋષિ",
+      "raman": "વ્યક્તિગત UPI – રમણ",
+      "total": "કુલ વસૂલાત",
+      "bankUpi": "બેંક / UPI",
+      "personalUpi": "વ્યક્તિગત UPI",
+      "allAccounts": "બધા ખાતાઓ",
+      "paymentsCount": "ચુકવણી",
+      "receiptsCount": "રસીદો",
+      "cash": "રોકડ",
+      "activeFilter": "સક્રિય ફિલ્ટર ✕",
+      "unassignedUpiWarning": "વ્યક્તિગત UPI માં ઋષિ કે રમણ સ્પષ્ટ કર્યા વિના નોંધાયેલ છે.",
+      "showAll": "બધી ચુકવણીઓ બતાવો",
+      "filterAndAssign": "ફિલ્ટર અને સોંપો (ઋષિ / રમણ)",
+      "recordWriteOff": "રાઇટ-ઓફ નોંધો"
     },
     "customer": {
       "deletedToast": "ચુકવણી કાઢી નાખી",
@@ -2084,7 +2127,13 @@
     "recordPayment": "+ ચુકવણી નોંધો",
     "emptyTitle": "કોઈ વિક્રેતા ચુકવણીઓ મળી નથી",
     "emptySearch": "તમારી શોધ શરતો અથવા ફિલ્ટર્સ સમાયોજિત કરો.",
-    "emptyCreate": "પથ્થર વિક્રેતા અથવા ખાણ માટે તમારી પ્રથમ ચુકવણી નોંધો."
+    "emptyCreate": "પથ્થર વિક્રેતા અથવા ખાણ માટે તમારી પ્રથમ ચુકવણી નોંધો.",
+    "types": {
+      "credit_note": "ક્રેડિટ નોટ",
+      "full": "પૂર્ણ",
+      "part": "ભાગ",
+      "advance": "એડવાન્સ"
+    }
   },
   "attendance": {
     "title": "હાજરી અને શિફ્ટ",
@@ -2545,6 +2594,26 @@
       "ordersUpdated": "ઓર્ડર અપડેટ થયો",
       "paymentsCreated": "ચુકવણી નોંધવામાં આવી",
       "paymentsUpdated": "ચુકવણી અપડેટ થઈ"
+    }
+  },
+  "partners": {
+    "allSuppliers": "બધા સપ્લાયર્સ",
+    "allAssociates": "બધા સહયોગીઓ",
+    "addPartner": "પાર્ટનર ઉમેરો",
+    "addAssociate": "સહયોગી ઉમેરો",
+    "searchPlaceholderSuppliers": "વ્યક્તિ, કંપની, ફોન, શહેર, ઉત્પાદન દ્વારા શોધો…",
+    "searchPlaceholderAssociates": "વ્યક્તિ, કંપની, ફોન, શહેર, કુશળતા દ્વારા શોધો…",
+    "showingCount": "દર્શાવી રહ્યા છીએ",
+    "suppliersAndPartners": "સપ્લાયર્સ અને પાર્ટનર્સ",
+    "peopleAndPartners": "સહયોગીઓ અને પાર્ટનર્સ",
+    "noPhone": "કોઈ ફોન નંબર નોંધાયેલ નથી",
+    "categories": {
+      "supplying_partner": "સપ્લાય પાર્ટનર્સ",
+      "artwork_partner": "આર્ટવર્ક પાર્ટનર્સ",
+      "application_partner": "એપ્લિકેશન પાર્ટનર્સ",
+      "chemical_partner": "કેમિકલ પાર્ટનર્સ",
+      "transport_partner": "ટ્રાન્સપોર્ટ પાર્ટનર્સ",
+      "tooling_partner": "મશીનરી અને ટૂલ્સ પાર્ટનર્સ"
     }
   }
 }

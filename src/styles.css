@@ -1400,39 +1400,39 @@ body[data-scroll-locked] {
 .theme-st-pop,
 .theme-pop {
   color-scheme: light;
-  --surface-base: #faf5ff;
-  --surface-panel: #f3e8ff;
+  --surface-base: #f8fafc;
+  --surface-panel: #f1f5f9;
   --surface-card: #ffffff;
-  --surface-card-hover: #fdf2f8;
+  --surface-card-hover: #faf5ff;
   --surface-header: #ffffff;
   --surface-nav: #1e1b4b;
-  --surface-nav-hover: #312e81;
-  --surface-nav-active: #4338ca;
+  --surface-nav-hover: rgba(255, 255, 255, 0.15);
+  --surface-nav-active: rgba(236, 72, 153, 0.35);
   --text-primary: #1e1b4b;
-  --text-secondary: #3b0764;
-  --text-muted: #6b21a8;
-  --border-default: #e9d5ff;
-  --border-subtle: #f3e8ff;
-  --border-strong: #d946ef;
+  --text-secondary: #312e81;
+  --text-muted: #6b7280;
+  --border-default: #e2e8f0;
+  --border-subtle: #f1f5f9;
+  --border-strong: #ec4899;
   --intent-primary: #ec4899;
   --intent-primary-hover: #db2777;
   --intent-primary-fg: #ffffff;
-  --intent-focus-ring: #d946ef;
+  --intent-focus-ring: #ec4899;
   --sidebar: #1e1b4b;
   --sidebar-foreground: #ffffff;
   --sidebar-primary: #ec4899;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(236, 72, 153, 0.28);
+  --sidebar-accent: rgba(255, 255, 255, 0.14);
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(236, 72, 153, 0.2);
-  --sidebar-ring: #06b6d4;
+  --sidebar-border: rgba(255, 255, 255, 0.12);
+  --sidebar-ring: #f472b6;
   --primary: #ec4899;
   --primary-foreground: #ffffff;
-  --background: #faf5ff;
+  --background: #f8fafc;
   --foreground: #1e1b4b;
   --card: #ffffff;
   --card-foreground: #1e1b4b;
-  --border: #e9d5ff;
+  --border: #e2e8f0;
   --accent: #fdf2f8;
   --accent-foreground: #be185d;
   --ring: #ec4899;
@@ -1442,25 +1442,21 @@ body[data-scroll-locked] {
   --chart-4: #facc15;
   --chart-5: #10b981;
   --chart-6: #f97316;
-  --card-top-glow: radial-gradient(
-    ellipse 100% 60% at 50% -15%,
-    rgba(244, 114, 182, 0.35),
-    transparent 70%
-  );
-  --card-shadow-1: rgba(79, 70, 229, 0.08);
-  --card-shadow-2: rgba(124, 58, 237, 0.09);
-  --card-hover-glow: rgba(244, 114, 182, 0.4);
-  --card-hover-shadow: rgba(168, 85, 247, 0.16);
+  --card-top-glow: none;
+  --card-shadow-1: rgba(30, 27, 75, 0.06);
+  --card-shadow-2: rgba(30, 27, 75, 0.08);
+  --card-hover-glow: rgba(236, 72, 153, 0.2);
+  --card-hover-shadow: rgba(30, 27, 75, 0.14);
   --card-hover-border: rgba(236, 72, 153, 0.7);
-  --card-border-bottom: rgba(192, 132, 252, 0.7);
-  --card-border-right: rgba(233, 213, 255, 0.8);
-  --paper-dot-color: rgba(147, 51, 234, 0.1);
-  --paper-dot-color-subtle: rgba(147, 51, 234, 0.05);
+  --card-border-bottom: rgba(226, 232, 240, 0.8);
+  --card-border-right: rgba(226, 232, 240, 0.9);
+  --paper-dot-color: rgba(30, 27, 75, 0.08);
+  --paper-dot-color-subtle: rgba(30, 27, 75, 0.04);
   --text-engraved-title: #1e1b4b;
   --text-engraved-primary: #ec4899;
-  --text-engraved-dark: #3b0764;
-  --well-glow-bg: linear-gradient(180deg, #f3e8ff 0%, #fdf2f8 100%);
-  --well-glow-border: rgba(216, 180, 254, 0.9);
+  --text-engraved-dark: #1e1b4b;
+  --well-glow-bg: linear-gradient(180deg, #ffffff 0%, #ffffff 100%);
+  --well-glow-border: rgba(226, 232, 240, 0.9);
 }
 
 /* ST Pastel (Soft Calming Pastel Palette — Eucalyptus Sage, Blush Rose & Cream) */

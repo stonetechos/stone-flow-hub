@@ -56,6 +56,8 @@ import type { LifecycleStatus } from "@/lib/mdm/lifecycle";
 import { qk } from "@/lib/query-keys";
 import { invalidateVendor, seedPickerCache } from "@/lib/query-invalidation";
 import { toUserMessage } from "@/lib/errors";
+import { toIndicDigits } from "@/lib/format";
+import { transliterateName } from "@/lib/i18n/transliterate";
 import {
   createVendor,
   deleteVendor,
@@ -105,7 +107,7 @@ export const Route = createFileRoute("/_authenticated/vendors/")({
 });
 
 function VendorsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const nav = useNavigate();
   const { edit, create, view, category } = Route.useSearch();
@@ -386,7 +388,7 @@ function VendorsPage() {
                               params={{ vendorId: v.id }}
                               className="hover:underline"
                             >
-                              {v.vendor_code}
+                              {toIndicDigits(v.vendor_code, i18n.language)}
                             </Link>
                           </TableCell>
                         )}
@@ -397,7 +399,7 @@ function VendorsPage() {
                               className={`gap-1 px-2 py-0.5 text-[11px] font-medium border ${catConfig.badgeTone}`}
                             >
                               <span className="text-xs">{catConfig.icon}</span>
-                              <span>{catConfig.singular}</span>
+                              <span>{t(`partners.categories.${catKey}`, catConfig.singular)}</span>
                             </Badge>
                           </TableCell>
                         )}
@@ -409,7 +411,7 @@ function VendorsPage() {
                                 params={{ vendorId: v.id }}
                                 className="hover:underline font-medium text-foreground"
                               >
-                                {v.company_name}
+                                {transliterateName(v.company_name, i18n.language)}
                               </Link>
                               {(meta.work_types.length > 0 || meta.products_dealt.length > 0) && (
                                 <div className="flex flex-wrap items-center gap-1">
@@ -427,8 +429,8 @@ function VendorsPage() {
                                   })}
                                   {meta.products_dealt.length > 0 && (
                                     <span className="text-[10px] text-muted-foreground">
-                                      {meta.products_dealt.length} product
-                                      {meta.products_dealt.length === 1 ? "" : "s"}
+                                      {toIndicDigits(meta.products_dealt.length, i18n.language)}{" "}
+                                      {t("vendors.productsCount", "products")}
                                     </span>
                                   )}
                                 </div>
@@ -447,7 +449,7 @@ function VendorsPage() {
                                     href={`tel:${phone}`}
                                     className="hover:underline hover:text-foreground"
                                   >
-                                    {phone}
+                                    {toIndicDigits(phone, i18n.language)}
                                   </a>
                                 ) : (
                                   "—"
@@ -462,12 +464,22 @@ function VendorsPage() {
                               getVendorContactName(v);
                             return (
                               <TableCell className="text-xs text-muted-foreground">
-                                {contactPerson || "—"}
+                                {contactPerson
+                                  ? transliterateName(contactPerson, i18n.language)
+                                  : "—"}
                               </TableCell>
                             );
                           })()}
-                        {!isHidden("city") && <TableCell>{v.city ?? "—"}</TableCell>}
-                        {!isHidden("gst") && <TableCell>{v.gst_number ?? "—"}</TableCell>}
+                        {!isHidden("city") && (
+                          <TableCell>
+                            {v.city ? transliterateName(v.city, i18n.language) : "—"}
+                          </TableCell>
+                        )}
+                        {!isHidden("gst") && (
+                          <TableCell>
+                            {v.gst_number ? toIndicDigits(v.gst_number, i18n.language) : "—"}
+                          </TableCell>
+                        )}
                         {!isHidden("terms") && <TableCell>{v.payment_terms ?? "—"}</TableCell>}
                         {!isHidden("status") && (
                           <TableCell>

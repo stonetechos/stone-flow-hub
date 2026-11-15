@@ -38,7 +38,8 @@ import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { deleteDispatch, listDispatches, type DispatchListItem } from "@/lib/dispatch/api";
 import { listQuotes } from "@/lib/quotes/api";
-import { formatInr } from "@/lib/format";
+import { formatInr, toIndicDigits } from "@/lib/format";
+import { transliterateName } from "@/lib/i18n/transliterate";
 import { DISPATCH_STATUSES } from "@/lib/dispatch/schema";
 import { invalidateDispatch } from "@/lib/query-invalidation";
 import { useRoles } from "@/hooks/use-roles";
@@ -56,7 +57,7 @@ export const Route = createFileRoute("/_authenticated/dispatch/")({
 });
 
 function DispatchPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const nav = useNavigate();
   const roles = useRoles();
@@ -260,36 +261,50 @@ function DispatchPage() {
                           <TableCell className="text-xs">
                             <div className="flex flex-col min-w-0">
                               <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
-                                {r.customer?.name ?? "—"}
+                                {transliterateName(r.customer?.name, i18n.language) ?? "—"}
                               </span>
                               <Link
                                 to="/dispatch/$id"
                                 params={{ id: r.id }}
                                 className="font-mono text-[11px] text-primary hover:underline truncate"
                               >
-                                {r.dispatch_no}
+                                {toIndicDigits(r.dispatch_no, i18n.language)}
                               </Link>
                             </div>
                           </TableCell>
                         )}
                         {!isHidden("customer") && (
                           <TableCell className="text-xs font-medium">
-                            {r.customer?.name ?? "—"}
+                            {transliterateName(r.customer?.name, i18n.language) ?? "—"}
                           </TableCell>
                         )}
                         {!isHidden("so") && (
                           <TableCell className="font-mono text-xs">
-                            {r.sales_order?.so_no ?? "—"}
+                            {r.sales_order?.so_no
+                              ? toIndicDigits(r.sales_order.so_no, i18n.language)
+                              : "—"}
                           </TableCell>
                         )}
-                        {!isHidden("carrier") && <TableCell>{r.carrier ?? "—"}</TableCell>}
-                        {!isHidden("tracking") && <TableCell>{r.tracking_no ?? "—"}</TableCell>}
+                        {!isHidden("carrier") && (
+                          <TableCell>
+                            {r.carrier ? transliterateName(r.carrier, i18n.language) : "—"}
+                          </TableCell>
+                        )}
+                        {!isHidden("tracking") && (
+                          <TableCell>
+                            {r.tracking_no ? toIndicDigits(r.tracking_no, i18n.language) : "—"}
+                          </TableCell>
+                        )}
                         {!isHidden("amount") && (
                           <TableCell className="text-right font-mono text-xs font-semibold tabular-nums text-foreground">
-                            {totalAmt > 0 ? formatInr(totalAmt) : "—"}
+                            {totalAmt > 0 ? toIndicDigits(formatInr(totalAmt), i18n.language) : "—"}
                           </TableCell>
                         )}
-                        {!isHidden("date") && <TableCell>{r.dispatch_date}</TableCell>}
+                        {!isHidden("date") && (
+                          <TableCell>
+                            {r.dispatch_date ? toIndicDigits(r.dispatch_date, i18n.language) : "—"}
+                          </TableCell>
+                        )}
                         {!isHidden("status") && (
                           <TableCell>
                             <StatusPill status={r.status} />

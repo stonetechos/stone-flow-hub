@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { Link } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 import {
   Phone,
   MessageCircle,
@@ -34,6 +35,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { openWhatsappToContact } from "@/lib/whatsapp";
+import { toIndicDigits } from "@/lib/format";
+import { transliterateName } from "@/lib/i18n/transliterate";
 import {
   PARTNER_CATEGORIES,
   type AssociatedPerson,
@@ -64,6 +67,7 @@ export function WorkAndSupplyDirectoryView({
   emptyTitle,
   emptySubtitle,
 }: WorkAndSupplyDirectoryViewProps) {
+  const { t, i18n } = useTranslation();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<AssociatedPartnerCategory | "all">(
     defaultCategory,
@@ -170,9 +174,13 @@ export function WorkAndSupplyDirectoryView({
             onClick={() => setSelectedCategory("all")}
             className="h-8 rounded-full text-xs font-semibold px-3 gap-1.5"
           >
-            <span>{allLabel ?? "All Associates"}</span>
+            <span>
+              {allLabel
+                ? t("partners.allSuppliers", allLabel)
+                : t("partners.allAssociates", "All Associates")}
+            </span>
             <span className="ml-1 rounded-full bg-black/10 dark:bg-white/20 px-1.5 py-0.2 text-[10px]">
-              {categoryCounts.all ?? 0}
+              {toIndicDigits(categoryCounts.all ?? 0, i18n.language)}
             </span>
           </Button>
 
@@ -193,9 +201,9 @@ export function WorkAndSupplyDirectoryView({
                 )}
               >
                 {getCategoryIcon(catKey)}
-                <span>{config.label}</span>
+                <span>{t(`partners.categories.${catKey}`, config.label)}</span>
                 <span className="ml-1 rounded-full bg-black/10 dark:bg-white/20 px-1.5 py-0.2 text-[10px]">
-                  {count}
+                  {toIndicDigits(count, i18n.language)}
                 </span>
               </Button>
             );
@@ -234,7 +242,11 @@ export function WorkAndSupplyDirectoryView({
               className="h-8 gap-1.5 text-xs font-semibold shadow-2xs"
             >
               <Plus className="h-3.5 w-3.5" />
-              <span>{allowedCategories ? "Add Partner" : "Add Associate"}</span>
+              <span>
+                {allowedCategories
+                  ? t("partners.addPartner", "Add Partner")
+                  : t("partners.addAssociate", "Add Associate")}
+              </span>
             </Button>
           )}
         </div>
@@ -249,15 +261,26 @@ export function WorkAndSupplyDirectoryView({
             onChange={(e) => setSearch(e.target.value)}
             placeholder={
               allowedCategories
-                ? "Search suppliers by person, company, phone, city, products…"
-                : "Search associates by person, company, phone, city, skills…"
+                ? t(
+                    "partners.searchPlaceholderSuppliers",
+                    "Search suppliers by person, company, phone, city, products…",
+                  )
+                : t(
+                    "partners.searchPlaceholderAssociates",
+                    "Search associates by person, company, phone, city, skills…",
+                  )
             }
             className="pl-8 text-xs h-9"
           />
         </div>
         <p className="text-xs text-muted-foreground self-start sm:self-center">
-          Showing <span className="font-semibold text-foreground">{filtered.length}</span>{" "}
-          {allowedCategories ? "suppliers & partners" : "people & partners"}
+          {t("partners.showingCount", "Showing")}{" "}
+          <span className="font-semibold text-foreground">
+            {toIndicDigits(filtered.length, i18n.language)}
+          </span>{" "}
+          {allowedCategories
+            ? t("partners.suppliersAndPartners", "suppliers & partners")
+            : t("partners.peopleAndPartners", "people & partners")}
         </p>
       </div>
 
@@ -318,7 +341,9 @@ export function WorkAndSupplyDirectoryView({
                           className="font-bold text-sm text-foreground hover:text-primary transition-colors flex items-center gap-1.5 truncate"
                           title={person.contactPerson}
                         >
-                          <span className="truncate">{person.contactPerson}</span>
+                          <span className="truncate">
+                            {transliterateName(person.contactPerson, i18n.language)}
+                          </span>
                           <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-70 transition-opacity shrink-0" />
                         </Link>
                         <p
@@ -326,7 +351,9 @@ export function WorkAndSupplyDirectoryView({
                           title={person.name}
                         >
                           <Building2 className="h-3 w-3 shrink-0 text-slate-400" />
-                          <span className="truncate">{person.name}</span>
+                          <span className="truncate">
+                            {transliterateName(person.name, i18n.language)}
+                          </span>
                         </p>
                       </div>
                     </div>
@@ -341,7 +368,7 @@ export function WorkAndSupplyDirectoryView({
                       <span
                         className={cn("h-1.5 w-1.5 rounded-full mr-1.5 shrink-0", person.dotColor)}
                       />
-                      {person.categoryLabel}
+                      {t(`partners.categories.${person.category}`, person.categoryLabel)}
                     </Badge>
                   </div>
 
@@ -349,9 +376,13 @@ export function WorkAndSupplyDirectoryView({
                   <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-slate-100">
                     <span className="flex items-center gap-1">
                       <MapPin className="h-3 w-3 text-slate-400 shrink-0" />
-                      <span className="truncate max-w-[140px]">{person.city}</span>
+                      <span className="truncate max-w-[140px]">
+                        {transliterateName(person.city, i18n.language)}
+                      </span>
                     </span>
-                    <span className="font-mono text-[11px] text-slate-500">#{person.code}</span>
+                    <span className="font-mono text-[11px] text-slate-500">
+                      #{toIndicDigits(person.code, i18n.language)}
+                    </span>
                   </div>
 
                   {/* Capabilities / Products Chips */}
@@ -367,7 +398,8 @@ export function WorkAndSupplyDirectoryView({
                       ))}
                       {person.skills.length > 3 && (
                         <span className="text-[10px] text-muted-foreground font-semibold self-center px-1">
-                          +{person.skills.length - 3} more
+                          +{toIndicDigits(person.skills.length - 3, i18n.language)}{" "}
+                          {t("common.more", "more")}
                         </span>
                       )}
                     </div>
@@ -379,11 +411,11 @@ export function WorkAndSupplyDirectoryView({
                   <div className="min-w-0 flex-1">
                     {hasPhone ? (
                       <span className="font-mono text-xs font-semibold text-slate-800 tracking-wide truncate block">
-                        {person.phone}
+                        {toIndicDigits(person.phone, i18n.language)}
                       </span>
                     ) : (
                       <span className="text-[11px] text-muted-foreground italic">
-                        No phone recorded
+                        {t("partners.noPhone", "No phone recorded")}
                       </span>
                     )}
                   </div>
@@ -451,28 +483,36 @@ export function WorkAndSupplyDirectoryView({
           <Table>
             <TableHeader>
               <TableRow className="bg-slate-50/70">
-                <TableHead className="w-20 font-mono text-xs">Code</TableHead>
-                <TableHead className="min-w-[160px]">Contact Person</TableHead>
-                <TableHead className="min-w-[180px]">Company / Firm</TableHead>
-                <TableHead className="w-36">Category</TableHead>
-                <TableHead className="w-32">City</TableHead>
-                <TableHead className="w-40">Phone</TableHead>
-                <TableHead className="w-28 text-right">Actions</TableHead>
+                <TableHead className="w-20 font-mono text-xs">
+                  {t("vendors.columns.code", "Code")}
+                </TableHead>
+                <TableHead className="min-w-[160px]">
+                  {t("common.contactPerson", "Contact Person")}
+                </TableHead>
+                <TableHead className="min-w-[180px]">
+                  {t("vendors.columns.company", "Company / Firm")}
+                </TableHead>
+                <TableHead className="w-36">{t("vendors.columns.category", "Category")}</TableHead>
+                <TableHead className="w-32">{t("vendors.columns.city", "City")}</TableHead>
+                <TableHead className="w-40">{t("common.phone", "Phone")}</TableHead>
+                <TableHead className="w-28 text-right">{t("common.actions", "Actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.map((person) => (
                 <TableRow key={`${person.sourceType}-${person.id}`}>
                   <TableCell className="font-mono text-xs text-muted-foreground">
-                    {person.code}
+                    {toIndicDigits(person.code, i18n.language)}
                   </TableCell>
                   <TableCell className="font-semibold text-xs">
                     <Link to={person.linkUrl as string} className="hover:underline text-foreground">
-                      {person.contactPerson}
+                      {transliterateName(person.contactPerson, i18n.language)}
                     </Link>
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
-                    <span className="font-medium text-foreground">{person.name}</span>
+                    <span className="font-medium text-foreground">
+                      {transliterateName(person.name, i18n.language)}
+                    </span>
                   </TableCell>
                   <TableCell>
                     <Badge
@@ -482,11 +522,15 @@ export function WorkAndSupplyDirectoryView({
                       <span
                         className={cn("h-1.5 w-1.5 rounded-full mr-1.5 shrink-0", person.dotColor)}
                       />
-                      {person.categoryLabel}
+                      {t(`partners.categories.${person.category}`, person.categoryLabel)}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">{person.city}</TableCell>
-                  <TableCell className="font-mono text-xs">{person.phone || "—"}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {transliterateName(person.city, i18n.language)}
+                  </TableCell>
+                  <TableCell className="font-mono text-xs">
+                    {person.phone ? toIndicDigits(person.phone, i18n.language) : "—"}
+                  </TableCell>
                   <TableCell className="text-right">
                     <div className="inline-flex items-center gap-1 justify-end">
                       {onEditPartner && (

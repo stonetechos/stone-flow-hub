@@ -69,10 +69,63 @@ export function getPaymentAccountCategory(row: PaymentMethodRowInput): PaymentAc
  * Returns human-readable label for the payment method badge in the table:
  * E.g. "UPI Personal - Rishi", "UPI Personal - Raman", "BOB Current (Bank Transfer)", "BOB Current (UPI)"
  */
-export function formatPaymentMethodDisplay(row: PaymentMethodRowInput): string {
+export function formatPaymentMethodDisplay(
+  row: PaymentMethodRowInput,
+  lang: string = "en",
+): string {
   const category = getPaymentAccountCategory(row);
   const method = (row.method || "").toLowerCase().trim();
   const account = (row.account_used || "").trim();
+
+  if (lang === "hi") {
+    if (category === "upi_rishi") return "व्यक्तिगत UPI – ऋषि";
+    if (category === "upi_raman") return "व्यक्तिगत UPI – रमन";
+    if (category === "bob_current") {
+      if (method === "upi_bob_current" || method === "upi_stone_tech") {
+        return "BOB चालू खाता (UPI)";
+      }
+      if (
+        method === "bank_transfer" ||
+        method === "current_bob" ||
+        method === "neft" ||
+        method === "rtgs" ||
+        method === "imps"
+      ) {
+        return "BOB चालू खाता (बैंक ट्रांसफर)";
+      }
+      return "BOB चालू खाता";
+    }
+    if (category === "cash") return "नकद";
+    if (method === "cheque") return "चेक";
+    if (method === "upi_personal") {
+      return account ? `व्यक्तिगत UPI (${account})` : "व्यक्तिगत UPI";
+    }
+  }
+
+  if (lang === "gu") {
+    if (category === "upi_rishi") return "વ્યક્તિગત UPI – ઋષિ";
+    if (category === "upi_raman") return "વ્યક્તિગત UPI – રમણ";
+    if (category === "bob_current") {
+      if (method === "upi_bob_current" || method === "upi_stone_tech") {
+        return "BOB ચાલુ ખાતું (UPI)";
+      }
+      if (
+        method === "bank_transfer" ||
+        method === "current_bob" ||
+        method === "neft" ||
+        method === "rtgs" ||
+        method === "imps"
+      ) {
+        return "BOB ચાલુ ખાતું (બેંક ટ્રાન્સફર)";
+      }
+      return "BOB ચાલુ ખાતું";
+    }
+    if (category === "cash") return "રોકડ";
+    if (method === "cheque") return "ચેક";
+    if (method === "upi_personal") {
+      return account ? `વ્યક્તિગત UPI (${account})` : "વ્યક્તિગત UPI";
+    }
+  }
 
   if (category === "upi_rishi") {
     return "UPI Personal - Rishi";

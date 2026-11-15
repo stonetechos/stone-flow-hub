@@ -158,6 +158,13 @@ export function useCustomNavRenames() {
     (id: string, fallback: string, defaultEnglishLabel?: string) => {
       const custom = renames[id];
       if (!custom) return fallback;
+      // If active language is Indic (Hindi/Gujarati) and custom rename is still pure English ASCII,
+      // yield to the localized fallback so the language toggle takes effect across all tabs
+      const isIndicFallback = /[\u0900-\u097F\u0A80-\u0AFF]/.test(fallback);
+      const isCustomPureAscii = /^[\x20-\x7E\s\-_.,/()&]+$/.test(custom);
+      if (isIndicFallback && isCustomPureAscii) {
+        return fallback;
+      }
       if (
         defaultEnglishLabel &&
         custom.trim().toLowerCase() === defaultEnglishLabel.trim().toLowerCase()

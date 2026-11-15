@@ -31,8 +31,14 @@
       "dispatch": "डिस्पैच",
       "vendors": "सप्लाई पार्टनर्स",
       "partners-directory": "कार्य एवं आपूर्ति निर्देशिका",
-      "rfqs": "RFQ",
-      "purchase-invoices": "खरीद चालान",
+      "rfqs": "आरएफक्यू (दर पूछताछ)",
+      "purchase-orders": "खरीद आदेश",
+      "purchase-invoices": "खरीद प्रविष्टियां",
+      "installations": "साइट इंस्टॉलेशन",
+      "gst": "जीएसटी भुगतान और फाइलिंग",
+      "ramans-cashbook": "रमन की कैशबुक",
+      "personal-transfers": "व्यक्तिगत ट्रांसफर",
+      "hr-payments": "कर्मचारी भुगतान",
       "inventory": "इन्वेंटरी",
       "money-flow": "पैसे का प्रवाह",
       "payments": "ग्राहक भुगतान",
@@ -995,7 +1001,26 @@
     "active": "सक्रिय",
     "invited": "आमंत्रित",
     "expired": "निमंत्रण समाप्त",
-    "deactivated": "निष्क्रिय"
+    "deactivated": "निष्क्रिय",
+    "delivered": "वितरित",
+    "in_transit": "डिस्पैच किया गया",
+    "dispatched_for_delivery": "डिस्पैच किया गया",
+    "pending": "लंबित",
+    "confirmed": "पुष्ट",
+    "approved": "स्वीकृत",
+    "draft": "ड्राफ्ट",
+    "in_production": "उत्पादन में",
+    "in_progress": "प्रगति पर",
+    "ready": "तैयार",
+    "received": "प्राप्त हुआ",
+    "completed": "पूर्ण",
+    "paid": "भुगतान हुआ",
+    "credit_note": "क्रेडिट नोट",
+    "full": "पूर्ण",
+    "part": "आंशिक",
+    "advance": "अग्रिम",
+    "cancelled": "रद्द",
+    "on_hold": "रोक पर"
   },
   "roles": {
     "admin": "एडमिन",
@@ -1231,6 +1256,7 @@
       "message": "आउटबाउंड शिपमेंट की योजना बनाने के लिए एक डिस्पैच बनाएं।"
     },
     "columns": {
+      "dispatchNo": "डिस्पैच / ग्राहक",
       "so": "बिक्री आदेश",
       "carrier": "कैरियर (ट्रांसपोर्ट)",
       "tracking": "ट्रैकिंग"
@@ -1493,6 +1519,23 @@
       "reference": "संदर्भ",
       "date": "तारीख",
       "amount": "राशि"
+    },
+    "accounts": {
+      "bob": "बैंक ऑफ बड़ौदा चालू खाता",
+      "rishi": "व्यक्तिगत UPI – ऋषि",
+      "raman": "व्यक्तिगत UPI – रमन",
+      "total": "कुल वसूली",
+      "bankUpi": "बैंक / UPI",
+      "personalUpi": "व्यक्तिगत UPI",
+      "allAccounts": "सभी खाते",
+      "paymentsCount": "भुगतान",
+      "receiptsCount": "रसीदें",
+      "cash": "नकद",
+      "activeFilter": "सक्रिय फ़िल्टर ✕",
+      "unassignedUpiWarning": "व्यक्तिगत UPI में बिना ऋषि या रमन निर्दिष्ट किए दर्ज हैं।",
+      "showAll": "सभी भुगतान दिखाएं",
+      "filterAndAssign": "फ़िल्टर और सौंपें (ऋषि / रमन)",
+      "recordWriteOff": "राइट-ऑफ दर्ज करें"
     },
     "customer": {
       "deletedToast": "भुगतान हटा दिया गया",
@@ -2083,7 +2126,13 @@
     "recordPayment": "+ भुगतान रिकॉर्ड करें",
     "emptyTitle": "कोई विक्रेता भुगतान नहीं मिला",
     "emptySearch": "अपने खोज शब्दों या फ़िल्टर को समायोजित करने का प्रयास करें।",
-    "emptyCreate": "पत्थर विक्रेता या खदान के लिए अपना पहला भुगतान रिकॉर्ड करें।"
+    "emptyCreate": "पत्थर विक्रेता या खदान के लिए अपना पहला भुगतान रिकॉर्ड करें।",
+    "types": {
+      "credit_note": "क्रेडिट नोट",
+      "full": "पूर्ण",
+      "part": "आंशिक",
+      "advance": "अग्रिम"
+    }
   },
   "attendance": {
     "title": "उपस्थिति और शिफ्ट",
@@ -2543,6 +2592,26 @@
       "ordersUpdated": "ऑर्डर अपडेट हुआ",
       "paymentsCreated": "भुगतान दर्ज किया गया",
       "paymentsUpdated": "भुगतान अपडेट हुआ"
+    }
+  },
+  "partners": {
+    "allSuppliers": "सभी आपूर्तिकर्ता",
+    "allAssociates": "सभी सहयोगी",
+    "addPartner": "पार्टनर जोड़ें",
+    "addAssociate": "सहयोगी जोड़ें",
+    "searchPlaceholderSuppliers": "व्यक्ति, कंपनी, फोन, शहर, उत्पाद द्वारा खोजें…",
+    "searchPlaceholderAssociates": "व्यक्ति, कंपनी, फोन, शहर, कौशल द्वारा खोजें…",
+    "showingCount": "दिखाए जा रहे हैं",
+    "suppliersAndPartners": "आपूर्तिकर्ता और पार्टनर",
+    "peopleAndPartners": "सहयोगी और पार्टनर",
+    "noPhone": "कोई फोन नंबर दर्ज नहीं",
+    "categories": {
+      "supplying_partner": "सप्लाई पार्टनर्स",
+      "artwork_partner": "आर्टवर्क पार्टनर्स",
+      "application_partner": "एप्लीकेशन पार्टनर्स",
+      "chemical_partner": "केमिकल पार्टनर्स",
+      "transport_partner": "ट्रांसपोर्ट पार्टनर्स",
+      "tooling_partner": "मशीनरी एवं टूल्स पार्टनर्स"
     }
   }
 }

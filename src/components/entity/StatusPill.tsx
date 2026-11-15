@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -64,9 +65,11 @@ export function StatusPill({
   tone?: Tone;
   className?: string;
 }) {
+  const { t } = useTranslation();
   const key = status.toLowerCase().replace(/\s+/g, "_");
   const tone = toneOverride ?? TONE_MAP[key] ?? "neutral";
-  const displayLabel = key === "in_transit" ? "Dispatched for delivery" : status.replace(/_/g, " ");
+  const defaultLabel = key === "in_transit" ? "Dispatched for delivery" : status.replace(/_/g, " ");
+  const displayLabel = t(`status.${key}`, defaultLabel);
   return (
     <Badge variant="outline" className={cn("capitalize", TONE_CLASS[tone], className)}>
       {displayLabel}

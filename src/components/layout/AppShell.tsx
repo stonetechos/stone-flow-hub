@@ -183,7 +183,7 @@ function NavLinkRow({
             : "py-2 px-3 text-[13px]",
         active
           ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold shadow-xs"
-          : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground font-medium",
+          : "text-sidebar-foreground/85 hover:bg-white/12 hover:text-white font-medium transition-all duration-150",
       )}
     >
       {/* Luminous left accent indicator */}
@@ -481,8 +481,8 @@ function NavGroupRow({
         isStandaloneActive
           ? "text-sidebar-primary-foreground bg-sidebar-primary shadow-xs"
           : hasActiveChild
-            ? "text-sidebar-foreground bg-sidebar-accent shadow-xs border border-white/20 backdrop-blur-xs"
-            : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
+            ? "text-sidebar-foreground bg-white/12 shadow-xs border border-white/20 backdrop-blur-xs"
+            : "text-sidebar-foreground/85 hover:bg-white/12 hover:text-white transition-all duration-150",
       )}
       onClick={handleGroupClick}
       role={group.items.length > 0 ? "button" : undefined}
