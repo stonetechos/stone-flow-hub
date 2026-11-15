@@ -23,7 +23,7 @@ export type DeliveryTimelineMode = "days" | "date";
 
 export const ADVANCE_PAYMENT_THRESHOLD_INR = 50000;
 export const EARLY_PAYMENT_DISCOUNT_DISCLAIMER =
-  "Premake 100% payment to avail 5% discount, plus a complimentary certified Shree Yantra worth ₹14,999 on stone product purchase value > ₹1 Lakh (excludes installation & chemicals).*";
+  "✨ Special Website Prepayment Privilege Offer: Pre-make 100% advance payment upon quotation approval to avail a 5% instant discount, plus receive a Complimentary Certified Sacred 3D Shree Yantra (Worth ₹14,999) on natural stone product orders of ₹1 Lakh or above (excludes site installation and chemicals/adhesives).*";
 
 export interface QuoteTermsOptions {
   dealScope?: DealScope;
@@ -101,18 +101,18 @@ export function buildPaymentTermsTerm(
   totalAmount: number = 0,
 ): string {
   const isUnderFiftyThousand = totalAmount > 0 && totalAmount < ADVANCE_PAYMENT_THRESHOLD_INR;
-  const discountDisclaimer = EARLY_PAYMENT_DISCOUNT_DISCLAIMER;
+  const offerClause = `\n   • ${EARLY_PAYMENT_DISCOUNT_DISCLAIMER}`;
 
   if (isUnderFiftyThousand) {
-    return `The payment terms are 100% advance payment required upon order confirmation prior to material procurement and dispatch (applicable for order value under ₹50,000). ${discountDisclaimer}`;
+    return `The payment terms are 100% advance payment required upon order confirmation prior to material procurement and dispatch (applicable for order value under ₹50,000).${offerClause}`;
   }
 
   if (dealScope === "supply_and_installation") {
-    return `The payment terms are 50% advance token upon order booking, 30% on delivery of the material at site, and the remaining 20% balance payment to be provided upon completion of installation. ${discountDisclaimer}`;
+    return `The payment terms are 50% advance token upon order booking, 30% on delivery of the material at site, and the remaining 20% balance payment to be provided upon completion of installation.${offerClause}`;
   }
 
   // Supply only
-  return `The payment terms are 80% advance token upon order booking, and the remaining 20% balance payment has to be provided once the material gets delivered / prior to dispatch. ${discountDisclaimer}`;
+  return `The payment terms are 80% advance token upon order booking, and the remaining 20% balance payment has to be provided once the material gets delivered / prior to dispatch.${offerClause}`;
 }
 
 /** Builds the priority breakage liability disclaimer term when stone slab is provided by the client. */
@@ -249,6 +249,32 @@ export function hasEarlyPaymentDiscountDisclaimer(termsText?: string | null): bo
   if (!termsText) return false;
   const lower = termsText.toLowerCase();
   return (
-    lower.includes("100% payment") && (lower.includes("5% discount") || lower.includes("avail 5%"))
+    (lower.includes("100% payment") || lower.includes("100% advance")) &&
+    (lower.includes("5% discount") ||
+      lower.includes("5% instant discount") ||
+      lower.includes("avail 5%"))
   );
+}
+
+/**
+ * Ensures that existing quotation terms incorporate the special website prepayment privilege offer.
+ * If terms are missing the offer, it is seamlessly appended under the Payment Terms clause.
+ */
+export function ensureTermsHaveEarlyPaymentOffer(termsText?: string | null): string {
+  if (!termsText || !termsText.trim()) return "";
+  if (hasEarlyPaymentDiscountDisclaimer(termsText)) return termsText;
+
+  const lines = termsText.split("\n\n");
+  let replaced = false;
+  const newLines = lines.map((line) => {
+    if (line.toLowerCase().includes("payment terms:") && !hasEarlyPaymentDiscountDisclaimer(line)) {
+      replaced = true;
+      return `${line}\n   • ${EARLY_PAYMENT_DISCOUNT_DISCLAIMER}`;
+    }
+    return line;
+  });
+  if (!replaced) {
+    newLines.push(`• ${EARLY_PAYMENT_DISCOUNT_DISCLAIMER}`);
+  }
+  return newLines.join("\n\n");
 }

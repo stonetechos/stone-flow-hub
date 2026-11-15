@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
+import { Capacitor } from "@capacitor/core";
+import { LocalNotifications } from "@capacitor/local-notifications";
 import {
   Bell,
   Mic,
@@ -20,6 +22,7 @@ import {
 } from "@/lib/notifications/sound";
 
 const STORAGE_KEY_DISMISSED = "stos_staff_permissions_dismissed_v1";
+const STORAGE_KEY_PERMANENT = "stos_staff_permissions_configured_permanently";
 
 export interface PermissionStates {
   notification: PermissionState | "unsupported";
@@ -40,7 +43,15 @@ export function StaffPermissionsPrompt() {
     if (typeof window === "undefined") return;
 
     let notifState: PermissionState | "unsupported" = "unsupported";
-    if ("Notification" in window) {
+    if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android") {
+      try {
+        const perm = await LocalNotifications.checkPermissions();
+        notifState =
+          perm.display === "granted" ? "granted" : perm.display === "denied" ? "denied" : "prompt";
+      } catch {
+        notifState = "prompt";
+      }
+    } else if ("Notification" in window) {
       notifState =
         Notification.permission === "granted"
           ? "granted"
@@ -77,12 +88,9 @@ export function StaffPermissionsPrompt() {
     };
     setPermissions(current);
 
-    // If all essential permissions are granted, do not prompt
-    if (
-      current.notification === "granted" &&
-      current.mic === "granted" &&
-      current.location === "granted"
-    ) {
+    // If notifications are granted OR user has permanently configured permissions, do not prompt automatically
+    const isPermanentlyConfigured = localStorage.getItem(STORAGE_KEY_PERMANENT) === "true";
+    if (current.notification === "granted" || isPermanentlyConfigured) {
       setOpen(false);
       return;
     }
@@ -97,7 +105,7 @@ export function StaffPermissionsPrompt() {
       }
     }
 
-    // Open if not all granted and not dismissed
+    // Open if not granted and not permanently configured
     setOpen(true);
   }, []);
 
@@ -106,6 +114,7 @@ export function StaffPermissionsPrompt() {
 
     // Listen for manual trigger from settings or user actions
     const handleReopen = () => {
+      localStorage.removeItem(STORAGE_KEY_PERMANENT);
       localStorage.removeItem(STORAGE_KEY_DISMISSED);
       setOpen(true);
       void checkPermissions();
@@ -115,6 +124,24 @@ export function StaffPermissionsPrompt() {
   }, [checkPermissions]);
 
   const requestNotificationPermission = async (): Promise<boolean> => {
+    if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android") {
+      try {
+        const res = await LocalNotifications.requestPermissions();
+        setSoundAlertEnabled(true);
+        setVibrationAlertEnabled(true);
+        if (res.display === "granted") {
+          playNotificationSound("important");
+          toast.success("STOS Android Notifications & Vibration enabled permanently!");
+          localStorage.setItem(STORAGE_KEY_PERMANENT, "true");
+          return true;
+        }
+        return false;
+      } catch (err) {
+        console.warn("[permissions] Android LocalNotifications request error:", err);
+        return false;
+      }
+    }
+
     if (!("Notification" in window)) {
       toast.info("Notifications are not supported by this browser.");
       return false;
@@ -125,7 +152,8 @@ export function StaffPermissionsPrompt() {
       setVibrationAlertEnabled(true);
       if (res === "granted") {
         playNotificationSound("important");
-        toast.success("Notification sound & banners enabled!");
+        toast.success("Notification sound & banners enabled permanently!");
+        localStorage.setItem(STORAGE_KEY_PERMANENT, "true");
         return true;
       }
       return false;
@@ -177,21 +205,18 @@ export function StaffPermissionsPrompt() {
       await requestNotificationPermission();
       await requestMicPermission();
       await requestLocationPermission();
+      localStorage.setItem(STORAGE_KEY_PERMANENT, "true");
       await checkPermissions();
       toast.success("Device permissions activated for STOS!");
-      // Automatically close if notifications are active
-      if (Notification.permission === "granted") {
-        setOpen(false);
-      }
+      setOpen(false);
     } finally {
       setRequesting(false);
     }
   };
 
   const handleDismiss = () => {
-    // Dismiss for 7 days
-    const nextWeek = Date.now() + 7 * 24 * 60 * 60 * 1000;
-    localStorage.setItem(STORAGE_KEY_DISMISSED, String(nextWeek));
+    // Permanently remember preference so user is never prompted repeatedly every day
+    localStorage.setItem(STORAGE_KEY_PERMANENT, "true");
     setOpen(false);
   };
 

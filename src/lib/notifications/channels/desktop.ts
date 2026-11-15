@@ -30,7 +30,10 @@ export const desktopChannel: NotificationChannel = {
       Notification.permission === "granted"
     ) {
       try {
-        const n = new Notification(payload.title, {
+        const formattedTitle = payload.title.startsWith("STOS")
+          ? payload.title
+          : `STOS · ${payload.title}`;
+        const n = new Notification(formattedTitle, {
           body: payload.body ?? undefined,
           icon: "/favicon.ico",
           badge: "/favicon.ico",

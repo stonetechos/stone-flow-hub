@@ -7,6 +7,7 @@ import {
   buildPaymentTermsTerm,
   detectClientProvidedSlabFromItems,
   detectDealScopeFromItems,
+  ensureTermsHaveEarlyPaymentOffer,
   formatTimelineDate,
   generateQuoteTerms,
   getQuoteTermsList,
@@ -75,7 +76,7 @@ describe("Quote Terms & Conditions Engine", () => {
       expect(term).toContain(
         "20% balance payment has to be provided once the material gets delivered",
       );
-      expect(term).not.toContain("100% advance");
+      expect(term).not.toContain("100% advance payment required");
     });
 
     it("applies 50% advance, 30% delivery, and 20% installation for Supply + Installation when total >= ₹50,000", () => {
@@ -89,23 +90,37 @@ describe("Quote Terms & Conditions Engine", () => {
     });
 
     it("includes the 100% advance payment 5% discount disclaimer in all payment term modes", () => {
-      expect(EARLY_PAYMENT_DISCOUNT_DISCLAIMER).toBe(
-        "Premake 100% payment to avail 5% discount, plus a complimentary certified Shree Yantra worth ₹14,999 on stone product purchase value > ₹1 Lakh (excludes installation & chemicals).*",
+      expect(EARLY_PAYMENT_DISCOUNT_DISCLAIMER).toContain(
+        "✨ Special Website Prepayment Privilege Offer:",
       );
+      expect(EARLY_PAYMENT_DISCOUNT_DISCLAIMER).toContain("Pre-make 100% advance payment");
+      expect(EARLY_PAYMENT_DISCOUNT_DISCLAIMER).toContain("5% instant discount");
+      expect(EARLY_PAYMENT_DISCOUNT_DISCLAIMER).toContain(
+        "Complimentary Certified Sacred 3D Shree Yantra (Worth ₹14,999)",
+      );
+
       const under50k = buildPaymentTermsTerm("supply_only", 30000);
-      expect(under50k).toContain("Premake 100% payment to avail 5% discount");
-      expect(under50k).toContain("Shree Yantra worth ₹14,999");
+      expect(under50k).toContain("Pre-make 100% advance payment");
+      expect(under50k).toContain("Shree Yantra (Worth ₹14,999)");
       expect(hasEarlyPaymentDiscountDisclaimer(under50k)).toBe(true);
 
       const supplyOnly = buildPaymentTermsTerm("supply_only", 80000);
-      expect(supplyOnly).toContain("Premake 100% payment to avail 5% discount");
-      expect(supplyOnly).toContain("Shree Yantra worth ₹14,999");
+      expect(supplyOnly).toContain("Pre-make 100% advance payment");
+      expect(supplyOnly).toContain("Shree Yantra (Worth ₹14,999)");
       expect(hasEarlyPaymentDiscountDisclaimer(supplyOnly)).toBe(true);
 
       const supplyInstall = buildPaymentTermsTerm("supply_and_installation", 150000);
-      expect(supplyInstall).toContain("Premake 100% payment to avail 5% discount");
-      expect(supplyInstall).toContain("Shree Yantra worth ₹14,999");
+      expect(supplyInstall).toContain("Pre-make 100% advance payment");
+      expect(supplyInstall).toContain("Shree Yantra (Worth ₹14,999)");
       expect(hasEarlyPaymentDiscountDisclaimer(supplyInstall)).toBe(true);
+    });
+
+    it("ensures old or customized terms automatically include the website prepayment offer", () => {
+      const legacyTerms =
+        "1. Delivery Timeline: 15 days.\n\n2. Payment Terms: 80% advance and 20% on delivery.\n\n3. Non-Returnable.";
+      const updated = ensureTermsHaveEarlyPaymentOffer(legacyTerms);
+      expect(updated).toContain("✨ Special Website Prepayment Privilege Offer:");
+      expect(hasEarlyPaymentDiscountDisclaimer(updated)).toBe(true);
     });
   });
 

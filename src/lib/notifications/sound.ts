@@ -31,6 +31,24 @@ function getAudioContext(): AudioContext | null {
   }
 }
 
+// Automatically unlock Web Audio API on first user interaction in browser / mobile web
+if (typeof window !== "undefined") {
+  const unlockAudio = () => {
+    try {
+      if (!audioCtx) {
+        audioCtx = getAudioContext();
+      } else if (audioCtx.state === "suspended") {
+        void audioCtx.resume();
+      }
+    } catch {
+      // ignore
+    }
+  };
+  window.addEventListener("pointerdown", unlockAudio, { passive: true });
+  window.addEventListener("touchstart", unlockAudio, { passive: true });
+  window.addEventListener("keydown", unlockAudio, { passive: true });
+}
+
 const STORAGE_KEY_SOUND = "stos_sound_alerts_enabled";
 const STORAGE_KEY_VIBRATE = "stos_vibration_alerts_enabled";
 

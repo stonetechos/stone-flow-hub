@@ -31,6 +31,7 @@ export const localNotificationsMock = {
   requestPermissions: mock(async () => ({ display: "granted" })),
   createChannel: mock(async () => {}),
   schedule: mock(async () => {}),
+  addListener: mock(async () => ({ remove: mock(async () => {}) })),
 };
 
 mock.module("@/lib/notifications/toast", () => ({ ...toastActual, ...toastMock }));
@@ -115,6 +116,8 @@ describe("androidChannel", () => {
       body: "Challan #1234 on the way",
     });
     expect(localNotificationsMock.schedule).toHaveBeenCalled();
+    const calls = localNotificationsMock.schedule.mock.calls;
+    expect(calls[0][0].notifications[0].title).toBe("STOS · Material Dispatched");
   });
 });
 

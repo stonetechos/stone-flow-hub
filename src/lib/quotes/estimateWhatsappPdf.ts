@@ -84,7 +84,7 @@ export function buildEstimateWhatsappMessage(
       : []),
     `Total Estimate: ${formatInr(input.totalEstimate)}`,
     `Notes:`,
-    `Special Offer: Premake 100% payment to avail 5% discount + free certified Shree Yantra worth ₹14,999 on stone product orders > ₹1 Lakh (excludes installation & chemicals).*`,
+    `✨ Special Website Prepayment Privilege Offer: Pre-make 100% advance payment upon quotation approval to avail a 5% instant discount, plus receive a Complimentary Certified Sacred 3D Shree Yantra (Worth ₹14,999) on natural stone product orders of ₹1 Lakh or above (excludes site installation and chemicals/adhesives).*`,
     ...(hasInstallation ? [`Scaffolding, if required, will be provided by the customer.`] : []),
     ...(input.cartingAmount && input.cartingAmount > 0
       ? []

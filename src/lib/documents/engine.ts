@@ -21,6 +21,7 @@ import {
 import {
   detectClientProvidedSlabFromItems,
   detectDealScopeFromItems,
+  ensureTermsHaveEarlyPaymentOffer,
   generateQuoteTerms,
 } from "@/lib/quotes/terms";
 import { getQuoteSaleMode } from "@/lib/quotes/sale-mode";
@@ -284,7 +285,14 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
       ];
       const scope = detectDealScopeFromItems(items);
       const isClientSlab = detectClientProvidedSlabFromItems(items, q.wall_estimate);
-      const effectiveTerms = q.terms && q.terms.trim() ? q.terms.trim() : undefined;
+      const rawTerms = q.terms && q.terms.trim() ? q.terms.trim() : null;
+      const effectiveTerms = rawTerms
+        ? ensureTermsHaveEarlyPaymentOffer(rawTerms)
+        : generateQuoteTerms({
+            dealScope: scope,
+            totalAmount: Number(q.total) || 0,
+            clientProvidedSlab: isClientSlab,
+          });
       const saleMode = getQuoteSaleMode(q);
       const isCashDeal =
         saleMode === "cash" || (q.notes?.toLowerCase().includes("cash deal") ?? false);

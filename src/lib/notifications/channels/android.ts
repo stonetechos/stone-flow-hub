@@ -4,6 +4,28 @@ import { triggerNotificationVibration } from "../sound";
 import type { ChannelNotificationPayload, NotificationChannel } from "./types";
 
 let channelCreated = false;
+let actionListenerRegistered = false;
+
+function ensureActionListener(): void {
+  if (
+    actionListenerRegistered ||
+    !Capacitor.isNativePlatform() ||
+    Capacitor.getPlatform() !== "android"
+  ) {
+    return;
+  }
+  try {
+    void LocalNotifications.addListener("localNotificationActionPerformed", (action) => {
+      const linkPath = action.notification?.extra?.linkPath;
+      if (linkPath && typeof window !== "undefined") {
+        window.location.href = linkPath;
+      }
+    });
+    actionListenerRegistered = true;
+  } catch {
+    // ignore
+  }
+}
 
 async function ensureAndroidChannel(): Promise<void> {
   if (channelCreated || !Capacitor.isNativePlatform() || Capacitor.getPlatform() !== "android") {
@@ -22,6 +44,8 @@ async function ensureAndroidChannel(): Promise<void> {
       visibility: 1, // Public
       vibration: true,
       sound: "default",
+      lights: true,
+      lightColor: "#0f766e",
     });
     channelCreated = true;
   } catch (err) {
@@ -37,15 +61,23 @@ export const androidChannel: NotificationChannel = {
     try {
       triggerNotificationVibration(payload.tier);
       await ensureAndroidChannel();
+      ensureActionListener();
+
       const notifId = Math.floor(Math.random() * 2000000000) + 1;
+      const formattedTitle = payload.title.startsWith("STOS")
+        ? payload.title
+        : `STOS · ${payload.title}`;
+
       await LocalNotifications.schedule({
         notifications: [
           {
             id: notifId,
-            title: payload.title,
+            title: formattedTitle,
             body: payload.body ?? "",
             channelId: "stos_operations",
             sound: "default",
+            smallIcon: "ic_launcher",
+            iconColor: "#0f766e",
             extra: {
               linkPath: payload.linkPath,
               entityType: payload.entityType,
