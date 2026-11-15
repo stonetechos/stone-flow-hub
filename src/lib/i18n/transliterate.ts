@@ -392,7 +392,7 @@ const GUJARATI_SUFFIXES: Record<string, string> = {
 };
 
 const HINDI_DICT: Record<string, string> = {
-  stos: "स्टाॅस",
+  stos: "स्टॉस",
   valmiki: "वाल्मीकि",
   gautam: "गौतम",
   himant: "हिम्मत",

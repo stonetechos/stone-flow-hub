@@ -1165,7 +1165,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </TooltipProvider>
                 <span className="font-mono text-[10px] uppercase tracking-wider text-sidebar-foreground/60 font-semibold">
                   {i18n.language?.startsWith("hi")
-                    ? currentTheme.label.replace(/^ST\b/, "स्टाॅस")
+                    ? currentTheme.label.replace(/^ST\b/, "स्टॉस")
                     : i18n.language?.startsWith("gu")
                       ? currentTheme.label.replace(/^ST\b/, "સ્ટૉસ")
                       : currentTheme.label}{" "}
