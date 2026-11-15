@@ -337,7 +337,13 @@ export interface GenerateWhatsappMessageResult {
 export function generateOrderTrackingWhatsappMessage(
   input: GenerateWhatsappMessageInput,
 ): GenerateWhatsappMessageResult {
-  const cleanPhone = (input.customerPhone || "").replace(/\D+/g, "").slice(-10);
+  const rawDigits = (input.customerPhone || "").replace(/\D+/g, "");
+  const cleanPhone =
+    rawDigits.length === 12 && rawDigits.startsWith("91")
+      ? rawDigits.slice(2)
+      : rawDigits.length === 11 && rawDigits.startsWith("0")
+        ? rawDigits.slice(1)
+        : rawDigits;
   const cleanOrder = input.orderNo.trim().toUpperCase();
   const customerName = input.customerName?.trim() || "Customer";
   const pin = cleanPhone.length >= 10 ? computeOrderPin(cleanOrder, cleanPhone) : "";

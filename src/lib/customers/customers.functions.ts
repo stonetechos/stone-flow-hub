@@ -42,11 +42,29 @@ export const saveCustomerServerFn = createServerFn({ method: "POST" })
 
     // If creating (no id), check duplicate phone only when phone is provided
     if (!id && normalizedPhone) {
-      const digits10 = normalizedPhone.slice(-10);
+      const digits = normalizedPhone.replace(/\D+/g, "");
+      const isInternational = normalizedPhone.startsWith("+");
+      const conditions = [`primary_phone.eq.${digits}`, `whatsapp.eq.${digits}`];
+      if (isInternational) {
+        conditions.push(
+          `primary_phone.eq.+${digits}`,
+          `whatsapp.eq.+${digits}`,
+          `primary_phone.ilike.%${digits}%`,
+          `whatsapp.ilike.%${digits}%`,
+        );
+      } else {
+        const digits10 = digits.slice(-10);
+        conditions.push(
+          `primary_phone.eq.${digits10}`,
+          `primary_phone.ilike.%${digits10}%`,
+          `whatsapp.ilike.%${digits10}%`,
+        );
+      }
+
       const { data: existing } = await supabaseAdmin
         .from("customers")
         .select("id, name, customer_code")
-        .or(`primary_phone.eq.${normalizedPhone},primary_phone.ilike.%${digits10}%`)
+        .or(conditions.join(","))
         .limit(1)
         .maybeSingle();
 
@@ -93,7 +111,7 @@ export const saveCustomerServerFn = createServerFn({ method: "POST" })
         company_name: input.company_name ?? null,
         primary_phone: normalizedPhone || null,
         primary_email: input.email ?? null,
-        whatsapp: input.whatsapp ?? null,
+        whatsapp: input.whatsapp ? normalizeMobile(input.whatsapp) || input.whatsapp.trim() : null,
         city: input.city ?? null,
         state: input.state ?? null,
         pincode: input.pincode ?? null,
@@ -212,7 +230,7 @@ export const saveCustomerServerFn = createServerFn({ method: "POST" })
         company_name: input.company_name ?? null,
         primary_phone: normalizedPhone || null,
         primary_email: input.email ?? null,
-        whatsapp: input.whatsapp ?? null,
+        whatsapp: input.whatsapp ? normalizeMobile(input.whatsapp) || input.whatsapp.trim() : null,
         city: input.city ?? null,
         state: input.state ?? null,
         pincode: input.pincode ?? null,

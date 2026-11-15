@@ -21,9 +21,9 @@ type BaseProps = Omit<React.ComponentProps<typeof Input>, "onChange" | "value" |
   onChange: (value: string) => void;
 };
 
-/** Digits-only input. Strips +91, spaces, dashes. Caps at 10 characters. */
+/** Telephone / Mobile input. Supports domestic 10-digit numbers and international +country codes. */
 export const PhoneInput = React.forwardRef<HTMLInputElement, BaseProps>(function PhoneInput(
-  { value, onChange, maxLength = 10, placeholder, ...rest },
+  { value, onChange, maxLength = 20, placeholder, ...rest },
   ref,
 ) {
   const { t } = useTranslation();
@@ -31,14 +31,18 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, BaseProps>(function
     <Input
       ref={ref}
       type="tel"
-      inputMode="numeric"
-      autoComplete="tel-national"
-      placeholder={placeholder ?? t("field.placeholders.mobile", "10-digit mobile")}
+      inputMode="tel"
+      autoComplete="tel"
+      placeholder={placeholder ?? t("field.placeholders.mobile", "Mobile or +Country Code")}
       maxLength={maxLength}
       value={value ?? ""}
       onChange={(e) => {
-        const digits = e.target.value.replace(/\D+/g, "").replace(/^0+/, "").slice(-10);
-        onChange(digits);
+        const raw = e.target.value;
+        const hasLeadingPlus = raw.trimStart().startsWith("+");
+        const digitsAndDelims = raw.replace(/[^\d\s-]/g, "");
+        const withoutPlus = digitsAndDelims.replace(/\+/g, "");
+        const cleaned = hasLeadingPlus ? `+${withoutPlus}` : withoutPlus;
+        onChange(cleaned);
       }}
       {...rest}
     />

@@ -115,11 +115,30 @@ export async function getCustomer(id: string): Promise<CustomerRow | null> {
 export async function findCustomerByPhone(mobile: string): Promise<CustomerRow | null> {
   const normalized = normalizeMobile(mobile);
   if (!normalized) return null;
-  const digits10 = normalized.slice(-10);
+  const digits = normalized.replace(/\D+/g, "");
+  const isInternational = normalized.startsWith("+");
+
+  const conditions = [`primary_phone.eq.${digits}`, `whatsapp.eq.${digits}`];
+  if (isInternational) {
+    conditions.push(
+      `primary_phone.eq.+${digits}`,
+      `whatsapp.eq.+${digits}`,
+      `primary_phone.ilike.%${digits}%`,
+      `whatsapp.ilike.%${digits}%`,
+    );
+  } else {
+    const digits10 = digits.slice(-10);
+    conditions.push(
+      `primary_phone.eq.${digits10}`,
+      `primary_phone.ilike.%${digits10}%`,
+      `whatsapp.ilike.%${digits10}%`,
+    );
+  }
+
   const { data, error } = await getDb()
     .from("customers")
     .select("*")
-    .or(`primary_phone.eq.${normalized},primary_phone.ilike.%${digits10}%`)
+    .or(conditions.join(","))
     .limit(1)
     .maybeSingle();
   if (error) throw new AppError(mapDbError(error));
@@ -178,7 +197,7 @@ export async function createCustomer(input: CustomerCreateInput): Promise<Custom
     company_name: parsed.company_name ?? null,
     primary_phone: normalizeMobile(parsed.mobile) || null,
     primary_email: parsed.email ?? null,
-    whatsapp: parsed.whatsapp ?? null,
+    whatsapp: parsed.whatsapp ? normalizeMobile(parsed.whatsapp) || parsed.whatsapp.trim() : null,
     city: parsed.city ?? null,
     state: parsed.state ?? null,
     pincode: parsed.pincode ?? null,
@@ -285,7 +304,7 @@ export async function updateCustomer(id: string, input: CustomerCreateInput): Pr
     company_name: parsed.company_name ?? null,
     primary_phone: normalizeMobile(parsed.mobile) || null,
     primary_email: parsed.email ?? null,
-    whatsapp: parsed.whatsapp ?? null,
+    whatsapp: parsed.whatsapp ? normalizeMobile(parsed.whatsapp) || parsed.whatsapp.trim() : null,
     city: parsed.city ?? null,
     state: parsed.state ?? null,
     pincode: parsed.pincode ?? null,

@@ -336,7 +336,11 @@ export function PartnerEditDialog({
 
             {/* Row 2: Mobile / WhatsApp (Optional) and Email */}
             <Field label="Mobile / WhatsApp Phone (Optional)">
-              <PhoneInput value={phone} onChange={setPhone} placeholder="10-digit mobile number" />
+              <PhoneInput
+                value={phone}
+                onChange={setPhone}
+                placeholder="Mobile / WhatsApp (+country code)"
+              />
             </Field>
 
             <Field label="Email Address">

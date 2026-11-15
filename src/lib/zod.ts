@@ -11,10 +11,10 @@ export const zOptional = () =>
     z.string().trim().nullable().optional(),
   );
 
-/** Indian mobile: 10 digits, optional +91 / leading 0 stripped. */
+/** Mobile: supports 10-digit Indian numbers as well as international numbers with country codes (+E.164). */
 export const zMobile = zTrimmed
-  .min(10, "Enter a valid mobile number")
-  .max(15, "Mobile number is too long")
+  .min(7, "Enter a valid mobile number")
+  .max(25, "Mobile number is too long")
   .regex(/^[+\d\s-]+$/, "Use digits only");
 
 export const zOptionalMobile = z.preprocess(
@@ -22,8 +22,8 @@ export const zOptionalMobile = z.preprocess(
   z
     .string()
     .trim()
-    .min(10, "Enter a valid mobile number")
-    .max(15, "Mobile number is too long")
+    .min(7, "Enter a valid mobile number")
+    .max(25, "Mobile number is too long")
     .regex(/^[+\d\s-]+$/, "Use digits only")
     .nullable()
     .optional(),
@@ -70,10 +70,37 @@ export const zIfsc = zPattern(/^[A-Z]{4}0[A-Z0-9]{6}$/, "Enter a valid 11-charac
 /** Indian HSN code: 4 to 8 numeric digits (chapters, headings, sub-headings, tariffs). */
 export const zHsn = zPattern(/^[0-9]{4,8}$/, "Enter a valid 4 to 8 digit HSN code");
 
-/** Normalize mobile to digits only for duplicate detection. */
+/**
+ * Normalize mobile for storage and duplicate detection.
+ * - Standard Indian numbers (10 digits, +91, leading 0) -> 10 digits (e.g. "9876543210")
+ * - International numbers (e.g. "+265995429998", "+14155552671") -> E.164 "+<country><digits>"
+ */
 export function normalizeMobile(v?: string | null): string {
   if (!v) return "";
-  return v.replace(/\D+/g, "").replace(/^0+/, "").slice(-10);
+  const trimmed = v.trim();
+  const digits = trimmed.replace(/\D+/g, "");
+  if (!digits) return "";
+
+  // 1. Indian numbers with +91 or 91 country code (12 digits): strip 91 -> 10 digits
+  if (digits.length === 12 && digits.startsWith("91")) {
+    return digits.slice(2);
+  }
+  // 2. Indian numbers with leading 0 (11 digits): strip 0 -> 10 digits
+  if (digits.length === 11 && digits.startsWith("0")) {
+    return digits.slice(1);
+  }
+  // 3. Standard 10-digit Indian numbers: return 10 digits
+  if (digits.length === 10 && !trimmed.startsWith("+")) {
+    return digits;
+  }
+
+  // 4. International numbers (e.g. +265995429998, 265995429998, +14155552671):
+  // Return in clean E.164-compatible format with leading '+'
+  if (trimmed.startsWith("+") || digits.length > 10) {
+    return `+${digits}`;
+  }
+
+  return digits;
 }
 
 /** Extract raw digits from any phone input, stripping spaces, hyphens, plus signs, brackets. */

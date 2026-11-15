@@ -1865,7 +1865,7 @@ export function EstimateStudioCalculator({
             <Input
               value={customerMobile}
               onChange={(e) => setCustomerMobile(e.target.value)}
-              placeholder="10-digit mobile"
+              placeholder="+country code or 10-digit mobile"
             />
           </LineField>
           <LineField label="Your name" className="col-span-6 md:col-span-2">

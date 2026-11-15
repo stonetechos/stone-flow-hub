@@ -55,4 +55,27 @@ describe("customerCreateSchema optional mobile & email", () => {
     expect(parsed.contact_person).toBe("Ramesh Patel");
     expect(parsed.company_name).toBe("ABC Developers LLP");
   });
+
+  it("supports international phone numbers (e.g. Malawi +265995429998)", () => {
+    const parsed = customerCreateSchema.parse({
+      name: "Malawi Natural Stone Client",
+      mobile: "+265995429998",
+      whatsapp: "+265995429998",
+      contacts: [
+        {
+          name: "Site Representative",
+          phone: "+265 995 429 998",
+          designation: "Project Manager",
+        },
+      ],
+    });
+
+    expect(parsed.name).toBe("Malawi Natural Stone Client");
+    expect(parsed.mobile).toBe("+265995429998");
+    expect(parsed.whatsapp).toBe("+265995429998");
+    expect(normalizeMobile(parsed.mobile)).toBe("+265995429998");
+    expect(normalizeMobile("+265 995 429 998")).toBe("+265995429998");
+    expect(normalizeMobile("265995429998")).toBe("+265995429998");
+    expect(normalizeMobile("+1 (415) 555-2671")).toBe("+14155552671");
+  });
 });

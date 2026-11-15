@@ -1528,7 +1528,7 @@ function CustomerFormDialog({
 
             <Field
               label={t("customers.phoneNumber", "Phone Number")}
-              hint={t("customers.phoneHint", "10 digits, +91 optional")}
+              hint={t("customers.phoneHint", "10 digits or +country code")}
             >
               <PhoneInput
                 value={form.mobile ?? ""}
@@ -1546,7 +1546,7 @@ function CustomerFormDialog({
               hint={
                 form.mobile
                   ? t("customers.whatsappHintMobile", "Dropdown defaults to Phone Number")
-                  : t("customers.whatsappHintDigits", "10 digits")
+                  : t("customers.whatsappHintDigits", "10 digits or +country code")
               }
             >
               <div className="space-y-1.5">
@@ -1583,7 +1583,7 @@ function CustomerFormDialog({
                 <PhoneInput
                   value={form.whatsapp ?? ""}
                   onChange={(v) => set("whatsapp", v)}
-                  placeholder={t("customers.whatsappNumber", "WhatsApp number")}
+                  placeholder={t("customers.whatsappNumber", "WhatsApp number (+country code)")}
                 />
               </div>
             </Field>
@@ -1640,7 +1640,10 @@ function CustomerFormDialog({
                           Phone Number
                         </label>
                         <PhoneInput
-                          placeholder="10 digits mobile"
+                          placeholder={t(
+                            "customers.contactPhonePlaceholder",
+                            "Phone / Mobile (+country code)",
+                          )}
                           value={contact.phone ?? ""}
                           onChange={(v) => updateContact(idx, { phone: v })}
                         />
