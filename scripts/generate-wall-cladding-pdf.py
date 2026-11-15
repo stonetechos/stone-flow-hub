@@ -515,7 +515,17 @@ def generate_html_document(lang, catalog, logo_path, thumb_dir):
   src: url('file://{gu_font_path}');
 }}
 body {{ margin: 0; font-family: {font_fam}, 'CatalogHindiFont', 'CatalogGujaratiFont'; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }}
-.page {{ width: 210mm; height: 297mm; page-break-after: always; position: relative; box-sizing: border-box; }}
+.page {{
+  width: 210mm;
+  height: 297mm;
+  max-height: 297mm;
+  page-break-after: always;
+  page-break-inside: avoid;
+  break-inside: avoid;
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+}}
 
 /* Cover */
 .cover {{ background: #0f172a; color: white; padding: 10mm; display: flex; flex-direction: column; justify-content: space-between; }}
@@ -548,20 +558,135 @@ body {{ margin: 0; font-family: {font_fam}, 'CatalogHindiFont', 'CatalogGujarati
 .exp-meta {{ color: #64748b; font-size: 6.5pt; margin-top: 1.5mm; }}
 
 /* Product Pages */
-.prod-page {{ padding: 8mm 10mm; display: flex; flex-direction: column; justify-content: space-between; }}
-.header {{ display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 2mm; }}
-.header-left {{ display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 10pt; color: #0f172a; }}
-.header-left img {{ height: 18px; }}
-.header-badge {{ background: #f1f5f9; border: 1px solid #cbd5e1; color: #0e7490; font-size: 8pt; font-weight: 700; padding: 2px 7px; border-radius: 4px; }}
-.grid {{ display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 8mm; flex: 1; padding: 4mm 0; }}
-.card {{ border: 1px solid #e2e8f0; border-radius: 8px; padding: 2.5mm; display: flex; flex-direction: column; justify-content: space-between; position: relative; background: #fff; }}
-.photo-box {{ background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 6px; flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; }}
-.photo-box img {{ max-width: 96%; max-height: 96%; object-fit: contain; }}
-.code-tag {{ position: absolute; top: 4.5mm; left: 4.5mm; background: #0f172a; color: #fbbf24; font-size: 8pt; font-weight: 700; padding: 2px 6px; border-radius: 4px; }}
-.card-footer {{ display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 2mm; margin-top: 1.5mm; font-size: 8pt; }}
-.card-footer .code {{ font-weight: 700; color: #0f172a; }}
-.card-footer .phone {{ font-weight: 700; color: #0d9488; }}
-.footer {{ display: flex; justify-content: space-between; border-top: 1px solid #e2e8f0; padding-top: 2mm; font-size: 7.5pt; color: #64748b; }}
+.prod-page {{
+  padding: 6mm 10mm 5mm 10mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  overflow: hidden;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}}
+.header {{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 1.5mm;
+  height: 8mm;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}}
+.header-left {{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 9.5pt;
+  color: #0f172a;
+}}
+.header-left img {{
+  height: 16px;
+}}
+.header-badge {{
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #0e7490;
+  font-size: 7.5pt;
+  font-weight: 700;
+  padding: 1.5px 6px;
+  border-radius: 4px;
+}}
+.grid {{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 129mm 129mm;
+  gap: 5mm;
+  height: 263mm;
+  max-height: 263mm;
+  padding: 2mm 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  flex: none;
+}}
+.card {{
+  height: 129mm;
+  max-height: 129mm;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 2mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  background: #fff;
+  box-sizing: border-box;
+  overflow: hidden;
+}}
+.photo-box {{
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 6px;
+  height: 118mm;
+  max-height: 118mm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-sizing: border-box;
+}}
+.photo-box img {{
+  max-width: 95%;
+  max-height: 95%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}}
+.code-tag {{
+  position: absolute;
+  top: 3.5mm;
+  left: 3.5mm;
+  background: #0f172a;
+  color: #fbbf24;
+  font-size: 7.5pt;
+  font-weight: 700;
+  padding: 1.5px 5px;
+  border-radius: 3px;
+}}
+.card-footer {{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 1mm;
+  margin-top: 1mm;
+  height: 5mm;
+  max-height: 5mm;
+  font-size: 7.5pt;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}}
+.card-footer .code {{
+  font-weight: 700;
+  color: #0f172a;
+}}
+.card-footer .phone {{
+  font-weight: 700;
+  color: #0d9488;
+}}
+.footer {{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 1.5mm;
+  height: 5mm;
+  font-size: 7pt;
+  color: #64748b;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}}
 
 /* Back Cover */
 .back {{ background: #0f172a; color: white; padding: 10mm; display: flex; flex-direction: column; justify-content: space-between; }}

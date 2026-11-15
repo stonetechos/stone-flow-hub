@@ -505,7 +505,7 @@ export function WallCladdingCatalog({
 
             {/* WhatsApp PDF Download — Localized 3-Language Flow */}
             <a
-              href={`/catalogues/${t.pdfFile}?v=26-27-v2`}
+              href={`/catalogues/${t.pdfFile}?v=26-27-v3`}
               download={t.pdfFile}
               title={t.pdfBtn}
               className="inline-flex"
