@@ -1,6 +1,7 @@
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
+import { autoTranslate } from "@/lib/i18n/auto-translator";
 
 import { cn } from "@/lib/utils";
 
@@ -53,13 +54,16 @@ function Badge({ className, variant, size, children, ...props }: BadgeProps) {
       const trimmed = child.trim();
       if (!trimmed) return child;
       try {
-        const translated = t(trimmed, { defaultValue: trimmed, returnObjects: false });
+        let translated = t(trimmed, { defaultValue: trimmed, returnObjects: false });
         if (
-          typeof translated === "string" &&
-          !translated.toLowerCase().startsWith("key '") &&
-          !translated.toLowerCase().includes("returned an object") &&
-          translated !== trimmed
+          !translated ||
+          translated === trimmed ||
+          translated.toLowerCase().startsWith("key '") ||
+          translated.toLowerCase().includes("returned an object")
         ) {
+          translated = autoTranslate(trimmed);
+        }
+        if (typeof translated === "string" && translated !== trimmed) {
           return child.replace(trimmed, translated);
         }
       } catch {

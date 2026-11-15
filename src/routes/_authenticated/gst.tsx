@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { autoTranslate } from "@/lib/i18n/auto-translator";
 import {
   Landmark,
   FileText,
@@ -62,6 +64,7 @@ function GstFilingHubPage() {
 }
 
 function GstFilingHubInner() {
+  const { t } = useTranslation();
   const search = Route.useSearch();
   const periods = useMemo(() => getAvailableGstPeriods(), []);
 
@@ -392,11 +395,15 @@ function GstFilingHubInner() {
                       <table className="w-full text-xs text-left">
                         <thead className="bg-muted/60 text-muted-foreground font-semibold border-b">
                           <tr>
-                            <th className="p-2.5">Tax Head</th>
-                            <th className="p-2.5 text-right">Output Liability</th>
-                            <th className="p-2.5 text-right">ITC Utilized</th>
-                            <th className="p-2.5 text-right font-bold">Net Cash Payable</th>
-                            <th className="p-2.5 text-right">Closing ITC</th>
+                            <th className="p-2.5">{autoTranslate("Tax Head")}</th>
+                            <th className="p-2.5 text-right">
+                              {autoTranslate("Output Liability")}
+                            </th>
+                            <th className="p-2.5 text-right">{autoTranslate("ITC Utilized")}</th>
+                            <th className="p-2.5 text-right font-bold">
+                              {autoTranslate("Net Cash Payable")}
+                            </th>
+                            <th className="p-2.5 text-right">{autoTranslate("Closing ITC")}</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y font-mono">

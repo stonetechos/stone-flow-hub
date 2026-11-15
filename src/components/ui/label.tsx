@@ -7,6 +7,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 import { useTranslation } from "react-i18next";
+import { autoTranslate } from "@/lib/i18n/auto-translator";
 
 const labelVariants = cva(
   "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
@@ -22,7 +23,10 @@ const Label = React.forwardRef<
     if (typeof node === "string") {
       const trimmed = node.trim();
       if (!trimmed) return node;
-      const translated = t(`field.${trimmed}`, t(`label.${trimmed}`, trimmed));
+      let translated = t(`field.${trimmed}`, t(`label.${trimmed}`, t(trimmed, trimmed)));
+      if (translated === trimmed) {
+        translated = autoTranslate(trimmed);
+      }
       if (translated !== trimmed) {
         return node.replace(trimmed, translated);
       }

@@ -74,6 +74,7 @@ import {
 import { toUserMessage, parseMissingSupabaseEnvError } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 import { ServerConfigurationErrorState } from "@/components/global/ServerConfigurationErrorState";
+import { autoTranslate } from "@/lib/i18n/auto-translator";
 import {
   listAppUsers,
   assignRoleGuarded,
@@ -538,7 +539,9 @@ function UsersAdminPage() {
               <RefreshCw
                 className={cn("mr-1.5 h-4 w-4", syncAllUsers.isPending && "animate-spin")}
               />
-              {syncAllUsers.isPending ? "Syncing…" : "Sync Access & Roles"}
+              {syncAllUsers.isPending
+                ? t("admin.syncing", "Syncing…")
+                : t("admin.syncAccessAndRoles", "Sync Access & Roles")}
             </Button>
             <Button onClick={() => setInviteOpen(true)} size="sm">
               <UserPlus className="mr-1.5 h-4 w-4" /> {t("actions.addUser", "Add user")}
@@ -1428,8 +1431,12 @@ function UserRowView({
           </button>
         )}
       </td>
-      <td className="px-4 py-3 text-muted-foreground">{user.job_title ?? "—"}</td>
-      <td className="px-4 py-3 text-muted-foreground">{user.department ?? "—"}</td>
+      <td className="px-4 py-3 text-muted-foreground">
+        {user.job_title ? autoTranslate(user.job_title) : "—"}
+      </td>
+      <td className="px-4 py-3 text-muted-foreground">
+        {user.department ? autoTranslate(user.department) : "—"}
+      </td>
       <td className="px-4 py-3 text-muted-foreground">{user.email ?? "—"}</td>
       <td className="px-4 py-3">
         <Badge variant={statusVariant(user.status)}>

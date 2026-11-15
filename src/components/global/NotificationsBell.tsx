@@ -50,6 +50,7 @@ import { toneDot } from "@/lib/ui/tones";
 import { qk } from "@/lib/query-keys";
 import { formatRelative, toIndicDigits } from "@/lib/format";
 import { transliterateName } from "@/lib/i18n/transliterate";
+import { autoTranslate } from "@/lib/i18n/auto-translator";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -163,9 +164,12 @@ const PAYMENT_METHODS_I18N: Record<string, { hi: string; gu: string }> = {
 };
 
 export function localizeNotificationText(text: string, lang?: string): string {
-  if (!text || !lang || lang === "en") return text;
-  const isHi = lang.startsWith("hi");
-  const isGu = lang.startsWith("gu");
+  if (!text) return text;
+  const activeLang =
+    lang || (typeof window !== "undefined" ? localStorage.getItem("stos-lang") || "en" : "en");
+  if (!activeLang || activeLang === "en") return text;
+  const isHi = activeLang.startsWith("hi");
+  const isGu = activeLang.startsWith("gu");
   if (!isHi && !isGu) return text;
 
   const str = text.trim();
@@ -473,7 +477,8 @@ export function localizeNotificationText(text: string, lang?: string): string {
       );
   }
 
-  return toIndicDigits(out, lang);
+  const translated = autoTranslate(out, activeLang);
+  return toIndicDigits(translated, activeLang);
 }
 
 type BucketKey = "all" | "unread" | "today" | "yesterday";

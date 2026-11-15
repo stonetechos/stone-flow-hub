@@ -417,7 +417,7 @@ export function PersonalTransfersLedger() {
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold uppercase tracking-wider text-purple-700 dark:text-purple-400 flex items-center gap-1.5">
                 <User className="h-3.5 w-3.5" />
-                <span>Rishi Rai Ledger</span>
+                <span>{t("finance.rishiLedger", "Rishi Rai Ledger")}</span>
               </span>
               <div className="h-6 w-6 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center dark:bg-purple-900/50 dark:text-purple-300">
                 {rishiSummary.netBalance >= 0 ? (
@@ -432,10 +432,10 @@ export function PersonalTransfersLedger() {
             </div>
             <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1 border-t border-purple-100 dark:border-purple-900/40">
               <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                In: +{formatInr(rishiSummary.totalInflow)}
+                {t("finance.inflowPrefix", "In:")} +{formatInr(rishiSummary.totalInflow)}
               </span>
               <span className="text-rose-600 dark:text-rose-400 font-medium">
-                Out: -{formatInr(rishiSummary.totalOutflow)}
+                {t("finance.outflowPrefix", "Out:")} -{formatInr(rishiSummary.totalOutflow)}
               </span>
             </div>
           </CardContent>
@@ -454,7 +454,7 @@ export function PersonalTransfersLedger() {
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
                 <User className="h-3.5 w-3.5" />
-                <span>Raman Pupneja Ledger</span>
+                <span>{t("finance.ramanLedger", "Raman Pupneja Ledger")}</span>
               </span>
               <div className="h-6 w-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center dark:bg-amber-900/50 dark:text-amber-300">
                 {ramanSummary.netBalance >= 0 ? (
@@ -469,10 +469,10 @@ export function PersonalTransfersLedger() {
             </div>
             <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1 border-t border-amber-100 dark:border-amber-900/40">
               <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                In: +{formatInr(ramanSummary.totalInflow)}
+                {t("finance.inflowPrefix", "In:")} +{formatInr(ramanSummary.totalInflow)}
               </span>
               <span className="text-rose-600 dark:text-rose-400 font-medium">
-                Out: -{formatInr(ramanSummary.totalOutflow)}
+                {t("finance.outflowPrefix", "Out:")} -{formatInr(ramanSummary.totalOutflow)}
               </span>
             </div>
           </CardContent>
@@ -491,7 +491,7 @@ export function PersonalTransfersLedger() {
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
                 <Building2 className="h-3.5 w-3.5" />
-                <span>Stone Tech Movement</span>
+                <span>{t("finance.companyMovement", "Stone Tech Movement")}</span>
               </span>
               <div className="h-6 w-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center dark:bg-emerald-900/50 dark:text-emerald-300">
                 <ArrowLeftRight className="h-3.5 w-3.5" />
@@ -502,10 +502,10 @@ export function PersonalTransfersLedger() {
             </div>
             <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1 border-t border-emerald-100 dark:border-emerald-900/40">
               <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                In: +{formatInr(companySummary.totalInflow)}
+                {t("finance.inflowPrefix", "In:")} +{formatInr(companySummary.totalInflow)}
               </span>
               <span className="text-rose-600 dark:text-rose-400 font-medium">
-                Out: -{formatInr(companySummary.totalOutflow)}
+                {t("finance.outflowPrefix", "Out:")} -{formatInr(companySummary.totalOutflow)}
               </span>
             </div>
           </CardContent>
@@ -522,7 +522,7 @@ export function PersonalTransfersLedger() {
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                 <ArrowLeftRight className="h-3.5 w-3.5" />
-                <span>Total Transfers</span>
+                <span>{t("finance.totalTransfers", "Total Transfers")}</span>
               </span>
               <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-semibold">
                 {allSummary.transferCount} entries
@@ -532,7 +532,7 @@ export function PersonalTransfersLedger() {
               {formatInr(allSummary.totalInflow)}
             </div>
             <div className="text-[10px] text-muted-foreground pt-1 border-t border-border">
-              Cumulative internal & partner transaction flow
+              {t("finance.cumulativeFlow", "Cumulative internal & partner transaction flow")}
             </div>
           </CardContent>
         </Card>
@@ -543,7 +543,7 @@ export function PersonalTransfersLedger() {
         <CardContent className="p-3 sm:p-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             <span className="text-xs font-semibold text-muted-foreground mr-1 flex items-center gap-1">
-              <span>Quick Transfer:</span>
+              <span>{t("finance.quickTransfer", "Quick Transfer:")}</span>
             </span>
             <Button
               size="sm"
@@ -608,7 +608,8 @@ export function PersonalTransfersLedger() {
             onClick={() => handleOpenNew()}
             className="bg-primary text-primary-foreground font-semibold shadow-xs h-8 px-3 ml-auto"
           >
-            <Plus className="mr-1.5 h-3.5 w-3.5" /> Record Personal Transfer
+            <Plus className="mr-1.5 h-3.5 w-3.5" />{" "}
+            {t("finance.recordPersonalTransfer", "Record Personal Transfer")}
           </Button>
         </CardContent>
       </Card>

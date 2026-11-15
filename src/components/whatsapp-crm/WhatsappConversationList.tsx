@@ -1,8 +1,10 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Search, UserCheck, AlertCircle, MessageCircle, Clock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { toIndicDigits } from "@/lib/format";
 import type { WhatsappConversation } from "./types";
 
 interface WhatsappConversationListProps {
@@ -16,6 +18,7 @@ export function WhatsappConversationList({
   activeId,
   onSelectConversation,
 }: WhatsappConversationListProps) {
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "unread" | "leads" | "gone-quiet">("all");
 
@@ -48,7 +51,7 @@ export function WhatsappConversationList({
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
           <Input
-            placeholder="Search chats, numbers, firms..."
+            placeholder={t("communication.searchChats", "Search chats, numbers, firms...")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="h-8 pl-8 text-xs bg-background"
@@ -65,7 +68,7 @@ export function WhatsappConversationList({
                 : "bg-muted text-muted-foreground hover:bg-muted/80",
             )}
           >
-            All
+            {t("communication.filterAll", "All")}
           </button>
           <button
             onClick={() => setFilter("unread")}
@@ -76,7 +79,7 @@ export function WhatsappConversationList({
                 : "bg-muted text-muted-foreground hover:bg-muted/80",
             )}
           >
-            Unread
+            {t("communication.filterUnread", "Unread")}
           </button>
           <button
             onClick={() => setFilter("leads")}
@@ -87,7 +90,7 @@ export function WhatsappConversationList({
                 : "bg-muted text-muted-foreground hover:bg-muted/80",
             )}
           >
-            Leads
+            {t("communication.filterLeads", "Leads")}
           </button>
           <button
             onClick={() => setFilter("gone-quiet")}
@@ -99,7 +102,7 @@ export function WhatsappConversationList({
             )}
           >
             <AlertCircle className="h-3 w-3" />
-            Gone Quiet (&gt;3d)
+            {t("communication.filterGoneQuiet", "Gone Quiet (>3d)")}
           </button>
         </div>
       </div>

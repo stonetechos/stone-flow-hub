@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { autoTranslate } from "@/lib/i18n/auto-translator";
 import {
   Plus,
   Truck,
@@ -104,7 +105,7 @@ function PurchaseTransportPage() {
               : "border border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
           }`}
         >
-          <Truck className="h-3.5 w-3.5" /> Transport Partners & Fleet Directory
+          <Truck className="h-3.5 w-3.5" /> {autoTranslate("Transport Partners & Fleet Directory")}
         </button>
 
         <button
@@ -116,7 +117,7 @@ function PurchaseTransportPage() {
               : "border border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
           }`}
         >
-          <FileText className="h-3.5 w-3.5" /> Inward Shipments & Freight Log
+          <FileText className="h-3.5 w-3.5" /> {autoTranslate("Inward Shipments & Freight Log")}
         </button>
       </div>
 

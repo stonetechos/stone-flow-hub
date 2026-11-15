@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useRouterState } from "@tanstack/react-router";
 import { useCustomNavRenames } from "@/lib/nav/custom-renames";
 import { findNavItemForPath, NAV_ITEMS } from "@/lib/nav/config";
+import { translateNode } from "@/lib/i18n/auto-translator";
 
 /**
  * PageHeader — the primary page title area.
@@ -111,7 +112,7 @@ export function PageHeader({
   }
 
   const baseTitle = customTitle || title;
-  const displayTitle =
+  const rawTitle =
     typeof baseTitle === "string"
       ? t(
           `page.${baseTitle}`,
@@ -121,8 +122,12 @@ export function PageHeader({
           ),
         )
       : baseTitle;
-  const displaySubtitle =
+  const rawSubtitle =
     typeof subtitle === "string" ? t(`subtitle.${subtitle}`, t(subtitle, subtitle)) : subtitle;
+
+  const displayTitle = translateNode(rawTitle);
+  const displaySubtitle = translateNode(rawSubtitle);
+  const displayEyebrow = translateNode(eyebrow);
 
   return (
     <div
@@ -132,9 +137,9 @@ export function PageHeader({
       )}
     >
       <div className="min-w-0">
-        {eyebrow && (
+        {displayEyebrow && (
           <div className="mb-1 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-engraved-kicker">
-            {eyebrow}
+            {displayEyebrow}
           </div>
         )}
         <h1 className="font-display text-2xl font-black tracking-tight text-engraved-title sm:text-[28px] break-words text-balance">

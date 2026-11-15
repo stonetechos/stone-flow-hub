@@ -2,6 +2,7 @@ import * as React from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
 import { Check, ChevronDown, ChevronUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { autoTranslate, translateNode } from "@/lib/i18n/auto-translator";
 
 import { cn } from "@/lib/utils";
 
@@ -14,8 +15,10 @@ const SelectValue = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Value>
 >(({ placeholder, ...props }, ref) => {
   const { t } = useTranslation();
-  const resolvedPlaceholder =
+  const rawPlaceholder =
     typeof placeholder === "string" ? t(placeholder, placeholder) : placeholder;
+  const resolvedPlaceholder =
+    typeof rawPlaceholder === "string" ? autoTranslate(rawPlaceholder) : rawPlaceholder;
   return <SelectPrimitive.Value ref={ref} placeholder={resolvedPlaceholder} {...props} />;
 });
 SelectValue.displayName = SelectPrimitive.Value.displayName;
@@ -128,7 +131,8 @@ const SelectItem = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
 >(({ className, children, ...props }, ref) => {
   const { t } = useTranslation();
-  const renderedContent = typeof children === "string" ? t(children, children) : children;
+  const rawContent = typeof children === "string" ? t(children, children) : children;
+  const renderedContent = translateNode(rawContent);
 
   return (
     <SelectPrimitive.Item

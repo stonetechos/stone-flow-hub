@@ -46,6 +46,7 @@ import { toUserMessage } from "@/lib/errors";
 import { listMessageTemplates, upsertMessageTemplate } from "@/lib/notifications/templates-api";
 import { extractPlaceholders } from "@/lib/notifications/templates";
 import { invalidateMessageTemplate } from "@/lib/query-invalidation";
+import { autoTranslate } from "@/lib/i18n/auto-translator";
 
 export const Route = createFileRoute("/_authenticated/message-templates")({
   ssr: false,
@@ -181,7 +182,9 @@ function TemplatesPage() {
                     </TableCell>
                   )}
                   {!isHidden("category") && (
-                    <TableCell className="text-sm">{tpl.category}</TableCell>
+                    <TableCell className="text-sm">
+                      {tpl.category ? autoTranslate(tpl.category) : "—"}
+                    </TableCell>
                   )}
                   {!isHidden("active") && (
                     <TableCell>

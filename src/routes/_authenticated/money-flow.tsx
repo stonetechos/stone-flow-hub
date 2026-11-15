@@ -41,7 +41,7 @@ import { DataTableShell } from "@/components/data/DataTableShell";
 import { TablePagination } from "@/components/data/Pagination";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { AccountingGuard } from "@/components/auth/AccountingGuard";
-import { formatInr, formatDate } from "@/lib/format";
+import { formatInr, formatDate, toIndicDigits } from "@/lib/format";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { listPaymentRegister, type PaymentRegisterRow } from "@/lib/payments/crud";
@@ -287,7 +287,7 @@ function MoneyFlowCommandCenterPage() {
                   variant="secondary"
                   className="text-[9px] px-1.5 py-0 bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300"
                 >
-                  {metrics.customerPaymentCount} {t("moneyFlow.rec", "rec.")}
+                  {toIndicDigits(metrics.customerPaymentCount)} {t("moneyFlow.rec", "rec.")}
                 </Badge>
               </div>
             </CardContent>
@@ -316,7 +316,7 @@ function MoneyFlowCommandCenterPage() {
                   variant="secondary"
                   className="text-[9px] px-1.5 py-0 bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300"
                 >
-                  {metrics.vendorPaymentCount} {t("moneyFlow.paid", "paid")}
+                  {toIndicDigits(metrics.vendorPaymentCount)} {t("moneyFlow.paid", "paid")}
                 </Badge>
               </div>
             </CardContent>
@@ -345,7 +345,7 @@ function MoneyFlowCommandCenterPage() {
                   variant="secondary"
                   className="text-[9px] px-1.5 py-0 bg-cyan-100 dark:bg-cyan-950/50 text-cyan-800 dark:text-cyan-300"
                 >
-                  {metrics.agencyPaymentCount} {t("moneyFlow.paid", "paid")}
+                  {toIndicDigits(metrics.agencyPaymentCount)} {t("moneyFlow.paid", "paid")}
                 </Badge>
               </div>
             </CardContent>

@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { MessageSquare, PanelRightClose, PanelRightOpen, RefreshCw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -139,6 +140,7 @@ const INITIAL_MESSAGES: Record<string, WhatsappMessage[]> = {
 };
 
 export function WhatsappCrmWorkspace() {
+  const { t } = useTranslation();
   const [conversations, setConversations] = useState<WhatsappConversation[]>(SEED_CONVERSATIONS);
   const [activeConvId, setActiveConvId] = useState<string>("conv-1");
   const [messagesMap, setMessagesMap] =
@@ -255,10 +257,14 @@ export function WhatsappCrmWorkspace() {
           <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
           <span className="font-semibold text-foreground flex items-center gap-1.5">
             <MessageSquare className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-            STOS WhatsApp CRM Workspace
+            {t("communication.workspaceTitle", "STOS WhatsApp CRM Workspace")}
           </span>
           <span className="text-muted-foreground hidden sm:inline">
-            · Libromi-style Native CRM Mini App beside conversations
+            ·{" "}
+            {t(
+              "communication.workspaceDesc",
+              "Libromi-style Native CRM Mini App beside conversations",
+            )}
           </span>
         </div>
 
@@ -270,7 +276,9 @@ export function WhatsappCrmWorkspace() {
             onClick={() => setStonePickerOpen(true)}
           >
             <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-            <span className="hidden sm:inline">Stone Catalog</span>
+            <span className="hidden sm:inline">
+              {t("communication.stoneCatalog", "Stone Catalog")}
+            </span>
           </Button>
 
           <Button
@@ -278,17 +286,21 @@ export function WhatsappCrmWorkspace() {
             variant="outline"
             className="h-7 text-xs gap-1"
             onClick={() => setCrmPanelOpen(!crmPanelOpen)}
-            title={crmPanelOpen ? "Collapse CRM Panel" : "Expand CRM Panel"}
+            title={
+              crmPanelOpen
+                ? t("communication.collapseCrm", "Collapse CRM Panel")
+                : t("communication.expandCrm", "Expand CRM Panel")
+            }
           >
             {crmPanelOpen ? (
               <>
                 <PanelRightClose className="h-3.5 w-3.5" />
-                <span className="hidden md:inline">Hide CRM</span>
+                <span className="hidden md:inline">{t("communication.hideCrm", "Hide CRM")}</span>
               </>
             ) : (
               <>
                 <PanelRightOpen className="h-3.5 w-3.5" />
-                <span className="hidden md:inline">Show CRM</span>
+                <span className="hidden md:inline">{t("communication.showCrm", "Show CRM")}</span>
               </>
             )}
           </Button>
@@ -337,7 +349,8 @@ export function WhatsappCrmWorkspace() {
         <DialogContent className="max-w-xl p-4">
           <DialogHeader>
             <DialogTitle className="text-sm font-semibold flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-amber-500" /> Natural Stone Product Catalog
+              <Sparkles className="h-4 w-4 text-amber-500" />{" "}
+              {t("communication.stoneCatalogModal", "Natural Stone Product Catalog")}
             </DialogTitle>
           </DialogHeader>
           <StoneCatalogPicker

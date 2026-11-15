@@ -4,6 +4,8 @@ import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { autoTranslate } from "@/lib/i18n/auto-translator";
+import { toIndicDigits } from "@/lib/format";
 
 /**
  * DataToolbar — canonical toolbar for every data workspace.
@@ -42,14 +44,18 @@ export function DataToolbar({
   className?: string;
 }) {
   const { t } = useTranslation();
-  const displayTitle =
+  const rawTitle =
     typeof title === "string"
-      ? t(`page.${title}`, t(`nav.items.${title.toLowerCase()}`, title))
+      ? t(`page.${title}`, t(`nav.items.${title.toLowerCase()}`, t(title, title)))
       : title;
-  const resolvedPlaceholder =
+  const displayTitle = typeof rawTitle === "string" ? autoTranslate(rawTitle) : rawTitle;
+
+  const rawPlaceholder =
     typeof searchPlaceholder === "string"
       ? t(`field.${searchPlaceholder}`, t(searchPlaceholder, searchPlaceholder))
       : searchPlaceholder;
+  const resolvedPlaceholder =
+    typeof rawPlaceholder === "string" ? autoTranslate(rawPlaceholder) : rawPlaceholder;
 
   return (
     <div
@@ -66,7 +72,7 @@ export function DataToolbar({
             </span>
             {typeof count === "number" && (
               <span className="rounded-full bg-blue-50 px-2 py-0.5 font-mono text-[10px] font-bold tabular-nums text-blue-700 shadow-2xs">
-                {count.toLocaleString()}
+                {toIndicDigits(count.toLocaleString())}
               </span>
             )}
           </div>

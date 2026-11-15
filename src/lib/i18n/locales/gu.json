@@ -555,6 +555,16 @@
     "advanced": "અદ્યતન"
   },
   "table": {
+    "code": "કોડ",
+    "CODE": "કોડ",
+    "channel": "ચેનલ",
+    "CHANNEL": "ચેનલ",
+    "category": "શ્રેણી",
+    "CATEGORY": "શ્રેણી",
+    "active": "સક્રિય",
+    "ACTIVE": "સક્રિય",
+    "edit": "સંપાદિત કરો",
+    "EDIT": "સંપાદિત કરો",
     "density": "ઘનતા",
     "rowDensity": "પંક્તિ ઘનતા",
     "comfortable": "આરામદાયક",

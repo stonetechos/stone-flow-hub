@@ -1,5 +1,7 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { autoTranslate } from "@/lib/i18n/auto-translator";
 import {
   Banknote,
   Calendar,
@@ -56,6 +58,7 @@ interface Props {
 }
 
 export function EmployeePaymentsManagementView({ initialEmployeeId, embedded = false }: Props) {
+  const { t } = useTranslation();
   const currentMonth = currentMonthStr();
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const [searchQuery, setSearchQuery] = useState("");
@@ -183,7 +186,7 @@ export function EmployeePaymentsManagementView({ initialEmployeeId, embedded = f
         <div className="flex items-center gap-2">
           <Button size="sm" onClick={() => handleRecordForEmployee()} className="gap-1.5 shadow-sm">
             <Plus className="h-4 w-4" />
-            Record Payment / Advance
+            {t("hr.recordPaymentAdvance", "Record Payment / Advance")}
           </Button>
         </div>
       </div>
@@ -193,7 +196,7 @@ export function EmployeePaymentsManagementView({ initialEmployeeId, embedded = f
         <Card className="shadow-sm">
           <CardContent className="p-4 space-y-1">
             <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
-              <span>Monthly Salary Pool</span>
+              <span>{t("hr.monthlySalaryPool", "Monthly Salary Pool")}</span>
               <Wallet className="h-4 w-4 text-blue-500" />
             </div>
             <div className="text-2xl font-bold tabular-nums">
@@ -207,7 +210,7 @@ export function EmployeePaymentsManagementView({ initialEmployeeId, embedded = f
               {summaryQ.isLoading && !summaryQ.data ? (
                 <Skeleton className="h-3 w-36" />
               ) : (
-                `Across ${summaryQ.data?.totalActiveEmployees ?? 0} active employees`
+                autoTranslate(`Across ${summaryQ.data?.totalActiveEmployees ?? 0} active employees`)
               )}
             </div>
           </CardContent>
@@ -216,7 +219,7 @@ export function EmployeePaymentsManagementView({ initialEmployeeId, embedded = f
         <Card className="shadow-sm border-amber-200/80 bg-amber-50/20 dark:bg-amber-950/10 dark:border-amber-900/40">
           <CardContent className="p-4 space-y-1">
             <div className="flex items-center justify-between text-xs text-amber-800 dark:text-amber-300 font-medium">
-              <span>Intermediate Paid</span>
+              <span>{t("hr.intermediatePaid", "Intermediate Paid")}</span>
               <Banknote className="h-4 w-4 text-amber-600" />
             </div>
             <div className="text-2xl font-bold text-amber-700 dark:text-amber-400 tabular-nums">
@@ -227,7 +230,7 @@ export function EmployeePaymentsManagementView({ initialEmployeeId, embedded = f
               )}
             </div>
             <div className="text-[11px] text-amber-700/80 dark:text-amber-400/80">
-              Advances &amp; mid-month part-payments
+              {t("hr.advancesPartPayments", "Advances & mid-month part-payments")}
             </div>
           </CardContent>
         </Card>
@@ -235,7 +238,7 @@ export function EmployeePaymentsManagementView({ initialEmployeeId, embedded = f
         <Card className="shadow-sm border-emerald-200/80 bg-emerald-50/20 dark:bg-emerald-950/10 dark:border-emerald-900/40">
           <CardContent className="p-4 space-y-1">
             <div className="flex items-center justify-between text-xs text-emerald-800 dark:text-emerald-300 font-medium">
-              <span>Salary Due After Month Ends</span>
+              <span>{t("hr.salaryDueAfterMonthEnds", "Salary Due After Month Ends")}</span>
               <Clock className="h-4 w-4 text-emerald-600" />
             </div>
             <div className="text-2xl font-extrabold text-emerald-700 dark:text-emerald-400 tabular-nums">
@@ -246,7 +249,7 @@ export function EmployeePaymentsManagementView({ initialEmployeeId, embedded = f
               )}
             </div>
             <div className="text-[11px] text-emerald-700/80 dark:text-emerald-400/80">
-              Balance liability for {formatMonthLabel(selectedMonth)}
+              {autoTranslate(`Balance liability for ${formatMonthLabel(selectedMonth)}`)}
             </div>
           </CardContent>
         </Card>
@@ -254,24 +257,29 @@ export function EmployeePaymentsManagementView({ initialEmployeeId, embedded = f
         <Card className="shadow-sm">
           <CardContent className="p-4 space-y-1">
             <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
-              <span>Staff Settlement Status</span>
+              <span>{t("hr.staffSettlementStatus", "Staff Settlement Status")}</span>
               <Users className="h-4 w-4 text-indigo-500" />
             </div>
             <div className="text-2xl font-bold tabular-nums">
               {summaryQ.isLoading && !summaryQ.data ? (
-                <Skeleton className="h-7 w-20 my-0.5" />
+                <Skeleton className="h-7 w-16 my-0.5" />
               ) : (
-                <>
-                  {summaryQ.data?.employeesPendingCount ?? 0}{" "}
-                  <span className="text-sm font-normal text-muted-foreground">pending due</span>
-                </>
+                autoTranslate(
+                  summaryQ.data?.employeesPendingCount && summaryQ.data.employeesPendingCount > 0
+                    ? `${summaryQ.data.employeesPendingCount} pending due`
+                    : "0 fully settled / cleared",
+                )
               )}
             </div>
             <div className="text-[11px] text-muted-foreground">
               {summaryQ.isLoading && !summaryQ.data ? (
-                <Skeleton className="h-3 w-32" />
+                <Skeleton className="h-3 w-28" />
               ) : (
-                `${summaryQ.data?.employeesFullyPaidCount ?? 0} fully settled / cleared`
+                autoTranslate(
+                  summaryQ.data?.employeesPendingCount && summaryQ.data.employeesPendingCount > 0
+                    ? `${summaryQ.data?.employeesFullyPaidCount ?? 0} fully settled / cleared`
+                    : "All salaries cleared",
+                )
               )}
             </div>
           </CardContent>

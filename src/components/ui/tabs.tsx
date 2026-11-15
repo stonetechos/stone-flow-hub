@@ -2,6 +2,7 @@ import * as React from "react";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { autoTranslate } from "@/lib/i18n/auto-translator";
 
 /**
  * STOS tabs.
@@ -65,10 +66,13 @@ const TabsTrigger = React.forwardRef<
     if (typeof node === "string") {
       const trimmed = node.trim();
       if (!trimmed) return node;
-      const translated = t(
+      let translated = t(
         `tab.${trimmed}`,
         t(`nav.items.${trimmed.toLowerCase()}`, t(`field.${trimmed}`, t(trimmed, trimmed))),
       );
+      if (translated === trimmed) {
+        translated = autoTranslate(trimmed);
+      }
       if (translated !== trimmed) {
         return node.replace(trimmed, translated);
       }

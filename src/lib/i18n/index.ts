@@ -13,6 +13,7 @@ import LanguageDetector from "i18next-browser-languagedetector";
 import en from "./locales/en.json";
 import hi from "./locales/hi.json";
 import gu from "./locales/gu.json";
+import { indicAutoTranslate } from "./auto-translator";
 
 export const SUPPORTED_LANGUAGES = [
   { code: "en", label: "English", nativeLabel: "English", short: "EN" },
@@ -24,6 +25,7 @@ export type LangCode = (typeof SUPPORTED_LANGUAGES)[number]["code"];
 
 void i18n
   .use(LanguageDetector)
+  .use(indicAutoTranslate)
   .use(initReactI18next)
   .init({
     resources: {
@@ -39,6 +41,7 @@ void i18n
     },
     fallbackLng: "en",
     supportedLngs: ["en", "hi", "gu"],
+    postProcess: ["indicAutoTranslate"],
     interpolation: {
       // React already handles XSS
       escapeValue: false,

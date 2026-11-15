@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
+import { translateNode } from "@/lib/i18n/auto-translator";
 
 import { cn } from "@/lib/utils";
 
@@ -54,7 +55,7 @@ const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
 CardHeader.displayName = "CardHeader";
 
 const CardTitle = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
+  ({ className, children, ...props }, ref) => (
     <div
       ref={ref}
       className={cn(
@@ -62,14 +63,18 @@ const CardTitle = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivE
         className,
       )}
       {...props}
-    />
+    >
+      {translateNode(children)}
+    </div>
   ),
 );
 CardTitle.displayName = "CardTitle";
 
 const CardDescription = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("text-xs font-medium text-slate-500", className)} {...props} />
+  ({ className, children, ...props }, ref) => (
+    <div ref={ref} className={cn("text-xs font-medium text-slate-500", className)} {...props}>
+      {translateNode(children)}
+    </div>
   ),
 );
 CardDescription.displayName = "CardDescription";

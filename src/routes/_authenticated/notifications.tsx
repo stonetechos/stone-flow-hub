@@ -16,6 +16,7 @@ import { TIER_LABEL, TIER_TONE } from "@/lib/notifications/tiers";
 import { toneSurface } from "@/lib/ui/tones";
 import { qk } from "@/lib/query-keys";
 import { formatRelative } from "@/lib/format";
+import { localizeNotificationText } from "@/components/global/NotificationsBell";
 import { cn } from "@/lib/utils";
 import { ErrorBlock } from "@/components/layout/States";
 import { toUserMessage } from "@/lib/errors";
@@ -96,12 +97,23 @@ function NotificationsPage() {
                           toneSurface(TIER_TONE[n.tier]),
                         )}
                       >
-                        {t(`notifications.tiers.${n.tier}`, TIER_LABEL[n.tier])}
+                        {t(
+                          `notifications.tiers.${n.tier}`,
+                          n.tier === "critical"
+                            ? t("notifications.tierCritical", "Critical")
+                            : n.tier === "important"
+                              ? t("notifications.tierImportant", "Important")
+                              : t("notifications.tierInfo", "Info"),
+                        )}
                       </span>
-                      <div className="truncate text-sm font-medium">{n.title}</div>
+                      <div className="truncate text-sm font-medium">
+                        {localizeNotificationText(n.title)}
+                      </div>
                     </div>
                     {n.body && (
-                      <div className="truncate text-xs text-muted-foreground">{n.body}</div>
+                      <div className="truncate text-xs text-muted-foreground">
+                        {localizeNotificationText(n.body)}
+                      </div>
                     )}
                   </div>
                   <div className="flex shrink-0 items-center gap-2">

@@ -554,6 +554,16 @@
     "advanced": "उन्नत"
   },
   "table": {
+    "code": "कोड",
+    "CODE": "कोड",
+    "channel": "चैनल",
+    "CHANNEL": "चैनल",
+    "category": "श्रेणी",
+    "CATEGORY": "श्रेणी",
+    "active": "सक्रिय",
+    "ACTIVE": "सक्रिय",
+    "edit": "संपादित करें",
+    "EDIT": "संपादित करें",
     "density": "घनत्व",
     "rowDensity": "पंक्ति घनत्व",
     "comfortable": "आरामदायक",

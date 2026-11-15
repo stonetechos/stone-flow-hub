@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Plus, Wrench } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
@@ -38,6 +39,7 @@ export const Route = createFileRoute("/_authenticated/installations/")({
 });
 
 function InstallationsPage() {
+  const { t } = useTranslation();
   const nav = useNavigate();
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("");

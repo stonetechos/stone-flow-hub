@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useTranslation } from "react-i18next";
+import { autoTranslate } from "@/lib/i18n/auto-translator";
 
 import { cn } from "@/lib/utils";
 
@@ -92,13 +93,16 @@ const TableHead = React.forwardRef<
     if (typeof node === "string") {
       const trimmed = node.trim();
       if (!trimmed) return node;
-      const translated = t(
+      let translated = t(
         `table.${trimmed}`,
         t(
           `table.${trimmed.toUpperCase()}`,
           t(`field.${trimmed}`, t(`label.${trimmed}`, t(trimmed, trimmed))),
         ),
       );
+      if (translated === trimmed) {
+        translated = autoTranslate(trimmed);
+      }
       if (translated !== trimmed) {
         return node.replace(trimmed, translated);
       }

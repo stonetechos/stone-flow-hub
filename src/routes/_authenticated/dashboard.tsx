@@ -22,6 +22,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import { transliterateName } from "@/lib/i18n/transliterate";
+import { autoTranslate } from "@/lib/i18n/auto-translator";
 import { greetingFor, getNocturnalQuip, isNocturnalHour } from "@/lib/dashboard/greeting";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
@@ -1221,7 +1222,7 @@ function CopilotDock({
                   </div>
                   <div className="font-bold text-xs leading-snug break-words">{s.title}</div>
                   {s.subtitle && (
-                    <div className="text-[10px] text-muted-foreground font-medium truncate">
+                    <div className="text-[10px] text-muted-foreground font-medium break-words">
                       {s.subtitle}
                     </div>
                   )}
@@ -2049,6 +2050,8 @@ function formatActivitySummary(summary: string, _entityType: string | null, t: T
     return t("activity.summaries.customersCreated", "नए ग्राहक बनाए गए");
   if (norm.includes("customer") && norm.includes("updat"))
     return t("activity.summaries.customersUpdated", "ग्राहक विवरण अपडेट");
+  if (norm.includes("customer") && (norm.includes("delet") || norm.includes("remov")))
+    return t("activity.summaries.customersDeleted", "ग्राहक हटाए गए");
   if (norm.includes("receipt") && norm.includes("creat"))
     return t("activity.summaries.receiptsCreated", "रसीद दर्ज की गई");
   if (norm.includes("receipt") && norm.includes("updat"))
@@ -2069,7 +2072,7 @@ function formatActivitySummary(summary: string, _entityType: string | null, t: T
     return t("activity.summaries.paymentsCreated", "भुगतान दर्ज किया गया");
   if (norm.includes("payment") && norm.includes("updat"))
     return t("activity.summaries.paymentsUpdated", "भुगतान अपडेट हुआ");
-  return summary;
+  return autoTranslate(summary);
 }
 
 export interface DashboardSuggestionItem {
@@ -2154,8 +2157,8 @@ function buildSuggestions(
 
       return {
         to: i.action.href || "/quotes",
-        title,
-        subtitle,
+        title: autoTranslate(title, lang),
+        subtitle: subtitle ? autoTranslate(subtitle, lang) : undefined,
         badge,
         isRedFlag,
         priority: i.normalizedPriority,

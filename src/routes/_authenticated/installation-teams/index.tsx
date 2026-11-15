@@ -1,6 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { autoTranslate } from "@/lib/i18n/auto-translator";
 import {
   Plus,
   Users,
@@ -135,7 +137,7 @@ function ApplicationPartnersPage() {
               : "border border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
           }`}
         >
-          <HardHat className="h-3.5 w-3.5" /> All Partners ({rawRows.length})
+          <HardHat className="h-3.5 w-3.5" /> {autoTranslate(`All Partners (${rawRows.length})`)}
         </button>
 
         <button
@@ -147,7 +149,8 @@ function ApplicationPartnersPage() {
               : "border border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
           }`}
         >
-          <Sparkles className="h-3.5 w-3.5" /> Contractors & Agencies ({agencyCount})
+          <Sparkles className="h-3.5 w-3.5" />{" "}
+          {autoTranslate(`Contractors & Agencies (${agencyCount})`)}
         </button>
 
         <button
@@ -159,7 +162,7 @@ function ApplicationPartnersPage() {
               : "border border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
           }`}
         >
-          <Users className="h-3.5 w-3.5" /> Site Execution Teams ({teamCount})
+          <Users className="h-3.5 w-3.5" /> {autoTranslate(`Site Execution Teams (${teamCount})`)}
         </button>
       </div>
 

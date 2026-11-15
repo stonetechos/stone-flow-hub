@@ -76,6 +76,8 @@ import {
 import { createReceipt } from "@/lib/receipts/api";
 import { useRoles } from "@/hooks/use-roles";
 import { useTranslation } from "react-i18next";
+import { autoTranslate } from "@/lib/i18n/auto-translator";
+import { toIndicDigits } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/agency-payments")({
   ssr: false,
@@ -391,13 +393,13 @@ function AgencyPaymentsPage() {
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                 <SelectTrigger className="h-8 text-xs w-[170px] bg-background">
                   <Tag className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
-                  <SelectValue placeholder="All Categories" />
+                  <SelectValue placeholder={autoTranslate("All Categories")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
+                  <SelectItem value="all">{autoTranslate("All Categories")}</SelectItem>
                   {AGENCY_WORK_TYPES.map((wt) => (
                     <SelectItem key={wt.value} value={wt.value}>
-                      {wt.label}
+                      {autoTranslate(wt.label)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -410,12 +412,12 @@ function AgencyPaymentsPage() {
               >
                 <SelectTrigger className="h-8 text-xs w-[160px] bg-background">
                   <Filter className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
-                  <SelectValue placeholder="All Payers" />
+                  <SelectValue placeholder={autoTranslate("All Payers")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Payers</SelectItem>
-                  <SelectItem value="company">🏢 Paid by Company</SelectItem>
-                  <SelectItem value="customer">👤 Paid by Customer</SelectItem>
+                  <SelectItem value="all">{autoTranslate("All Payers")}</SelectItem>
+                  <SelectItem value="company">{autoTranslate("🏢 Paid by Company")}</SelectItem>
+                  <SelectItem value="customer">{autoTranslate("👤 Paid by Customer")}</SelectItem>
                 </SelectContent>
               </Select>
 

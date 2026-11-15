@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import type { FormEvent, ReactNode, RefObject } from "react";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
+import { translateNode } from "@/lib/i18n/auto-translator";
 
 // Root form
 export function FormLayout({
@@ -86,10 +87,10 @@ export function FormSection({
       <header className="mb-5 flex items-start justify-between gap-4 border-b border-blue-50/70 pb-3.5">
         <div>
           <h2 className="font-display text-[16px] font-bold tracking-tight text-engraved-title">
-            {title}
+            {translateNode(title)}
           </h2>
           {description ? (
-            <p className="mt-1 text-xs font-medium text-slate-500">{description}</p>
+            <p className="mt-1 text-xs font-medium text-slate-500">{translateNode(description)}</p>
           ) : null}
         </div>
         {aside ? <div className="shrink-0">{aside}</div> : null}

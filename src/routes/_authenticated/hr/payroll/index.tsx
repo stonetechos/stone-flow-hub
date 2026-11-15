@@ -36,7 +36,8 @@ import {
 import { createPayrollRun, listPayrollRuns, processPayrollRun } from "@/lib/hr/payroll-api";
 import { MONTH_LABELS, periodLabel } from "@/lib/hr/payroll-engine";
 import { listBranches } from "@/lib/hr/api";
-import { formatInr } from "@/lib/format";
+import { formatInr, toIndicDigits } from "@/lib/format";
+import { autoTranslate } from "@/lib/i18n/auto-translator";
 import { toUserMessage } from "@/lib/errors";
 import { useRoles } from "@/hooks/use-roles";
 
@@ -218,7 +219,7 @@ export function PayrollRunsView() {
               {(runs.data ?? []).map((r) => (
                 <TableRow key={r.id}>
                   <TableCell className="font-medium">
-                    {periodLabel(r.period_year, r.period_month)}
+                    {autoTranslate(periodLabel(r.period_year, r.period_month))}
                     {r.run_code ? (
                       <span className="text-muted-foreground ml-2 text-xs">{r.run_code}</span>
                     ) : null}
@@ -228,7 +229,7 @@ export function PayrollRunsView() {
                       {t(`payroll.status.${r.status}`, STATUS_LABEL[r.status] ?? r.status)}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right">{r.employee_count}</TableCell>
+                  <TableCell className="text-right">{toIndicDigits(r.employee_count)}</TableCell>
                   <TableCell className="text-right">{formatInr(Number(r.total_gross))}</TableCell>
                   <TableCell className="text-right">
                     {formatInr(Number(r.total_deductions))}

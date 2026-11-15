@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 
 import { useTranslation } from "react-i18next";
+import { autoTranslate } from "@/lib/i18n/auto-translator";
 
 const QuickFormContext = createContext<{ scrollable: boolean }>({ scrollable: true });
 
@@ -104,10 +105,10 @@ QuickForm.QuickFill = function QuickFill({ children }: { children: ReactNode }) 
       <header className="mb-3 flex items-center gap-2">
         <Star className="h-4 w-4 fill-warning text-warning" aria-hidden />
         <h3 className="font-display text-sm font-semibold uppercase tracking-wide text-foreground">
-          {t("form.quickFill", "Quick Fill")}
+          {autoTranslate(t("form.quickFill", "Quick Fill"))}
         </h3>
         <span className="text-xs text-muted-foreground">
-          {t("form.essentialsOnly", "— essentials only")}
+          {autoTranslate(t("form.essentialsOnly", "— essentials only"))}
         </span>
       </header>
       <div ref={ref} className="grid gap-4 md:grid-cols-2">

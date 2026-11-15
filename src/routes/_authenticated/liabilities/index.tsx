@@ -325,7 +325,7 @@ function LiabilitiesPage() {
                   disabled={rows.length === 0}
                 >
                   <Receipt className="mr-2 h-4 w-4 text-emerald-600" />
-                  Record Payment
+                  {t("liabilities.recordPayment", "Record Payment")}
                 </Button>
                 <Button size="sm" onClick={openCreate}>
                   <Plus className="mr-2 h-4 w-4" />
@@ -343,7 +343,7 @@ function LiabilitiesPage() {
             </div>
             <div>
               <div className="text-xs text-muted-foreground uppercase font-medium tracking-wider">
-                Monthly Active Drain
+                {t("liabilities.monthlyDrain", "Monthly Active Drain")}
               </div>
               <div className="font-display text-xl font-semibold text-foreground">
                 {formatInr(totalActive)}
@@ -357,7 +357,7 @@ function LiabilitiesPage() {
             </div>
             <div>
               <div className="text-xs text-muted-foreground uppercase font-medium tracking-wider">
-                Total Payments Settled
+                {t("liabilities.totalSettled", "Total Payments Settled")}
               </div>
               <div className="font-display text-xl font-semibold text-foreground">
                 {formatInr(totalPaid)}
@@ -372,7 +372,7 @@ function LiabilitiesPage() {
               </div>
               <div>
                 <div className="text-xs text-muted-foreground uppercase font-medium tracking-wider">
-                  Annual Net-Margin Goal
+                  {t("liabilities.annualGoal", "Annual Net-Margin Goal")}
                 </div>
                 {goalQuery.isLoading ? (
                   <div className="text-lg font-semibold text-muted-foreground">

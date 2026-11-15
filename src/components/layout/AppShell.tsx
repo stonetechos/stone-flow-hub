@@ -1431,7 +1431,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 centralized here as one token instead of a second hardcoded
                 number. */}
             <div className="mx-auto w-full max-w-[var(--stos-content-max-width)] min-w-0">
-              <PageTransition>{children}</PageTransition>
+              <PageTransition key={currentLang}>{children}</PageTransition>
             </div>
           </main>
 
@@ -1453,7 +1453,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 )}
               >
                 <LayoutDashboard className="h-5 w-5 mb-0.5" />
-                <span>Dashboard</span>
+                <span>{t("nav.dashboard", "Dashboard")}</span>
               </Link>
               <Link
                 to="/enquiries"
@@ -1465,7 +1465,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 )}
               >
                 <Globe className="h-5 w-5 mb-0.5" />
-                <span>Leads</span>
+                <span>{t("nav.leads", "Leads")}</span>
               </Link>
               <Link
                 to="/quotes"
@@ -1477,7 +1477,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 )}
               >
                 <FileText className="h-5 w-5 mb-0.5" />
-                <span>Quotes</span>
+                <span>{t("nav.quotes", "Quotes")}</span>
               </Link>
               <Link
                 to="/dispatch"
@@ -1489,7 +1489,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 )}
               >
                 <Truck className="h-5 w-5 mb-0.5" />
-                <span>Dispatch</span>
+                <span>{t("nav.dispatch", "Dispatch")}</span>
               </Link>
               <button
                 type="button"
@@ -1498,7 +1498,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 aria-label="Open navigation menu"
               >
                 <Menu className="h-5 w-5 mb-0.5" />
-                <span>Menu</span>
+                <span>{t("common.menu", "Menu")}</span>
               </button>
             </nav>
           )}

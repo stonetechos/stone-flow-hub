@@ -2,6 +2,7 @@ import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
+import { autoTranslate } from "@/lib/i18n/auto-translator";
 
 import { cn } from "@/lib/utils";
 
@@ -77,7 +78,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       if (typeof child === "string") {
         const trimmed = child.trim();
         if (!trimmed) return child;
-        const translated = t(trimmed, trimmed);
+        let translated = t(trimmed, trimmed);
+        if (translated === trimmed) {
+          translated = autoTranslate(trimmed);
+        }
         if (translated !== trimmed) {
           return child.replace(trimmed, translated);
         }

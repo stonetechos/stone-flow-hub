@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Send,
   ExternalLink,
@@ -57,6 +58,7 @@ export function WhatsappChatArea({
   onAttachCatalogPdf,
   insertedText,
 }: WhatsappChatAreaProps) {
+  const { t } = useTranslation();
   const [inputText, setInputText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -210,7 +212,8 @@ export function WhatsappChatArea({
             className="h-7 text-[11px] gap-1 text-amber-700 dark:text-amber-400 border-amber-500/40"
             onClick={onOpenStonePicker}
           >
-            <Sparkles className="h-3.5 w-3.5" /> Insert Stone Specs
+            <Sparkles className="h-3.5 w-3.5" />{" "}
+            {t("communication.insertStoneSpecs", "Insert Stone Specs")}
           </Button>
 
           <Button
@@ -219,13 +222,14 @@ export function WhatsappChatArea({
             className="h-7 text-[11px] gap-1 text-emerald-700 dark:text-emerald-400 border-emerald-500/40"
             onClick={onAttachCatalogPdf}
           >
-            <FileText className="h-3.5 w-3.5" /> Share Catalog PDF
+            <FileText className="h-3.5 w-3.5" />{" "}
+            {t("communication.shareCatalogPdf", "Share Catalog PDF")}
           </Button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1">
-                ⚡ Templates
+                ⚡ {t("communication.templates", "Templates")}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-64">
@@ -245,7 +249,10 @@ export function WhatsappChatArea({
         {/* Textarea & Send button */}
         <div className="flex items-end gap-2">
           <Textarea
-            placeholder="Type your WhatsApp message (Enter to send, Shift+Enter for newline)..."
+            placeholder={t(
+              "communication.typeWhatsappMessage",
+              "Type your WhatsApp message (Enter to send, Shift+Enter for newline)...",
+            )}
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={handleKeyDown}
