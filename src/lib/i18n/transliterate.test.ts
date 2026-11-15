@@ -50,6 +50,14 @@ describe("transliterateName", () => {
     expect(transliterateName("The Home Decor Point", "gu")).toBe("ધ હોમ ડેકોર પોઇન્ટ");
     expect(transliterateName("JIL Pack Marketing LLP", "hi")).toBe("जेआईएल पैक मार्केटिंग एलएलपी");
     expect(transliterateName("JIL Pack Marketing LLP", "gu")).toBe("જેઆઈએલ પેક માર્કેટિંગ એલએલપી");
+    expect(transliterateName("Siraj Bhai", "hi")).toBe("सिराज भाई");
+    expect(transliterateName("Siraj Bhai", "gu")).toBe("સિરાજ ભાઈ");
+    expect(transliterateName("Meet Patel Science City", "hi")).toBe("मीत पटेल साइंस सिटी");
+    expect(transliterateName("Meet Patel Science City", "gu")).toBe("મીત પટેલ સાયન્સ સિટી");
+    expect(transliterateName("CUS-000067", "hi")).toBe("CUS-000067");
+    expect(transliterateName("CUS-000067", "gu")).toBe("CUS-000067");
+    expect(transliterateName("QUO-000025", "hi")).toBe("QUO-000025");
+    expect(transliterateName("QUO-000025", "gu")).toBe("QUO-000025");
   });
 
   it("handles null, undefined, empty strings cleanly", () => {

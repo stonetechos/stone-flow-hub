@@ -373,6 +373,59 @@ const GUJARATI_DICT: Record<string, string> = {
   unpaid: "બાકી",
   order: "ઓર્ડર",
   placed: "આપ્યો",
+
+  // Suffixes as standalone words
+  bhai: "ભાઈ",
+  ben: "બેન",
+  prasad: "પ્રસાદ",
+  das: "દાસ",
+  chand: "ચંદ",
+  devi: "દેવી",
+
+  // Customer & firm vocabulary
+  siraj: "સિરાજ",
+  science: "સાયન્સ",
+  city: "સિટી",
+  meet: "મીત",
+  architecture: "વાસ્તુશિલ્પ",
+  realtors: "રિઅલ્ટર્સ",
+  dileep: "દિલીપ",
+  dilip: "દિલીપ",
+  mahawar: "મહાવર",
+  darji: "દરજી",
+  pickup: "પિકઅપ",
+  gopal: "ગોપાલ",
+  mistry: "મિર્સ્તી",
+  misty: "મિર્સ્તી",
+  ravi: "રવિ",
+  jash: "જશ",
+  vasani: "વસાણી",
+  ankur: "અંકુર",
+  jaiswal: "જાયસવાલ",
+  gagan: "ગગન",
+  kaushal: "કૌશલ",
+  jeerawala: "જીરાવાલા",
+  developer: "ડેવલપર",
+  infrastructure: "ઇન્ફ્રાસ્ટ્રક્ચર",
+  construction: "કન્સ્ટ્રક્શન",
+  constructions: "કન્સ્ટ્રક્શન્સ",
+  builder: "બિલ્ડર",
+  buildcon: "બિલ્ડકોન",
+  services: "સર્વિસીસ",
+  agencies: "એજન્સીઓ",
+  works: "વર્ક્સ",
+  mart: "માર્ટ",
+  bazaar: "બજાર",
+  plaza: "પ્લાઝા",
+  hub: "હબ",
+  house: "હાઉસ",
+  homes: "હોમ્સ",
+  living: "લિવિંગ",
+  world: "વર્લ્ડ",
+  center: "સેન્ટર",
+  centre: "સેન્ટર",
+  craft: "ક્રાફ્ટ",
+  crafts: "ક્રાફ્ટસ",
 };
 
 const GUJARATI_SUFFIXES: Record<string, string> = {
@@ -758,6 +811,59 @@ const HINDI_DICT: Record<string, string> = {
   unpaid: "अदत्त",
   order: "ऑर्डर",
   placed: "दिया गया",
+
+  // Suffixes as standalone words
+  bhai: "भाई",
+  ben: "बेन",
+  prasad: "प्रसाद",
+  das: "दास",
+  chand: "चंद",
+  devi: "देवी",
+
+  // Customer & firm vocabulary
+  siraj: "सिराज",
+  science: "साइंस",
+  city: "सिटी",
+  meet: "मीत",
+  architecture: "वास्तुशिल्प",
+  realtors: "रियल्टर्स",
+  dileep: "दिलीप",
+  dilip: "दिलीप",
+  mahawar: "महावर",
+  darji: "दर्जी",
+  pickup: "पिकअप",
+  gopal: "गोपाल",
+  mistry: "मिस्त्री",
+  misty: "मिस्त्री",
+  ravi: "रवि",
+  jash: "जश",
+  vasani: "वसानी",
+  ankur: "अंकुर",
+  jaiswal: "जायसवाल",
+  gagan: "गगन",
+  kaushal: "कौशल",
+  jeerawala: "जीरावाला",
+  developer: "डेवलपर",
+  infrastructure: "इन्फ्रास्ट्रक्चर",
+  construction: "कंस्ट्रक्शन",
+  constructions: "कंस्ट्रक्शंस",
+  builder: "बिल्डर",
+  buildcon: "बिल्डकॉन",
+  services: "सर्विसेज",
+  agencies: "एजेंसियां",
+  works: "वर्क्स",
+  mart: "मार्ट",
+  bazaar: "बाजार",
+  plaza: "प्लाजा",
+  hub: "हब",
+  house: "हाउस",
+  homes: "होम्स",
+  living: "लिविंग",
+  world: "वर्ल्ड",
+  center: "सेंटर",
+  centre: "सेंटर",
+  craft: "क्राफ्ट",
+  crafts: "क्राफ्ट्स",
 };
 
 const HINDI_SUFFIXES: Record<string, string> = {
@@ -809,6 +915,10 @@ function transliteratePhoneticGu(word: string): string {
     w: "વ",
     s: "સ",
     h: "હ",
+    c: "ક",
+    q: "ક",
+    x: "ક્સ",
+    z: "ઝ",
   };
   const vMatra: Record<string, string> = {
     aa: "ા",
@@ -960,6 +1070,10 @@ function transliteratePhoneticHi(word: string): string {
     w: "व",
     s: "स",
     h: "ह",
+    c: "क",
+    q: "क",
+    x: "क्स",
+    z: "ज़",
   };
   const vMatra: Record<string, string> = {
     aa: "ा",
@@ -1078,22 +1192,54 @@ function transliteratePhoneticHi(word: string): string {
   return res;
 }
 
+const PRESERVED_CODES = new Set([
+  "cus",
+  "cust",
+  "quo",
+  "inv",
+  "dsp",
+  "rct",
+  "po",
+  "rfq",
+  "grn",
+  "ven",
+  "emp",
+  "so",
+  "est",
+  "vpay",
+]);
+
+function shouldPreserveCode(token: string, lower: string): boolean {
+  if (PRESERVED_CODES.has(lower)) return true;
+  // Code format like CUS-000067, VPOS-1234
+  if (/^[A-Za-z]{2,5}-\d+$/i.test(token)) {
+    return true;
+  }
+  return false;
+}
+
 function transliterateTokenGu(token: string): string {
   const clean = token.trim();
   if (!clean) return token;
   const lower = clean.toLowerCase();
 
+  if (shouldPreserveCode(clean, lower)) return clean;
   if (GUJARATI_DICT[lower]) return GUJARATI_DICT[lower];
 
   for (const sfx of Object.keys(GUJARATI_SUFFIXES)) {
     if (lower.endsWith(sfx) && lower.length > sfx.length) {
       const root = lower.slice(0, -sfx.length);
       const rootTrans = GUJARATI_DICT[root] || transliteratePhoneticGu(root);
-      return rootTrans + GUJARATI_SUFFIXES[sfx];
+      if (!/[a-zA-Z]/.test(rootTrans)) {
+        return rootTrans + GUJARATI_SUFFIXES[sfx];
+      }
     }
   }
 
-  return transliteratePhoneticGu(lower);
+  const phonetic = transliteratePhoneticGu(lower);
+  // If phonetic transliteration left unparsed Latin characters, return clean original
+  if (/[a-zA-Z]/.test(phonetic)) return clean;
+  return phonetic;
 }
 
 function transliterateTokenHi(token: string): string {
@@ -1101,17 +1247,23 @@ function transliterateTokenHi(token: string): string {
   if (!clean) return token;
   const lower = clean.toLowerCase();
 
+  if (shouldPreserveCode(clean, lower)) return clean;
   if (HINDI_DICT[lower]) return HINDI_DICT[lower];
 
   for (const sfx of Object.keys(HINDI_SUFFIXES)) {
     if (lower.endsWith(sfx) && lower.length > sfx.length) {
       const root = lower.slice(0, -sfx.length);
       const rootTrans = HINDI_DICT[root] || transliteratePhoneticHi(root);
-      return rootTrans + HINDI_SUFFIXES[sfx];
+      if (!/[a-zA-Z]/.test(rootTrans)) {
+        return rootTrans + HINDI_SUFFIXES[sfx];
+      }
     }
   }
 
-  return transliteratePhoneticHi(lower);
+  const phonetic = transliteratePhoneticHi(lower);
+  // If phonetic transliteration left unparsed Latin characters, return clean original
+  if (/[a-zA-Z]/.test(phonetic)) return clean;
+  return phonetic;
 }
 
 /**
