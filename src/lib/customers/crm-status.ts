@@ -690,25 +690,30 @@ export function getCustomerStatusNotificationInfo(
   const isSent =
     crm.status_whatsapp_sent === true && crm.status_whatsapp_status_key === currentStatus;
 
-  // Has staff explicitly assigned/updated a response_status or workflow state?
-  const hasConfiguredStatus = Boolean(
-    crm.response_status ||
-    crm.status_updated_at ||
-    crm.status_whatsapp_status_key ||
-    crm.status_whatsapp_sent !== undefined,
-  );
+  // Only active in-flight operational milestones (where production, carving, or site work is actively underway)
+  // trigger an active "customer not updated" warning prompt.
+  // Completed orders/supplies (order_completed), dormant/unresponsive clients, cancelled orders,
+  // payment-pending reminders, and general responsive accounts NEVER require a notification warning or nag.
+  const isOperationalMilestone =
+    currentStatus === "installation_team_working" ||
+    currentStatus === "artwork_team_working" ||
+    currentStatus === "order_placed";
 
-  // If status was configured/updated and notification was not sent for this status:
-  const needsNotification = hasConfiguredStatus && !isSent;
+  const needsNotification = isOperationalMilestone && !isSent;
 
   return {
     isNotified: isSent,
     needsNotification,
     status: currentStatus,
     statusLabel,
-    sentAt: typeof crm.status_whatsapp_sent_at === "string" ? crm.status_whatsapp_sent_at : null,
+    sentAt:
+      isSent && typeof crm.status_whatsapp_sent_at === "string"
+        ? crm.status_whatsapp_sent_at
+        : null,
     sentStatusKey:
-      typeof crm.status_whatsapp_status_key === "string" ? crm.status_whatsapp_status_key : null,
+      isSent && typeof crm.status_whatsapp_status_key === "string"
+        ? crm.status_whatsapp_status_key
+        : null,
     statusUpdatedAt: typeof crm.status_updated_at === "string" ? crm.status_updated_at : null,
     message: needsNotification
       ? "The customer is not updated with the current status"

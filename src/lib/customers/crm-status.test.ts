@@ -461,6 +461,38 @@ describe("Customer CRM Status", () => {
       const info = getCustomerStatusNotificationInfo(customer);
       expect(info.needsNotification).toBe(false);
     });
+
+    it("NEVER flags customer as needing notification when order/supply is completed", () => {
+      const customer = {
+        is_active: true,
+        workflow_state: {
+          response_status: "order_completed" as const,
+          status_whatsapp_sent: false,
+        },
+      };
+
+      const info = getCustomerStatusNotificationInfo(customer);
+      expect(info.needsNotification).toBe(false);
+      expect(info.status).toBe("order_completed");
+    });
+
+    it("NEVER flags customer as needing notification when dormant or inactive", () => {
+      const dormantCustomer = {
+        is_active: false,
+        workflow_state: {
+          response_status: "dormant" as const,
+        },
+      };
+      expect(getCustomerStatusNotificationInfo(dormantCustomer).needsNotification).toBe(false);
+
+      const inactiveCustomer = {
+        is_active: false,
+        workflow_state: {
+          response_status: "inactive_no_response" as const,
+        },
+      };
+      expect(getCustomerStatusNotificationInfo(inactiveCustomer).needsNotification).toBe(false);
+    });
   });
 
   describe("Customer Follow-up Tracking & Dormant Detection", () => {

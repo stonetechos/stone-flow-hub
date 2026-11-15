@@ -301,7 +301,7 @@ export function CustomerResponseStatusSelect({
           </button>
         )}
 
-        {showNotificationStatus && !notifInfo.needsNotification && notifInfo.sentAt && (
+        {showNotificationStatus && notifInfo.isNotified && notifInfo.sentAt && (
           <button
             type="button"
             onClick={(e) => {
