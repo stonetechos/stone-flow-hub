@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { MessageSquare, PanelRightClose, PanelRightOpen, RefreshCw, Sparkles } from "lucide-react";
+import { MessageSquare, PanelRightClose, PanelRightOpen, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,7 +16,7 @@ import type { WhatsappConversation, WhatsappMessage } from "./types";
 const SEED_CONVERSATIONS: WhatsappConversation[] = [
   {
     id: "conv-1",
-    phone: "919825012345",
+    phone: "919784452998",
     contactName: "Ar. Mehul Panchal",
     companyName: "Studio Vista Architects",
     lastMessage: "Please share the rate for 30mm Gwalior Mint Sandstone and Agra Red.",
@@ -259,13 +259,6 @@ export function WhatsappCrmWorkspace() {
             <MessageSquare className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
             {t("communication.workspaceTitle", "STOS WhatsApp CRM Workspace")}
           </span>
-          <span className="text-muted-foreground hidden sm:inline">
-            ·{" "}
-            {t(
-              "communication.workspaceDesc",
-              "Libromi-style Native CRM Mini App beside conversations",
-            )}
-          </span>
         </div>
 
         <div className="flex items-center gap-2">
@@ -275,7 +268,6 @@ export function WhatsappCrmWorkspace() {
             className="h-7 text-xs gap-1"
             onClick={() => setStonePickerOpen(true)}
           >
-            <Sparkles className="h-3.5 w-3.5 text-amber-500" />
             <span className="hidden sm:inline">
               {t("communication.stoneCatalog", "Stone Catalog")}
             </span>
@@ -349,7 +341,6 @@ export function WhatsappCrmWorkspace() {
         <DialogContent className="max-w-xl p-4">
           <DialogHeader>
             <DialogTitle className="text-sm font-semibold flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-amber-500" />{" "}
               {t("communication.stoneCatalogModal", "Natural Stone Product Catalog")}
             </DialogTitle>
           </DialogHeader>

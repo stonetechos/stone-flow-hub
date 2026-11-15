@@ -12,7 +12,6 @@
 import { useState } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {
-  Sparkles,
   Search,
   ShieldCheck,
   CheckCircle2,

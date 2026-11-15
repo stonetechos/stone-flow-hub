@@ -200,7 +200,6 @@ export function CustomerResponseStatusSelect({
           <DropdownMenuContent align="start" className="w-64 p-1.5 z-50">
             <DropdownMenuLabel className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               <span>{t("crm.clientResponseStatus", "Client Response Status")}</span>
-              <Sparkles className="h-3 w-3 text-cyan-600" />
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
 

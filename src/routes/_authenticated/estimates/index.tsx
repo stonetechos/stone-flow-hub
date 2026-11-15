@@ -97,7 +97,7 @@ function EstimatesListPage() {
             className="flex flex-col items-start gap-0.5 cursor-pointer"
           >
             <span className="font-medium flex items-center gap-1.5 text-primary">
-              <Sparkles className="h-3.5 w-3.5" /> Stone Mural Studio
+              Stone Mural Studio
             </span>
             <span className="text-xs text-muted-foreground">
               Calculate mural slabs, CNC job work, and installation costing.
@@ -131,7 +131,7 @@ function EstimatesListPage() {
           <div className="flex items-center gap-2">
             <Button asChild variant="outline" size="sm" className="h-8 gap-1.5">
               <Link to="/quotes" search={{ new: "1", studio: "mural" }}>
-                <Sparkles className="h-3.5 w-3.5 text-primary" /> Stone Mural Studio
+                Stone Mural Studio
               </Link>
             </Button>
             <Button asChild variant="outline" size="sm" className="h-8 gap-1.5">

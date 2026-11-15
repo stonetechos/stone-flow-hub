@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Sparkles, Key, CheckCircle2, Loader2, Eye, EyeOff } from "lucide-react";
+import { Key, CheckCircle2, Loader2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -37,7 +37,6 @@ export function AiSettingsCard({ isAdmin }: { isAdmin: boolean }) {
     <Card className="shadow-1">
       <CardHeader className="flex flex-row items-center justify-between pb-3">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-teal-600" />
           <CardTitle className="text-sm">Stoneman AI &amp; Copilot Engine</CardTitle>
         </div>
         <div className="flex items-center gap-2">

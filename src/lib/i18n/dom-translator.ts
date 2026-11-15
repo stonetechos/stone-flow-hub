@@ -92,15 +92,16 @@ export function useIndicDomAutoTranslator() {
     const pendingNodes = new Set<Node>();
 
     const processTextNode = (textNode: Text) => {
-      const text = textNode.nodeValue;
-      if (!text || !/[a-zA-Z]/.test(text)) return;
+      const customNode = textNode as unknown as { __origStosEnglish?: string };
+      const currentVal = textNode.nodeValue || "";
+      const sourceText = customNode.__origStosEnglish || currentVal;
+      if (!sourceText || !/[a-zA-Z]/.test(sourceText)) return;
       if (shouldSkipElement(textNode.parentElement)) return;
 
-      const translated = autoTranslate(text, lang);
-      if (translated && translated !== text) {
-        const customNode = textNode as unknown as { __origStosEnglish?: string };
+      const translated = autoTranslate(sourceText, lang);
+      if (translated && translated !== currentVal) {
         if (!customNode.__origStosEnglish) {
-          customNode.__origStosEnglish = text;
+          customNode.__origStosEnglish = sourceText;
         }
         isTranslating = true;
         try {
@@ -116,12 +117,12 @@ export function useIndicDomAutoTranslator() {
 
       // 1. Placeholder on input/textarea
       if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
-        const ph = el.getAttribute("placeholder");
-        if (ph && /[a-zA-Z]/.test(ph)) {
+        const sourcePh = el.dataset.origStosPh || el.getAttribute("placeholder");
+        if (sourcePh && /[a-zA-Z]/.test(sourcePh)) {
           if (!el.dataset.origStosPh) {
-            el.dataset.origStosPh = ph;
+            el.dataset.origStosPh = sourcePh;
           }
-          const translatedPh = autoTranslate(ph, lang);
+          const translatedPh = autoTranslate(sourcePh, lang);
           if (translatedPh && translatedPh !== el.placeholder) {
             el.placeholder = translatedPh;
           }
@@ -129,27 +130,26 @@ export function useIndicDomAutoTranslator() {
       }
 
       // 2. Title attribute
-      const title = el.getAttribute("title");
-      if (title && /[a-zA-Z]/.test(title)) {
-        const htmlEl = el as HTMLElement;
+      const htmlEl = el as HTMLElement;
+      const sourceTitle = htmlEl.dataset?.origStosTitle || el.getAttribute("title");
+      if (sourceTitle && /[a-zA-Z]/.test(sourceTitle)) {
         if (htmlEl.dataset && !htmlEl.dataset.origStosTitle) {
-          htmlEl.dataset.origStosTitle = title;
+          htmlEl.dataset.origStosTitle = sourceTitle;
         }
-        const translatedTitle = autoTranslate(title, lang);
-        if (translatedTitle && translatedTitle !== title) {
+        const translatedTitle = autoTranslate(sourceTitle, lang);
+        if (translatedTitle && translatedTitle !== el.getAttribute("title")) {
           el.setAttribute("title", translatedTitle);
         }
       }
 
       // 3. Aria-label attribute
-      const ariaLabel = el.getAttribute("aria-label");
-      if (ariaLabel && /[a-zA-Z]/.test(ariaLabel)) {
-        const htmlEl = el as HTMLElement;
+      const sourceAria = htmlEl.dataset?.origStosAria || el.getAttribute("aria-label");
+      if (sourceAria && /[a-zA-Z]/.test(sourceAria)) {
         if (htmlEl.dataset && !htmlEl.dataset.origStosAria) {
-          htmlEl.dataset.origStosAria = ariaLabel;
+          htmlEl.dataset.origStosAria = sourceAria;
         }
-        const translatedAria = autoTranslate(ariaLabel, lang);
-        if (translatedAria && translatedAria !== ariaLabel) {
+        const translatedAria = autoTranslate(sourceAria, lang);
+        if (translatedAria && translatedAria !== el.getAttribute("aria-label")) {
           el.setAttribute("aria-label", translatedAria);
         }
       }

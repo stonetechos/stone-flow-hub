@@ -3,15 +3,7 @@
  * Sources from the insight provider registry with shared dismissal lifecycle.
  */
 import { Link } from "@tanstack/react-router";
-import {
-  Sparkles,
-  ArrowRight,
-  AlertTriangle,
-  TrendingUp,
-  ShieldAlert,
-  CircleCheck,
-  X,
-} from "lucide-react";
+import { ArrowRight, AlertTriangle, TrendingUp, ShieldAlert, CircleCheck, X } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -46,7 +38,7 @@ export function BusinessInsightsCard() {
     <Card className="mt-4">
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-base">
-          <Sparkles className="h-4 w-4 text-primary" />
+          <TrendingUp className="h-4 w-4 text-primary" />
           Business Priorities
           <Badge variant="secondary" className="ml-auto text-[10px] uppercase">
             Live data

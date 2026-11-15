@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Search, Sparkles, FileText, Check } from "lucide-react";
+import { Search, FileText, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -44,7 +44,6 @@ export function StoneCatalogPicker({ onInsertText, onAttachCatalogPdf }: StoneCa
     <div className="flex flex-col gap-3 p-3 bg-card border rounded-lg shadow-sm text-xs">
       <div className="flex items-center justify-between gap-2 border-b pb-2">
         <div className="flex items-center gap-1.5 font-semibold text-foreground">
-          <Sparkles className="h-4 w-4 text-amber-500" />
           <span>Stone Product Master</span>
         </div>
         <Button

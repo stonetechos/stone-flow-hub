@@ -1019,7 +1019,6 @@ export function StoneMuralCalculator({
       {/* Intro badge */}
       <div className="flex items-center justify-between rounded-md border border-primary/20 bg-primary/[0.03] p-3 text-xs text-foreground">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-primary" />
           <span className="font-medium text-foreground">Stone Murals Estimation Studio</span>
           <span className="text-muted-foreground">
             — complete architectural stone mural costing & slab optimization.
@@ -1682,7 +1681,6 @@ export function StoneMuralCalculator({
         <CardHeader className="p-4 pb-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-amber-600 dark:text-amber-400" />
               <CardTitle className="text-sm font-semibold">
                 4) Stone Pasting Work & Overlay / Inlay (Optional)
               </CardTitle>
@@ -2796,7 +2794,6 @@ export function StoneMuralCalculator({
 
         {sceneDescription.trim() && (
           <div className="rounded-md border border-primary/20 bg-primary/[0.03] p-2.5 text-xs text-foreground flex items-start gap-2">
-            <Sparkles className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
             <div>
               <span className="font-semibold text-primary">Artwork Scene & Scope: </span>
               <span className="text-muted-foreground">{sceneDescription}</span>

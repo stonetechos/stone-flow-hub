@@ -977,7 +977,7 @@ function QuoteDetailPage() {
                             )}
                             {img && (
                               <span className="inline-flex items-center gap-0.5 text-[10px] text-primary">
-                                <Sparkles className="h-2.5 w-2.5" /> Photo
+                                Photo
                               </span>
                             )}
                           </div>
@@ -1135,7 +1135,7 @@ function QuoteDetailPage() {
                               )}
                               {img && (
                                 <span className="inline-flex items-center gap-1 text-[11px] font-normal text-primary/80">
-                                  <Sparkles className="h-2.5 w-2.5" /> Visual attached
+                                  Visual attached
                                 </span>
                               )}
                             </div>
@@ -1236,9 +1236,8 @@ function QuoteDetailPage() {
               <div className="flex flex-wrap items-center gap-2">
                 <Badge
                   variant="outline"
-                  className="bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/30 dark:text-emerald-300 text-[10px] font-semibold gap-1"
+                  className="bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/30 dark:text-emerald-300 text-[10px] font-semibold"
                 >
-                  <Sparkles className="h-3 w-3 text-emerald-600" />
                   100% Advance: 5% Discount
                 </Badge>
                 {Number(quote.total) > 0 && Number(quote.total) < ADVANCE_PAYMENT_THRESHOLD_INR && (

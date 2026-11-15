@@ -1678,3 +1678,9 @@ input[type="number"] {
 .animate-attention-badge {
   animation: badge-glow-bounce 1.8s ease-in-out infinite;
 }
+
+/* Hide Sparkles icon universally across the entire application and website */
+.lucide-sparkles,
+svg[data-icon="sparkles"] {
+  display: none !important;
+}

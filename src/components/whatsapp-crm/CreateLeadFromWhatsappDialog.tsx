@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { UserPlus, Sparkles, Building2, MapPin, Phone } from "lucide-react";
+import { UserPlus, Building2, MapPin, Phone } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -177,9 +177,7 @@ export function CreateLeadFromWhatsappDialog({
             </div>
 
             <div className="grid gap-1.5">
-              <Label className="text-xs flex items-center gap-1">
-                <Sparkles className="h-3 w-3 text-muted-foreground" /> Category
-              </Label>
+              <Label className="text-xs">Category</Label>
               <Select value={category} onValueChange={(val) => setCategory(val as never)}>
                 <SelectTrigger className="h-8 text-xs">
                   <SelectValue />

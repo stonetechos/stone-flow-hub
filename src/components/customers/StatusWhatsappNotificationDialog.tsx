@@ -197,7 +197,6 @@ export function StatusWhatsappNotificationDialog({
         <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
           {/* Status Explanation Card */}
           <div className="rounded-lg border border-teal-100 bg-teal-50/70 p-3 text-xs text-teal-950 flex items-start gap-2.5">
-            <Sparkles className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="font-semibold text-teal-900">{statusConfig?.label}</p>
               <p className="text-[11px] text-teal-800/90 mt-0.5 leading-snug">
@@ -226,7 +225,7 @@ export function StatusWhatsappNotificationDialog({
               id="wa-phone"
               value={recipientPhone}
               onChange={(e) => setRecipientPhone(e.target.value)}
-              placeholder="e.g. 9829012345 or +91 98290 12345"
+              placeholder="e.g. 7742090866 or +91 97844 52998"
               className="text-xs h-9 font-mono"
             />
           </div>

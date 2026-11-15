@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface StonemanMascotProps {
@@ -239,10 +238,6 @@ export function StonemanMascot({ onClick, className }: StonemanMascotProps) {
           hovered && !isDragging ? "opacity-100 scale-100" : "opacity-0 scale-95",
         )}
       >
-        <Sparkles
-          className="h-3.5 w-3.5 text-teal-300 animate-spin"
-          style={{ animationDuration: "6s" }}
-        />
         <span>Ask Stoneman</span>
       </div>
 

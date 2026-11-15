@@ -203,7 +203,7 @@ function NewEstimatePage() {
                   project: projectId || undefined,
                 }}
               >
-                <Sparkles className="h-3.5 w-3.5 text-primary" /> Stone Mural Studio
+                Stone Mural Studio
               </Link>
             </Button>
             <Button size="sm" disabled={!canSubmit || mut.isPending} onClick={() => mut.mutate()}>

@@ -10,7 +10,6 @@ import {
   Phone,
   Calendar,
   Wallet,
-  Sparkles,
 } from "lucide-react";
 import {
   Dialog,
@@ -263,7 +262,7 @@ export function ShareStatementDialog({ open, onOpenChange, data }: ShareStatemen
               <Phone className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 type="tel"
-                placeholder="Enter 10-digit mobile (e.g. 9825012345)"
+                placeholder="Enter 10-digit mobile (e.g. 7742090866)"
                 value={recipientPhone}
                 onChange={(e) => setRecipientPhone(e.target.value)}
                 className="pl-9 font-mono"

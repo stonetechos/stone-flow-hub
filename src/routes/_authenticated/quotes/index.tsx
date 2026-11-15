@@ -1452,7 +1452,6 @@ function CreateQuoteDialog({
                       : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/60",
                   )}
                 >
-                  <Sparkles className="h-4 w-4" />
                   <span>Stone Mural Calculator</span>
                 </button>
               </div>

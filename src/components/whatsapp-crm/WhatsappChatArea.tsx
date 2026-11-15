@@ -4,7 +4,6 @@ import {
   Send,
   ExternalLink,
   Phone,
-  Sparkles,
   FileText,
   CheckCheck,
   Check,
@@ -212,7 +211,6 @@ export function WhatsappChatArea({
             className="h-7 text-[11px] gap-1 text-amber-700 dark:text-amber-400 border-amber-500/40"
             onClick={onOpenStonePicker}
           >
-            <Sparkles className="h-3.5 w-3.5" />{" "}
             {t("communication.insertStoneSpecs", "Insert Stone Specs")}
           </Button>
 

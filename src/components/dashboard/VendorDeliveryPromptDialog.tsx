@@ -173,7 +173,7 @@ export function VendorDeliveryPromptDialog({
             <Input
               value={vendorPhone}
               onChange={(e) => setVendorPhone(e.target.value)}
-              placeholder="e.g. 9820012345 or +91 98200 12345"
+              placeholder="e.g. 7742090866 or +91 97844 52998"
               className="text-sm font-mono"
             />
           </div>
@@ -182,7 +182,6 @@ export function VendorDeliveryPromptDialog({
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <label className="text-xs font-medium text-foreground flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-amber-500" />
                 <span>WhatsApp Message Content</span>
               </label>
               <Button

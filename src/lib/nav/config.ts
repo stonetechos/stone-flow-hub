@@ -73,13 +73,6 @@ export interface NavGroupDef {
 export const NAV_GROUPS: ReadonlyArray<NavGroupDef> = [
   { id: "overview", label: "Home", icon: LayoutDashboard, to: "/dashboard" },
   {
-    id: "website",
-    label: "Website CMS",
-    icon: Globe,
-    to: "/admin/website",
-    allowedRoles: ["admin", "super_admin"],
-  },
-  {
     id: "items",
     label: "Items",
     icon: PackageSearch,
@@ -186,15 +179,6 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     label: "Agent Centre",
     icon: Bot,
     group: "overview",
-  },
-
-  // 1.5. Website CMS
-  {
-    id: "website-backend",
-    to: "/admin/website",
-    label: "Website CMS",
-    icon: Globe,
-    group: "website",
   },
 
   // 2. Items & Inventory

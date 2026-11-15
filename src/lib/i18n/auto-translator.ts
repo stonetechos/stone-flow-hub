@@ -18,6 +18,7 @@
 import React from "react";
 import type { PostProcessorModule } from "i18next";
 import { toIndicDigits } from "@/lib/format";
+import { transliterateName } from "./transliterate";
 
 export function getActiveLanguage(): string {
   if (typeof window !== "undefined") {
@@ -820,6 +821,103 @@ export const INDIC_DICTIONARY: Record<string, { hi: string; gu: string }> = {
     hi: "अपना व्हाट्सएप संदेश लिखें (भेजने के लिए Enter, नई लाइन के लिए Shift+Enter)...",
     gu: "તમારો WhatsApp સંદેશ લખો (મોકલવા માટે Enter, નવી લાઇન માટે Shift+Enter)...",
   },
+  Subtotal: { hi: "उप-योग", gu: "પેટા-કુલ" },
+  "Subtotal:": { hi: "उप-योग:", gu: "પેટા-કુલ:" },
+  "Total Quotation": { hi: "कुल कोटेशन", gu: "કુલ ક્વોટેશન" },
+  "Total Quotation:": { hi: "कुल कोटेशन:", gu: "કુલ ક્વોટેશન:" },
+  "GST Tax": { hi: "जीएसटी कर", gu: "GST ટેક્સ" },
+  "GST Tax:": { hi: "जीएसटी कर:", gu: "GST ટેક્સ:" },
+  "Terms & Conditions": { hi: "नियम एवं शर्तें", gu: "નિયમો અને શરતો" },
+  "Terms and Conditions": { hi: "नियम एवं शर्तें", gu: "નિયમો અને શરતો" },
+  "Payment Terms": { hi: "भुगतान की शर्तें", gu: "ચુકવણીની શરતો" },
+  "Delivery Timeline": { hi: "डिलीवरी समय-सीमा", gu: "ડિલિવરી સમય-મર્યાદા" },
+  "Product Visuals & Material Samples": {
+    hi: "उत्पाद दृश्य एवं सामग्री के नमूने",
+    gu: "પ્રોડક્ટ વિઝ્યુઅલ્સ અને સામગ્રીના નમૂના",
+  },
+  "Visual attached": { hi: "फोटो संलग्न है", gu: "ફોટો જોડાયેલ છે" },
+  "Photo attached": { hi: "फोटो संलग्न है", gu: "ફોટો જોડાયેલ છે" },
+  "Validity of quotation": { hi: "कोटेशन की वैधता", gu: "ક્વોટેશનની માન્યતા" },
+  "Material once sold will not be taken back": {
+    hi: "एक बार बिका हुआ माल वापस नहीं लिया जाएगा",
+    gu: "એકવાર વેચાયેલો માલ પાછો લેવામાં આવશે નહીં",
+  },
+  "Loading and unloading at customer scope": {
+    hi: "लोडिंग एवं अनलोडिंग ग्राहक के दायरे में",
+    gu: "લોડિંગ અને અનલોડિંગ ગ્રાહકના કાર્યક્ષેત્રમાં",
+  },
+  "Transportation and freight charges extra at actuals": {
+    hi: "परिवहन और भाड़ा शुल्क वास्तविक अनुसार अतिरिक्त",
+    gu: "પરિવહન અને ભાડા ખર્ચ ખરેખર મુજબ વધારાનો",
+  },
+  "GST 18% extra as applicable": {
+    hi: "जीएसटी १८% नियमानुसार अतिरिक्त",
+    gu: "GST ૧૮% નિયમ મુજબ વધારાનો",
+  },
+  "50% advance along with purchase order": {
+    hi: "खरीद आदेश के साथ ५०% अग्रिम भुगतान",
+    gu: "ખરીદ ઓર્ડર સાથે ૫૦% એડવાન્સ ચુકવણી",
+  },
+  "Balance payment against delivery at site": {
+    hi: "साइट पर डिलीवरी के समय शेष भुगतान",
+    gu: "સાઇટ પર ડિલિવરી વખતે બાકી ચુકવણી",
+  },
+  "100% Advance: 5% Discount": { hi: "१००% अग्रिम: ५% छूट", gu: "૧૦૦% એડવાન્સ: ૫% વળતર" },
+  "100% Payment: 5% Discount": { hi: "१००% अग्रिम: ५% छूट", gu: "૧૦૦% એડવાન્સ: ૫% વળતર" },
+  "Insert Supply Terms (80/20)": {
+    hi: "सप्लाई शर्तें जोड़ें (८०/२०)",
+    gu: "સપ્લાય શરતો ઉમેરો (૮૦/૨૦)",
+  },
+  "Insert Supply + Install Terms (50/30/20)": {
+    hi: "सप्लाई + इंस्टॉलेशन शर्तें जोड़ें (५०/३૦/२०)",
+    gu: "સપ્લાય + ઇન્સ્ટોલેશન શરતો ઉમેરો (૫૦/૩૦/૨૦)",
+  },
+  "Hybrid Deal Split:": { hi: "हाइब्रिड सौदा विभाजन:", gu: "હાઇબ્રિડ સોદો વિભાજન:" },
+  "Invoiced Amount": { hi: "चालान राशि", gu: "ઇન્વૉઇસ રકમ" },
+  "Cash Amount": { hi: "नकद राशि", gu: "રોકડ રકમ" },
+  "Cash Deal · Challan Only": { hi: "नकद सौदा · केवल चालान", gu: "રોકડ સોદો · ફક્ત ચલણ" },
+  "Ask Stoneman": { hi: "स्टोनमैन से पूछें", gu: "સ્ટોનમેનને પૂછો" },
+  "Natural Stone Catalog Quick-Picker": {
+    hi: "प्राकृतिक पत्थर सूची त्वरित चयनकर्ता",
+    gu: "કુદરતી પથ્થર સૂચિ ઝડપી પસંદગીકાર",
+  },
+  "Client Response Status": { hi: "ग्राहक प्रतिक्रिया स्थिति", gu: "ગ્રાહક પ્રતિસાદ સ્થિતિ" },
+  "Customer Phone / WhatsApp Number": {
+    hi: "ग्राहक फ़ोन / व्हाट्सएप नंबर",
+    gu: "ગ્રાહક ફોન / વ્હોટ્સએપ નંબર",
+  },
+  "Vendor WhatsApp Phone Number": {
+    hi: "विक्रेता व्हाट्सएप फ़ोन नंबर",
+    gu: "વેન્ડર વ્હોટ્સએપ ફોન નંબર",
+  },
+  "WhatsApp Message Draft": { hi: "व्हाट्सएप संदेश ड्राफ्ट", gu: "વ્હોટ્સએપ સંદેશ ડ્રાફ્ટ" },
+  "WhatsApp Message Content": { hi: "व्हाट्सएप संदेश सामग्री", gu: "વ્હોટ્સએપ સંદેશ સામગ્રી" },
+  "Recipient WhatsApp / Phone Number": {
+    hi: "प्राप्तकर्ता व्हाट्सएप / फ़ोन नंबर",
+    gu: "પ્રાપ્તકર્તા વ્હોટ્સએપ / ફોન નંબર",
+  },
+  "Business Priorities": { hi: "व्यावसायिक प्राथमिकताएं", gu: "વ્યાપારી પ્રાથમિકતાઓ" },
+  "Stoneman AI & Copilot Engine": {
+    hi: "स्टोनमैन AI और कोपायलट इंजन",
+    gu: "સ્ટોનમેન AI અને કોપાયલોટ એન્જિન",
+  },
+  "Stone Murals Estimation Studio": {
+    hi: "स्टोन म्यूरल्स अनुमान स्टूडियो",
+    gu: "સ્ટોન મ્યુરલ્સ અંદાજ સ્ટુડિયો",
+  },
+  "Stone Mural Calculator": { hi: "स्टोन म्यूरल कैलकुलेटर", gu: "સ્ટોન મ્યુરલ કેલ્ક્યુલેટર" },
+  "Stone Pasting Work & Overlay / Inlay (Optional)": {
+    hi: "पत्थर चिपकाने का कार्य एवं ओवरले / इनले (वैकल्पिक)",
+    gu: "પથ્થર પેસ્ટિંગ કાર્ય અને ઓવરલે / ઇનલે (વૈકલ્પિક)",
+  },
+  "Artwork Scene & Scope:": {
+    hi: "कलाकृति दृश्य एवं दायरा:",
+    gu: "કલાકૃતિ દ્રશ્ય અને કાર્યક્ષેત્ર:",
+  },
+  "Public Website CMS: Landing Page Matter & Copy": {
+    hi: "सार्वजनिक वेबसाइट CMS: लैंडिंग पेज सामग्री",
+    gu: "જાહેર વેબસાઇટ CMS: લેન્ડિંગ પૃષ્ઠ સામગ્રી",
+  },
 };
 
 // ============================================================================
@@ -1069,6 +1167,14 @@ export const INDIC_WORD_LEXICON: Record<string, { hi: string; gu: string }> = {
   categories: { hi: "श्रेणियां", gu: "શ્રેણીઓ" },
   and: { hi: "और", gu: "અને" },
   or: { hi: "या", gu: "અથવા" },
+  of: { hi: "का", gu: "ના" },
+  is: { hi: "है", gu: "છે" },
+  are: { hi: "हैं", gu: "છે" },
+  will: { hi: "रहेगा", gu: "રહેશે" },
+  be: { hi: "होना", gu: "હોવું" },
+  not: { hi: "नहीं", gu: "નહીં" },
+  no: { hi: "नहीं", gu: "ના" },
+  yes: { hi: "हाँ", gu: "હા" },
   for: { hi: "के लिए", gu: "માટે" },
   with: { hi: "के साथ", gu: "સાથે" },
   by: { hi: "द्वारा", gu: "દ્વારા" },
@@ -1092,6 +1198,83 @@ export const INDIC_WORD_LEXICON: Record<string, { hi: string; gu: string }> = {
   sqft: { hi: "वर्ग फुट", gu: "ચોરસ ફૂટ" },
   italian: { hi: "इटैलियन", gu: "ઇટાલિયન" },
   indian: { hi: "इंडियन", gu: "ઇન્ડિયન" },
+  subtotal: { hi: "उप-योग", gu: "પેટા-કુલ" },
+  quotation: { hi: "कोटेशन", gu: "ક્વોટેશન" },
+  quotations: { hi: "कोटेशन", gu: "ક્વોટેશન" },
+  terms: { hi: "शर्तें", gu: "શરતો" },
+  conditions: { hi: "नियम", gu: "નિયમો" },
+  timeline: { hi: "समय-सीमा", gu: "સમય-મર્યાદા" },
+  visual: { hi: "दृश्य", gu: "દ્રશ્ય" },
+  visuals: { hi: "दृश्य", gu: "દ્રશ્યો" },
+  sample: { hi: "नमूना", gu: "નમૂનો" },
+  samples: { hi: "नमूने", gu: "નમૂના" },
+  along: { hi: "के साथ", gu: "સાથે" },
+  against: { hi: "के विरुद्ध / समय", gu: "સામે / વખતે" },
+  within: { hi: "के भीतर", gu: "ની અંદર" },
+  between: { hi: "के बीच", gu: "વચ્ચે" },
+  charges: { hi: "शुल्क", gu: "ખર્ચ / ચાર્જિસ" },
+  charge: { hi: "शुल्क", gu: "ખર્ચ" },
+  extra: { hi: "अतिरिक्त", gu: "વધારાનું" },
+  actuals: { hi: "वास्तविक", gu: "ખરેખર" },
+  scope: { hi: "दायरा", gu: "કાર્યક્ષેત્ર" },
+  loading: { hi: "लोडिंग", gu: "લોડિંગ" },
+  unloading: { hi: "अनलोडिंग", gu: "અનલોડિંગ" },
+  validity: { hi: "वैधता", gu: "માન્યતા" },
+  confirmation: { hi: "पुष्टि", gu: "ખાતરી" },
+  site: { hi: "साइट", gu: "સાઇટ" },
+  sold: { hi: "बिका हुआ", gu: "વેચાયેલ" },
+  taken: { hi: "लिया गया", gu: "લીધેલ" },
+  back: { hi: "वापस", gu: "પાછું" },
+  once: { hi: "एक बार", gu: "એકવાર" },
+  days: { hi: "दिन", gu: "દિવસો" },
+  hours: { hi: "घंटे", gu: "કલાકો" },
+  hour: { hi: "घंटा", gu: "કલાક" },
+  weeks: { hi: "सप्ताह", gu: "અઠવાડિયા" },
+  week: { hi: "सप्ताह", gu: "અઠવાડિયું" },
+  months: { hi: "महीने", gu: "મહિનાઓ" },
+  years: { hi: "वर्ष", gu: "વર્ષો" },
+  polished: { hi: "पॉलिश", gu: "પોલિશ" },
+  flamed: { hi: "फ्लेम्ड", gu: "ફ્લેમ્ડ" },
+  honed: { hi: "होन्ड", gu: "હોન્ડ" },
+  calibrated: { hi: "कैलिब्रेटेड", gu: "કેલિબ્રેટેડ" },
+  cleft: { hi: "क्लेफ्ट", gu: "ક્લેફ્ટ" },
+  natural: { hi: "प्राकृतिक", gu: "કુદરતી" },
+  width: { hi: "चौड़ाई", gu: "પહોળાઈ" },
+  length: { hi: "लंबाई", gu: "લંબાઈ" },
+  height: { hi: "ऊंचाई", gu: "ઊંચાઈ" },
+  area: { hi: "क्षेत्रफल", gu: "ક્ષેત્રફળ" },
+  sqm: { hi: "वर्ग मीटर", gu: "ચોરસ મીટર" },
+  rft: { hi: "रनिंग फुट", gu: "રનિંગ ફૂટ" },
+  nos: { hi: "नग", gu: "નંગ" },
+  ton: { hi: "टन", gu: "ટન" },
+  applicable: { hi: "लागू", gu: "લાગુ" },
+  including: { hi: "सहित", gu: "સહિત" },
+  excluding: { hi: "को छोड़कर", gu: "સિવાય" },
+  inclusive: { hi: "समावेशी", gu: "સમાવિષ્ટ" },
+  exclusive: { hi: "अतिरिक्त", gu: "બાકાત" },
+  each: { hi: "प्रत्येक", gu: "દરેક" },
+  supply: { hi: "आपूर्ति", gu: "સપ્લાય" },
+  fabrication: { hi: "निर्माण / कटिंग", gu: "ફેબ્રિકેશન" },
+  delivery: { hi: "वितरण", gu: "ડિલિવરી" },
+  transportation: { hi: "परिवहन", gu: "પરિવહન" },
+  transit: { hi: "पारगमन", gu: "ટ્રાન્ઝિટ" },
+  insurance: { hi: "बीमा", gu: "વીમો" },
+  challan: { hi: "चालान", gu: "ચલણ" },
+  carving: { hi: "नक्काशी", gu: "કોતરણી" },
+  engraving: { hi: "उत्कीर्णन", gu: "નક્શીકામ" },
+  pasting: { hi: "पेस्टिंग", gu: "પેસ્ટિંગ" },
+  overlay: { hi: "ओवरले", gu: "ઓવરલે" },
+  artwork: { hi: "कलाकृति", gu: "કલાકૃતિ" },
+  scene: { hi: "दृश्य", gu: "દ્રશ્ય" },
+  kota: { hi: "कोटा", gu: "કોટા" },
+  mint: { hi: "मिंट", gu: "મિન્ટ" },
+  gwalior: { hi: "ग्वालियर", gu: "ગ્વાલિયર" },
+  agra: { hi: "आगरा", gu: "આગ્રા" },
+  makrana: { hi: "मकराना", gu: "મકરાણા" },
+  udaipur: { hi: "उदयपुर", gu: "ઉદયપુર" },
+  bopal: { hi: "बोपल", gu: "બોપલ" },
+  surat: { hi: "सूरत", gu: "સુરત" },
+  ahmedabad: { hi: "अहमदाबाद", gu: "અમદાવાદ" },
 };
 
 // ============================================================================
@@ -1123,6 +1306,15 @@ export function autoTranslate(text: string, targetLang?: string): string {
   for (const [key, val] of Object.entries(INDIC_DICTIONARY)) {
     if (key.toLowerCase() === lower) {
       return isHi ? val.hi : val.gu;
+    }
+  }
+
+  // 1.5. Trailing colon handling: e.g. "Subtotal:", "Total Quotation:", "GST Tax:"
+  if (trimmed.endsWith(":")) {
+    const withoutColon = trimmed.slice(0, -1).trim();
+    const trans = autoTranslate(withoutColon, lang);
+    if (trans !== withoutColon) {
+      return `${trans}:`;
     }
   }
 
@@ -1351,12 +1543,17 @@ export function autoTranslate(text: string, targetLang?: string): string {
     return isHi ? `उदा. ${transEx}` : `દા.ત. ${transEx}`;
   }
 
-  // 21. Word-by-word intelligent lexicon tokenizer
+  // 21. Word-by-word intelligent lexicon tokenizer with transliteration fallback
   if (/[a-zA-Z]/.test(trimmed)) {
     const replaced = trimmed.replace(/\b[A-Za-z]+(?:'[a-z]+)?\b/g, (token) => {
       const lower = token.toLowerCase();
       if (INDIC_WORD_LEXICON[lower]) {
         return isHi ? INDIC_WORD_LEXICON[lower].hi : INDIC_WORD_LEXICON[lower].gu;
+      }
+      // Transliterate English names / unknown words to Indic script so no English remains
+      const transliterated = transliterateName(token, lang);
+      if (transliterated && transliterated !== token) {
+        return transliterated;
       }
       return token;
     });

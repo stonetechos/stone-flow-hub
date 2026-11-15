@@ -253,9 +253,8 @@ export function QuoteTermsManager({
 
           <Badge
             variant="outline"
-            className="bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/30 dark:text-emerald-300 text-[11px] gap-1 font-medium"
+            className="bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/30 dark:text-emerald-300 text-[11px] font-medium"
           >
-            <Sparkles className="h-3 w-3 text-emerald-600" />
             100% Payment: 5% Discount
           </Badge>
 
@@ -477,7 +476,6 @@ export function QuoteTermsManager({
             className="h-7 text-xs gap-1 cursor-pointer bg-muted/30 hover:bg-muted"
             title="Populate standard Supply Only terms with 80/20 payment"
           >
-            <Sparkles className="h-3 w-3 text-cyan-600" />
             Insert Supply Terms (80/20)
           </Button>
           <Button
@@ -488,7 +486,6 @@ export function QuoteTermsManager({
             className="h-7 text-xs gap-1 cursor-pointer bg-muted/30 hover:bg-muted"
             title="Populate standard Supply + Installation terms with 50/30/20 payment"
           >
-            <Sparkles className="h-3 w-3 text-emerald-600" />
             Insert Supply + Install Terms (50/30/20)
           </Button>
           {hasTermsContent && (

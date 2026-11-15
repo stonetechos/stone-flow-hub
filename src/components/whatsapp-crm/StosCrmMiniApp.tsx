@@ -8,7 +8,6 @@ import {
   FileText,
   Building2,
   Phone,
-  Sparkles,
   Layers,
   ChevronRight,
   Plus,
@@ -298,9 +297,7 @@ export function StosCrmMiniApp({
           className="w-full justify-between h-8 text-xs font-semibold"
           onClick={() => setShowCatalog(!showCatalog)}
         >
-          <span className="flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-amber-500" /> Natural Stone Catalog Quick-Picker
-          </span>
+          <span className="flex items-center gap-1.5">Natural Stone Catalog Quick-Picker</span>
           <span>{showCatalog ? "▲" : "▼"}</span>
         </Button>
         {showCatalog && (
