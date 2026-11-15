@@ -64,6 +64,20 @@ describe("custom-renames", () => {
     expect(renames["application-ledger"]).toBe("App Ledgers");
   });
 
+  it("automatically purges accidental Gujarati or Hindi system translations from custom renames", () => {
+    store.set(
+      "st.nav.customRenames",
+      JSON.stringify({
+        enquiries: "વેબસાઇટ લીડ્સ અને CRM",
+        "custom-tab": "My Custom Tab",
+      }),
+    );
+
+    const renames = readCustomRenames();
+    expect(renames.enquiries).toBeUndefined();
+    expect(renames["custom-tab"]).toBe("My Custom Tab");
+  });
+
   it("reads default sidebar width when unset", () => {
     expect(readSidebarWidth()).toBe(DEFAULT_SIDEBAR_WIDTH);
   });

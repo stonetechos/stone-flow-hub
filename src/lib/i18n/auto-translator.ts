@@ -1640,3 +1640,56 @@ export function translateNode(node: React.ReactNode, lang?: string): React.React
 
   return node;
 }
+
+// ============================================================================
+// REVERSE TRANSLATION ENGINE (Indic -> English)
+// Restores exact English when toggling back to English from Hindi/Gujarati
+// ============================================================================
+
+const REVERSE_INDIC_MAP = new Map<string, string>();
+
+function buildReverseIndicMap() {
+  if (REVERSE_INDIC_MAP.size > 0) return;
+  for (const [english, { hi, gu }] of Object.entries(INDIC_DICTIONARY)) {
+    if (hi && hi.trim()) REVERSE_INDIC_MAP.set(hi.trim(), english);
+    if (gu && gu.trim()) REVERSE_INDIC_MAP.set(gu.trim(), english);
+  }
+  // Extra brand, navigation, and mixed aliases
+  REVERSE_INDIC_MAP.set("સ્ટૉસ", "STOS");
+  REVERSE_INDIC_MAP.set("સ્ટોસ", "STOS");
+  REVERSE_INDIC_MAP.set("स्टॉस", "STOS");
+  REVERSE_INDIC_MAP.set("સ્ટૉસ POP", "ST POP");
+  REVERSE_INDIC_MAP.set("સ્ટોસ POP", "ST POP");
+  REVERSE_INDIC_MAP.set("स्टॉस POP", "ST POP");
+  REVERSE_INDIC_MAP.set("વેબસાઇટ લીડ્સ અને CRM", "Website Leads & CRM");
+  REVERSE_INDIC_MAP.set("वेबसाइट लीड्स और CRM", "Website Leads & CRM");
+  REVERSE_INDIC_MAP.set("વેબસાઇટ લીડ્સ", "Website Leads");
+  REVERSE_INDIC_MAP.set("વેબ સાઇટ લીડ્સ", "Website Leads");
+  REVERSE_INDIC_MAP.set("લીડ્સ", "Leads");
+}
+
+export function reverseTranslateToEnglish(text: string): string {
+  if (!text) return text;
+  const trimmed = text.trim();
+  if (!trimmed || !/[\u0900-\u097F\u0A80-\u0AFF]/.test(trimmed)) {
+    return text;
+  }
+  buildReverseIndicMap();
+
+  const direct = REVERSE_INDIC_MAP.get(trimmed);
+  if (direct) {
+    return text.replace(trimmed, direct);
+  }
+
+  // Check prefix or partial replacements
+  let candidate = text;
+  if (candidate.includes("સ્ટોસ POP")) candidate = candidate.replace(/સ્ટોસ POP/g, "ST POP");
+  if (candidate.includes("સ્ટૉસ POP")) candidate = candidate.replace(/સ્ટૉસ POP/g, "ST POP");
+  if (candidate.includes("स्टॉस POP")) candidate = candidate.replace(/स्टॉस POP/g, "ST POP");
+  if (candidate.includes("વેબસાઇટ લીડ્સ અને CRM"))
+    candidate = candidate.replace(/વેબસાઇટ લીડ્સ અને CRM/g, "Website Leads & CRM");
+  if (candidate.includes("वेबसाइट लीड्स और CRM"))
+    candidate = candidate.replace(/वेबसाइट लीड्स और CRM/g, "Website Leads & CRM");
+
+  return candidate;
+}

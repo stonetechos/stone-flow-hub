@@ -40,7 +40,24 @@ export function readCustomRenames(): CustomNavRenames {
   if (typeof window === "undefined" || !window.localStorage) return {};
   try {
     const raw = window.localStorage.getItem(RENAMES_KEY);
-    return raw ? JSON.parse(raw) : {};
+    const parsed = raw ? (JSON.parse(raw) as CustomNavRenames) : {};
+    let hasChanges = false;
+    const cleaned: CustomNavRenames = {};
+    for (const [id, val] of Object.entries(parsed)) {
+      // Auto-purge accidental system translations that leaked into custom tab renames
+      if (
+        id === "enquiries" &&
+        (val === "વેબસાઇટ લીડ્સ અને CRM" || val === "वेबसाइट लीड्स और CRM")
+      ) {
+        hasChanges = true;
+        continue;
+      }
+      cleaned[id] = val;
+    }
+    if (hasChanges) {
+      window.localStorage.setItem(RENAMES_KEY, JSON.stringify(cleaned));
+    }
+    return cleaned;
   } catch {
     return {};
   }
@@ -158,13 +175,23 @@ export function useCustomNavRenames() {
     (id: string, fallback: string, defaultEnglishLabel?: string) => {
       const custom = renames[id];
       if (!custom) return fallback;
+
+      const isIndicFallback = /[\u0900-\u097F\u0A80-\u0AFF]/.test(fallback);
+      const isCustomIndic = /[\u0900-\u097F\u0A80-\u0AFF]/.test(custom);
+      const isCustomPureAscii = /^[\x20-\x7E\s\-_.,/()&]+$/.test(custom);
+
       // If active language is Indic (Hindi/Gujarati) and custom rename is still pure English ASCII,
       // yield to the localized fallback so the language toggle takes effect across all tabs
-      const isIndicFallback = /[\u0900-\u097F\u0A80-\u0AFF]/.test(fallback);
-      const isCustomPureAscii = /^[\x20-\x7E\s\-_.,/()&]+$/.test(custom);
       if (isIndicFallback && isCustomPureAscii) {
         return fallback;
       }
+
+      // If active language is English and custom rename contains Indic (Hindi/Gujarati) characters,
+      // yield to the English fallback so the English toggle never displays Gujarati or Hindi
+      if (!isIndicFallback && isCustomIndic) {
+        return fallback;
+      }
+
       if (
         defaultEnglishLabel &&
         custom.trim().toLowerCase() === defaultEnglishLabel.trim().toLowerCase()

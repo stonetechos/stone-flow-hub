@@ -13,7 +13,13 @@
 
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { autoTranslate, getActiveLanguage } from "./auto-translator";
+import { autoTranslate, getActiveLanguage, reverseTranslateToEnglish } from "./auto-translator";
+
+function isPureOriginalEnglish(str: string | null | undefined): boolean {
+  if (!str) return false;
+  // Must contain Latin letters, and must NOT contain any Devanagari (Hindi) or Gujarati characters
+  return /[a-zA-Z]/.test(str) && !/[\u0900-\u097F\u0A80-\u0AFF]/.test(str);
+}
 
 function shouldSkipElement(el: Element | null): boolean {
   if (!el) return false;
@@ -40,8 +46,17 @@ function revertDocumentToEnglish() {
   let textNode: Text | null = walker.nextNode() as Text | null;
   while (textNode) {
     const orig = (textNode as unknown as { __origStosEnglish?: string }).__origStosEnglish;
-    if (orig) {
+    const currentVal = textNode.nodeValue || "";
+    const hasIndic = /[\u0900-\u097F\u0A80-\u0AFF]/.test(currentVal);
+
+    if (orig && isPureOriginalEnglish(orig)) {
       textNode.nodeValue = orig;
+      delete (textNode as unknown as { __origStosEnglish?: string }).__origStosEnglish;
+    } else if (hasIndic) {
+      const reversed = reverseTranslateToEnglish(currentVal);
+      if (reversed && reversed !== currentVal) {
+        textNode.nodeValue = reversed;
+      }
       delete (textNode as unknown as { __origStosEnglish?: string }).__origStosEnglish;
     }
     textNode = walker.nextNode() as Text | null;
@@ -50,8 +65,11 @@ function revertDocumentToEnglish() {
   const inputs = document.querySelectorAll("input[data-orig-stos-ph], textarea[data-orig-stos-ph]");
   inputs.forEach((el) => {
     const input = el as HTMLInputElement | HTMLTextAreaElement;
-    if (input.dataset.origStosPh) {
+    if (input.dataset.origStosPh && isPureOriginalEnglish(input.dataset.origStosPh)) {
       input.placeholder = input.dataset.origStosPh;
+      delete input.dataset.origStosPh;
+    } else if (input.placeholder && /[\u0900-\u097F\u0A80-\u0AFF]/.test(input.placeholder)) {
+      input.placeholder = reverseTranslateToEnglish(input.placeholder);
       delete input.dataset.origStosPh;
     }
   });
@@ -59,8 +77,14 @@ function revertDocumentToEnglish() {
   const titled = document.querySelectorAll("[data-orig-stos-title]");
   titled.forEach((el) => {
     const htmlEl = el as HTMLElement;
-    if (htmlEl.dataset.origStosTitle) {
+    if (htmlEl.dataset.origStosTitle && isPureOriginalEnglish(htmlEl.dataset.origStosTitle)) {
       htmlEl.setAttribute("title", htmlEl.dataset.origStosTitle);
+      delete htmlEl.dataset.origStosTitle;
+    } else {
+      const cur = htmlEl.getAttribute("title");
+      if (cur && /[\u0900-\u097F\u0A80-\u0AFF]/.test(cur)) {
+        htmlEl.setAttribute("title", reverseTranslateToEnglish(cur));
+      }
       delete htmlEl.dataset.origStosTitle;
     }
   });
@@ -68,8 +92,14 @@ function revertDocumentToEnglish() {
   const ariaLabeled = document.querySelectorAll("[data-orig-stos-aria]");
   ariaLabeled.forEach((el) => {
     const htmlEl = el as HTMLElement;
-    if (htmlEl.dataset.origStosAria) {
+    if (htmlEl.dataset.origStosAria && isPureOriginalEnglish(htmlEl.dataset.origStosAria)) {
       htmlEl.setAttribute("aria-label", htmlEl.dataset.origStosAria);
+      delete htmlEl.dataset.origStosAria;
+    } else {
+      const cur = htmlEl.getAttribute("aria-label");
+      if (cur && /[\u0900-\u097F\u0A80-\u0AFF]/.test(cur)) {
+        htmlEl.setAttribute("aria-label", reverseTranslateToEnglish(cur));
+      }
       delete htmlEl.dataset.origStosAria;
     }
   });
@@ -94,7 +124,7 @@ export function useIndicDomAutoTranslator() {
     const processTextNode = (textNode: Text) => {
       const customNode = textNode as unknown as { __origStosEnglish?: string };
       const currentVal = textNode.nodeValue || "";
-      if (/[a-zA-Z]/.test(currentVal)) {
+      if (isPureOriginalEnglish(currentVal)) {
         customNode.__origStosEnglish = currentVal;
       }
       const sourceText = customNode.__origStosEnglish || currentVal;
@@ -103,7 +133,9 @@ export function useIndicDomAutoTranslator() {
 
       const translated = autoTranslate(sourceText, lang);
       if (translated && translated !== currentVal) {
-        customNode.__origStosEnglish = sourceText;
+        if (isPureOriginalEnglish(sourceText)) {
+          customNode.__origStosEnglish = sourceText;
+        }
         isTranslating = true;
         try {
           textNode.nodeValue = translated;
@@ -119,7 +151,7 @@ export function useIndicDomAutoTranslator() {
       // 1. Placeholder on input/textarea
       if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
         const currentPh = el.getAttribute("placeholder");
-        if (currentPh && /[a-zA-Z]/.test(currentPh)) {
+        if (currentPh && isPureOriginalEnglish(currentPh)) {
           el.dataset.origStosPh = currentPh;
         }
         const sourcePh = el.dataset.origStosPh || currentPh;
@@ -134,7 +166,7 @@ export function useIndicDomAutoTranslator() {
       // 2. Title attribute
       const htmlEl = el as HTMLElement;
       const currentTitle = el.getAttribute("title");
-      if (currentTitle && /[a-zA-Z]/.test(currentTitle) && htmlEl.dataset) {
+      if (currentTitle && isPureOriginalEnglish(currentTitle) && htmlEl.dataset) {
         htmlEl.dataset.origStosTitle = currentTitle;
       }
       const sourceTitle = htmlEl.dataset?.origStosTitle || currentTitle;
@@ -147,7 +179,7 @@ export function useIndicDomAutoTranslator() {
 
       // 3. Aria-label attribute
       const currentAria = el.getAttribute("aria-label");
-      if (currentAria && /[a-zA-Z]/.test(currentAria) && htmlEl.dataset) {
+      if (currentAria && isPureOriginalEnglish(currentAria) && htmlEl.dataset) {
         htmlEl.dataset.origStosAria = currentAria;
       }
       const sourceAria = htmlEl.dataset?.origStosAria || currentAria;
