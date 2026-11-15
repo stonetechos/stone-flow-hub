@@ -101,6 +101,7 @@ export const Route = createFileRoute("/_authenticated/payments/")({
 function UnifiedPaymentsPage() {
   const { t } = useTranslation();
   const search = Route.useSearch();
+  const nav = useNavigate();
   const [writeOffOpen, setWriteOffOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"customer" | "vendor" | "agency">(
     (search.tab as "customer" | "vendor" | "agency") || "customer",
@@ -111,6 +112,16 @@ function UnifiedPaymentsPage() {
       setActiveTab(search.tab);
     }
   }, [search.tab]);
+
+  const handleTabChange = (val: string) => {
+    const nextTab = val as "customer" | "vendor" | "agency";
+    setActiveTab(nextTab);
+    void nav({
+      to: "/payments",
+      search: { tab: nextTab },
+      replace: true,
+    });
+  };
 
   return (
     <AccountingGuard moduleName="Payments & Disbursements">
@@ -148,11 +159,7 @@ function UnifiedPaymentsPage() {
           }
         />
 
-        <Tabs
-          value={activeTab}
-          onValueChange={(v) => setActiveTab(v as "customer" | "vendor" | "agency")}
-          className="space-y-4"
-        >
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
           <TabsList className="grid w-full grid-cols-3 md:w-auto md:inline-flex">
             <TabsTrigger value="customer" className="gap-2">
               <Wallet className="h-4 w-4" />

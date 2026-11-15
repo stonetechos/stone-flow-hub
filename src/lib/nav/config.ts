@@ -564,25 +564,55 @@ export const NAV_ITEMS_BY_ID: Readonly<Record<string, NavItemDef>> = Object.from
 );
 
 export function findNavItemForPath(pathname: string): NavItemDef | undefined {
-  // Longest matching `to` prefix wins so `/workforce-intelligence/employees` beats `/workforce-intelligence`.
-  // Strip query string for path matching if present.
-  const cleanPath = pathname.split("?")[0];
+  const [cleanPath, searchStr] = pathname.split("?");
+  const searchParams = searchStr ? new URLSearchParams(searchStr) : null;
+
   let best: NavItemDef | undefined;
+  let bestScore = -1;
+
   for (const item of NAV_ITEMS) {
-    const itemPath = item.to.split("?")[0];
-    if (cleanPath === itemPath || cleanPath.startsWith(`${itemPath}/`)) {
-      if (!best || itemPath.length > best.to.split("?")[0].length) {
-        best = item;
+    const [itemPath, itemSearch] = item.to.split("?");
+    const itemParams = itemSearch ? new URLSearchParams(itemSearch) : null;
+
+    const isExactPath = cleanPath === itemPath;
+    const isPrefixPath = isExactPath || (itemPath !== "/" && cleanPath.startsWith(`${itemPath}/`));
+    if (!isPrefixPath) continue;
+
+    let queryScore = 0;
+    if (itemParams) {
+      if (!searchParams) {
+        // Query param not present in current URL, but pathname matches itemPath.
+        // Allow match as lower-priority fallback (e.g. /payments matching payments tab).
+        queryScore = -50;
+      } else {
+        let allMatched = true;
+        for (const [key, val] of itemParams.entries()) {
+          if (searchParams.get(key) !== val) {
+            allMatched = false;
+            break;
+          }
+        }
+        queryScore = allMatched ? 1000 : -50;
       }
+    } else {
+      queryScore = searchParams ? 0 : 50;
+    }
+
+    const score = itemPath.length + (isExactPath ? 100 : 0) + queryScore;
+    if (score > bestScore) {
+      bestScore = score;
+      best = item;
     }
   }
+
   return best;
 }
 
 /**
  * Determine whether a nav item is active for the current path.
  * When a more specific sibling nav item matches the current path
- * (e.g. `/workforce-intelligence/employees` vs `/workforce-intelligence`),
+ * (e.g. `/workforce-intelligence/employees` vs `/workforce-intelligence`,
+ * or `/money-flow?tab=personal-transfers` vs `/money-flow`),
  * only the most specific nav item is active, preventing both tabs from highlighting together.
  */
 export function isNavItemActive(item: NavItemDef, currentPath: string): boolean {

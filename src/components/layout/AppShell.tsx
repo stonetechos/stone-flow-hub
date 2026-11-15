@@ -158,19 +158,30 @@ function NavLinkRow({
   const isCustomized = defaultLabel ? label !== defaultLabel : false;
   const navigate = useNavigate();
 
+  const [toPath, toQuery] = to.includes("?") ? to.split("?") : [to, ""];
+  const searchParams = useMemo(() => {
+    if (!toQuery) return undefined;
+    const sp = new URLSearchParams(toQuery);
+    return Object.fromEntries(sp.entries());
+  }, [toQuery]);
+
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     // For standard primary left-click without keyboard modifiers (Ctrl, Cmd, Shift):
     if (e.button === 0 && !e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey) {
       onNavigate?.();
       // Guarantees immediate navigation across WebKit/Safari/touch trackpads
       // even if Radix ContextMenu pointerdown capture suppresses synthetic click.
-      void navigate({ to });
+      void navigate({
+        to: toPath as never,
+        search: (searchParams || undefined) as never,
+      });
     }
   };
 
   const link = (
     <Link
-      to={to}
+      to={toPath as never}
+      search={(searchParams || undefined) as never}
       onClick={handleLinkClick}
       aria-current={active ? "page" : undefined}
       className={cn(
@@ -386,10 +397,17 @@ function NavGroupRow({
                   <div className="space-y-0.5">
                     {group.items.map((item) => {
                       const active = checkActive(item);
+                      const [itemPath, itemQuery] = item.to.includes("?")
+                        ? item.to.split("?")
+                        : [item.to, ""];
+                      const searchObj = itemQuery
+                        ? Object.fromEntries(new URLSearchParams(itemQuery).entries())
+                        : undefined;
                       return (
                         <Link
                           key={item.id}
-                          to={item.to}
+                          to={itemPath as never}
+                          search={(searchObj || undefined) as never}
                           onClick={onNavigate}
                           className={cn(
                             "flex items-center gap-2 rounded px-2 py-1 text-[11.5px] transition-colors",
@@ -943,8 +961,12 @@ function UserMenu({
 export function AppShell({ children }: { children: ReactNode }) {
   const { t, i18n } = useTranslation();
   const currentLang = (i18n.language?.substring(0, 2) || "en") as LangCode;
-  const path = useRouterState({ select: (s) => s.location.pathname });
-  const isFormRoute = /\/(new|edit)(\/|$)/.test(path);
+  const loc = useRouterState({
+    select: (s) => ({ pathname: s.location.pathname, searchStr: s.location.searchStr || "" }),
+  });
+  const path = `${loc.pathname}${loc.searchStr}`;
+  const cleanPath = loc.pathname;
+  const isFormRoute = /\/(new|edit)(\/|$)/.test(cleanPath);
   const navigate = useNavigate();
   const uid = useCurrentUserId();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -1056,7 +1078,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     }
   }
 
-  const showBreadcrumbs = path !== "/" && path !== "/dashboard";
+  const showBreadcrumbs = cleanPath !== "/" && cleanPath !== "/dashboard";
 
   return (
     <DemoProvider>
@@ -1423,7 +1445,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                 to="/dashboard"
                 className={cn(
                   "flex flex-1 flex-col items-center justify-center py-1 text-[11px] font-medium transition-colors",
-                  path === "/" || path === "/dashboard" || path.startsWith("/dashboard/")
+                  cleanPath === "/" ||
+                    cleanPath === "/dashboard" ||
+                    cleanPath.startsWith("/dashboard/")
                     ? "text-intent-primary font-bold"
                     : "text-text-muted hover:text-text-primary",
                 )}
@@ -1435,7 +1459,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 to="/enquiries"
                 className={cn(
                   "flex flex-1 flex-col items-center justify-center py-1 text-[11px] font-medium transition-colors",
-                  path.startsWith("/enquiries")
+                  cleanPath.startsWith("/enquiries")
                     ? "text-intent-primary font-bold"
                     : "text-text-muted hover:text-text-primary",
                 )}
@@ -1447,7 +1471,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 to="/quotes"
                 className={cn(
                   "flex flex-1 flex-col items-center justify-center py-1 text-[11px] font-medium transition-colors",
-                  path.startsWith("/quotes")
+                  cleanPath.startsWith("/quotes")
                     ? "text-intent-primary font-bold"
                     : "text-text-muted hover:text-text-primary",
                 )}
@@ -1459,7 +1483,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 to="/dispatch"
                 className={cn(
                   "flex flex-1 flex-col items-center justify-center py-1 text-[11px] font-medium transition-colors",
-                  path.startsWith("/dispatch")
+                  cleanPath.startsWith("/dispatch")
                     ? "text-intent-primary font-bold"
                     : "text-text-muted hover:text-text-primary",
                 )}

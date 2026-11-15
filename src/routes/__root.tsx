@@ -275,7 +275,8 @@ function RootComponent() {
       const isPublic =
         path === "/" ||
         path.startsWith("/careers") ||
-        path.startsWith("/pay") ||
+        path === "/pay" ||
+        path.startsWith("/pay/") ||
         path.startsWith("/track") ||
         path.startsWith("/inquiry") ||
         path.startsWith("/auth");

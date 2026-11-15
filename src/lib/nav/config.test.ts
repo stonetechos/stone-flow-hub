@@ -44,8 +44,26 @@ describe("Navigation active item resolution", () => {
     expect(isNavItemActive(customersItem, currentPath)).toBe(true);
   });
 
-  test("findNavItemForPath strips query params correctly", () => {
+  test("findNavItemForPath matches query params correctly", () => {
     const match = findNavItemForPath("/payments?tab=customer");
     expect(match?.id).toBe("payments");
+
+    const fallbackMatch = findNavItemForPath("/payments");
+    expect(fallbackMatch?.id).toBe("payments");
+  });
+
+  test("when on /money-flow?tab=personal-transfers, only Personal Transfers tab is active and NOT Money Flow", () => {
+    const personalTransfersItem = NAV_ITEMS_BY_ID["personal-transfers"];
+    const moneyFlowItem = NAV_ITEMS_BY_ID["money-flow"];
+    expect(personalTransfersItem).toBeDefined();
+    expect(moneyFlowItem).toBeDefined();
+
+    const ptPath = "/money-flow?tab=personal-transfers";
+    expect(isNavItemActive(personalTransfersItem, ptPath)).toBe(true);
+    expect(isNavItemActive(moneyFlowItem, ptPath)).toBe(false);
+
+    const mfPath = "/money-flow";
+    expect(isNavItemActive(moneyFlowItem, mfPath)).toBe(true);
+    expect(isNavItemActive(personalTransfersItem, mfPath)).toBe(false);
   });
 });
