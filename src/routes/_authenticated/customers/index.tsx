@@ -1528,7 +1528,7 @@ function CustomerFormDialog({
 
             <Field
               label={t("customers.phoneNumber", "Phone Number")}
-              hint={t("customers.phoneHint", "10 digits or +country code")}
+              hint={t("customers.phoneHint", "Select country code & enter mobile number")}
             >
               <PhoneInput
                 value={form.mobile ?? ""}

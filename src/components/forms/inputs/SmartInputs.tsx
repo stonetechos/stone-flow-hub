@@ -15,37 +15,133 @@ import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import {
+  CountryCodeSelect,
+  parsePhoneWithCountry,
+  formatPhoneWithCountry,
+} from "./CountryCodeSelect";
 
 type BaseProps = Omit<React.ComponentProps<typeof Input>, "onChange" | "value" | "type"> & {
   value: string | null | undefined;
   onChange: (value: string) => void;
 };
 
-/** Telephone / Mobile input. Supports domestic 10-digit numbers and international +country codes. */
-export const PhoneInput = React.forwardRef<HTMLInputElement, BaseProps>(function PhoneInput(
-  { value, onChange, maxLength = 20, placeholder, ...rest },
+export interface PhoneInputProps extends BaseProps {
+  defaultCountry?: string;
+  hideCountrySelect?: boolean;
+  containerClassName?: string;
+}
+
+/** Telephone / Mobile input with country code dropdown (+265 Malawi, +91 India, world codes). */
+export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(function PhoneInput(
+  {
+    value,
+    onChange,
+    maxLength = 20,
+    placeholder,
+    className,
+    containerClassName,
+    defaultCountry = "+91",
+    hideCountrySelect = false,
+    disabled,
+    ...rest
+  },
   ref,
 ) {
   const { t } = useTranslation();
+  const parsed = React.useMemo(
+    () => parsePhoneWithCountry(value, defaultCountry),
+    [value, defaultCountry],
+  );
+  const [selectedCountry, setSelectedCountry] = React.useState<string>(
+    parsed.countryCode || defaultCountry,
+  );
+
+  React.useEffect(() => {
+    if (parsed.countryCode && parsed.countryCode !== selectedCountry) {
+      if (value && (value.startsWith("+") || parsed.localNumber)) {
+        setSelectedCountry(parsed.countryCode);
+      }
+    }
+  }, [parsed.countryCode, parsed.localNumber, value, selectedCountry]);
+
+  const activeCountry = selectedCountry || parsed.countryCode || defaultCountry;
+
+  const handleCountryChange = (newCode: string) => {
+    setSelectedCountry(newCode);
+    const formatted = formatPhoneWithCountry(newCode, parsed.localNumber);
+    onChange(formatted);
+  };
+
+  const handleLocalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    if (raw.trimStart().startsWith("+")) {
+      const reParsed = parsePhoneWithCountry(raw, activeCountry);
+      setSelectedCountry(reParsed.countryCode);
+      const formatted = formatPhoneWithCountry(reParsed.countryCode, reParsed.localNumber);
+      onChange(formatted);
+      return;
+    }
+    const clean = raw.replace(/[^\d\s-]/g, "");
+    const formatted = formatPhoneWithCountry(activeCountry, clean);
+    onChange(formatted);
+  };
+
+  if (hideCountrySelect) {
+    return (
+      <Input
+        ref={ref}
+        type="tel"
+        inputMode="tel"
+        autoComplete="tel"
+        placeholder={placeholder ?? t("field.placeholders.mobile", "Mobile or +Country Code")}
+        maxLength={maxLength}
+        value={value ?? ""}
+        disabled={disabled}
+        onChange={(e) => {
+          const raw = e.target.value;
+          const hasLeadingPlus = raw.trimStart().startsWith("+");
+          const digitsAndDelims = raw.replace(/[^\d\s-]/g, "");
+          const withoutPlus = digitsAndDelims.replace(/\+/g, "");
+          const cleaned = hasLeadingPlus ? `+${withoutPlus}` : withoutPlus;
+          onChange(cleaned);
+        }}
+        className={className}
+        {...rest}
+      />
+    );
+  }
+
   return (
-    <Input
-      ref={ref}
-      type="tel"
-      inputMode="tel"
-      autoComplete="tel"
-      placeholder={placeholder ?? t("field.placeholders.mobile", "Mobile or +Country Code")}
-      maxLength={maxLength}
-      value={value ?? ""}
-      onChange={(e) => {
-        const raw = e.target.value;
-        const hasLeadingPlus = raw.trimStart().startsWith("+");
-        const digitsAndDelims = raw.replace(/[^\d\s-]/g, "");
-        const withoutPlus = digitsAndDelims.replace(/\+/g, "");
-        const cleaned = hasLeadingPlus ? `+${withoutPlus}` : withoutPlus;
-        onChange(cleaned);
-      }}
-      {...rest}
-    />
+    <div className={cn("flex items-center w-full", containerClassName)}>
+      <CountryCodeSelect
+        value={activeCountry}
+        onChange={handleCountryChange}
+        disabled={disabled}
+        className="h-9 w-[92px] sm:w-[98px] rounded-r-none border-r-0 shrink-0 bg-muted/40 font-medium text-xs focus:ring-0 focus:ring-offset-0"
+      />
+      <Input
+        ref={ref}
+        type="tel"
+        inputMode="tel"
+        autoComplete="tel"
+        placeholder={
+          placeholder ??
+          (activeCountry === "+91"
+            ? t("field.placeholders.mobileIndia", "98765 43210")
+            : t("field.placeholders.mobileIntl", "Mobile number"))
+        }
+        maxLength={maxLength}
+        value={parsed.localNumber}
+        disabled={disabled}
+        onChange={handleLocalChange}
+        className={cn(
+          "h-9 rounded-l-none border-l-0 text-xs font-medium focus-visible:ring-1 focus-visible:ring-primary/40",
+          className,
+        )}
+        {...rest}
+      />
+    </div>
   );
 });
 

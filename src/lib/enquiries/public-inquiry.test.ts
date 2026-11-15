@@ -118,4 +118,13 @@ describe("lookupCustomerInputSchema", () => {
       }).whatsapp,
     ).toBe("9876543210");
   });
+
+  test("accepts Malawi (+265) 9-digit phone number", () => {
+    const res = lookupCustomerInputSchema.parse({
+      country_code: "+265",
+      whatsapp: "995429998",
+    });
+    expect(res.whatsapp).toBe("995429998");
+    expect(res.country_code).toBe("+265");
+  });
 });

@@ -790,7 +790,7 @@ function HomePage() {
       errors.name = texts.errors.enterName;
     }
     const cleanDigits = whatsapp.replace(/\D/g, "");
-    if (cleanDigits.length < 7) {
+    if (cleanDigits.length < 6) {
       errors.whatsapp = texts.errors.validWhatsapp;
     }
     if (!city.trim()) {

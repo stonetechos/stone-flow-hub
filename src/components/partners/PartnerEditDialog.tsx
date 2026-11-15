@@ -335,7 +335,10 @@ export function PartnerEditDialog({
             </Field>
 
             {/* Row 2: Mobile / WhatsApp (Optional) and Email */}
-            <Field label="Mobile / WhatsApp Phone (Optional)">
+            <Field
+              label="Mobile / WhatsApp Phone (Optional)"
+              hint="Select country code & enter mobile number"
+            >
               <PhoneInput
                 value={phone}
                 onChange={setPhone}

@@ -177,7 +177,7 @@ function QuickCreateCustomer({
                 placeholder="e.g. ABC Developers LLP"
               />
             </Field>
-            <Field label="Mobile" hint="10 digits or +country code">
+            <Field label="Mobile" hint="Select country code & enter mobile number">
               <PhoneInput
                 value={form.mobile}
                 onChange={(v) =>
@@ -192,7 +192,9 @@ function QuickCreateCustomer({
             <Field
               label="WhatsApp"
               hint={
-                form.mobile ? "Dropdown defaults to Phone Number" : "10 digits or +country code"
+                form.mobile
+                  ? "Dropdown defaults to Phone Number"
+                  : "Select country code & enter mobile number"
               }
             >
               <div className="space-y-1.5">

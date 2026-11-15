@@ -725,7 +725,7 @@ function VendorFormDialog({
                 required
               />
             </Field>
-            <Field label="Mobile / WhatsApp">
+            <Field label="Mobile / WhatsApp" hint="Select country code & enter mobile number">
               <PhoneInput value={form.mobile ?? ""} onChange={(v) => set("mobile", v)} />
             </Field>
             <Field label="City / Location">
