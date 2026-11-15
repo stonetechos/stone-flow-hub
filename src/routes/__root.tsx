@@ -26,6 +26,7 @@ import { getSupabaseConfigStatus } from "@/lib/env/config-status";
 import { ConfigurationRequiredScreen } from "@/components/global/ConfigurationRequiredScreen";
 import { consumeManagedSignOut } from "@/lib/auth/managed-sign-out";
 import "@/lib/i18n";
+import { IndicDomAutoTranslator } from "@/lib/i18n/dom-translator";
 import { isChunkLoadError, recoverFromChunkError } from "@/lib/router/chunk-recovery";
 import { applyTheme, readInitialTheme, removeThemes } from "@/components/global/ThemeSwitcher";
 
@@ -363,6 +364,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider delayDuration={200}>
+        <IndicDomAutoTranslator />
         <StoneGrainFilter />
         <Outlet />
         {/* closeButton: lets a toast be dismissed immediately (an X

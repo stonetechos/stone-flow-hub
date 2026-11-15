@@ -1,11 +1,16 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
+import { autoTranslate } from "@/lib/i18n/auto-translator";
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, React.ComponentProps<"textarea">>(
-  ({ className, ...props }, ref) => {
+  ({ className, placeholder, ...props }, ref) => {
+    const translatedPlaceholder =
+      typeof placeholder === "string" ? autoTranslate(placeholder) : placeholder;
+
     return (
       <textarea
+        placeholder={translatedPlaceholder}
         className={cn(
           "flex min-h-[72px] w-full rounded-md border border-border-default bg-surface-card px-3 py-2 text-sm text-foreground",
           "transition-[border-color,box-shadow] duration-[var(--duration-fast)] ease-[var(--ease-out)]",

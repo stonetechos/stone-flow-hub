@@ -1,6 +1,7 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
+import { autoTranslate } from "@/lib/i18n/auto-translator";
 
 /**
  * STOS input — Phase D.
@@ -10,7 +11,10 @@ import { cn } from "@/lib/utils";
  * background (light, dark, hero panels). Placeholder uses --text-muted.
  */
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
-  ({ className, type, onFocus, onMouseUp, onChange, ...props }, ref) => {
+  ({ className, type, onFocus, onMouseUp, onChange, placeholder, ...props }, ref) => {
+    const translatedPlaceholder =
+      typeof placeholder === "string" ? autoTranslate(placeholder) : placeholder;
+
     const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
       const isNumeric =
         type === "number" || props.inputMode === "numeric" || props.inputMode === "decimal";
@@ -65,6 +69,7 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
     return (
       <input
         type={type}
+        placeholder={translatedPlaceholder}
         className={cn(
           "flex h-9 w-full rounded-md border border-border-default bg-surface-card px-3 py-1.5 text-sm text-foreground",
           "transition-[border-color,box-shadow] duration-[var(--duration-fast)] ease-[var(--ease-out)]",

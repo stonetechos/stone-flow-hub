@@ -75,15 +75,22 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const Comp = asChild ? Slot : "button";
 
     const translateChild = (child: React.ReactNode): React.ReactNode => {
-      if (typeof child === "string") {
-        const trimmed = child.trim();
+      if (child == null || typeof child === "boolean") return child;
+      if (typeof child === "string" || typeof child === "number") {
+        const str = String(child);
+        const trimmed = str.trim();
         if (!trimmed) return child;
-        let translated = t(trimmed, trimmed);
-        if (translated === trimmed) {
+        let translated = t(trimmed, { defaultValue: trimmed, returnObjects: false });
+        if (
+          !translated ||
+          translated === trimmed ||
+          translated.toLowerCase().startsWith("key '") ||
+          translated.toLowerCase().includes("returned an object")
+        ) {
           translated = autoTranslate(trimmed);
         }
-        if (translated !== trimmed) {
-          return child.replace(trimmed, translated);
+        if (translated && translated !== trimmed) {
+          return str.replace(trimmed, translated);
         }
         return child;
       }
