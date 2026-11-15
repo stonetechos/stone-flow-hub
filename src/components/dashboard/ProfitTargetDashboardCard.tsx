@@ -47,7 +47,7 @@ const PROFIT_TEXTS = {
   hi: {
     heading: "₹५० लाख संचयी लाभ लक्ष्य",
     subheading: "कंपनी के ₹५० लाख लाभ लक्ष्य के मुकाबले ग्राहक वसूली से प्राप्त शुद्ध लाभ",
-    leaderboard: "पूर्ण ५०L लीडरबोर्ड",
+    leaderboard: "पूर्ण ५० लाख लीडरबोर्ड",
     profitDiary: "प्रॉफ़िट डायरी",
     realizedOfTarget: "₹५०,००,००० लक्ष्य में से प्राप्त",
     achieved: "प्राप्त",
@@ -66,7 +66,7 @@ const PROFIT_TEXTS = {
   gu: {
     heading: "₹૫૦ લાખ સંચિત નફા લક્ષ્ય",
     subheading: "કંપનીના ₹૫૦ લાખ નફા લક્ષ્ય સામે ગ્રાહક વસૂલાતમાંથી મેળવેલ ચોખ્ખો નફો",
-    leaderboard: "સંપૂર્ણ ૫૦L લીડરબોર્ડ",
+    leaderboard: "સંપૂર્ણ ૫૦ લાખ લીડરબોર્ડ",
     profitDiary: "પ્રોફિટ ડાયરી",
     realizedOfTarget: "₹૫૦,૦૦,૦૦૦ લક્ષ્યમાંથી પ્રાપ્ત",
     achieved: "પ્રાપ્ત",

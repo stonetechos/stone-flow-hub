@@ -17,11 +17,35 @@ export function isNocturnalHour(d: Date = new Date()): boolean {
   return h >= 0 && h < 4;
 }
 
+export const HINDI_NOCTURNAL_QUIPS = [
+  "आधी रात को मार्बल तराश रहे हैं? ग्रेनाइट भी गहरी नींद में है! 🪨💤",
+  "देर रात खदान की शिफ्ट? स्टोनमैन आपके इस अटूट परिश्रम को सलाम करता है! 🫡",
+  "मान्यता है कि पत्थर के सबसे बेहतरीन फैसले आधी रात के बाद होते हैं। 🌙✨",
+  "पत्थर कभी नहीं सोता, लेकिन इंसानों को तो सोना चाहिए! 😴🪨",
+  "श्शश... सीएनसी मशीनें सपने देख रही हैं। आज रात क्या तराश रहे हैं? 🏗️",
+  "सोने जाएं या स्टोन यार्ड फतह करें — दोनों में स्टोनमैन आपके साथ है! 🦉🪨",
+] as const;
+
+export const GUJARATI_NOCTURNAL_QUIPS = [
+  "અડધી રાત્રે માર્બલ ઘડી રહ્યા છો? ગ્રેનાઇટ પણ ઘસઘસાટ ઊંઘે છે! 🪨💤",
+  "મોડી રાતની ખાણ શિફ્ટ? સ્ટોનમેન તમારી આ અથાક મહેનતને સલામ કરે છે! 🫡",
+  "કહેવાય છે કે પથ્થરના શ્રેષ્ઠ નિર્ણયો અડધી રાત પછી જ લેવાય છે. 🌙✨",
+  "પથ્થર ક્યારેય ઊંઘતો નથી, પણ માણસોએ તો ઊંઘવું જોઈએ! 😴🪨",
+  "શાંતિ... સીએનસી મશીનો સપના જોઈ રહ્યા છે. આજે રાત્રે શું ઘડાઈ રહ્યું છે? 🏗️",
+  "ઊંઘવા જાઓ કે સ્ટોન યાર્ડ સર કરો — બંનેમાં સ્ટોનમેન તમારી સાથે છે! 🦉🪨",
+] as const;
+
 /**
  * Returns a funny nocturnal quip that rotates deterministically with day & hour.
  */
-export function getNocturnalQuip(d: Date = new Date()): string {
+export function getNocturnalQuip(d: Date = new Date(), lang: string = "en"): string {
   const index = (d.getDate() + d.getHours()) % NOCTURNAL_QUIPS.length;
+  if (lang.startsWith("hi")) {
+    return HINDI_NOCTURNAL_QUIPS[index]!;
+  }
+  if (lang.startsWith("gu")) {
+    return GUJARATI_NOCTURNAL_QUIPS[index]!;
+  }
   return NOCTURNAL_QUIPS[index]!;
 }
 

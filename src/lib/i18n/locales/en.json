@@ -119,6 +119,9 @@
     }
   },
   "common": {
+    "orders": "Orders",
+    "order": "Order",
+    "quote": "Quote",
     "save": "Save",
     "saving": "Saving…",
     "cancel": "Cancel",
@@ -357,6 +360,27 @@
     "outstandingReceivables": "Outstanding receivables",
     "productionWorkload": "Production workload",
     "orderBacklog": "Order backlog",
+    "profitTargetKpi": "50L Profit Goal",
+    "achieved": "Achieved",
+    "gap": "Gap",
+    "quotesInPlayContext": "quote(s) active",
+    "collectionsAtRisk": "Overdue Collections",
+    "needSlabsAssigned": "Need Stock Slabs",
+    "bottlenecks": "Pain Points Radar",
+    "criticalActionHub": "Critical Action Hub",
+    "deadlineNotSet": "Delivery deadline pending",
+    "overdueBalanceNotice": "Invoice payment overdue",
+    "slabAllocationPending": "Slab allocation pending",
+    "operationsHub": "Operations Command",
+    "ordersQueued": "Production Ready",
+    "tabs": {
+      "fulfilmentTitle": "Production, Slabs & Site Dispatches",
+      "moneyTitle": "Cash Flow, Liabilities & Financial Stream",
+      "salesTitle": "Sales Pipeline, Inquiries & Client Relations",
+      "fulfilment": "Fulfilment",
+      "money": "Cash & Liabilities",
+      "sales": "Sales & Pipeline"
+    },
     "greeting": {
       "nocturnal": "Yo, Nocturnal!!",
       "morning": "Good morning",
@@ -2533,6 +2557,8 @@
     "deliveryDeadlineInDays": "Delivery deadline in {{days}} days",
     "dueInDays": "Due in {{days}} days",
     "quoteAwaitingResponse": "{{quoteNo}} is {{band}} — {{days}}d awaiting response",
+    "enquiryNoSalesperson": "{{enquiryNo}} has no salesperson assigned",
+    "outstanding": "outstanding",
     "actionReview": "Review",
     "actionFollowUp": "Follow up",
     "actionCollect": "Collect",
@@ -2554,6 +2580,11 @@
       "at risk": "at risk",
       "fresh": "fresh"
     }
+  },
+  "copilot": {
+    "nocturnalStatus": "Yo, Nocturnal!! StoneMan is wide awake",
+    "mascotSubtitle": "Intelligent Mascot & Operations Screen",
+    "tryOneOfThese": "Try one of these:"
   },
   "activity": {
     "actions": {

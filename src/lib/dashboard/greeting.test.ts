@@ -1,5 +1,12 @@
 import { describe, expect, it } from "bun:test";
-import { getNocturnalQuip, greetingFor, isNocturnalHour, NOCTURNAL_QUIPS } from "./greeting";
+import {
+  getNocturnalQuip,
+  greetingFor,
+  isNocturnalHour,
+  NOCTURNAL_QUIPS,
+  HINDI_NOCTURNAL_QUIPS,
+  GUJARATI_NOCTURNAL_QUIPS,
+} from "./greeting";
 
 describe("greeting utility", () => {
   it("identifies nocturnal hours (12:00 AM to 3:59 AM)", () => {
@@ -49,8 +56,15 @@ describe("greeting utility", () => {
     expect(greetingFor(elevenPm)).toBe("Good evening");
   });
 
-  it("provides funny quips during nocturnal hours", () => {
-    const quip = getNocturnalQuip(new Date("2026-10-09T01:00:00"));
-    expect(NOCTURNAL_QUIPS).toContain(quip as (typeof NOCTURNAL_QUIPS)[number]);
+  it("provides funny quips during nocturnal hours in multiple languages", () => {
+    const d = new Date("2026-10-09T01:00:00");
+    const enQuip = getNocturnalQuip(d, "en");
+    expect(NOCTURNAL_QUIPS).toContain(enQuip as (typeof NOCTURNAL_QUIPS)[number]);
+
+    const hiQuip = getNocturnalQuip(d, "hi");
+    expect(HINDI_NOCTURNAL_QUIPS).toContain(hiQuip as (typeof HINDI_NOCTURNAL_QUIPS)[number]);
+
+    const guQuip = getNocturnalQuip(d, "gu");
+    expect(GUJARATI_NOCTURNAL_QUIPS).toContain(guQuip as (typeof GUJARATI_NOCTURNAL_QUIPS)[number]);
   });
 });

@@ -22,7 +22,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import { transliterateName } from "@/lib/i18n/transliterate";
-import { greetingFor, getNocturnalQuip } from "@/lib/dashboard/greeting";
+import { greetingFor, getNocturnalQuip, isNocturnalHour } from "@/lib/dashboard/greeting";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useExecutiveInsights } from "@/hooks/useExecutiveInsights";
@@ -165,15 +165,18 @@ function DashboardPage() {
   const name = transliterateName(rawName, i18n.language);
   const now = new Date();
   const greeting = greetingFor(now, t);
-  const nocturnalQuip = getNocturnalQuip(now);
-  const today = now.toLocaleDateString(
-    i18n.language === "hi" ? "hi-IN" : i18n.language === "gu" ? "gu-IN" : "en-IN",
-    {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    },
+  const nocturnalQuip = getNocturnalQuip(now, i18n.language);
+  const today = toIndicDigits(
+    now.toLocaleDateString(
+      i18n.language === "hi" ? "hi-IN" : i18n.language === "gu" ? "gu-IN" : "en-IN",
+      {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      },
+    ),
+    i18n.language,
   );
 
   const kpis = kpisQ.data;
@@ -422,7 +425,12 @@ function ExecutiveHero({
   kpis: DashboardKpis;
 }) {
   const { t, i18n } = useTranslation();
-  const isNocturnal = greeting.includes("Nocturnal");
+  const isNocturnal = isNocturnalHour();
+  const lakhUnit = i18n.language.startsWith("hi")
+    ? " लाख"
+    : i18n.language.startsWith("gu")
+      ? " લાખ"
+      : " L";
 
   return (
     <section
@@ -474,11 +482,13 @@ function ExecutiveHero({
             </div>
             <div className="mt-2">
               <div className="font-display text-lg sm:text-2xl font-black tabular-nums text-emerald-950 dark:text-emerald-100">
-                ₹{toIndicDigits("21.95 L", i18n.language)}
+                ₹{toIndicDigits("21.95", i18n.language)}
+                {lakhUnit}
               </div>
               <div className="mt-0.5 font-mono text-[10px] sm:text-[11px] font-semibold text-emerald-700/90 dark:text-emerald-400 truncate">
                 {toIndicDigits("44", i18n.language)}% {t("dashboard.achieved", "Achieved")} ·{" "}
-                {t("dashboard.gap", "Gap")}: ₹{toIndicDigits("28.05 L", i18n.language)}
+                {t("dashboard.gap", "Gap")}: ₹{toIndicDigits("28.05", i18n.language)}
+                {lakhUnit}
               </div>
             </div>
           </button>
@@ -1018,7 +1028,7 @@ function CashFlowSnapshot({ kpis }: { kpis: DashboardKpis }) {
 // with the Manufacturing feature (2026-09-04 Purchase module restructure);
 // see engineering/purchase-module-and-sidebar-restructure-plan-2026-09-04.md.
 function DispatchAndInstallation({ kpis }: { kpis: DashboardKpis }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const rows = [
     {
@@ -1061,7 +1071,7 @@ function DispatchAndInstallation({ kpis }: { kpis: DashboardKpis }) {
                 {r.label}
               </span>
               <span className="font-display text-[16px] font-black tabular-nums text-engraved-blue-lg">
-                {r.value}
+                {toIndicDigits(r.value, i18n.language)}
               </span>
             </Link>
           </li>
@@ -1130,7 +1140,7 @@ function SalesCommandCentre({ kpis }: { kpis: DashboardKpis }) {
               {c.label}
             </span>
             <span className="mt-1 font-display text-[22px] font-black tabular-nums text-engraved-blue-lg">
-              {c.value}
+              {toIndicDigits(c.value, i18n.language)}
             </span>
           </Link>
         ))}
@@ -1540,7 +1550,7 @@ function ShellLoading({
   name: string;
   today: string;
 }) {
-  const isNocturnal = greeting.includes("Nocturnal");
+  const isNocturnal = isNocturnalHour();
   return (
     <div className="space-y-6">
       <div className="card-3d-milky p-6">
@@ -1750,7 +1760,7 @@ function buildBrief(
     const topOverdue = overdueAlerts[0];
     const match = /Collect\s+([^·]+)·\s*(.+)/i.exec(topOverdue.action?.label || "");
     if (match) {
-      const amt = match[1].trim();
+      const amt = toIndicDigits(match[1].trim(), lang);
       const debtor = transliterateName(match[2].trim(), lang);
       if (isHindi) {
         lines.push(
@@ -1954,6 +1964,25 @@ function localizeInsightTitle(title: string, t: TFunction, lang?: string): strin
     });
   }
 
+  // Pattern 6: "[EnquiryNo] has no salesperson assigned"
+  const m6 = /^([A-Z0-9-]+)\s+has\s+no\s+salesperson\s+assigned$/i.exec(title);
+  if (m6) {
+    const enquiryNo = m6[1];
+    return t("insights.enquiryNoSalesperson", {
+      defaultValue: "{{enquiryNo}} has no salesperson assigned",
+      enquiryNo,
+    });
+  }
+
+  // Pattern 7: "[Customer] — [Amount] outstanding ([Risk])"
+  const m7 = /^(.+?)\s+—\s+(₹.+?)\s+outstanding\s+\((.+?)\)$/i.exec(title);
+  if (m7) {
+    const cust = transliterateName(m7[1].trim(), lang);
+    const amt = toIndicDigits(m7[2].trim(), lang);
+    const risk = translateLevel(m7[3].trim(), t);
+    return `${cust} — ${amt} ${t("insights.outstanding", "outstanding")} (${risk})`;
+  }
+
   return title;
 }
 
@@ -2111,7 +2140,7 @@ function buildSuggestions(
       } else if (/Collect/i.test(i.action.label)) {
         const cMatch = /Collect\s+([^·]+)·\s*(.+)/i.exec(i.action.label);
         if (cMatch) {
-          const amt = cMatch[1].trim();
+          const amt = toIndicDigits(cMatch[1].trim(), lang);
           const cust = transliterateName(cMatch[2].trim(), lang);
           title = `${t("insights.actionCollect", "Collect")} ${amt} — ${cust}`;
           subtitle = t("dashboard.overdueBalanceNotice", "Invoice payment overdue");

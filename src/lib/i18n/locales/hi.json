@@ -123,6 +123,9 @@
     }
   },
   "common": {
+    "orders": "ऑर्डर",
+    "order": "ऑर्डर",
+    "quote": "कोटेशन",
     "save": "सहेजें",
     "saving": "सहेज रहे हैं…",
     "cancel": "रद्द करें",
@@ -361,8 +364,29 @@
     "outstandingReceivables": "बकाया प्राप्य",
     "productionWorkload": "उत्पादन कार्यभार",
     "orderBacklog": "ऑर्डर बैकलॉग",
+    "profitTargetKpi": "५० लाख लाभ लक्ष्य",
+    "achieved": "प्राप्त",
+    "gap": "अंतर",
+    "quotesInPlayContext": "सक्रिय कोटेशन",
+    "collectionsAtRisk": "अतिदेय वसूली",
+    "needSlabsAssigned": "लाइव स्टॉक सौंपना आवश्यक",
+    "bottlenecks": "⚠️ समस्या रडार",
+    "criticalActionHub": "महत्वपूर्ण कार्य केंद्र",
+    "deadlineNotSet": "डिलीवरी समयसीमा लंबित",
+    "overdueBalanceNotice": "चालान भुगतान अतिदेय",
+    "slabAllocationPending": "स्लैब आवंटन लंबित",
+    "operationsHub": "परिचालन कमांड",
+    "ordersQueued": "उत्पादन के लिए आदेश",
+    "tabs": {
+      "fulfilmentTitle": "उत्पादन, स्लैब और साइट प्रेषण",
+      "moneyTitle": "नकदी प्रवाह, देनदारियां और वित्तीय धारा",
+      "salesTitle": "बिक्री पाइपलाइन, पूछताछ और ग्राहक संबंध",
+      "fulfilment": "आपूर्ति व पूर्ति",
+      "money": "नकदी और देनदारियां",
+      "sales": "बिक्री और पाइपलाइन"
+    },
     "greeting": {
-      "nocturnal": "Yo, Nocturnal!!",
+      "nocturnal": "देर रात का सत्र",
       "morning": "सुप्रभात",
       "afternoon": "शुभ दोपहर",
       "evening": "शुभ संध्या"
@@ -393,7 +417,7 @@
       "critical": "अति आवश्यक",
       "nothingCritical": "कुछ भी गंभीर नहीं है।",
       "agedPastDueDate": "नियत तारीख बीत चुकी है",
-      "exceedsThreshold": "₹50 लाख की सीमा से अधिक",
+      "exceedsThreshold": "₹५० लाख की सीमा से अधिक",
       "needsAttention": "ध्यान देने योग्य",
       "inboxClear": "इनबॉक्स खाली है।",
       "inDraftOrSent": "ड्राफ्ट या भेजा गया",
@@ -2551,6 +2575,8 @@
     "deliveryDeadlineInDays": "डिलीवरी की समय-सीमा {{days}} दिनों में है",
     "dueInDays": "{{days}} दिनों में देय",
     "quoteAwaitingResponse": "{{quoteNo}} {{band}} है — {{days}} दिनों से उत्तर की प्रतीक्षा है",
+    "enquiryNoSalesperson": "{{enquiryNo}} को कोई विक्रेता नियुक्त नहीं किया गया है",
+    "outstanding": "बकाया",
     "actionReview": "समीक्षा करें",
     "actionFollowUp": "फॉलो-अप",
     "actionCollect": "वसूली करें",
@@ -2572,6 +2598,11 @@
       "at risk": "जोखिम में",
       "fresh": "नया"
     }
+  },
+  "copilot": {
+    "nocturnalStatus": "देर रात का सत्र — स्टोनमैन पूरी तरह सक्रिय है",
+    "mascotSubtitle": "बुद्धिमान शुभंकर और परिचालन सहायक",
+    "tryOneOfThese": "इनमें से कोई एक आज़माएं:"
   },
   "activity": {
     "actions": {

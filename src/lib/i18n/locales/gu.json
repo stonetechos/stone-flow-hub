@@ -124,6 +124,9 @@
     }
   },
   "common": {
+    "orders": "ઓર્ડર",
+    "order": "ઓર્ડર",
+    "quote": "ક્વોટેશન",
     "save": "સાચવો",
     "saving": "સાચવી રહ્યું છે...",
     "cancel": "રદ કરો",
@@ -362,8 +365,29 @@
     "outstandingReceivables": "બાકી લેણાં",
     "productionWorkload": "ઉત્પાદન કાર્યભાર",
     "orderBacklog": "ઓર્ડર બેકલોગ",
+    "profitTargetKpi": "૫૦ લાખ નફો લક્ષ્યાંક",
+    "achieved": "પ્રાપ્ત",
+    "gap": "અંતર",
+    "quotesInPlayContext": "સક્રિય ક્વોટેશન",
+    "collectionsAtRisk": "મુદતવીતી વસૂલાત",
+    "needSlabsAssigned": "સ્ટોક સ્લેબ સોંપવા જરૂરી",
+    "bottlenecks": "⚠️ પેઇન પોઇન્ટ્સ રડાર",
+    "criticalActionHub": "મહત્વપૂર્ણ કાર્ય કેન્દ્ર",
+    "deadlineNotSet": "ડિલિવરી સમયમર્યાદા બાકી",
+    "overdueBalanceNotice": "ઇન્વૉઇસ ચુકવણી મુદતવીતી",
+    "slabAllocationPending": "સ્લેબ ફાળવણી બાકી",
+    "operationsHub": "ઓપરેશન્સ કમાન્ડ",
+    "ordersQueued": "ઉત્પાદન માટે ઓર્ડર",
+    "tabs": {
+      "fulfilmentTitle": "ઉત્પાદન, સ્લેબ અને સાઇટ રવાનગી",
+      "moneyTitle": "રોકડ પ્રવાહ, જવાબદારીઓ અને નાણાકીય પ્રવાહ",
+      "salesTitle": "સેલ્સ પાઇપલાઇન, પૂછપરછ અને ગ્રાહક સંબંધો",
+      "fulfilment": "પૂર્તિ અને ઉત્પાદન",
+      "money": "રોકડ અને જવાબદારીઓ",
+      "sales": "વેચાણ અને પાઇપલાઇન"
+    },
     "greeting": {
-      "nocturnal": "Yo, Nocturnal!!",
+      "nocturnal": "મોડી રાતનું સત્ર",
       "morning": "શુભ સવાર",
       "afternoon": "શુભ બપોર",
       "evening": "શુભ સાંજ"
@@ -394,7 +418,7 @@
       "critical": "તાકીદનું",
       "nothingCritical": "કંઈ તાકીદનું નથી.",
       "agedPastDueDate": "નિયત તારીખ વીતી ગઈ",
-      "exceedsThreshold": "₹50 લાખની મર્યાદાથી વધુ",
+      "exceedsThreshold": "₹૫૦ લાખની મર્યાદાથી વધુ",
       "needsAttention": "ધ્યાન આપવાની જરૂર",
       "inboxClear": "ઇનબૉક્સ સાફ છે.",
       "inDraftOrSent": "ડ્રાફ્ટ અથવા મોકલેલ",
@@ -2553,6 +2577,8 @@
     "deliveryDeadlineInDays": "ડિલિવરી સમય-મર્યાદા {{days}} દિવસમાં છે",
     "dueInDays": "{{days}} દિવસમાં બાકી",
     "quoteAwaitingResponse": "{{quoteNo}} {{band}} છે — {{days}} દિવસથી પ્રત્યુત્તરની રાહ છે",
+    "enquiryNoSalesperson": "{{enquiryNo}} ને કોઈ વેચાણકર્તા સોંપેલ નથી",
+    "outstanding": "બાકી",
     "actionReview": "સમીક્ષા કરો",
     "actionFollowUp": "ફોલો-અપ",
     "actionCollect": "વસૂલાત કરો",
@@ -2574,6 +2600,11 @@
       "at risk": "જોખમમાં",
       "fresh": "નવું"
     }
+  },
+  "copilot": {
+    "nocturnalStatus": "મોડી રાતનું સત્ર — સ્ટોનમેન સંપૂર્ણ સક્રિય છે",
+    "mascotSubtitle": "બુદ્ધિશાળી માસ્કોટ અને ઓપરેશન્સ સહાયક",
+    "tryOneOfThese": "આમાંથી એક અજમાવો:"
   },
   "activity": {
     "actions": {

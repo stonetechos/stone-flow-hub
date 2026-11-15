@@ -59,6 +59,7 @@ import { VieActionMessage, type VieActionRow } from "@/components/copilot/VieAct
 import { useSpeechCapture } from "@/lib/voice/useSpeechCapture";
 import { StonemanMascot } from "@/components/mascot/StonemanMascot";
 import { isNocturnalHour, getNocturnalQuip } from "@/lib/dashboard/greeting";
+import { useTranslation } from "react-i18next";
 
 type ChatMsg = { role: "user" | "assistant"; kind?: "text"; content: string };
 /** Data-lookup answer rendered as result cards from real API queries. */
@@ -216,6 +217,7 @@ function deriveContext(path: string) {
 }
 
 export function Copilot() {
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [isWideScreen, setIsWideScreen] = useState(false);
@@ -278,7 +280,7 @@ export function Copilot() {
     .slice(0, 5);
 
   const isNocturnal = isNocturnalHour();
-  const nocturnalQuip = isNocturnal ? getNocturnalQuip() : "";
+  const nocturnalQuip = isNocturnal ? getNocturnalQuip(undefined, i18n.language) : "";
 
   // Natural language query mutation: classifies intent and resolves data or routes to chat.
   const nlSearchMutation = useMutation({
@@ -526,10 +528,11 @@ export function Copilot() {
                     <span className="text-[10px] text-slate-400">
                       {isNocturnal ? (
                         <span className="text-amber-300 font-medium flex items-center gap-1">
-                          <span>🦉</span> Yo, Nocturnal!! StoneMan is wide awake
+                          <span>🦉</span>{" "}
+                          {t("copilot.nocturnalStatus", "Yo, Nocturnal!! StoneMan is wide awake")}
                         </span>
                       ) : (
-                        "Intelligent Mascot & Operations Screen"
+                        t("copilot.mascotSubtitle", "Intelligent Mascot & Operations Screen")
                       )}
                     </span>
                   </div>
@@ -661,14 +664,18 @@ export function Copilot() {
                         <div className="mb-3 flex items-start gap-2.5 rounded-lg border border-amber-500/30 bg-amber-950/40 p-2.5 text-xs text-amber-200">
                           <span className="text-base select-none shrink-0 leading-none">🦉</span>
                           <div>
-                            <p className="font-bold text-amber-300">Yo, Nocturnal!!</p>
+                            <p className="font-bold text-amber-300">
+                              {t("dashboard.greeting.nocturnal", "Yo, Nocturnal!!")}
+                            </p>
                             <p className="text-[11px] text-amber-200/90 mt-0.5 leading-relaxed">
-                              {nocturnalQuip} What are we crafting tonight?
+                              {nocturnalQuip}
                             </p>
                           </div>
                         </div>
                       )}
-                      <p className="mb-2 font-medium text-slate-200">Try one of these:</p>
+                      <p className="mb-2 font-medium text-slate-200">
+                        {t("copilot.tryOneOfThese", "Try one of these:")}
+                      </p>
                       <div className="flex flex-wrap gap-1.5">
                         {(mode === "do" ? DO_MODE_SUGGESTIONS : ctx.suggestions).map((s) => (
                           <button
