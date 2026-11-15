@@ -69,12 +69,14 @@ describe("custom-renames", () => {
       "st.nav.customRenames",
       JSON.stringify({
         enquiries: "વેબસાઇટ લીડ્સ અને CRM",
+        rfqs: "RFQ (દર પૂછપરછ)",
         "custom-tab": "My Custom Tab",
       }),
     );
 
     const renames = readCustomRenames();
     expect(renames.enquiries).toBeUndefined();
+    expect(renames.rfqs).toBeUndefined();
     expect(renames["custom-tab"]).toBe("My Custom Tab");
   });
 

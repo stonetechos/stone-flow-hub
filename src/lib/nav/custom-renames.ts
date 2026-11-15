@@ -44,11 +44,9 @@ export function readCustomRenames(): CustomNavRenames {
     let hasChanges = false;
     const cleaned: CustomNavRenames = {};
     for (const [id, val] of Object.entries(parsed)) {
-      // Auto-purge accidental system translations that leaked into custom tab renames
-      if (
-        id === "enquiries" &&
-        (val === "વેબસાઇટ લીડ્સ અને CRM" || val === "वेबसाइट लीड्स और CRM")
-      ) {
+      // Auto-purge any accidental Indic system translations (e.g. Gujarati or Hindi)
+      // that leaked into custom tab renames (e.g. "RFQ (દર પૂછપરછ)", "વેબસાઇટ લીડ્સ અને CRM")
+      if (typeof val === "string" && /[\u0900-\u097F\u0A80-\u0AFF]/.test(val)) {
         hasChanges = true;
         continue;
       }
@@ -70,13 +68,20 @@ export function saveCustomRenames(
 ): void {
   if (typeof window === "undefined" || !window.localStorage) return;
   try {
-    window.localStorage.setItem(RENAMES_KEY, JSON.stringify(renames));
+    // Never persist renames containing Indic characters
+    const cleaned: CustomNavRenames = {};
+    for (const [k, v] of Object.entries(renames)) {
+      if (typeof v === "string" && !/[\u0900-\u097F\u0A80-\u0AFF]/.test(v)) {
+        cleaned[k] = v;
+      }
+    }
+    window.localStorage.setItem(RENAMES_KEY, JSON.stringify(cleaned));
     window.dispatchEvent(new Event("st:nav-renames-changed"));
     if (syncRemote) {
       if (immediateRemote) {
-        void flushRemoteSync(renames);
+        void flushRemoteSync(cleaned);
       } else {
-        scheduleRemoteSync(renames, 400);
+        scheduleRemoteSync(cleaned, 400);
       }
     }
   } catch {
@@ -189,7 +194,7 @@ export function useCustomNavRenames() {
       // If active language is English and custom rename contains Indic (Hindi/Gujarati) characters,
       // yield to the English fallback so the English toggle never displays Gujarati or Hindi
       if (!isIndicFallback && isCustomIndic) {
-        return fallback;
+        return defaultEnglishLabel || fallback;
       }
 
       if (

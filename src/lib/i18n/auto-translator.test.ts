@@ -57,6 +57,10 @@ describe("autoTranslate - Deal, Status, and Date Localization", () => {
     expect(reverseTranslateToEnglish("રૂપાંતરિત")).toBe("Converted");
     expect(reverseTranslateToEnglish("આંશિક ચૂકવેલ")).toBe("Partially paid");
     expect(reverseTranslateToEnglish("પૂર્તિ સ્ત્રોત")).toBe("Fulfilment Source");
+    expect(reverseTranslateToEnglish("RFQ (દર પૂછપરછ)")).toBe("RFQ");
+    expect(reverseTranslateToEnglish("Customize સ્ટોસ POP • 270PX")).toBe(
+      "Customize ST POP • 270PX",
+    );
     expect(reverseTranslateToEnglish("૫/૧૧/૨૦૨૬")).toBe("5/11/2026");
   });
 });

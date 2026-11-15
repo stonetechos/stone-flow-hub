@@ -1787,6 +1787,11 @@ function buildReverseIndicMap() {
   REVERSE_INDIC_MAP.set("चालान किया जाना बाकी", "To be invoiced");
   REVERSE_INDIC_MAP.set("ઇ-વે બિલ જરૂરી", "EWB Req.");
   REVERSE_INDIC_MAP.set("ई-वे बिल आवश्यक", "EWB Req.");
+  REVERSE_INDIC_MAP.set("RFQ (દર પૂછપરછ)", "RFQ");
+  REVERSE_INDIC_MAP.set("आरएफक्यू (दर पूछताछ)", "RFQ");
+  REVERSE_INDIC_MAP.set("દર પૂછપરછ", "Request for Quote");
+  REVERSE_INDIC_MAP.set("दर पूछताछ", "Request for Quote");
+  REVERSE_INDIC_MAP.set("દર પૂછતાછ", "Request for Quote");
 }
 
 export function reverseTranslateToEnglish(text: string): string {
@@ -1804,9 +1809,21 @@ export function reverseTranslateToEnglish(text: string): string {
 
   // Check prefix or partial replacements
   let candidate = text;
+  if (candidate.includes("RFQ (દર પૂછપરછ)"))
+    candidate = candidate.replace(/RFQ\s*\(દર પૂછપરછ\)/g, "RFQ");
+  if (candidate.includes("आरएफक्यू (दर पूछताछ)"))
+    candidate = candidate.replace(/आरएफक्यू\s*\(दर पूछताछ\)/g, "RFQ");
+  if (candidate.includes("(દર પૂછપરછ)")) candidate = candidate.replace(/\(દર પૂછપરછ\)/g, "").trim();
+  if (candidate.includes("(दर पूछताछ)")) candidate = candidate.replace(/\(दर पूछताछ\)/g, "").trim();
+  if (candidate.includes("દર પૂછપરછ")) candidate = candidate.replace(/દર પૂછપરછ/g, "RFQ").trim();
+  if (candidate.includes("દર પૂછતાછ")) candidate = candidate.replace(/દર પૂછતાછ/g, "RFQ").trim();
+  if (candidate.includes("दर पूछताछ")) candidate = candidate.replace(/दर पूछताछ/g, "RFQ").trim();
   if (candidate.includes("સ્ટોસ POP")) candidate = candidate.replace(/સ્ટોસ POP/g, "ST POP");
   if (candidate.includes("સ્ટૉસ POP")) candidate = candidate.replace(/સ્ટૉસ POP/g, "ST POP");
   if (candidate.includes("स्टॉस POP")) candidate = candidate.replace(/स्टॉस POP/g, "ST POP");
+  if (candidate.includes("સ્ટોસ")) candidate = candidate.replace(/સ્ટોસ/g, "STOS");
+  if (candidate.includes("સ્ટૉસ")) candidate = candidate.replace(/સ્ટૉસ/g, "STOS");
+  if (candidate.includes("स्टॉस")) candidate = candidate.replace(/स्टॉस/g, "STOS");
   if (candidate.includes("વેબસાઇટ લીડ્સ અને CRM"))
     candidate = candidate.replace(/વેબસાઇટ લીડ્સ અને CRM/g, "Website Leads & CRM");
   if (candidate.includes("वेबसाइट लीड्स और CRM"))
