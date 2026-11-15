@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Smartphone, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -27,6 +28,7 @@ export function PhonebookPickerButton({
   size = "sm",
   label = "Import from Phonebook",
 }: PhonebookPickerButtonProps) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
 
   const handleClick = async () => {
@@ -115,7 +117,7 @@ export function PhonebookPickerButton({
       ) : (
         <Smartphone className="h-3.5 w-3.5 text-emerald-600" />
       )}
-      <span>{label}</span>
+      <span>{t(label, label)}</span>
     </Button>
   );
 }

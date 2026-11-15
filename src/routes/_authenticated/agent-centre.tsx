@@ -75,7 +75,6 @@ import type {
   AgentScanRecord,
   AgentSchedulerConfigUpdate,
 } from "@/lib/agents/scheduler";
-import { StonemanMascot } from "@/components/mascot/StonemanMascot";
 
 export const Route = createFileRoute("/_authenticated/agent-centre")({
   component: AgentCentrePage,

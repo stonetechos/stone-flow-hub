@@ -14,7 +14,6 @@ import {
   Workflow,
   Building2,
   User,
-  Sparkles,
   FolderPlus,
   FileText,
   ShoppingCart,
@@ -980,10 +979,9 @@ function CustomersPage() {
                               )}
                               {isLastContacted && (
                                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-xs shrink-0 animate-in fade-in">
-                                  <Sparkles className="h-3 w-3" />
                                   {lastContacted.channel === "whatsapp"
-                                    ? t("customers.justMessagedBadge", "✨ Just Messaged")
-                                    : t("customers.justCalledBadge", "✨ Just Called")}
+                                    ? t("customers.justMessagedBadge", "Just Messaged")
+                                    : t("customers.justCalledBadge", "Just Called")}
                                 </span>
                               )}
                               {orderInfo?.nearestDeadline &&
@@ -1622,11 +1620,13 @@ function CustomerFormDialog({
         {/* If voice data was populated, show noticeable banner asking employee to review & edit before saving */}
         {voiceExtractedData && (
           <div className="rounded-lg border border-teal-200/90 bg-gradient-to-r from-teal-50 via-cyan-50 to-emerald-50 p-3 text-xs text-teal-950 flex items-start gap-2.5 shadow-xs">
-            <Sparkles className="h-4 w-4 text-teal-600 shrink-0 mt-0.5 animate-pulse" />
             <div className="flex-1 space-y-1">
               <div className="flex items-center justify-between">
                 <span className="font-semibold text-teal-900">
-                  ✨ Voice Data Auto-Filled — Review &amp; Edit Before Saving
+                  {t(
+                    "customers.voiceDataAutoFilled",
+                    "Voice Data Auto-Filled — Review & Edit Before Saving",
+                  )}
                 </span>
                 {onClearVoiceExtracted && (
                   <button
@@ -1682,13 +1682,16 @@ function CustomerFormDialog({
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
                   <label className="text-xs font-semibold text-slate-900 flex items-center gap-1.5">
-                    <span>Reflect in Customer List As</span>
+                    <span>{t("customers.reflectInList", "Reflect in Customer List As")}</span>
                     <span className="text-[11px] font-normal text-slate-500">
-                      (Dropdown selector)
+                      {t("customers.dropdownSelector", "(Dropdown selector)")}
                     </span>
                   </label>
                   <p className="text-[11px] text-muted-foreground">
-                    Choose how this customer is titled in the compiled dashboard directory
+                    {t(
+                      "customers.chooseTitledDesc",
+                      "Choose how this customer is titled in the compiled dashboard directory",
+                    )}
                   </p>
                 </div>
                 <Select
@@ -1699,18 +1702,31 @@ function CustomerFormDialog({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="smart">Smart (Firm if present, else Contact)</SelectItem>
-                    <SelectItem value="firm">Firm / Company Name</SelectItem>
-                    <SelectItem value="contact">Contact Person's Name</SelectItem>
-                    <SelectItem value="combined">Both (Firm · Contact Person)</SelectItem>
-                    <SelectItem value="custom">Custom / Manual</SelectItem>
+                    <SelectItem value="smart">
+                      {t("customers.reflectionSmart", "Smart (Firm if present, else Contact)")}
+                    </SelectItem>
+                    <SelectItem value="firm">
+                      {t("customers.reflectionFirm", "Firm / Company Name")}
+                    </SelectItem>
+                    <SelectItem value="contact">
+                      {t("customers.reflectionContact", "Contact Person's Name")}
+                    </SelectItem>
+                    <SelectItem value="combined">
+                      {t("customers.reflectionBoth", "Both (Firm · Contact Person)")}
+                    </SelectItem>
+                    <SelectItem value="custom">
+                      {t("customers.reflectionCustom", "Custom / Manual")}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <Field
                 label={t("common.name", "Reflected Customer Name")}
-                hint="Titled name shown on quotes, orders, and dashboard list"
+                hint={t(
+                  "customers.reflectedNameHint",
+                  "Titled name shown on quotes, orders, and dashboard list",
+                )}
                 required
               >
                 <Input
@@ -1851,10 +1867,13 @@ function CustomerFormDialog({
                 <div>
                   <label className="text-xs font-semibold text-slate-900 flex items-center gap-1.5">
                     <Users className="h-3.5 w-3.5 text-primary" />
-                    <span>Additional Contacts</span>
+                    <span>{t("customers.additionalContacts", "Additional Contacts")}</span>
                   </label>
                   <p className="text-[11px] text-muted-foreground">
-                    Add multiple contacts with name, phone number, and designation manually
+                    {t(
+                      "customers.additionalContactsHint",
+                      "Add multiple contacts with name, phone number, and designation manually",
+                    )}
                   </p>
                 </div>
                 <Button
@@ -1864,14 +1883,17 @@ function CustomerFormDialog({
                   onClick={addEmptyContact}
                   className="h-8 text-xs font-medium bg-white hover:bg-slate-100"
                 >
-                  <Plus className="mr-1 h-3.5 w-3.5 text-primary" /> + Add a contact
+                  <Plus className="mr-1 h-3.5 w-3.5 text-primary" />{" "}
+                  {t("customers.addContactBtn", "+ Add a contact")}
                 </Button>
               </div>
 
               {contacts.length === 0 ? (
                 <div className="text-center py-2.5 text-xs text-muted-foreground border border-dashed rounded-md bg-white/70">
-                  No additional contacts yet. Click <b>+ Add a contact</b> to add site engineers,
-                  architects, managers, etc.
+                  {t(
+                    "customers.noContactsYet",
+                    "No additional contacts yet. Click + Add a contact to add site engineers, architects, managers, etc.",
+                  )}
                 </div>
               ) : (
                 <div className="space-y-2.5">
@@ -1882,7 +1904,7 @@ function CustomerFormDialog({
                     >
                       <div className="col-span-12 sm:col-span-4">
                         <label className="text-[10px] font-medium text-muted-foreground mb-1 block">
-                          Contact Name *
+                          {t("customers.contactNameLabel", "Contact Name *")}
                         </label>
                         <Input
                           placeholder="e.g. Vikram Sharma"
@@ -1894,7 +1916,7 @@ function CustomerFormDialog({
                       </div>
                       <div className="col-span-12 sm:col-span-4">
                         <label className="text-[10px] font-medium text-muted-foreground mb-1 block">
-                          Phone Number
+                          {t("common.phone", "Phone Number")}
                         </label>
                         <PhoneInput
                           placeholder={t(
@@ -1907,7 +1929,7 @@ function CustomerFormDialog({
                       </div>
                       <div className="col-span-10 sm:col-span-3">
                         <label className="text-[10px] font-medium text-muted-foreground mb-1 block">
-                          Designation
+                          {t("common.designation", "Designation")}
                         </label>
                         <Input
                           placeholder="e.g. Site Engineer"

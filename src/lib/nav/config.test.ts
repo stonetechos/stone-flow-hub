@@ -62,6 +62,10 @@ describe("Navigation active item resolution", () => {
     expect(isNavItemActive(personalTransfersItem, ptPath)).toBe(true);
     expect(isNavItemActive(moneyFlowItem, ptPath)).toBe(false);
 
+    const directPtPath = "/personal-transfers";
+    expect(isNavItemActive(personalTransfersItem, directPtPath)).toBe(true);
+    expect(isNavItemActive(moneyFlowItem, directPtPath)).toBe(false);
+
     const mfPath = "/money-flow";
     expect(isNavItemActive(moneyFlowItem, mfPath)).toBe(true);
     expect(isNavItemActive(personalTransfersItem, mfPath)).toBe(false);

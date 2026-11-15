@@ -94,15 +94,16 @@ export function useIndicDomAutoTranslator() {
     const processTextNode = (textNode: Text) => {
       const customNode = textNode as unknown as { __origStosEnglish?: string };
       const currentVal = textNode.nodeValue || "";
+      if (/[a-zA-Z]/.test(currentVal)) {
+        customNode.__origStosEnglish = currentVal;
+      }
       const sourceText = customNode.__origStosEnglish || currentVal;
       if (!sourceText || !/[a-zA-Z]/.test(sourceText)) return;
       if (shouldSkipElement(textNode.parentElement)) return;
 
       const translated = autoTranslate(sourceText, lang);
       if (translated && translated !== currentVal) {
-        if (!customNode.__origStosEnglish) {
-          customNode.__origStosEnglish = sourceText;
-        }
+        customNode.__origStosEnglish = sourceText;
         isTranslating = true;
         try {
           textNode.nodeValue = translated;
@@ -117,11 +118,12 @@ export function useIndicDomAutoTranslator() {
 
       // 1. Placeholder on input/textarea
       if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
-        const sourcePh = el.dataset.origStosPh || el.getAttribute("placeholder");
+        const currentPh = el.getAttribute("placeholder");
+        if (currentPh && /[a-zA-Z]/.test(currentPh)) {
+          el.dataset.origStosPh = currentPh;
+        }
+        const sourcePh = el.dataset.origStosPh || currentPh;
         if (sourcePh && /[a-zA-Z]/.test(sourcePh)) {
-          if (!el.dataset.origStosPh) {
-            el.dataset.origStosPh = sourcePh;
-          }
           const translatedPh = autoTranslate(sourcePh, lang);
           if (translatedPh && translatedPh !== el.placeholder) {
             el.placeholder = translatedPh;
@@ -131,11 +133,12 @@ export function useIndicDomAutoTranslator() {
 
       // 2. Title attribute
       const htmlEl = el as HTMLElement;
-      const sourceTitle = htmlEl.dataset?.origStosTitle || el.getAttribute("title");
+      const currentTitle = el.getAttribute("title");
+      if (currentTitle && /[a-zA-Z]/.test(currentTitle) && htmlEl.dataset) {
+        htmlEl.dataset.origStosTitle = currentTitle;
+      }
+      const sourceTitle = htmlEl.dataset?.origStosTitle || currentTitle;
       if (sourceTitle && /[a-zA-Z]/.test(sourceTitle)) {
-        if (htmlEl.dataset && !htmlEl.dataset.origStosTitle) {
-          htmlEl.dataset.origStosTitle = sourceTitle;
-        }
         const translatedTitle = autoTranslate(sourceTitle, lang);
         if (translatedTitle && translatedTitle !== el.getAttribute("title")) {
           el.setAttribute("title", translatedTitle);
@@ -143,11 +146,12 @@ export function useIndicDomAutoTranslator() {
       }
 
       // 3. Aria-label attribute
-      const sourceAria = htmlEl.dataset?.origStosAria || el.getAttribute("aria-label");
+      const currentAria = el.getAttribute("aria-label");
+      if (currentAria && /[a-zA-Z]/.test(currentAria) && htmlEl.dataset) {
+        htmlEl.dataset.origStosAria = currentAria;
+      }
+      const sourceAria = htmlEl.dataset?.origStosAria || currentAria;
       if (sourceAria && /[a-zA-Z]/.test(sourceAria)) {
-        if (htmlEl.dataset && !htmlEl.dataset.origStosAria) {
-          htmlEl.dataset.origStosAria = sourceAria;
-        }
         const translatedAria = autoTranslate(sourceAria, lang);
         if (translatedAria && translatedAria !== el.getAttribute("aria-label")) {
           el.setAttribute("aria-label", translatedAria);

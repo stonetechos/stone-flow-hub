@@ -16,7 +16,6 @@ import {
   Truck,
   MessageCircle,
   Clock,
-  Sparkles,
   Layers,
   Receipt,
   XCircle,

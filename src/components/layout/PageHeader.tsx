@@ -33,7 +33,8 @@ export function PageHeader({
   className?: string;
   navId?: string;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || "en";
   const { renames } = useCustomNavRenames();
 
   let pathname = "";
@@ -125,9 +126,9 @@ export function PageHeader({
   const rawSubtitle =
     typeof subtitle === "string" ? t(`subtitle.${subtitle}`, t(subtitle, subtitle)) : subtitle;
 
-  const displayTitle = translateNode(rawTitle);
-  const displaySubtitle = translateNode(rawSubtitle);
-  const displayEyebrow = translateNode(eyebrow);
+  const displayTitle = translateNode(rawTitle, currentLang);
+  const displaySubtitle = translateNode(rawSubtitle, currentLang);
+  const displayEyebrow = translateNode(eyebrow, currentLang);
 
   return (
     <div

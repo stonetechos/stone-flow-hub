@@ -22,7 +22,6 @@ import {
   Image as ImageIcon,
   ImagePlus,
   Eye,
-  Sparkles,
   Boxes,
   Building2,
   PackageCheck,
@@ -32,6 +31,8 @@ import {
   XCircle,
   RefreshCw,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { autoTranslate } from "@/lib/i18n/auto-translator";
 
 import { QuoteTermsManager } from "@/components/quotes/QuoteTermsManager";
 import {
@@ -119,6 +120,8 @@ export const Route = createFileRoute("/_authenticated/quotes/$quoteId/")({
 });
 
 function QuoteDetailPage() {
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || "en";
   const { quoteId } = Route.useParams();
   const qc = useQueryClient();
   const nav = useNavigate();
@@ -957,11 +960,11 @@ function QuoteDetailPage() {
                         )}
                         <div className="min-w-0 flex-1">
                           <h4 className="font-semibold text-xs sm:text-sm text-foreground leading-snug">
-                            {it.description}
+                            {autoTranslate(it.description, currentLang)}
                           </h4>
                           {itemNotes && (
                             <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
-                              {itemNotes}
+                              {autoTranslate(itemNotes, currentLang)}
                             </p>
                           )}
                           <div className="flex flex-wrap items-center gap-1.5 mt-1">
@@ -972,12 +975,12 @@ function QuoteDetailPage() {
                             )}
                             {it.unit && (
                               <span className="text-[10px] text-muted-foreground bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
-                                Unit: {it.unit}
+                                {t("quotes.unit", "Unit")}: {autoTranslate(it.unit, currentLang)}
                               </span>
                             )}
                             {img && (
                               <span className="inline-flex items-center gap-0.5 text-[10px] text-primary">
-                                Photo
+                                {t("quotes.photo", "Photo")}
                               </span>
                             )}
                           </div>
@@ -988,15 +991,15 @@ function QuoteDetailPage() {
                       <div className="grid grid-cols-3 gap-2 bg-muted/30 p-2 rounded-md text-xs border border-border/60">
                         <div>
                           <span className="text-[10px] uppercase text-muted-foreground block font-medium">
-                            Qty
+                            {t("quotes.qty", "Qty")}
                           </span>
                           <span className="font-semibold text-foreground">
-                            {it.quantity} {it.unit ?? ""}
+                            {it.quantity} {it.unit ? autoTranslate(it.unit, currentLang) : ""}
                           </span>
                         </div>
                         <div>
                           <span className="text-[10px] uppercase text-muted-foreground block font-medium">
-                            Rate
+                            {t("quotes.rate", "Rate")}
                           </span>
                           <span className="font-semibold text-foreground">
                             {formatInr(it.unit_price)}
@@ -1004,7 +1007,8 @@ function QuoteDetailPage() {
                         </div>
                         <div className="text-right">
                           <span className="text-[10px] uppercase text-muted-foreground block font-medium">
-                            Amount {it.tax_pct ? `(${it.tax_pct}% GST)` : ""}
+                            {t("quotes.amount", "Amount")}{" "}
+                            {it.tax_pct ? `(${it.tax_pct}% GST)` : ""}
                           </span>
                           <span className="font-bold text-primary">{formatInr(linePreTax)}</span>
                         </div>
@@ -1019,14 +1023,16 @@ function QuoteDetailPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-20 text-center">Photo</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead>HSN</TableHead>
-                      <TableHead className="text-right">Qty</TableHead>
-                      <TableHead>Unit</TableHead>
-                      <TableHead className="text-right">Rate</TableHead>
-                      <TableHead className="text-right">Tax %</TableHead>
-                      <TableHead className="text-right">Amount</TableHead>
+                      <TableHead className="w-20 text-center">
+                        {t("quotes.photo", "Photo")}
+                      </TableHead>
+                      <TableHead>{t("quotes.description", "Description")}</TableHead>
+                      <TableHead>{t("quotes.hsn", "HSN")}</TableHead>
+                      <TableHead className="text-right">{t("quotes.qty", "Qty")}</TableHead>
+                      <TableHead>{t("quotes.unit", "Unit")}</TableHead>
+                      <TableHead className="text-right">{t("quotes.rate", "Rate")}</TableHead>
+                      <TableHead className="text-right">{t("quotes.taxPct", "Tax %")}</TableHead>
+                      <TableHead className="text-right">{t("quotes.amount", "Amount")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1127,15 +1133,15 @@ function QuoteDetailPage() {
                           </TableCell>
                           <TableCell className="font-medium">
                             <div className="flex flex-col">
-                              <span>{it.description}</span>
+                              <span>{autoTranslate(it.description, currentLang)}</span>
                               {itemNotes && (
                                 <span className="text-xs text-muted-foreground font-normal mt-0.5 whitespace-pre-wrap">
-                                  {itemNotes}
+                                  {autoTranslate(itemNotes, currentLang)}
                                 </span>
                               )}
                               {img && (
                                 <span className="inline-flex items-center gap-1 text-[11px] font-normal text-primary/80">
-                                  Visual attached
+                                  {t("quotes.visualAttached", "Visual attached")}
                                 </span>
                               )}
                             </div>
@@ -1144,7 +1150,9 @@ function QuoteDetailPage() {
                             {(it as unknown as { hsn_sac?: string | null }).hsn_sac || "—"}
                           </TableCell>
                           <TableCell className="text-right">{it.quantity}</TableCell>
-                          <TableCell>{it.unit ?? "—"}</TableCell>
+                          <TableCell>
+                            {it.unit ? autoTranslate(it.unit, currentLang) : "—"}
+                          </TableCell>
                           <TableCell className="text-right">{formatInr(it.unit_price)}</TableCell>
                           <TableCell className="text-right">{it.tax_pct}%</TableCell>
                           <TableCell className="text-right">{formatInr(linePreTax)}</TableCell>
@@ -1158,24 +1166,24 @@ function QuoteDetailPage() {
               {/* Responsive Quote Totals Card */}
               <div className="mt-4 rounded-lg bg-muted/30 border border-border/70 p-3.5 space-y-2 text-xs sm:text-sm">
                 <div className="flex justify-between items-center text-muted-foreground">
-                  <span>Subtotal:</span>
+                  <span>{t("quotes.subtotal", "Subtotal")}:</span>
                   <span className="font-medium text-foreground">{formatInr(quote.subtotal)}</span>
                 </div>
                 {saleMode === "cash" ? (
                   <div className="flex justify-between items-center text-xs text-emerald-700 font-medium">
-                    <span>GST (Cash Deal · Challan Only):</span>
+                    <span>{t("quotes.gstCashDeal", "GST (Cash Deal · Challan Only)")}:</span>
                     <span className="font-semibold">0% (₹0)</span>
                   </div>
                 ) : (
                   <div className="flex justify-between items-center text-muted-foreground">
-                    <span>GST Tax:</span>
+                    <span>{t("quotes.gstTax", "GST Tax")}:</span>
                     <span className="font-medium text-foreground">
                       {formatInr(quote.tax_amount)}
                     </span>
                   </div>
                 )}
                 <div className="border-t border-border pt-2 flex justify-between items-center text-sm sm:text-base font-bold text-foreground">
-                  <span>Total Quotation:</span>
+                  <span>{t("quotes.totalQuotation", "Total Quotation")}:</span>
                   <span className="text-primary font-black">{formatInr(quote.total)}</span>
                 </div>
                 {saleMode === "hybrid" && (
@@ -1231,27 +1239,29 @@ function QuoteDetailPage() {
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-emerald-600" />
-                <CardTitle className="text-sm">Terms &amp; Conditions</CardTitle>
+                <CardTitle className="text-sm">
+                  {t("quotes.termsAndConditions", "Terms & Conditions")}
+                </CardTitle>
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Badge
                   variant="outline"
                   className="bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/30 dark:text-emerald-300 text-[10px] font-semibold"
                 >
-                  100% Advance: 5% Discount
+                  {t("quotes.hundredPercentAdvance", "100% Advance: 5% Discount")}
                 </Badge>
                 {Number(quote.total) > 0 && Number(quote.total) < ADVANCE_PAYMENT_THRESHOLD_INR && (
                   <Badge
                     variant="outline"
                     className="bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/30 dark:text-amber-300 text-[10px]"
                   >
-                    &lt; ₹50k: 100% Advance
+                    {t("quotes.under50kAdvance", "< ₹50k: 100% Advance")}
                   </Badge>
                 )}
                 <Badge variant="outline" className="text-[10px]">
                   {detectedScope === "supply_and_installation"
-                    ? "Supply + Installation"
-                    : "Supply Only"}
+                    ? t("quotes.supplyAndInstallation", "Supply + Installation")
+                    : t("quotes.supplyOnly", "Supply Only")}
                 </Badge>
                 <Button
                   size="sm"
@@ -1259,41 +1269,45 @@ function QuoteDetailPage() {
                   className="h-7 text-xs"
                   onClick={openTermsDialog}
                 >
-                  <Pencil className="mr-1 h-3 w-3" /> Edit Terms
+                  <Pencil className="mr-1 h-3 w-3" /> {t("quotes.editTerms", "Edit Terms")}
                 </Button>
               </div>
             </CardHeader>
             <CardContent className="p-4 pt-1">
               <div className="mb-3 flex items-center justify-between rounded-md border border-dashed border-emerald-500/70 bg-emerald-50/60 dark:bg-emerald-950/20 px-3 py-2 text-xs text-emerald-900 dark:text-emerald-200">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm">✨</span>
                   <div>
-                    <span className="font-semibold">Special Payment Incentive: </span>
+                    <span className="font-semibold">
+                      {t("quotes.specialPaymentIncentive", "Special Payment Incentive:")}{" "}
+                    </span>
                     <span>
-                      Premake 100% payment to avail 5% discount + free certified Shree Yantra worth
-                      ₹14,999 on stone product orders &gt; ₹1 Lakh*.
+                      {t(
+                        "quotes.specialPaymentIncentiveText",
+                        "Premake 100% payment to avail 5% discount + free certified Shree Yantra worth ₹14,999 on stone product orders > ₹1 Lakh*.",
+                      )}
                     </span>
                   </div>
                 </div>
                 <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] uppercase shrink-0">
-                  5% Off
+                  {t("quotes.fivePercentOff", "5% Off")}
                 </Badge>
               </div>
 
               {quote.terms && quote.terms.trim() ? (
                 <div className="rounded-md border border-border/70 bg-muted/20 p-3 text-xs font-mono leading-relaxed whitespace-pre-line text-slate-800 dark:text-slate-200">
-                  {quote.terms}
+                  {autoTranslate(quote.terms, currentLang)}
                 </div>
               ) : (
                 <div className="rounded-md border border-dashed border-amber-300 bg-amber-50/50 dark:bg-amber-950/20 p-3 text-xs text-amber-900 dark:text-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                   <div>
-                    <span className="font-semibold">Standard Terms Active: </span>
+                    <span className="font-semibold">
+                      {t("quotes.standardTermsActive", "Standard Terms Active:")}{" "}
+                    </span>
                     <span>
-                      No custom terms stored. The polished standard{" "}
-                      {detectedScope === "supply_and_installation"
-                        ? "Supply + Installation"
-                        : "Supply"}{" "}
-                      terms are dynamically attached to PDF exports and WhatsApp messages.
+                      {t(
+                        "quotes.noCustomTermsDesc",
+                        "No custom terms stored. The polished standard terms are dynamically attached to PDF exports and WhatsApp messages.",
+                      )}
                     </span>
                   </div>
                   <Button
@@ -1302,7 +1316,7 @@ function QuoteDetailPage() {
                     className="h-7 text-xs shrink-0 bg-white dark:bg-slate-900"
                     onClick={openTermsDialog}
                   >
-                    Affix / Customize Terms
+                    {t("quotes.affixCustomizeTerms", "Affix / Customize Terms")}
                   </Button>
                 </div>
               )}

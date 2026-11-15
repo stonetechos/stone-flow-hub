@@ -26,6 +26,7 @@ import { Route as BackendSiteSettingsRouteImport } from './routes/backend/site-s
 import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
+import { Route as AuthenticatedPersonalTransfersRouteImport } from './routes/_authenticated/personal-transfers'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedNotificationSettingsRouteImport } from './routes/_authenticated/notification-settings'
 import { Route as AuthenticatedMoneyFlowRouteImport } from './routes/_authenticated/money-flow'
@@ -286,6 +287,12 @@ const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
   path: '/reports',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPersonalTransfersRoute =
+  AuthenticatedPersonalTransfersRouteImport.update({
+    id: '/personal-transfers',
+    path: '/personal-transfers',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedNotificationsRoute =
   AuthenticatedNotificationsRouteImport.update({
     id: '/notifications',
@@ -1329,6 +1336,7 @@ export interface FileRoutesByFullPath {
   '/money-flow': typeof AuthenticatedMoneyFlowRoute
   '/notification-settings': typeof AuthenticatedNotificationSettingsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/personal-transfers': typeof AuthenticatedPersonalTransfersRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tasks': typeof AuthenticatedTasksRoute
@@ -1521,6 +1529,7 @@ export interface FileRoutesByTo {
   '/money-flow': typeof AuthenticatedMoneyFlowRoute
   '/notification-settings': typeof AuthenticatedNotificationSettingsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/personal-transfers': typeof AuthenticatedPersonalTransfersRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tasks': typeof AuthenticatedTasksRoute
@@ -1716,6 +1725,7 @@ export interface FileRoutesById {
   '/_authenticated/money-flow': typeof AuthenticatedMoneyFlowRoute
   '/_authenticated/notification-settings': typeof AuthenticatedNotificationSettingsRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
+  '/_authenticated/personal-transfers': typeof AuthenticatedPersonalTransfersRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
@@ -1911,6 +1921,7 @@ export interface FileRouteTypes {
     | '/money-flow'
     | '/notification-settings'
     | '/notifications'
+    | '/personal-transfers'
     | '/reports'
     | '/settings'
     | '/tasks'
@@ -2103,6 +2114,7 @@ export interface FileRouteTypes {
     | '/money-flow'
     | '/notification-settings'
     | '/notifications'
+    | '/personal-transfers'
     | '/reports'
     | '/settings'
     | '/tasks'
@@ -2297,6 +2309,7 @@ export interface FileRouteTypes {
     | '/_authenticated/money-flow'
     | '/_authenticated/notification-settings'
     | '/_authenticated/notifications'
+    | '/_authenticated/personal-transfers'
     | '/_authenticated/reports'
     | '/_authenticated/settings'
     | '/_authenticated/tasks'
@@ -2615,6 +2628,13 @@ declare module '@tanstack/react-router' {
       path: '/reports'
       fullPath: '/reports'
       preLoaderRoute: typeof AuthenticatedReportsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/personal-transfers': {
+      id: '/_authenticated/personal-transfers'
+      path: '/personal-transfers'
+      fullPath: '/personal-transfers'
+      preLoaderRoute: typeof AuthenticatedPersonalTransfersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/notifications': {
@@ -3980,6 +4000,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMoneyFlowRoute: typeof AuthenticatedMoneyFlowRoute
   AuthenticatedNotificationSettingsRoute: typeof AuthenticatedNotificationSettingsRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
+  AuthenticatedPersonalTransfersRoute: typeof AuthenticatedPersonalTransfersRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
@@ -4137,6 +4158,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedNotificationSettingsRoute:
     AuthenticatedNotificationSettingsRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
+  AuthenticatedPersonalTransfersRoute: AuthenticatedPersonalTransfersRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,

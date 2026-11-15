@@ -465,7 +465,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   },
   {
     id: "personal-transfers",
-    to: "/money-flow?tab=personal-transfers",
+    to: "/personal-transfers",
     label: "Personal Transfers",
     icon: ArrowLeftRight,
     group: "accountant",
@@ -550,6 +550,11 @@ export const NAV_ITEMS_BY_ID: Readonly<Record<string, NavItemDef>> = Object.from
 export function findNavItemForPath(pathname: string): NavItemDef | undefined {
   const [cleanPath, searchStr] = pathname.split("?");
   const searchParams = searchStr ? new URLSearchParams(searchStr) : null;
+
+  // Dedicated backward-compatible alias for personal transfers
+  if (cleanPath === "/money-flow" && searchParams?.get("tab") === "personal-transfers") {
+    return NAV_ITEMS_BY_ID["personal-transfers"];
+  }
 
   let best: NavItemDef | undefined;
   let bestScore = -1;

@@ -56,7 +56,6 @@ import { useInsightLifecycle } from "@/lib/insights/state/hooks";
 import { InsightCard } from "@/components/dashboard/InsightCard";
 import { VieActionMessage, type VieActionRow } from "@/components/copilot/VieActionCard";
 import { useSpeechCapture } from "@/lib/voice/useSpeechCapture";
-import { StonemanMascot } from "@/components/mascot/StonemanMascot";
 import { isNocturnalHour, getNocturnalQuip } from "@/lib/dashboard/greeting";
 import { useTranslation } from "react-i18next";
 
@@ -445,10 +444,6 @@ export function Copilot() {
 
   return (
     <>
-      <StonemanMascot
-        onClick={() => setOpen(true)}
-        className={open ? "pointer-events-none opacity-0 transition-opacity duration-200" : ""}
-      />
       <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
         <DialogPrimitive.Portal>
           <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs transition-opacity duration-300 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />

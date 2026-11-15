@@ -22,7 +22,15 @@ import { transliterateName } from "./transliterate";
 
 export function getActiveLanguage(): string {
   if (typeof window !== "undefined") {
-    return localStorage.getItem("stos-lang") || "en";
+    const docLang = document.documentElement.lang;
+    if (docLang && (docLang.startsWith("hi") || docLang.startsWith("gu"))) {
+      return docLang;
+    }
+    const local = localStorage.getItem("stos-lang");
+    if (local && (local.startsWith("hi") || local.startsWith("gu"))) {
+      return local;
+    }
+    return local || docLang || "en";
   }
   return "en";
 }
@@ -746,10 +754,6 @@ export const INDIC_DICTIONARY: Record<string, { hi: string; gu: string }> = {
     hi: "स्टॉस व्हाट्सएप सीआरएम वर्कस्पेस",
     gu: "સ્ટોસ વ્હોટ્સએપ CRM વર્કસ્પેસ",
   },
-  "Libromi-style Native CRM Mini App beside conversations": {
-    hi: "बातचीत के साथ लिब्रोमी-शैली सीआरएम मिनी ऐप",
-    gu: "વાતચીત સાથે લિબ્રોમી-શૈલી CRM મિની એપ",
-  },
   "Collapse CRM Panel": { hi: "सीआरएम पैनल समेटें", gu: "CRM પેનલ સંકોચો" },
   "Expand CRM Panel": { hi: "सीआरएम पैनल खोलें", gu: "CRM પેનલ વિસ્તૃત કરો" },
   "Open in WhatsApp": { hi: "व्हाट्सएप में खोलें", gu: "WhatsApp માં ખોલો" },
@@ -917,6 +921,31 @@ export const INDIC_DICTIONARY: Record<string, { hi: string; gu: string }> = {
   "Public Website CMS: Landing Page Matter & Copy": {
     hi: "सार्वजनिक वेबसाइट CMS: लैंडिंग पेज सामग्री",
     gu: "જાહેર વેબસાઇટ CMS: લેન્ડિંગ પૃષ્ઠ સામગ્રી",
+  },
+  "Special Payment Incentive:": { hi: "विशेष भुगतान प्रोत्साहन:", gu: "ખાસ ચુકવણી પ્રોત્સાહન:" },
+  "Special Payment Incentive": { hi: "विशेष भुगतान प्रोत्साहन", gu: "ખાસ ચુકવણી પ્રોત્સાહન" },
+  "5% Off": { hi: "५% छूट", gu: "૫% છૂટ" },
+  "< ₹50k: 100% Advance": { hi: "< ₹५० हजार: १००% अग्रिम", gu: "< ₹૫૦ હજાર: ૧૦૦% એડવાન્સ" },
+  "Supply + Installation": { hi: "सप्लाई + इंस्टॉलेशन", gu: "સપ્લાય + ઇન્સ્ટોલેશન" },
+  "Supply Only": { hi: "केवल सप्लाई", gu: "માત્ર સપ્લાય" },
+  "Edit Terms": { hi: "शर्तें संपादित करें", gu: "શરતો સંપાદિત કરો" },
+  "Affix / Customize Terms": {
+    hi: "शर्तें संलग्न / कस्टमाइज़ करें",
+    gu: "શરતો જોડો / કસ્ટમાઇઝ કરો",
+  },
+  "Standard Terms Active:": { hi: "मानक शर्तें सक्रिय:", gu: "પ્રમાણભૂત શરતો સક્રિય:" },
+  "Premake 100% payment to avail 5% discount + free certified Shree Yantra worth ₹14,999 on stone product orders > ₹1 Lakh*.":
+    {
+      hi: "₹1 लाख से अधिक के स्टोन उत्पाद ऑर्डर पर 5% छूट + ₹14,999 मूल्य का निःशुल्क प्रमाणित श्री यंत्र प्राप्त करने के लिए 100% अग्रिम भुगतान करें।",
+      gu: "₹1 લાખથી વધુના સ્ટોન પ્રોડક્ટ ઓર્ડર પર 5% છૂટ + ₹14,999 મૂલ્યનું મફત પ્રમાણિત શ્રી યંત્ર મેળવવા માટે 100% એડવાન્સ ચુકવણી કરો.",
+    },
+  "Click to upload product photo(s)": {
+    hi: "उत्पाद फ़ोटो अपलोड करने के लिए क्लिक करें",
+    gu: "પ્રોડક્ટ ફોટો અપલોડ કરવા ક્લિક કરો",
+  },
+  "Click to view full photo": {
+    hi: "पूर्ण फ़ोटो देखने के लिए क्लिक करें",
+    gu: "સંપૂર્ણ ફોટો જોવા ક્લિક કરો",
   },
 };
 

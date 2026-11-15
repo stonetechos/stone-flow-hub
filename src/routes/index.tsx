@@ -80,7 +80,6 @@ import {
 } from "@/lib/site-settings/use-site-settings";
 import { fetchSiteSettings } from "@/lib/site-settings/api";
 import { useWebsiteContent } from "@/lib/cms/landing-content-store";
-import { StonemanMascot } from "@/components/mascot/StonemanMascot";
 import { StonemanCustomerDialog } from "@/components/mascot/StonemanCustomerDialog";
 import { LanguageToggle } from "@/components/global/LanguageToggle";
 import { removeThemes } from "@/components/global/ThemeSwitcher";
@@ -2449,13 +2448,7 @@ function HomePage() {
         </Button>
       </div>
 
-      {/* StoneMan AI Mascot Assistant & Track Order Dialog */}
-      <StonemanMascot
-        onClick={() => setStonemanOpen(true)}
-        className={
-          stonemanOpen ? "pointer-events-none opacity-0 transition-opacity duration-200" : ""
-        }
-      />
+      {/* StoneMan AI Customer Track Order Dialog */}
       <StonemanCustomerDialog open={stonemanOpen} onOpenChange={setStonemanOpen} />
     </div>
   );
