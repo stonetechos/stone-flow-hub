@@ -272,7 +272,13 @@ function RootComponent() {
   useEffect(() => {
     try {
       const path = router.state.location.pathname;
-      const isPublic = path === "/" || path.startsWith("/careers");
+      const isPublic =
+        path === "/" ||
+        path.startsWith("/careers") ||
+        path.startsWith("/pay") ||
+        path.startsWith("/track") ||
+        path.startsWith("/inquiry") ||
+        path.startsWith("/auth");
       if (isPublic) {
         removeThemes();
       } else {

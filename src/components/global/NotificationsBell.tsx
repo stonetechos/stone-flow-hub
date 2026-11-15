@@ -48,7 +48,7 @@ import {
 import { TIER_TONE } from "@/lib/notifications/tiers";
 import { toneDot } from "@/lib/ui/tones";
 import { qk } from "@/lib/query-keys";
-import { formatRelative } from "@/lib/format";
+import { formatRelative, toIndicDigits } from "@/lib/format";
 import { transliterateName } from "@/lib/i18n/transliterate";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
@@ -130,7 +130,10 @@ export function localizeNotificationText(text: string, lang?: string): string {
       .replace(/Delivery\s+deadline/gi, "डिलीवरी समयसीमा")
       .replace(/Red Flag/gi, "रेड फ्लैग")
       .replace(/Assign Live Stock \/ Partner/gi, "लाइव स्टॉक / पार्टनर सौंपें")
-      .replace(/awaiting response/gi, "उत्तर की प्रतीक्षा");
+      .replace(/awaiting response/gi, "उत्तर की प्रतीक्षा")
+      .replace(/follow-up/gi, "फ़ॉलो-अप")
+      .replace(/due today/gi, "आज देय")
+      .replace(/overdue/gi, "अतिदेय");
   } else if (lang === "gu") {
     out = out
       .replace(/Receipt\s+([A-Za-z0-9-]+)\s+created/gi, "રસીદ $1 નોંધવામાં આવી")
@@ -144,10 +147,13 @@ export function localizeNotificationText(text: string, lang?: string): string {
       .replace(/Delivery\s+deadline/gi, "ડિલિવરી સમયમર્યાદા")
       .replace(/Red Flag/gi, "રેડ ફ્લેગ")
       .replace(/Assign Live Stock \/ Partner/gi, "લાઇવ સ્ટોક / પાર્ટનર સોંપો")
-      .replace(/awaiting response/gi, "પ્રતિસાદની રાહ");
+      .replace(/awaiting response/gi, "પ્રતિસાદની રાહ")
+      .replace(/follow-up/gi, "ફોલો-અપ")
+      .replace(/due today/gi, "આજે બાકી")
+      .replace(/overdue/gi, "મુદતવીતી");
   }
 
-  return out;
+  return toIndicDigits(out, lang);
 }
 
 type BucketKey = "all" | "unread" | "today" | "yesterday";

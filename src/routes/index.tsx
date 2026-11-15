@@ -85,6 +85,7 @@ import { StonemanCustomerDialog } from "@/components/mascot/StonemanCustomerDial
 import { LanguageToggle } from "@/components/global/LanguageToggle";
 import { removeThemes } from "@/components/global/ThemeSwitcher";
 import { useTranslation } from "react-i18next";
+import { wallSqft, type LengthUnit } from "@/lib/quotes/estimateCatalog";
 import {
   getLandingTexts,
   getLocalizedProducts,
@@ -411,7 +412,19 @@ function HomePage() {
   const [serviceScope, setServiceScope] = useState<"supply_and_installation" | "supply_only">(
     "supply_and_installation",
   );
+  const [dimLength, setDimLength] = useState<string>("");
+  const [dimHeight, setDimHeight] = useState<string>("");
+  const [dimUnit, setDimUnit] = useState<LengthUnit>("ft");
   const [planDescription, setPlanDescription] = useState<string>("");
+
+  const calculatedSqft = useMemo(() => {
+    const l = parseFloat(dimLength);
+    const h = parseFloat(dimHeight);
+    if (!isNaN(l) && !isNaN(h) && l > 0 && h > 0) {
+      return wallSqft(h, l, dimUnit);
+    }
+    return null;
+  }, [dimLength, dimHeight, dimUnit]);
 
   // Customer contact states with country code
   const [customerRole, setCustomerRole] = useState<string>("Owner / Homeowner");
@@ -645,6 +658,9 @@ function HomePage() {
     const discountLine = prepaymentDiscountSelected
       ? `*Prepayment Privilege:* 100% Advance Payment (5% Discount + Free Certified Shree Yantra worth ₹14,999 on stone product orders > ₹1L*)\n`
       : "";
+    const dimLine = calculatedSqft
+      ? `*Dimensions:* ${dimLength} × ${dimHeight} ${dimUnit} (~${calculatedSqft.toFixed(2)} sq.ft)\n`
+      : "";
     const text = encodeURIComponent(
       `Hello Stone Tech Team! I would like to request an estimate for:\n\n` +
         `*Name:* ${name || "Client"}\n` +
@@ -652,6 +668,7 @@ function HomePage() {
         `*Service Scope:* ${scopePart}\n` +
         `*Products:* ${prods}\n` +
         `*Space:* ${spaceType}\n` +
+        dimLine +
         `*City:* ${city || "Not specified"}\n` +
         `*Required by:* ${requiredDate}\n` +
         (wallPhotosCount > 0 ? `*Wall Pictures:* ${wallPhotosCount} attached\n` : "") +
@@ -669,6 +686,10 @@ function HomePage() {
     city,
     requiredDate,
     planDescription,
+    dimLength,
+    dimHeight,
+    dimUnit,
+    calculatedSqft,
     primaryPhoneClean,
     prepaymentDiscountSelected,
   ]);
@@ -794,9 +815,13 @@ function HomePage() {
 
     try {
       const selectedRoleObj = CUSTOMER_ROLES.find((r) => r.value === customerRole);
+      const dimLine = calculatedSqft
+        ? `[Dimensions: ${dimLength} × ${dimHeight} ${dimUnit} (~${calculatedSqft.toFixed(2)} sq.ft)]`
+        : "";
+      const baseDesc = [dimLine, planDescription.trim()].filter(Boolean).join("\n");
       const finalPlanDescription = prepaymentDiscountSelected
-        ? `${planDescription.trim()}\n[Prepayment Privilege: 100% advance payment for 5% discount + Certified Shree Yantra worth ₹14,999 on stone product orders > ₹1L*]`.trim()
-        : planDescription.trim();
+        ? `${baseDesc}\n[Prepayment Privilege: 100% advance payment for 5% discount + Certified Shree Yantra worth ₹14,999 on stone product orders > ₹1L*]`.trim()
+        : baseDesc;
 
       const result = await submitPublicEnquiryServerFn({
         data: {
@@ -1144,8 +1169,8 @@ function HomePage() {
                   <div className="text-xl sm:text-2xl font-bold tracking-tight text-[#111111] dark:text-stone-100">
                     {isEn
                       ? cmsContent.heroPricingBadge &&
-                        cmsContent.heroPricingBadge !== "Direct" &&
-                        cmsContent.heroPricingBadge !== "Direct Quarry Pricing"
+                        !cmsContent.heroPricingBadge.toLowerCase().includes("direct") &&
+                        !cmsContent.heroPricingBadge.toLowerCase().includes("quarry")
                         ? cmsContent.heroPricingBadge
                         : texts.hero.direct
                       : texts.hero.direct}
@@ -1483,6 +1508,115 @@ function HomePage() {
                               {formErrors.spaceType}
                             </p>
                           )}
+
+                          {/* Dimensions & Length Unit Selector (ft / in / mm / m) */}
+                          <div className="rounded-xl border border-border/80 bg-muted/20 p-2.5 space-y-2">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="font-semibold text-foreground flex items-center gap-1.5">
+                                <Compass className="h-3.5 w-3.5 text-primary" />
+                                <span>
+                                  {currentLang === "hi"
+                                    ? "सतह आयाम (लंबाई × ऊंचाई)"
+                                    : currentLang === "gu"
+                                      ? "સપાટી પરિમાણો (લંબાઈ × ઊંચાઈ)"
+                                      : "Surface Dimensions (Length × Height)"}
+                                </span>
+                              </span>
+                              {calculatedSqft !== null && (
+                                <Badge
+                                  variant="outline"
+                                  className="text-[10px] font-bold font-mono px-2 py-0.5 border-primary/40 text-primary bg-primary/5"
+                                >
+                                  ≈ {toIndicDigits(calculatedSqft.toFixed(2), currentLang)}{" "}
+                                  {currentLang === "hi"
+                                    ? "वर्गफ़ुट"
+                                    : currentLang === "gu"
+                                      ? "ચો.ફૂટ"
+                                      : "sq.ft"}
+                                </Badge>
+                              )}
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-2">
+                              <div>
+                                <label className="text-[10px] font-medium text-muted-foreground block mb-1">
+                                  {currentLang === "hi"
+                                    ? "लंबाई"
+                                    : currentLang === "gu"
+                                      ? "લંબાઈ"
+                                      : "Length"}
+                                </label>
+                                <Input
+                                  type="number"
+                                  step="any"
+                                  placeholder="e.g. 12"
+                                  value={dimLength}
+                                  onChange={(e) => setDimLength(e.target.value)}
+                                  className="h-8 text-xs bg-background"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[10px] font-medium text-muted-foreground block mb-1">
+                                  {currentLang === "hi"
+                                    ? "ऊंचाई / चौड़ाई"
+                                    : currentLang === "gu"
+                                      ? "ઊંચાઈ / પહોળાઈ"
+                                      : "Height / Width"}
+                                </label>
+                                <Input
+                                  type="number"
+                                  step="any"
+                                  placeholder="e.g. 10"
+                                  value={dimHeight}
+                                  onChange={(e) => setDimHeight(e.target.value)}
+                                  className="h-8 text-xs bg-background"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[10px] font-medium text-muted-foreground block mb-1">
+                                  {currentLang === "hi"
+                                    ? "इकाई"
+                                    : currentLang === "gu"
+                                      ? "એકમ"
+                                      : "Unit"}
+                                </label>
+                                <select
+                                  value={dimUnit}
+                                  onChange={(e) => setDimUnit(e.target.value as LengthUnit)}
+                                  className="h-8 w-full rounded-md border border-input bg-background px-2 text-xs font-semibold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                >
+                                  <option value="ft">
+                                    {currentLang === "hi"
+                                      ? "फ़ीट (ft)"
+                                      : currentLang === "gu"
+                                        ? "ફૂટ (ft)"
+                                        : "ft (Feet)"}
+                                  </option>
+                                  <option value="in">
+                                    {currentLang === "hi"
+                                      ? "इंच (in)"
+                                      : currentLang === "gu"
+                                        ? "ઇંચ (in)"
+                                        : "in (Inches)"}
+                                  </option>
+                                  <option value="mm">
+                                    {currentLang === "hi"
+                                      ? "मिमी (mm)"
+                                      : currentLang === "gu"
+                                        ? "મિમી (mm)"
+                                        : "mm (Millimeters)"}
+                                  </option>
+                                  <option value="m">
+                                    {currentLang === "hi"
+                                      ? "मीटर (m)"
+                                      : currentLang === "gu"
+                                        ? "મીટર (m)"
+                                        : "m (Meters)"}
+                                  </option>
+                                </select>
+                              </div>
+                            </div>
+                          </div>
 
                           {/* Description & Quick Idea Suggestions */}
                           <div className="space-y-1.5">

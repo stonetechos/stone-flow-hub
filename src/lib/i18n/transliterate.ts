@@ -270,9 +270,11 @@ const GUJARATI_DICT: Record<string, string> = {
   prajapati: "પ્રજાપતિ",
   thakor: "ઠાકોર",
   zala: "ઝાલા",
-  gota: "ગોટા",
+  gota: "ગોતા",
 
   // Stone Geology, Patterns & Architectural Vocabulary
+  "3d": "૩D",
+  "3-d": "૩D",
   origami: "ઓરિગામિ",
   prism: "પ્રિઝમ",
   teakwood: "ટીકવુડ",
@@ -656,6 +658,8 @@ const HINDI_DICT: Record<string, string> = {
   gota: "गोता",
 
   // Stone Geology, Patterns & Architectural Vocabulary
+  "3d": "३D",
+  "3-d": "३D",
   origami: "ओरिगेमी",
   prism: "प्रिज्म",
   teakwood: "टीकवुड",

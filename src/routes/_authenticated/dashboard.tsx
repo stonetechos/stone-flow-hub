@@ -1494,55 +1494,76 @@ function buildBrief(
 
   // 2. High-level quantitative operational metrics from live database
   if (kpis) {
-    if (kpis.revenuePipelineInr > 0 || kpis.pendingQuotes > 0) {
+    // Only show pipeline in brief if headline is NOT already showing revenue pipeline (deduplicates repeated info!)
+    const headlineIsPipeline = kpis.outstandingInr <= 1_000_000 && kpis.ordersToStart <= 3;
+    if (!headlineIsPipeline && (kpis.revenuePipelineInr > 0 || kpis.pendingQuotes > 0)) {
       lines.push(
-        t(
-          "dashboard.briefPipeline",
-          "Pipeline: ₹{{amount}} active across {{count}} quote(s) in play.",
-          {
-            amount: formatMoney(kpis.revenuePipelineInr, lang),
-            count: kpis.pendingQuotes,
-          },
+        toIndicDigits(
+          t(
+            "dashboard.briefPipeline",
+            "Pipeline: ₹{{amount}} active across {{count}} quote(s) in play.",
+            {
+              amount: formatMoney(kpis.revenuePipelineInr, lang),
+              count: kpis.pendingQuotes,
+            },
+          ),
+          lang,
         ),
       );
     }
     if (kpis.outstandingInr > 0) {
       lines.push(
-        t(
-          "dashboard.briefReceivables",
-          "Receivables: ₹{{amount}} outstanding balance pending customer collection.",
-          {
-            amount: formatMoney(kpis.outstandingInr, lang),
-          },
+        toIndicDigits(
+          t(
+            "dashboard.briefReceivables",
+            "Receivables: ₹{{amount}} outstanding balance pending customer collection.",
+            {
+              amount: formatMoney(kpis.outstandingInr, lang),
+            },
+          ),
+          lang,
         ),
       );
     }
     if (kpis.activeEnquiries > 0) {
       lines.push(
-        t("dashboard.briefEnquiries", "{{count}} active CRM inquiries currently in progress.", {
-          count: kpis.activeEnquiries,
-        }),
+        toIndicDigits(
+          t("dashboard.briefEnquiries", "{{count}} active CRM inquiries currently in progress.", {
+            count: kpis.activeEnquiries,
+          }),
+          lang,
+        ),
       );
     }
     if (kpis.todayFollowups > 0 || kpis.overdueFollowups > 0) {
       lines.push(
-        t("dashboard.briefFollowups", "{{count}} client follow-up(s) scheduled today{{overdue}}.", {
-          count: kpis.todayFollowups,
-          overdue:
-            kpis.overdueFollowups > 0
-              ? ` (${kpis.overdueFollowups} ${t("dashboard.overdue", t("common.overdue", "overdue"))})`
-              : "",
-        }),
+        toIndicDigits(
+          t(
+            "dashboard.briefFollowups",
+            "{{count}} client follow-up(s) scheduled today{{overdue}}.",
+            {
+              count: kpis.todayFollowups,
+              overdue:
+                kpis.overdueFollowups > 0
+                  ? ` (${toIndicDigits(kpis.overdueFollowups, lang)} ${t("dashboard.overdue", t("common.overdue", "overdue"))})`
+                  : "",
+            },
+          ),
+          lang,
+        ),
       );
     }
     if (kpis.ordersToStart > 0) {
       lines.push(
-        t(
-          "dashboard.briefOrdersToStart",
-          "{{count}} sales order(s) confirmed and ready to start production.",
-          {
-            count: kpis.ordersToStart,
-          },
+        toIndicDigits(
+          t(
+            "dashboard.briefOrdersToStart",
+            "{{count}} sales order(s) confirmed and ready to start production.",
+            {
+              count: kpis.ordersToStart,
+            },
+          ),
+          lang,
         ),
       );
     }

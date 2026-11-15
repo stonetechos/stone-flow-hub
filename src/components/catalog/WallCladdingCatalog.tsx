@@ -505,7 +505,7 @@ export function WallCladdingCatalog({
 
             {/* WhatsApp PDF Download — Localized 3-Language Flow */}
             <a
-              href={`/catalogues/${t.pdfFile}`}
+              href={`/catalogues/${t.pdfFile}?v=26-27-v2`}
               download={t.pdfFile}
               title={t.pdfBtn}
               className="inline-flex"
@@ -517,7 +517,9 @@ export function WallCladdingCatalog({
               >
                 <Download className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline font-medium">{t.pdfBtn}</span>
-                <span className="sm:hidden font-medium">PDF</span>
+                <span className="sm:hidden font-medium">
+                  {lang === "gu" ? "પીડીએફ" : lang === "hi" ? "पीडीएफ" : "PDF"}
+                </span>
               </Button>
             </a>
           </div>
@@ -614,12 +616,12 @@ export function WallCladdingCatalog({
                       containIntrinsicSize: idx >= INITIAL_BATCH ? "auto 120px" : undefined,
                     }}
                     className="group relative aspect-square rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer bg-stone-900/95 dark:bg-black border border-border/60 hover:border-amber-500/50 shadow-2xs hover:shadow-md transition-all duration-300 flex items-center justify-center p-1 sm:p-2"
-                    title={item.name}
+                    title={transliterateName(item.name, lang)}
                   >
                     {/* Media Image — Complete uncropped panel with NO zooming on hover */}
                     <img
                       src={item.image}
-                      alt={item.name}
+                      alt={transliterateName(item.name, lang)}
                       loading="lazy"
                       decoding="async"
                       className="h-full w-full object-contain drop-shadow-sm select-none transition-all duration-300"
@@ -630,7 +632,7 @@ export function WallCladdingCatalog({
 
                     {/* Subtle Top-Right Code Badge */}
                     <div className="absolute top-1.5 right-1.5 bg-black/60 backdrop-blur-xs text-white px-1.5 py-0.5 rounded-md text-[9px] font-mono font-bold shadow-xs pointer-events-none z-10">
-                      {item.code || item.id}
+                      {toIndicDigits(item.code || item.id, lang)}
                     </div>
 
                     {/* Subtle dark gradient overlay on hover — EXACT SAME as Live Installations */}

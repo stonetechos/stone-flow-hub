@@ -45,11 +45,11 @@ const PROFIT_TEXTS = {
     cashCollected: "Cash Collected",
   },
   hi: {
-    heading: "₹50 लाख संचयी लाभ लक्ष्य",
-    subheading: "कंपनी के ₹50 लाख लाभ लक्ष्य के मुकाबले ग्राहक वसूली से प्राप्त शुद्ध लाभ",
-    leaderboard: "पूर्ण 50L लीडरबोर्ड",
+    heading: "₹५० लाख संचयी लाभ लक्ष्य",
+    subheading: "कंपनी के ₹५० लाख लाभ लक्ष्य के मुकाबले ग्राहक वसूली से प्राप्त शुद्ध लाभ",
+    leaderboard: "पूर्ण ५०L लीडरबोर्ड",
     profitDiary: "प्रॉफ़िट डायरी",
-    realizedOfTarget: "₹50,00,000 लक्ष्य में से प्राप्त",
+    realizedOfTarget: "₹५०,००,००० लक्ष्य में से प्राप्त",
     achieved: "प्राप्त",
     gap: "शेष अंतर",
     moneyCollected: "एकत्रित राशि",
@@ -58,17 +58,17 @@ const PROFIT_TEXTS = {
     closedProjects: "पूर्ण प्रोजेक्ट्स",
     projects: "प्रोजेक्ट्स",
     target: "लक्ष्य",
-    target25Lakhs: "₹25 लाख",
+    target25Lakhs: "₹२५ लाख",
     goal: "लक्ष्य",
     profitEarned: "अर्जित लाभ",
     cashCollected: "प्राप्त नकदी",
   },
   gu: {
-    heading: "₹50 લાખ સંચિત નફા લક્ષ્ય",
-    subheading: "કંપનીના ₹50L નફા લક્ષ્ય સામે ગ્રાહક વસૂલાતમાંથી મેળવેલ ચોખ્ખો નફો",
-    leaderboard: "સંપૂર્ણ 50L લીડરબોર્ડ",
+    heading: "₹૫૦ લાખ સંચિત નફા લક્ષ્ય",
+    subheading: "કંપનીના ₹૫૦ લાખ નફા લક્ષ્ય સામે ગ્રાહક વસૂલાતમાંથી મેળવેલ ચોખ્ખો નફો",
+    leaderboard: "સંપૂર્ણ ૫૦L લીડરબોર્ડ",
     profitDiary: "પ્રોફિટ ડાયરી",
-    realizedOfTarget: "₹50,00,000 લક્ષ્યમાંથી પ્રાપ્ત",
+    realizedOfTarget: "₹૫૦,૦૦,૦૦૦ લક્ષ્યમાંથી પ્રાપ્ત",
     achieved: "પ્રાપ્ત",
     gap: "બાકી તફાવત",
     moneyCollected: "એકત્રિત નાણાં",
@@ -77,7 +77,7 @@ const PROFIT_TEXTS = {
     closedProjects: "પૂર્ણ પ્રોજેક્ટ્સ",
     projects: "પ્રોજેક્ટ્સ",
     target: "લક્ષ્ય",
-    target25Lakhs: "₹25 લાખ",
+    target25Lakhs: "₹૨૫ લાખ",
     goal: "ધ્યેય",
     profitEarned: "મેળવેલ નફો",
     cashCollected: "રોકડ વસૂલાત",
@@ -94,11 +94,13 @@ export function localizeCoachingSuggestion(text: string, lang: string): string {
     );
   if (mCongrat) {
     const [_, targetLakh, surplus] = mCongrat;
+    const locTargetLakh = toIndicDigits(targetLakh, lang);
+    const locSurplus = toIndicDigits(surplus, lang);
     if (lang === "hi") {
-      return `🎉 बधाई! ₹${surplus} अधिशेष लाभ के साथ ₹${targetLakh} लाख का लक्ष्य पूरा हुआ! उच्च-मार्जिन वाले प्राकृतिक स्टोन ऑर्डर्स पर गति बनाए रखें।`;
+      return `🎉 बधाई! ₹${locSurplus} अधिशेष लाभ के साथ ₹${locTargetLakh} लाख का लक्ष्य पूरा हुआ! उच्च-मार्जिन वाले प्राकृतिक स्टोन ऑर्डर्स पर गति बनाए रखें।`;
     }
     if (lang === "gu") {
-      return `🎉 અભિનંદન! ₹${surplus} સરપ્લસ નફા સાથે ₹${targetLakh} લાખનો ટાર્ગેટ હાંસલ થયો! ઉચ્ચ-માર્જિન નેચરલ સ્ટોન ઓર્ડર્સ પર ગતિ જાળવી રાખો.`;
+      return `🎉 અભિનંદન! ₹${locSurplus} સરપ્લસ નફા સાથે ₹${locTargetLakh} લાખનો ટાર્ગેટ હાંસલ થયો! ઉચ્ચ-માર્જિન નેચરલ સ્ટોન ઓર્ડર્સ પર ગતિ જાળવી રાખો.`;
     }
   }
 
@@ -111,17 +113,25 @@ export function localizeCoachingSuggestion(text: string, lang: string): string {
   if (mCoach) {
     const [_, avgProfit, gap, target, dealsNeeded, weeklyDeals, totalSqft, weeklySqft, quotes] =
       mCoach;
+    const locAvgProfit = toIndicDigits(avgProfit, lang);
+    const locGap = toIndicDigits(gap, lang);
+    const locDealsNeeded = toIndicDigits(dealsNeeded, lang);
+    const locWeeklyDeals = toIndicDigits(weeklyDeals, lang);
+    const locTotalSqft = toIndicDigits(totalSqft, lang);
+    const locWeeklySqft = toIndicDigits(weeklySqft, lang);
+    const locQuotes = toIndicDigits(quotes, lang);
+
     if (lang === "hi") {
-      const locTarget = target.replace(/L$/i, " लाख");
-      return `प्रति सौदा आपके औसत लाभ ${avgProfit} के आधार पर: आपके ${locTarget} लक्ष्य के शेष ${gap} अंतर को पाटने के लिए, आपको लगभग ${dealsNeeded} और सौदे क्लोज़ करने की आवश्यकता है (~${weeklyDeals} डील/सप्ताह) जो कुल ${totalSqft} वर्गफ़ुट (~${weeklySqft} वर्गफ़ुट/सप्ताह) होगी। अपने ${quotes} लंबित कोटेशन पर फ़ॉलो-अप पर ध्यान दें।`;
+      const locTarget = toIndicDigits(target.replace(/L$/i, " लाख"), lang);
+      return `प्रति सौदा आपके औसत लाभ ${locAvgProfit} के आधार पर: आपके ${locTarget} लक्ष्य के शेष ${locGap} अंतर को पाटने के लिए, आपको लगभग ${locDealsNeeded} और सौदे क्लोज़ करने की आवश्यकता है (~${locWeeklyDeals} डील/सप्ताह) जो कुल ${locTotalSqft} वर्गफ़ुट (~${locWeeklySqft} वर्गफ़ुट/सप्ताह) होगी। अपने ${locQuotes} लंबित कोटेशन पर फ़ॉलो-अप पर ध्यान दें।`;
     }
     if (lang === "gu") {
-      const locTarget = target.replace(/L$/i, " લાખ");
-      return `ડીલ દીઠ તમારા સરેરાશ નફા ${avgProfit} ના આધારે: તમારા ${locTarget} લક્ષ્યાંકના બાકી ${gap} તફાવતને પહોંચી વળવા માટે, તમારે આશરે ${dealsNeeded} વધુ ક્લાયન્ટ ડીલ્સ (~${weeklyDeals} ડીલ/અઠવાડિયે) ક્લોઝ કરવાની જરૂર છે જે કુલ ${totalSqft} ચોરસ ફૂટ (~${weeklySqft} ચોરસ ફૂટ/અઠવાડિયે) થાય છે. તમારા ${quotes} પેન્ડિંગ ક્વોટેશન પર ફોલો-અપ પર ધ્યાન આપો.`;
+      const locTarget = toIndicDigits(target.replace(/L$/i, " લાખ"), lang);
+      return `ડીલ દીઠ તમારા સરેરાશ નફા ${locAvgProfit} ના આધારે: તમારા ${locTarget} લક્ષ્યાંકના બાકી ${locGap} તફાવતને પહોંચી વળવા માટે, તમારે આશરે ${locDealsNeeded} વધુ ક્લાયન્ટ ડીલ્સ (~${locWeeklyDeals} ડીલ/અઠવાડિયે) ક્લોઝ કરવાની જરૂર છે જે કુલ ${locTotalSqft} ચોરસ ફૂટ (~${locWeeklySqft} ચોરસ ફૂટ/અઠવાડિયે) થાય છે. તમારા ${locQuotes} પેન્ડિંગ ક્વોટેશન પર ફોલો-અપ પર ધ્યાન આપો.`;
     }
   }
 
-  return text;
+  return toIndicDigits(text, lang);
 }
 
 export function ProfitTargetDashboardCard() {
@@ -204,16 +214,16 @@ export function ProfitTargetDashboardCard() {
           <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 text-sm">
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-black text-emerald-700 dark:text-emerald-400 tabular-nums">
-                {formatInr(data.totalNetProfit)}
+                {formatInr(data.totalNetProfit, lang)}
               </span>
               <span className="text-xs text-muted-foreground font-medium">
                 {t.realizedOfTarget}
               </span>
             </div>
             <div className="text-xs font-bold text-muted-foreground">
-              {progressPct}% {t.achieved} · {t.gap}:{" "}
+              {toIndicDigits(progressPct, lang)}% {t.achieved} · {t.gap}:{" "}
               <span className="text-rose-600 dark:text-rose-400 font-bold tabular-nums">
-                {formatInr(data.overallTargetGap)}
+                {formatInr(data.overallTargetGap, lang)}
               </span>
             </div>
           </div>
@@ -224,25 +234,25 @@ export function ProfitTargetDashboardCard() {
             <div className="border-r border-border/50 pr-2">
               <span className="text-muted-foreground block text-[11px]">{t.moneyCollected}</span>
               <span className="font-bold text-foreground tabular-nums">
-                {formatInr(data.totalMoneyCollected)}
+                {formatInr(data.totalMoneyCollected, lang)}
               </span>
             </div>
             <div className="border-r border-border/50 pr-2">
               <span className="text-muted-foreground block text-[11px]">{t.directCosts}</span>
               <span className="font-bold text-foreground tabular-nums">
-                {formatInr(data.totalCosts)}
+                {formatInr(data.totalCosts, lang)}
               </span>
             </div>
             <div className="border-r border-border/50 pr-2">
               <span className="text-muted-foreground block text-[11px]">{t.overallMargin}</span>
               <span className="font-bold text-emerald-700 dark:text-emerald-400 tabular-nums">
-                {data.overallMarginPct.toFixed(1)}%
+                {toIndicDigits(data.overallMarginPct.toFixed(1), lang)}%
               </span>
             </div>
             <div>
               <span className="text-muted-foreground block text-[11px]">{t.closedProjects}</span>
               <span className="font-bold text-foreground tabular-nums">
-                {data.totalDeals} {t.projects}
+                {toIndicDigits(data.totalDeals, lang)} {t.projects}
               </span>
             </div>
           </div>

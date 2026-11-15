@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { useSiteSettingsValue } from "@/lib/site-settings/use-site-settings";
 import { getLandingTexts, getLocalizedReviews } from "@/lib/i18n/landing-i18n";
 import { useWebsiteContent } from "@/lib/cms/landing-content-store";
+import { toIndicDigits } from "@/lib/format";
 
 const GOOGLE_BUSINESS_URL = "https://share.google/0J6h6joQLwo1hVTWJ";
 
@@ -124,7 +125,7 @@ export function ContactCenter({ className }: { className?: string }) {
                   </div>
                   <div>
                     <div className="text-xs font-bold text-foreground group-hover:text-emerald-700 dark:group-hover:text-emerald-400">
-                      {phone1}
+                      {toIndicDigits(phone1, currentLang)}
                     </div>
                     <div className="text-[10px] text-muted-foreground">
                       {texts.contact.tapToChat}
@@ -146,7 +147,7 @@ export function ContactCenter({ className }: { className?: string }) {
                   </div>
                   <div>
                     <div className="text-xs font-bold text-foreground group-hover:text-emerald-700 dark:group-hover:text-emerald-400">
-                      {phone2}
+                      {toIndicDigits(phone2, currentLang)}
                     </div>
                     <div className="text-[10px] text-muted-foreground">
                       {texts.contact.tapToChat}

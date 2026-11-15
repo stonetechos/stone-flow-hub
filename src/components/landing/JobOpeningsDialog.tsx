@@ -41,7 +41,7 @@ export function JobOpeningsDialog({ trigger }: JobOpeningsDialogProps) {
 
   const brandName = lang === "hi" ? "स्टोन टेक" : lang === "gu" ? "સ્ટોન ટેક" : "Stone Tech";
   const locationLabel =
-    lang === "hi" ? "गोता, अहमदाबाद" : lang === "gu" ? "ગોટા, અમદાવાદ" : "Gota, Ahmedabad";
+    lang === "hi" ? "गोता, अहमदाबाद" : lang === "gu" ? "ગોતા, અમદાવાદ" : "Gota, Ahmedabad";
 
   const applyViaWhatsApp = (job: JobPosting) => {
     const text = encodeURIComponent(
@@ -101,7 +101,7 @@ export function JobOpeningsDialog({ trigger }: JobOpeningsDialogProps) {
                   {lang === "hi"
                     ? "स्टोन टेक आर्किटेक्चरल स्टोन एटलियर — गोता, अहमदाबाद"
                     : lang === "gu"
-                      ? "સ્ટોન ટેક આર્કિટેક્ચરલ સ્ટોન એટલિયર — ગોટા, અમદાવાદ"
+                      ? "સ્ટોન ટેક આર્કિટેક્ચરલ સ્ટોન એટલિયર — ગોતા, અમદાવાદ"
                       : "Stone Tech Architectural Stone Atelier — Gota, Ahmedabad"}
                 </DialogDescription>
               </div>

@@ -1186,11 +1186,18 @@ export function WebsiteProductsBackend() {
 
                       {/* Code & Price Below Image */}
                       <div className="mt-1 flex flex-col items-center justify-center text-center">
-                        <span className="text-[10px] font-mono font-bold text-cyan-600 dark:text-cyan-400 truncate w-full">
-                          {p.code || p.id}
+                        <span className="text-[10px] font-mono font-bold text-primary truncate w-full">
+                          {toIndicDigits(p.code || p.id, lang)}
                         </span>
                         <span className="text-[9px] text-muted-foreground truncate w-full font-medium">
-                          {priceInfo.currency} {priceInfo.price}/{priceInfo.unit}
+                          {priceInfo.currency} {toIndicDigits(priceInfo.price, lang)}/
+                          {priceInfo.unit === "sqft"
+                            ? lang === "hi"
+                              ? "वर्गफ़ुट"
+                              : lang === "gu"
+                                ? "ચો.ફૂટ"
+                                : "sq.ft"
+                            : priceInfo.unit}
                         </span>
                       </div>
 
@@ -1414,29 +1421,40 @@ export function WebsiteProductsBackend() {
                           </div>
                         </td>
                         <td className="py-2 px-3">
-                          <div className="font-semibold text-foreground">{p.name}</div>
-                          <div className="text-[10px] font-mono text-cyan-600 dark:text-cyan-400">
-                            {p.code || p.id}
+                          <div className="font-semibold text-foreground">
+                            {transliterateName(p.name, lang)}
+                          </div>
+                          <div className="text-[10px] font-mono text-primary font-bold">
+                            {toIndicDigits(p.code || p.id, lang)}
                           </div>
                         </td>
                         <td className="py-2 px-3">
                           <Badge variant="outline" className="text-[10px] bg-background">
-                            {p.category}
+                            {transliterateName(p.category, lang)}
                           </Badge>
                         </td>
-                        <td className="py-2 px-3 text-muted-foreground">{p.stoneType}</td>
+                        <td className="py-2 px-3 text-muted-foreground">
+                          {transliterateName(p.stoneType, lang)}
+                        </td>
                         <td className="py-2 px-3">
                           <span className="font-bold text-foreground">
-                            {priceInfo.currency} {priceInfo.price}
+                            {priceInfo.currency} {toIndicDigits(priceInfo.price, lang)}
                           </span>
                           <span className="text-[10px] text-muted-foreground ml-1">
-                            /{priceInfo.unit}
+                            /
+                            {priceInfo.unit === "sqft"
+                              ? lang === "hi"
+                                ? "वर्गफ़ुट"
+                                : lang === "gu"
+                                  ? "ચો.ફૂટ"
+                                  : "sq.ft"
+                              : priceInfo.unit}
                           </span>
                         </td>
                         <td className="py-2 px-3 text-muted-foreground">
                           {priceInfo.mrp ? (
                             <span className="line-through">
-                              {priceInfo.currency} {priceInfo.mrp}
+                              {priceInfo.currency} {toIndicDigits(priceInfo.mrp, lang)}
                             </span>
                           ) : (
                             "—"

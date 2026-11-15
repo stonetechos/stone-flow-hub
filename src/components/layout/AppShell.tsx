@@ -63,6 +63,7 @@ import { GrowthAdvisoryBroadcaster } from "@/components/insights/GrowthAdvisoryB
 import { NotificationBanner } from "@/components/global/NotificationBanner";
 import { StaffPermissionsPrompt } from "@/components/global/StaffPermissionsPrompt";
 import { DemoProvider, useDemoMode } from "@/lib/demo/context";
+import { toIndicDigits } from "@/lib/format";
 
 import { DemoBadge, DemoBanner } from "@/components/global/DemoBadge";
 import {
@@ -217,7 +218,7 @@ function NavLinkRow({
             <TooltipTrigger asChild>{link}</TooltipTrigger>
             <TooltipContent
               side="right"
-              className="border-cyan-800 bg-cyan-950 text-xs text-white shadow-lg"
+              className="border-sidebar-border bg-sidebar text-xs text-sidebar-foreground shadow-lg"
             >
               {label}
             </TooltipContent>
@@ -234,8 +235,8 @@ function NavLinkRow({
   return (
     <ContextMenu>
       <ContextMenuTrigger asChild>{content}</ContextMenuTrigger>
-      <ContextMenuContent className="w-56 border-slate-700 bg-slate-900 text-slate-100 shadow-xl">
-        <div className="px-2 py-1.5 text-xs font-semibold text-cyan-300 border-b border-slate-800 flex items-center justify-between">
+      <ContextMenuContent className="w-56 border-sidebar-border bg-sidebar text-sidebar-foreground shadow-xl">
+        <div className="px-2 py-1.5 text-xs font-semibold text-sidebar-ring border-b border-sidebar-border flex items-center justify-between">
           <span className="truncate">{label}</span>
           {isCustomized && (
             <span className="text-[10px] text-amber-400 font-normal ml-1 shrink-0">Customized</span>
@@ -251,9 +252,9 @@ function NavLinkRow({
                 isGroup: false,
               })
             }
-            className="cursor-pointer text-xs flex items-center gap-2 hover:bg-slate-800 focus:bg-slate-800 text-slate-100 py-1.5"
+            className="cursor-pointer text-xs flex items-center gap-2 hover:bg-sidebar-accent focus:bg-sidebar-accent text-sidebar-foreground py-1.5"
           >
-            <Pencil className="h-3.5 w-3.5 text-cyan-400" />
+            <Pencil className="h-3.5 w-3.5 text-sidebar-ring" />
             <span>Rename Tab...</span>
           </ContextMenuItem>
         )}
@@ -410,8 +411,8 @@ function NavGroupRow({
             </TooltipProvider>
           </div>
         </ContextMenuTrigger>
-        <ContextMenuContent className="w-56 border-slate-700 bg-slate-900 text-slate-100 shadow-xl">
-          <div className="px-2 py-1.5 text-xs font-semibold text-cyan-300 border-b border-slate-800 flex items-center justify-between">
+        <ContextMenuContent className="w-56 border-sidebar-border bg-sidebar text-sidebar-foreground shadow-xl">
+          <div className="px-2 py-1.5 text-xs font-semibold text-sidebar-ring border-b border-sidebar-border flex items-center justify-between">
             <span className="truncate">{groupLabel}</span>
             {isGroupCustomized && (
               <span className="text-[10px] text-amber-400 font-normal ml-1 shrink-0">
@@ -429,9 +430,9 @@ function NavGroupRow({
                   isGroup: true,
                 })
               }
-              className="cursor-pointer text-xs flex items-center gap-2 hover:bg-slate-800 focus:bg-slate-800 text-slate-100 py-1.5"
+              className="cursor-pointer text-xs flex items-center gap-2 hover:bg-sidebar-accent focus:bg-sidebar-accent text-sidebar-foreground py-1.5"
             >
-              <Pencil className="h-3.5 w-3.5 text-cyan-400" />
+              <Pencil className="h-3.5 w-3.5 text-sidebar-ring" />
               <span>Rename Section...</span>
             </ContextMenuItem>
           )}
@@ -529,8 +530,8 @@ function NavGroupRow({
     <div className="space-y-0.5">
       <ContextMenu>
         <ContextMenuTrigger asChild>{groupHeader}</ContextMenuTrigger>
-        <ContextMenuContent className="w-56 border-slate-700 bg-slate-900 text-slate-100 shadow-xl">
-          <div className="px-2 py-1.5 text-xs font-semibold text-cyan-300 border-b border-slate-800 flex items-center justify-between">
+        <ContextMenuContent className="w-56 border-sidebar-border bg-sidebar text-sidebar-foreground shadow-xl">
+          <div className="px-2 py-1.5 text-xs font-semibold text-sidebar-ring border-b border-sidebar-border flex items-center justify-between">
             <span className="truncate">{groupLabel}</span>
             {isGroupCustomized && (
               <span className="text-[10px] text-amber-400 font-normal ml-1 shrink-0">
@@ -548,9 +549,9 @@ function NavGroupRow({
                   isGroup: true,
                 })
               }
-              className="cursor-pointer text-xs flex items-center gap-2 hover:bg-slate-800 focus:bg-slate-800 text-slate-100 py-1.5"
+              className="cursor-pointer text-xs flex items-center gap-2 hover:bg-sidebar-accent focus:bg-sidebar-accent text-sidebar-foreground py-1.5"
             >
-              <Pencil className="h-3.5 w-3.5 text-cyan-400" />
+              <Pencil className="h-3.5 w-3.5 text-sidebar-ring" />
               <span>Rename Section...</span>
             </ContextMenuItem>
           )}
@@ -813,7 +814,7 @@ function UserMenu({
         <div className="material-sapphire relative">
           <div className="relative z-10 flex items-start gap-3 px-3.5 py-3.5">
             <Avatar className="h-10 w-10 border border-white/25 shadow-md">
-              <AvatarFallback className="bg-cyan-900 text-[13px] font-bold text-white">
+              <AvatarFallback className="bg-sidebar-primary text-[13px] font-bold text-sidebar-primary-foreground">
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -828,8 +829,8 @@ function UserMenu({
                     isSuperAdmin
                       ? "bg-white/20 text-white border border-white/40 font-bold"
                       : isAdmin
-                        ? "bg-cyan-400/20 text-cyan-200 border border-cyan-400/30 font-semibold"
-                        : "bg-white/10 text-cyan-100",
+                        ? "bg-sidebar-primary/25 text-sidebar-ring border border-sidebar-ring/40 font-semibold"
+                        : "bg-white/10 text-white/90",
                   )}
                 >
                   {isSuperAdmin || isAdmin ? <Shield className="h-2.5 w-2.5" aria-hidden /> : null}
@@ -839,14 +840,14 @@ function UserMenu({
                       ? t("user.role.admin", "Admin")
                       : t("user.role.member", "Member")}
                 </span>
-                <span className="font-mono text-[10px] uppercase tracking-wider text-cyan-200">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-sidebar-ring">
                   {t("brand.name", "STOS")}
                 </span>
               </div>
             </div>
           </div>
           <div className="relative z-10 border-t border-white/12 px-3.5 py-1.5">
-            <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-wider text-cyan-200/80">
+            <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-wider text-sidebar-ring/80">
               <span>{t("user.lastLogin", "Last login")}</span>
               <span>{lastLoginLabel}</span>
             </div>
@@ -1113,7 +1114,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <span className="font-display text-[15px] font-bold tracking-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
                   {t("brand.name", "STOS")}
                 </span>
-                <span className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.18em] text-cyan-200 font-semibold">
+                <span className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.18em] text-sidebar-ring font-semibold">
                   {t("brand.byline", "By Vedora Vision")}
                 </span>
               </div>
@@ -1147,7 +1148,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                       <button
                         type="button"
                         onClick={() => setCustomizeNavOpen(true)}
-                        className="flex items-center gap-1 px-1.5 py-1 rounded text-[10.5px] font-medium text-cyan-200/90 hover:bg-white/12 hover:text-white transition-colors"
+                        className="flex items-center gap-1 px-1.5 py-1 rounded text-[10.5px] font-medium text-sidebar-foreground/80 hover:bg-white/12 hover:text-white transition-colors"
                         aria-label="Customize tabs & sidebar width"
                       >
                         <Sliders className="h-3.5 w-3.5" />
@@ -1156,19 +1157,19 @@ export function AppShell({ children }: { children: ReactNode }) {
                     </TooltipTrigger>
                     <TooltipContent
                       side="top"
-                      className="border-cyan-800 bg-cyan-950 text-xs text-white shadow-lg"
+                      className="border-sidebar-border bg-sidebar text-xs text-sidebar-foreground shadow-lg"
                     >
                       Rename tabs &amp; adjust sidebar width
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-                <span className="font-mono text-[10px] uppercase tracking-wider text-cyan-200/60 font-semibold">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-sidebar-foreground/60 font-semibold">
                   {i18n.language?.startsWith("hi")
                     ? currentTheme.label.replace(/^ST\b/, "स्टाॅस")
                     : i18n.language?.startsWith("gu")
                       ? currentTheme.label.replace(/^ST\b/, "સ્ટૉસ")
                       : currentTheme.label}{" "}
-                  · {sidebarWidthPx}px
+                  · {toIndicDigits(sidebarWidthPx, i18n.language)}px
                 </span>
               </div>
             )}
@@ -1178,7 +1179,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <button
                     type="button"
                     onClick={() => setCollapsed(!collapsed)}
-                    className="rounded-md p-1.5 text-cyan-200/80 hover:bg-white/12 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+                    className="rounded-md p-1.5 text-sidebar-foreground/80 hover:bg-white/12 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
                     aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                     aria-pressed={collapsed}
                   >
@@ -1191,7 +1192,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </TooltipTrigger>
                 <TooltipContent
                   side="right"
-                  className="border-cyan-800 bg-cyan-950 text-xs text-white shadow-lg"
+                  className="border-sidebar-border bg-sidebar text-xs text-sidebar-foreground shadow-lg"
                 >
                   {collapsed ? "Expand" : "Collapse"}
                   <span className="ml-1 opacity-60">⌘B</span>
@@ -1277,7 +1278,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
                   {/* Mobile Drawer Language Switcher Bar */}
                   <div className="relative z-10 border-t border-white/12 p-3 bg-black/20 shrink-0">
-                    <div className="flex items-center gap-1.5 text-xs font-semibold text-cyan-200/90 mb-2">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-sidebar-ring mb-2">
                       <Languages className="h-3.5 w-3.5" />
                       <span>{t("common.language", "Language / भाषा")}</span>
                     </div>
@@ -1299,7 +1300,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                           className={cn(
                             "py-1.5 px-2 rounded-lg text-xs font-bold text-center transition-all border",
                             currentLang === lang.code
-                              ? "bg-white text-cyan-950 border-white shadow-sm"
+                              ? "bg-sidebar-primary text-sidebar-primary-foreground border-sidebar-primary shadow-sm"
                               : "bg-white/10 text-white border-white/20 hover:bg-white/20",
                           )}
                         >

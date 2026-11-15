@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { toIndicDigits } from "@/lib/format";
 import { useAnnouncements } from "./announcements-state";
 
 const AUX_TEXTS = {
@@ -139,7 +140,7 @@ export function AnnouncementsView() {
           <span>{t.announcementsHeading}</span>
           {unreadCount > 0 && (
             <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">
-              {unreadCount} {t.unread}
+              {toIndicDigits(unreadCount, lang)} {t.unread}
             </span>
           )}
         </h2>
