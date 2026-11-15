@@ -1,5 +1,24 @@
 import { describe, expect, it } from "bun:test";
-import { formatInr, formatDisplayDate } from "./format";
+import { formatInr, formatDisplayDate, formatDate, toIndicDigits, toEnglishDigits } from "./format";
+
+describe("toIndicDigits & toEnglishDigits", () => {
+  it("converts digits to Gujarati and back to English", () => {
+    const gu = toIndicDigits("2026-11-05", "gu");
+    expect(gu).toBe("૨૦૨૬-૧૧-૦૫");
+    expect(toEnglishDigits(gu)).toBe("2026-11-05");
+  });
+
+  it("converts digits to Devanagari Hindi and back to English", () => {
+    const hi = toIndicDigits("2026-11-05", "hi");
+    expect(hi).toBe("२०२६-११-०५");
+    expect(toEnglishDigits(hi)).toBe("2026-11-05");
+  });
+
+  it("formats dates into localized Indian format with Indic digits", () => {
+    expect(formatDate("2026-11-05", "gu")).toBe("૫/૧૧/૨૦૨૬");
+    expect(formatDate("2026-11-05", "en")).toBe("5/11/2026");
+  });
+});
 
 describe("formatInr", () => {
   it("handles null and empty values", () => {

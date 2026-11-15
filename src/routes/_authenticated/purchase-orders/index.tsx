@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Plus, ClipboardCheck } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -41,6 +42,7 @@ import {
 import { PURCHASE_ORDER_STATUSES } from "@/lib/purchase-orders/schema";
 import { invalidatePurchaseOrder } from "@/lib/query-invalidation";
 import { useRoles } from "@/hooks/use-roles";
+import { formatDate } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/purchase-orders/")({
   ssr: false,
@@ -52,6 +54,7 @@ export const Route = createFileRoute("/_authenticated/purchase-orders/")({
 });
 
 function PurchaseOrdersPage() {
+  const { i18n } = useTranslation();
   const qc = useQueryClient();
   const nav = useNavigate();
   const roles = useRoles();
@@ -203,8 +206,16 @@ function PurchaseOrdersPage() {
                   )}
                   {!isHidden("vendor") && <TableCell>{r.vendor?.company_name ?? "—"}</TableCell>}
                   {!isHidden("project") && <TableCell>{r.project?.name ?? "—"}</TableCell>}
-                  {!isHidden("date") && <TableCell>{r.order_date}</TableCell>}
-                  {!isHidden("expected") && <TableCell>{r.expected_date ?? "—"}</TableCell>}
+                  {!isHidden("date") && (
+                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                      {r.order_date ? formatDate(r.order_date, i18n.language) : "—"}
+                    </TableCell>
+                  )}
+                  {!isHidden("expected") && (
+                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                      {r.expected_date ? formatDate(r.expected_date, i18n.language) : "—"}
+                    </TableCell>
+                  )}
                   {!isHidden("status") && (
                     <TableCell>
                       <StatusPill status={r.status} />

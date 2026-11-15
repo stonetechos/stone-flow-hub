@@ -490,14 +490,14 @@ function QuotesPage() {
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="sent">Sent</SelectItem>
-              <SelectItem value="accepted">Accepted</SelectItem>
-              <SelectItem value="rejected">Declined</SelectItem>
-              <SelectItem value="expired">Expired</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
-              <SelectItem value="converted">Converted</SelectItem>
+              <SelectItem value="all">{t("quotes.status.all", "All statuses")}</SelectItem>
+              <SelectItem value="draft">{t("quotes.status.draft", "Draft")}</SelectItem>
+              <SelectItem value="sent">{t("quotes.status.sent", "Sent")}</SelectItem>
+              <SelectItem value="accepted">{t("quotes.status.accepted", "Accepted")}</SelectItem>
+              <SelectItem value="rejected">{t("quotes.status.declined", "Declined")}</SelectItem>
+              <SelectItem value="expired">{t("quotes.status.expired", "Expired")}</SelectItem>
+              <SelectItem value="cancelled">{t("quotes.status.cancelled", "Cancelled")}</SelectItem>
+              <SelectItem value="converted">{t("quotes.status.converted", "Converted")}</SelectItem>
             </SelectContent>
           </Select>
         }
@@ -559,7 +559,9 @@ function QuotesPage() {
               <TableRow>
                 <TableHead className="w-8" />
                 {!isHidden("no") && <TableHead className="w-36">Quote #</TableHead>}
-                {!isHidden("saleMode") && <TableHead className="w-36">Deal Type</TableHead>}
+                {!isHidden("saleMode") && (
+                  <TableHead className="w-36">{t("quotes.dealType", "Deal Type")}</TableHead>
+                )}
                 {!isHidden("date") && <TableHead className="w-28">Quote Date</TableHead>}
                 {!isHidden("project") && <TableHead>Project</TableHead>}
                 {!isHidden("customer") && <TableHead>Customer</TableHead>}
@@ -617,7 +619,7 @@ function QuotesPage() {
                                 <span
                                   className={cn("h-1.5 w-1.5 rounded-full shrink-0", cfg.dotColor)}
                                 />
-                                <span>{cfg.shortLabel}</span>
+                                <span>{t(`quotes.saleMode.${mode}`, cfg.shortLabel)}</span>
                               </span>
                               {mode === "invoiced" ? (
                                 isInvoiced && activeInvoice ? (
@@ -627,11 +629,14 @@ function QuotesPage() {
                                     className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-700 hover:text-blue-900 hover:underline"
                                   >
                                     <CheckCircle2 className="h-3 w-3 text-blue-600" />
-                                    <span>Invoiced ({activeInvoice.invoice_no})</span>
+                                    <span>
+                                      {t("quotes.invoiced", "Invoiced")} ({activeInvoice.invoice_no}
+                                      )
+                                    </span>
                                   </Link>
                                 ) : (
                                   <span className="text-[10px] text-muted-foreground font-normal">
-                                    To be invoiced
+                                    {t("quotes.toBeInvoiced", "To be invoiced")}
                                   </span>
                                 )
                               ) : mode === "cash" ? (
@@ -641,7 +646,7 @@ function QuotesPage() {
                                   className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 hover:underline"
                                 >
                                   <Truck className="h-3 w-3" />
-                                  <span>Challan Only</span>
+                                  <span>{t("quotes.challanOnly", "Challan Only")}</span>
                                 </Link>
                               ) : (
                                 <div className="flex items-center gap-1 text-[10px]">
@@ -652,12 +657,19 @@ function QuotesPage() {
                                       className="font-semibold text-purple-700 hover:underline inline-flex items-center gap-0.5"
                                     >
                                       <CheckCircle2 className="h-2.5 w-2.5 text-purple-600" />
-                                      <span>Invoiced ({activeInvoice.invoice_no})</span>
+                                      <span>
+                                        {t("quotes.invoiced", "Invoiced")} (
+                                        {activeInvoice.invoice_no})
+                                      </span>
                                     </Link>
                                   ) : (
-                                    <span className="text-purple-700 font-normal">Bill</span>
+                                    <span className="text-purple-700 font-normal">
+                                      {t("quotes.bill", "Bill")}
+                                    </span>
                                   )}
-                                  <span className="text-muted-foreground">+ Cash</span>
+                                  <span className="text-muted-foreground">
+                                    {t("quotes.plusCash", "+ Cash")}
+                                  </span>
                                 </div>
                               )}
                             </div>
@@ -721,27 +733,39 @@ function QuotesPage() {
                                     "bg-amber-50 text-amber-700 border-amber-200",
                                 )}
                               >
-                                {r.status === "rejected" ? "Declined" : r.status}
+                                {r.status === "rejected"
+                                  ? t("quotes.status.declined", "Declined")
+                                  : r.status === "converted"
+                                    ? t("quotes.status.converted", "Converted")
+                                    : r.status === "draft"
+                                      ? t("quotes.status.draft", "Draft")
+                                      : r.status === "sent"
+                                        ? t("quotes.status.sent", "Sent")
+                                        : r.status === "accepted"
+                                          ? t("quotes.status.accepted", "Accepted")
+                                          : r.status === "expired"
+                                            ? t("quotes.status.expired", "Expired")
+                                            : r.status}
                                 <ChevronDown className="ml-1 h-3 w-3 opacity-50 group-hover:opacity-100" />
                               </Badge>
                             </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="start" className="w-44">
                             <DropdownMenuLabel className="text-xs text-muted-foreground">
-                              Change Status
+                              {t("quotes.changeStatus", "Change Status")}
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               disabled={r.status === "draft"}
                               onClick={() => changeStatusMut.mutate({ id: r.id, status: "draft" })}
                             >
-                              Draft
+                              {t("quotes.status.draft", "Draft")}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               disabled={r.status === "sent"}
                               onClick={() => changeStatusMut.mutate({ id: r.id, status: "sent" })}
                             >
-                              Sent
+                              {t("quotes.status.sent", "Sent")}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               disabled={r.status === "accepted"}
@@ -750,7 +774,7 @@ function QuotesPage() {
                               }
                             >
                               <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-600" />
-                              Accepted
+                              {t("quotes.status.accepted", "Accepted")}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               disabled={r.status === "rejected"}
@@ -760,7 +784,7 @@ function QuotesPage() {
                               }
                             >
                               <XCircle className="mr-2 h-4 w-4 text-rose-600" />
-                              Declined
+                              {t("quotes.status.declined", "Declined")}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>

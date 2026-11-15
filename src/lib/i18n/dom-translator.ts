@@ -17,8 +17,12 @@ import { autoTranslate, getActiveLanguage, reverseTranslateToEnglish } from "./a
 
 function isPureOriginalEnglish(str: string | null | undefined): boolean {
   if (!str) return false;
-  // Must contain Latin letters, and must NOT contain any Devanagari (Hindi) or Gujarati characters
-  return /[a-zA-Z]/.test(str) && !/[\u0900-\u097F\u0A80-\u0AFF]/.test(str);
+  // Has Latin letters OR ASCII date pattern, and must NOT contain any Devanagari (Hindi) or Gujarati characters
+  const hasEnglishOrAsciiDate =
+    /[a-zA-Z]/.test(str) ||
+    /^\s*\d{4}[-/]\d{1,2}[-/]\d{1,2}\s*$/.test(str) ||
+    /^\s*\d{1,2}[-/]\d{1,2}[-/]\d{4}\s*$/.test(str);
+  return hasEnglishOrAsciiDate && !/[\u0900-\u097F\u0A80-\u0AFF]/.test(str);
 }
 
 function shouldSkipElement(el: Element | null): boolean {
@@ -128,7 +132,12 @@ export function useIndicDomAutoTranslator() {
         customNode.__origStosEnglish = currentVal;
       }
       const sourceText = customNode.__origStosEnglish || currentVal;
-      if (!sourceText || !/[a-zA-Z]/.test(sourceText)) return;
+      const hasLetters = /[a-zA-Z]/.test(sourceText);
+      const isDatePattern =
+        /^\s*\d{4}[-/]\d{1,2}[-/]\d{1,2}\s*$/.test(sourceText) ||
+        /^\s*\d{1,2}[-/]\d{1,2}[-/]\d{4}\s*$/.test(sourceText);
+
+      if (!sourceText || (!hasLetters && !isDatePattern)) return;
       if (shouldSkipElement(textNode.parentElement)) return;
 
       const translated = autoTranslate(sourceText, lang);

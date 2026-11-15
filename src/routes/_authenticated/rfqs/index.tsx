@@ -32,6 +32,7 @@ import { DensityMenu } from "@/components/data/DensityMenu";
 import { useTablePrefs } from "@/hooks/use-table-prefs";
 import { toUserMessage } from "@/lib/errors";
 import { listRfqs, type RfqStatus } from "@/lib/rfqs/api";
+import { formatDate } from "@/lib/format";
 
 const STATUSES: RfqStatus[] = [
   "draft",
@@ -52,7 +53,7 @@ export const Route = createFileRoute("/_authenticated/rfqs/")({
 });
 
 function RfqsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const nav = useNavigate();
   const search = Route.useSearch();
   const [q, setQ] = useState(search.q ?? "");
@@ -214,7 +215,11 @@ function RfqsPage() {
                       {r.response_count} / {r.vendor_count}
                     </TableCell>
                   )}
-                  {!isHidden("due") && <TableCell>{r.due_date ?? "—"}</TableCell>}
+                  {!isHidden("due") && (
+                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                      {r.due_date ? formatDate(r.due_date, i18n.language) : "—"}
+                    </TableCell>
+                  )}
                   <TableCell>
                     <Button
                       variant="ghost"

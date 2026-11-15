@@ -59,10 +59,20 @@ export function formatRelative(iso: string | Date | null | undefined, lang?: str
 
 export function formatDate(iso: string | Date | null | undefined, lang?: string): string {
   if (!iso) return "—";
-  const d = typeof iso === "string" ? new Date(iso) : iso;
+  let d: Date;
+  if (typeof iso === "string") {
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+    if (m) {
+      d = new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10));
+    } else {
+      d = new Date(iso);
+    }
+  } else {
+    d = iso;
+  }
   if (!Number.isFinite(d.getTime())) return "—";
   const activeLang = getActiveLang(lang);
-  const res = d.toLocaleDateString();
+  const res = d.toLocaleDateString("en-IN");
   return activeLang ? toIndicDigits(res, activeLang) : res;
 }
 
@@ -111,6 +121,14 @@ export function toIndicDigits(val: string | number | null | undefined, lang?: st
 
   const digits = isHi ? DEVANAGARI_DIGITS : GUJARATI_DIGITS;
   return str.replace(/\d/g, (d) => digits[Number(d)] ?? d);
+}
+
+/** Converts Devanagari (Hindi) or Gujarati digits back to English ASCII digits (0-9). */
+export function toEnglishDigits(val: string | number | null | undefined): string {
+  if (val == null) return "";
+  return String(val)
+    .replace(/[०-९]/g, (d) => String(d.charCodeAt(0) - 0x0966))
+    .replace(/[૦-૯]/g, (d) => String(d.charCodeAt(0) - 0x0ae6));
 }
 
 /** Formats currency amounts in Indian compact notation (e.g. "20.7 L", "2.1 Cr", "86.4K") with full Hindi & Gujarati locale support. */

@@ -56,6 +56,7 @@ import {
 import { SALES_ORDER_STATUSES } from "@/lib/sales-orders/schema";
 import { invalidateSalesOrder } from "@/lib/query-invalidation";
 import { transliterateName } from "@/lib/i18n/transliterate";
+import { formatDate } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/sales-orders/")({
   ssr: false,
@@ -252,13 +253,17 @@ function SalesOrdersPage() {
                   {!isHidden("quote") && (
                     <TableCell className="font-mono text-xs">{r.quote?.quote_no ?? "—"}</TableCell>
                   )}
-                  {!isHidden("date") && <TableCell>{r.order_date}</TableCell>}
+                  {!isHidden("date") && (
+                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                      {r.order_date ? formatDate(r.order_date, i18n.language) : "—"}
+                    </TableCell>
+                  )}
                   {!isHidden("deliveryDate") && (
                     <TableCell className="text-xs">
                       {r.delivery_date ? (
-                        <span className="inline-flex items-center gap-1 font-mono text-slate-700">
+                        <span className="inline-flex items-center gap-1 font-mono text-slate-700 whitespace-nowrap">
                           <Calendar className="h-3 w-3 text-slate-400" />
-                          {r.delivery_date}
+                          {formatDate(r.delivery_date, i18n.language)}
                         </span>
                       ) : (
                         <span className="text-muted-foreground italic">—</span>

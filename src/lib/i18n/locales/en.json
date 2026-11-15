@@ -1074,7 +1074,28 @@
   },
   "quotes": {
     "newQuote": "New quote",
-    "compare": "Compare"
+    "compare": "Compare",
+    "dealType": "Deal Type",
+    "toBeInvoiced": "To be invoiced",
+    "invoiced": "Invoiced",
+    "challanOnly": "Challan Only",
+    "bill": "Bill",
+    "plusCash": "+ Cash",
+    "saleMode": {
+      "invoiced": "GST Deal",
+      "cash": "Cash Deal",
+      "hybrid": "Hybrid Deal"
+    },
+    "status": {
+      "all": "All statuses",
+      "draft": "Draft",
+      "sent": "Sent",
+      "accepted": "Accepted",
+      "declined": "Declined",
+      "expired": "Expired",
+      "cancelled": "Cancelled",
+      "converted": "Converted"
+    }
   },
   "materials": {
     "natural_stone_cladding_tiles": "Natural Stone Cladding Tiles",

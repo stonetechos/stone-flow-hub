@@ -1120,7 +1120,28 @@
   },
   "quotes": {
     "newQuote": "નવું અવતરણ",
-    "compare": "સરખામણી કરો"
+    "compare": "સરખામણી કરો",
+    "dealType": "ડીલ પ્રકાર",
+    "toBeInvoiced": "ઇન્વૉઇસ કરવાનું બાકી",
+    "invoiced": "ઇન્વૉઇસ કરેલ",
+    "challanOnly": "ફક્ત ચલણ",
+    "bill": "બિલ",
+    "plusCash": "+ રોકડ",
+    "saleMode": {
+      "invoiced": "જીએસટી ડીલ",
+      "cash": "રોકડ ડીલ",
+      "hybrid": "હાઇબ્રિડ ડીલ"
+    },
+    "status": {
+      "all": "બધી સ્થિતિઓ",
+      "draft": "ડ્રાફ્ટ",
+      "sent": "મોકલેલ",
+      "accepted": "સ્વીકૃત",
+      "declined": "અસ્વીકૃત",
+      "expired": "સમાપ્ત થયેલ",
+      "cancelled": "રદ કરેલ",
+      "converted": "રૂપાંતરિત"
+    }
   },
   "materials": {
     "natural_stone_cladding_tiles": "નેચરલ સ્ટોન ક્લેડીંગ ટાઇલ્સ",

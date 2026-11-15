@@ -1119,7 +1119,28 @@
   },
   "quotes": {
     "newQuote": "नया उद्धरण",
-    "compare": "तुलना करें"
+    "compare": "तुलना करें",
+    "dealType": "सौदा प्रकार",
+    "toBeInvoiced": "चालान किया जाना बाकी",
+    "invoiced": "इनवॉइस किया गया",
+    "challanOnly": "केवल चालान",
+    "bill": "बिल",
+    "plusCash": "+ नकद",
+    "saleMode": {
+      "invoiced": "जीएसटी डील",
+      "cash": "कैश डील",
+      "hybrid": "हाइब्रिड डील"
+    },
+    "status": {
+      "all": "सभी स्थितियां",
+      "draft": "ड्राफ्ट",
+      "sent": "भेजा गया",
+      "accepted": "स्वीकृत",
+      "declined": "अस्वीकृत",
+      "expired": "समाप्त",
+      "cancelled": "रद्द",
+      "converted": "रूपांतरित"
+    }
   },
   "materials": {
     "natural_stone_cladding_tiles": "नेचुरल स्टोन क्लैडिंग टाइल्स",

@@ -17,7 +17,7 @@
 
 import React from "react";
 import type { PostProcessorModule } from "i18next";
-import { toIndicDigits } from "@/lib/format";
+import { toIndicDigits, toEnglishDigits, formatDate } from "@/lib/format";
 import { transliterateName } from "./transliterate";
 
 export function getActiveLanguage(): string {
@@ -880,6 +880,72 @@ export const INDIC_DICTIONARY: Record<string, { hi: string; gu: string }> = {
   "Invoiced Amount": { hi: "चालान राशि", gu: "ઇન્વૉઇસ રકમ" },
   "Cash Amount": { hi: "नकद राशि", gu: "રોકડ રકમ" },
   "Cash Deal · Challan Only": { hi: "नकद सौदा · केवल चालान", gu: "રોકડ સોદો · ફક્ત ચલણ" },
+  Deal: { hi: "डील", gu: "ડીલ" },
+  deal: { hi: "डील", gu: "ડીલ" },
+  DEAL: { hi: "डील", gu: "ડીલ" },
+  Deals: { hi: "डील्स", gu: "ડીલ્સ" },
+  deals: { hi: "डील्स", gu: "ડીલ્સ" },
+  "Deal Type": { hi: "सौदा प्रकार", gu: "ડીલ પ્રકાર" },
+  "DEAL પ્રકાર": { hi: "सौदा प्रकार", gu: "ડીલ પ્રકાર" },
+  "Deal Scope": { hi: "सौदा दायरा", gu: "ડીલ કાર્યક્ષેત્ર" },
+  "Deal Scope (Work Flow)": { hi: "सौदा दायरा (कार्य प्रवाह)", gu: "ડીલ કાર્યક્ષેત્ર (વર્ક ફ્લો)" },
+  "Deal Type (Billing)": { hi: "सौदा प्रकार (बिलिंग)", gu: "ડીલ પ્રકાર (બિલિંગ)" },
+  "GST Deal": { hi: "जीएसटी डील", gu: "જીએસટી ડીલ" },
+  "Cash Deal": { hi: "कैश डील", gu: "રોકડ ડીલ" },
+  "Hybrid Deal": { hi: "हाइब्रिड डील", gu: "હાઇબ્રિડ ડીલ" },
+  "GST Deal (Tax Bill)": { hi: "जीएसटी डील (टैक्स बिल)", gu: "જીએસટી ડીલ (ટેક્સ બિલ)" },
+  "Cash Deal (Challan Only)": { hi: "कैश डील (केवल चालान)", gu: "રોકડ ડીલ (ફક્ત ચલણ)" },
+  "Hybrid Deal (GST + Cash)": {
+    hi: "हाइब्रिड डील (जीएसटी + नकद)",
+    gu: "હાઇબ્રિડ ડીલ (જીએસટી + રોકડ)",
+  },
+  "Hybrid Deal (GST Bill + Cash)": {
+    hi: "हाइब्रिड डील (जीएसटी बिल + नकद)",
+    gu: "હાઇબ્રિડ ડીલ (જીએસટી બિલ + રોકડ)",
+  },
+  "Delivery Challan (Cash Deal)": {
+    hi: "वितरण चालान (कैश डील)",
+    gu: "ડિલિવરી ચલણ (રોકડ ડીલ)",
+  },
+  "Challan Only": { hi: "केवल चालान", gu: "ફક્ત ચલણ" },
+  Bill: { hi: "बिल", gu: "બિલ" },
+  "+ Cash": { hi: "+ नकद", gu: "+ રોકડ" },
+  Declined: { hi: "अस्वीकृत", gu: "અસ્વીકૃત" },
+  declined: { hi: "अस्वीकृत", gu: "અસ્વીકૃત" },
+  Converted: { hi: "रूपांतरित", gu: "રૂપાંતરિત" },
+  converted: { hi: "रूपांतरित", gu: "રૂપાંતરિત" },
+  "Mark as Declined": { hi: "अस्वीकृत के रूप में चिह्नित करें", gu: "અસ્વીકૃત તરીકે ચિહ્નિત કરો" },
+  "Converted to Sales Order": { hi: "बिक्री आदेश में परिवर्तित", gu: "વેચાણ ઓર્ડરમાં રૂપાંતરિત" },
+  "Converted to Quote": { hi: "कोटेशन में परिवर्तित", gu: "ક્વોટેશનમાં રૂપાંતરિત" },
+  "To be invoiced": { hi: "चालान किया जाना बाकी", gu: "ઇન્વૉઇસ કરવાનું બાકી" },
+  "to be invoiced": { hi: "चालान किया जाना बाकी", gu: "ઇન્વૉઇસ કરવાનું બાકી" },
+  "તરફ હોવું Invoiced": { hi: "चालान किया जाना बाकी", gu: "ઇન્વૉઇસ કરવાનું બાકી" },
+  Invoiced: { hi: "इनवॉइस किया गया", gu: "ઇન્વૉઇસ કરેલ" },
+  invoiced: { hi: "इनवॉइस किया गया", gu: "ઇન્વૉઇસ કરેલ" },
+  Partially: { hi: "आंशिक रूप से", gu: "આંશિક" },
+  partially: { hi: "आंशिक रूप से", gu: "આંશિક" },
+  "Partially paid": { hi: "आंशिक भुगतान", gu: "આંશિક ચૂકવેલ" },
+  "partially paid": { hi: "आंशिक भुगतान", gu: "આંશિક ચૂકવેલ" },
+  "Partially Paid": { hi: "आंशिक भुगतान", gu: "આંશિક ચૂકવેલ" },
+  "Partially ચૂકવેલ": { hi: "आंशिक भुगतान", gu: "આંશિક ચૂકવેલ" },
+  "Issued / Sent": { hi: "जारी / भेजा गया", gu: "જારી / મોકલેલ" },
+  "Issued / સેન્ટ": { hi: "जारी / भेजा गया", gu: "જારી / મોકલેલ" },
+  Issued: { hi: "जारी", gu: "જારી" },
+  issued: { hi: "जारी", gu: "જારી" },
+  "Fulfilment Source": { hi: "पूर्ति स्रोत", gu: "પૂર્તિ સ્ત્રોત" },
+  "fulfilment source": { hi: "पूर्ति स्रोत", gu: "પૂર્તિ સ્ત્રોત" },
+  "Fulfilment SOURCE": { hi: "पूर्ति स्रोत", gu: "પૂર્તિ સ્ત્રોત" },
+  "ફુલફિલ્મેન્ટ SOURCE": { hi: "पूर्ति स्रोत", gu: "પૂર્તિ સ્ત્રોત" },
+  "All Fulfilment": { hi: "सभी पूर्ति", gu: "બધી પૂર્તિ" },
+  SOURCE: { hi: "स्रोत", gu: "સ્ત્રોત" },
+  Source: { hi: "स्रोत", gu: "સ્ત્રોત" },
+  source: { hi: "स्रोत", gu: "સ્ત્રોત" },
+  "EWB Req.": { hi: "ई-वे बिल आवश्यक", gu: "ઇ-વે બિલ જરૂરી" },
+  "E-Way Req.": { hi: "ई-वे बिल आवश्यक", gu: "ઇ-વે બિલ જરૂરી" },
+  "એબ્બ Req.": { hi: "ई-वे बिल आवश्यक", gu: "ઇ-વે બિલ જરૂરી" },
+  "+ એબ્બ Req.": { hi: "+ ई-वे बिल आवश्यक", gu: "+ ઇ-વે બિલ જરૂરી" },
+  "+ EWB Req.": { hi: "+ ई-वे बिल आवश्यक", gu: "+ ઇ-વે બિલ જરૂરી" },
+  "Req.": { hi: "आवश्यक", gu: "જરૂરી" },
   "Ask Stoneman": { hi: "स्टोनमैन से पूछें", gu: "સ્ટોનમેનને પૂછો" },
   "Natural Stone Catalog Quick-Picker": {
     hi: "प्राकृतिक पत्थर सूची त्वरित चयनकर्ता",
@@ -1017,6 +1083,17 @@ export const INDIC_WORD_LEXICON: Record<string, { hi: string; gu: string }> = {
   projects: { hi: "प्रोजेक्ट्स", gu: "પ્રોજેક્ટ્સ" },
   order: { hi: "ऑर्डर", gu: "ઓર્ડર" },
   orders: { hi: "ऑर्डर", gu: "ઓર્ડર" },
+  deal: { hi: "डील", gu: "ડીલ" },
+  deals: { hi: "डील्स", gu: "ડીલ્સ" },
+  declined: { hi: "अस्वीकृत", gu: "અસ્વીકૃત" },
+  converted: { hi: "रूपांतरित", gu: "રૂપાંતરિત" },
+  partially: { hi: "आंशिक", gu: "આંશિક" },
+  issued: { hi: "जारी", gu: "જારી" },
+  invoiced: { hi: "इनवॉइस", gu: "ઇન્વૉઇસ" },
+  source: { hi: "स्रोत", gu: "સ્ત્રોત" },
+  sources: { hi: "स्रोत", gu: "સ્ત્રોતો" },
+  fulfilment: { hi: "पूर्ति", gu: "પૂર્તિ" },
+  fulfillment: { hi: "पूर्ति", gu: "પૂર્તિ" },
   invoice: { hi: "चालान", gu: "ઇન્વૉઇસ" },
   invoices: { hi: "चालान", gu: "ઇન્વૉઇસ" },
   quote: { hi: "कोटेशन", gu: "ક્વોટેશન" },
@@ -1418,6 +1495,23 @@ export function autoTranslate(text: string, targetLang?: string): string {
     }
   }
 
+  // 10b. Pattern: Standalone ISO date string "YYYY-MM-DD"
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    return formatDate(trimmed, lang);
+  }
+
+  // 10c. Pattern: Standalone numeric dates "DD/MM/YYYY" or "D/M/YYYY"
+  if (/^\d{1,2}[-/]\d{1,2}[-/]\d{4}$/.test(trimmed)) {
+    return toIndicDigits(trimmed, lang);
+  }
+
+  // 10d. Pattern: "Invoiced (<InvoiceNo>)"
+  const invoicedMatch = trimmed.match(/^Invoiced\s*\((.*?)\)$/i);
+  if (invoicedMatch) {
+    const invNo = autoTranslate(invoicedMatch[1], lang);
+    return isHi ? `इनवॉइस (${invNo})` : `ઇન્વૉઇસ (${invNo})`;
+  }
+
   // 11. Pattern: Month + Year (e.g. "October 2026", "November 2026")
   const monthYearMatch = trimmed.match(
     /^(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})$/i,
@@ -1574,7 +1668,12 @@ export function autoTranslate(text: string, targetLang?: string): string {
 
   // 21. Word-by-word intelligent lexicon tokenizer with transliteration fallback
   if (/[a-zA-Z]/.test(trimmed)) {
-    const replaced = trimmed.replace(/\b[A-Za-z]+(?:'[a-z]+)?\b/g, (token) => {
+    let candidateText = trimmed.replace(/\b\d{4}-\d{2}-\d{2}\b/g, (m) => formatDate(m, lang));
+    candidateText = candidateText.replace(/\b\d{1,2}[-/]\d{1,2}[-/]\d{4}\b/g, (m) =>
+      toIndicDigits(m, lang),
+    );
+
+    const replaced = candidateText.replace(/\b[A-Za-z]+(?:'[a-z]+)?\b/g, (token) => {
       const lower = token.toLowerCase();
       if (INDIC_WORD_LEXICON[lower]) {
         return isHi ? INDIC_WORD_LEXICON[lower].hi : INDIC_WORD_LEXICON[lower].gu;
@@ -1666,6 +1765,28 @@ function buildReverseIndicMap() {
   REVERSE_INDIC_MAP.set("વેબસાઇટ લીડ્સ", "Website Leads");
   REVERSE_INDIC_MAP.set("વેબ સાઇટ લીડ્સ", "Website Leads");
   REVERSE_INDIC_MAP.set("લીડ્સ", "Leads");
+  REVERSE_INDIC_MAP.set("ડીલ પ્રકાર", "Deal Type");
+  REVERSE_INDIC_MAP.set("सौदा प्रकार", "Deal Type");
+  REVERSE_INDIC_MAP.set("જીએસટી ડીલ", "GST Deal");
+  REVERSE_INDIC_MAP.set("जीएसटी डील", "GST Deal");
+  REVERSE_INDIC_MAP.set("રોકડ ડીલ", "Cash Deal");
+  REVERSE_INDIC_MAP.set("कैश डील", "Cash Deal");
+  REVERSE_INDIC_MAP.set("હાઇબ્રિડ ડીલ", "Hybrid Deal");
+  REVERSE_INDIC_MAP.set("हाइब्रिड डील", "Hybrid Deal");
+  REVERSE_INDIC_MAP.set("અસ્વીકૃત", "Declined");
+  REVERSE_INDIC_MAP.set("अस्वीकृत", "Declined");
+  REVERSE_INDIC_MAP.set("રૂપાંતરિત", "Converted");
+  REVERSE_INDIC_MAP.set("रूपांतरित", "Converted");
+  REVERSE_INDIC_MAP.set("આંશિક ચૂકવેલ", "Partially paid");
+  REVERSE_INDIC_MAP.set("आंशिक भुगतान", "Partially paid");
+  REVERSE_INDIC_MAP.set("જારી / મોકલેલ", "Issued / Sent");
+  REVERSE_INDIC_MAP.set("जारी / भेजा गया", "Issued / Sent");
+  REVERSE_INDIC_MAP.set("પૂર્તિ સ્ત્રોત", "Fulfilment Source");
+  REVERSE_INDIC_MAP.set("पूर्ति स्रोत", "Fulfilment Source");
+  REVERSE_INDIC_MAP.set("ઇન્વૉઇસ કરવાનું બાકી", "To be invoiced");
+  REVERSE_INDIC_MAP.set("चालान किया जाना बाकी", "To be invoiced");
+  REVERSE_INDIC_MAP.set("ઇ-વે બિલ જરૂરી", "EWB Req.");
+  REVERSE_INDIC_MAP.set("ई-वे बिल आवश्यक", "EWB Req.");
 }
 
 export function reverseTranslateToEnglish(text: string): string {
@@ -1690,6 +1811,16 @@ export function reverseTranslateToEnglish(text: string): string {
     candidate = candidate.replace(/વેબસાઇટ લીડ્સ અને CRM/g, "Website Leads & CRM");
   if (candidate.includes("वेबसाइट लीड्स और CRM"))
     candidate = candidate.replace(/वेबसाइट लीड्स और CRM/g, "Website Leads & CRM");
+
+  // Multi-term phrase checks from dictionary
+  for (const [indic, eng] of REVERSE_INDIC_MAP.entries()) {
+    if (indic.length > 2 && candidate.includes(indic)) {
+      candidate = candidate.split(indic).join(eng);
+    }
+  }
+
+  // Convert any remaining Indic digits (०-९ or ૦-૯) back to English 0-9
+  candidate = toEnglishDigits(candidate);
 
   return candidate;
 }

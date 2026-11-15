@@ -37,7 +37,7 @@ import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { deleteInvoice, listInvoices, type InvoiceListItem } from "@/lib/invoices/api";
 import { getDispatchesForInvoices } from "@/lib/dispatch/api";
-import { formatInr } from "@/lib/format";
+import { formatInr, formatDate } from "@/lib/format";
 import { transliterateName } from "@/lib/i18n/transliterate";
 import { invalidateInvoice } from "@/lib/query-invalidation";
 import { useRoles } from "@/hooks/use-roles";
@@ -314,7 +314,7 @@ function InvoicesPage() {
                   )}
                   {!isHidden("date") && (
                     <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                      {r.issue_date ?? "—"}
+                      {r.issue_date ? formatDate(r.issue_date, i18n.language) : "—"}
                     </TableCell>
                   )}
                   {!isHidden("status") && (
@@ -341,7 +341,11 @@ function InvoicesPage() {
                       {formatInr(r.balance_due)}
                     </TableCell>
                   )}
-                  {!isHidden("due") && <TableCell>{r.due_date ?? "—"}</TableCell>}
+                  {!isHidden("due") && (
+                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                      {r.due_date ? formatDate(r.due_date, i18n.language) : "—"}
+                    </TableCell>
+                  )}
                   <TableCell>
                     <div className="flex items-center justify-end gap-1.5">
                       {(r.status === "void" || r.status === "cancelled") && (
