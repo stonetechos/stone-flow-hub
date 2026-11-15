@@ -18,7 +18,8 @@ export type CustomerResponseStatus =
   | "followup_pending"
   | "awaiting_reply"
   | "inactive_no_response"
-  | "do_not_contact";
+  | "do_not_contact"
+  | "dormant";
 
 export interface CustomerCrmWorkflowState {
   response_status?: CustomerResponseStatus;
@@ -35,6 +36,13 @@ export interface CustomerCrmWorkflowState {
   next_call_at?: string;
   next_call_agenda?: string;
   call_count?: number;
+  last_whatsapp_at?: string | null;
+  whatsapp_count?: number;
+  last_contacted_at?: string | null;
+  last_contacted_channel?: "whatsapp" | "call" | null;
+  followup_count?: number;
+  dormant_at?: string | null;
+  dormant_reason?: string | null;
   payment_promised_date?: string | null;
   payment_promised_amount?: number | null;
   payment_reminder_flag_days?: number | null;
@@ -178,6 +186,15 @@ export const CUSTOMER_RESPONSE_STATUS_CONFIG: Record<
     badgeTone: "bg-slate-200 text-slate-800 border-slate-300",
     dotColor: "bg-slate-500",
     description: "Client requested no further contact or requirement closed.",
+  },
+  dormant: {
+    value: "dormant",
+    label: "Dormant · Unresponsive",
+    shortLabel: "Dormant",
+    tone: "bg-rose-50 text-rose-800 border-rose-200",
+    badgeTone: "bg-rose-100/90 text-rose-900 border-rose-300 font-semibold",
+    dotColor: "bg-rose-500",
+    description: "Client did not respond across multiple follow-ups; marked dormant/inactive.",
   },
 };
 
@@ -785,6 +802,12 @@ const CRM_STATUS_LOCALIZED: Record<
     hiShort: "बंद",
     guShort: "બંધ",
   },
+  dormant: {
+    hi: "डॉर्मेंट · अनुत्तरदायी",
+    gu: "ડોર્મન્ટ · બિનપ્રતિસાદી",
+    hiShort: "डॉर्मेंट",
+    guShort: "ડોર્મન્ટ",
+  },
 };
 
 export function getCustomerResponseStatusLabel(
@@ -801,4 +824,70 @@ export function getCustomerResponseStatusLabel(
   if (lang.startsWith("hi")) return short ? loc.hiShort : loc.hi;
   if (lang.startsWith("gu")) return short ? loc.guShort : loc.gu;
   return base;
+}
+
+/** Extract full follow-up tally, channels, and responsive status */
+export function getCustomerFollowupStats(customer: {
+  workflow_state?: unknown;
+  external_ref?: unknown;
+}): {
+  callCount: number;
+  whatsappCount: number;
+  totalFollowups: number;
+  lastContactedAt: string | null;
+  lastChannel: "whatsapp" | "call" | null;
+  isUnresponsive: boolean;
+} {
+  const crm = getCustomerCrmState(customer);
+  const callCount = Number(crm.call_count ?? 0);
+  const whatsappCount = Number(crm.whatsapp_count ?? 0);
+  const totalFollowups = Math.max(Number(crm.followup_count ?? 0), callCount + whatsappCount);
+  const lastContactedAt =
+    (crm.last_contacted_at as string) ||
+    (crm.last_whatsapp_at as string) ||
+    (crm.last_call_at as string) ||
+    null;
+  const lastChannel =
+    (crm.last_contacted_channel as "whatsapp" | "call" | null) ||
+    (crm.last_whatsapp_at && (!crm.last_call_at || crm.last_whatsapp_at >= crm.last_call_at)
+      ? "whatsapp"
+      : crm.last_call_at
+        ? "call"
+        : null);
+
+  const status = crm.response_status;
+  const isConverted =
+    status === "order_placed" ||
+    status === "order_completed" ||
+    status === "installation_team_working" ||
+    status === "artwork_team_working";
+  const isUnresponsive = totalFollowups >= 2 && !isConverted && status !== "dormant";
+
+  return {
+    callCount,
+    whatsappCount,
+    totalFollowups,
+    lastContactedAt,
+    lastChannel,
+    isUnresponsive,
+  };
+}
+
+/** Formats a timestamp into human relative string ("Just now", "5m ago", "Today 4:12 PM", "Yesterday", "3d ago") */
+export function formatRelativeContactTime(isoDate?: string | null, _lang: string = "en"): string {
+  if (!isoDate) return "";
+  const d = new Date(isoDate);
+  const now = Date.now();
+  const diffMs = now - d.getTime();
+  if (diffMs < 0 || diffMs < 60_000) return "Just now";
+  const diffMins = Math.floor(diffMs / 60_000);
+  if (diffMins < 60) return `${diffMins}m ago`;
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24 && d.getDate() === new Date().getDate()) {
+    return d.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit", hour12: true });
+  }
+  if (diffHours < 48) return "Yesterday";
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
 }

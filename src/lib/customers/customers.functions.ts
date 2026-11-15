@@ -451,6 +451,7 @@ const updateCustomerCrmStatusInput = z.object({
       "awaiting_reply",
       "inactive_no_response",
       "do_not_contact",
+      "dormant",
     ])
     .nullish(),
   call_note: z.string().nullish(),
@@ -580,10 +581,15 @@ export const updateCustomerCrmStatusServerFn = createServerFn({ method: "POST" }
     } else if (
       data.response_status === "inactive_no_response" ||
       data.response_status === "do_not_contact" ||
+      data.response_status === "dormant" ||
       data.response_status === "order_cancelled_delay" ||
       data.response_status === "order_cancelled_change_of_plans"
     ) {
       targetIsActive = false;
+      if (data.response_status === "dormant") {
+        updatedWf.dormant_at = nowIso;
+        if (data.call_note) updatedWf.dormant_reason = data.call_note;
+      }
     } else if (
       data.response_status === "active_responsive" ||
       data.response_status === "payment_pending" ||
@@ -737,6 +743,106 @@ export const updateCustomerCrmStatusServerFn = createServerFn({ method: "POST" }
     }
 
     return { customer: normalizeCustomerRow(updatedCustomer as CustomerRow), ok: true };
+  });
+
+const logCustomerContactInput = z.object({
+  customerId: z.string().uuid(),
+  channel: z.enum(["whatsapp", "call"]),
+  notes: z.string().nullish(),
+});
+
+export const logCustomerContactServerFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((raw) => logCustomerContactInput.parse(raw))
+  .handler(async ({ context, data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const uid = context.userId;
+
+    const { data: customer, error: fetchErr } = await supabaseAdmin
+      .from("customers")
+      .select("id, name, customer_code, workflow_state, notes")
+      .eq("id", data.customerId)
+      .single();
+
+    if (fetchErr || !customer) {
+      throw new Error(fetchErr?.message || "Customer not found");
+    }
+
+    const currentWf = (customer.workflow_state as Record<string, unknown>) || {};
+    const nowIso = new Date().toISOString();
+    const isWa = data.channel === "whatsapp";
+
+    const prevCallCount = Number(currentWf.call_count ?? 0);
+    const prevWaCount = Number(currentWf.whatsapp_count ?? 0);
+    const callCount = isWa ? prevCallCount : prevCallCount + 1;
+    const whatsappCount = isWa ? prevWaCount + 1 : prevWaCount;
+    const followupCount = callCount + whatsappCount;
+
+    const updatedWf: Record<string, unknown> = {
+      ...currentWf,
+      last_contacted_at: nowIso,
+      last_contacted_channel: data.channel,
+      call_count: callCount,
+      whatsapp_count: whatsappCount,
+      followup_count: followupCount,
+    };
+
+    if (isWa) {
+      updatedWf.last_whatsapp_at = nowIso;
+      updatedWf.status_whatsapp_sent = true;
+      updatedWf.status_whatsapp_sent_at = nowIso;
+      updatedWf.status_whatsapp_status_key =
+        (currentWf.response_status as string) || "active_responsive";
+    } else {
+      updatedWf.last_call_at = nowIso;
+    }
+
+    const timestamp = new Date().toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    const channelTag = isWa ? "WhatsApp" : "Call";
+    const logLine = `\n[${channelTag} · ${timestamp}] ${data.notes || (isWa ? "Follow-up message sent on WhatsApp" : "Follow-up call initiated")}`;
+    const updatedNotes = customer.notes ? `${customer.notes.trim()}${logLine}` : logLine.trim();
+
+    const { data: updatedCustomer, error: updateErr } = await supabaseAdmin
+      .from("customers")
+      .update({
+        workflow_state: updatedWf as never,
+        notes: updatedNotes,
+      })
+      .eq("id", data.customerId)
+      .select("*")
+      .single();
+
+    if (updateErr) throw new Error(updateErr.message);
+
+    try {
+      await supabaseAdmin.from("followups").insert({
+        entity_type: "customer",
+        entity_id: data.customerId,
+        channel: data.channel,
+        status: "done",
+        scheduled_at: nowIso,
+        completed_at: nowIso,
+        notes: data.notes || (isWa ? "Follow-up via WhatsApp" : "Follow-up phone call"),
+        outcome_notes: isWa ? "Message sent to customer via WhatsApp" : "Customer called",
+        created_by: uid,
+      });
+    } catch (fErr) {
+      console.warn("[customers] Could not insert followups row:", fErr);
+    }
+
+    return {
+      success: true,
+      customerId: data.customerId,
+      followup_count: followupCount,
+      last_contacted_at: nowIso,
+      last_contacted_channel: data.channel,
+      customer: normalizeCustomerRow(updatedCustomer as CustomerRow),
+    };
   });
 
 const updateCustomerSalespersonInput = z.object({

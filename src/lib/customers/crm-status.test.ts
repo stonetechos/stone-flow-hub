@@ -9,6 +9,8 @@ import {
   getCustomerPaymentReminderInfo,
   getCustomerResponseStatus,
   getCustomerStatusNotificationInfo,
+  getCustomerFollowupStats,
+  formatRelativeContactTime,
   type CustomerResponseStatus,
 } from "./crm-status";
 
@@ -74,6 +76,7 @@ describe("Customer CRM Status", () => {
       "awaiting_reply",
       "inactive_no_response",
       "do_not_contact",
+      "dormant",
     ];
 
     for (const key of keys) {
@@ -457,6 +460,84 @@ describe("Customer CRM Status", () => {
 
       const info = getCustomerStatusNotificationInfo(customer);
       expect(info.needsNotification).toBe(false);
+    });
+  });
+
+  describe("Customer Follow-up Tracking & Dormant Detection", () => {
+    it("correctly extracts followup stats from workflow_state", () => {
+      const customer = {
+        is_active: true,
+        workflow_state: {
+          whatsapp_count: 2,
+          call_count: 1,
+          last_whatsapp_at: "2026-11-15T10:00:00.000Z",
+          last_call_at: "2026-11-14T09:00:00.000Z",
+          last_contacted_channel: "whatsapp" as const,
+        },
+      };
+
+      const stats = getCustomerFollowupStats(customer);
+      expect(stats.whatsappCount).toBe(2);
+      expect(stats.callCount).toBe(1);
+      expect(stats.totalFollowups).toBe(3);
+      expect(stats.lastContactedAt).toBe("2026-11-15T10:00:00.000Z");
+      expect(stats.lastChannel).toBe("whatsapp");
+      expect(stats.isUnresponsive).toBe(true);
+    });
+
+    it("does not mark customer as unresponsive if total followups is less than 2", () => {
+      const customer = {
+        is_active: true,
+        workflow_state: {
+          whatsapp_count: 1,
+          call_count: 0,
+          last_whatsapp_at: "2026-11-15T10:00:00.000Z",
+        },
+      };
+
+      const stats = getCustomerFollowupStats(customer);
+      expect(stats.totalFollowups).toBe(1);
+      expect(stats.isUnresponsive).toBe(false);
+    });
+
+    it("does not mark customer as unresponsive if already converted", () => {
+      const customer = {
+        is_active: true,
+        workflow_state: {
+          response_status: "order_placed" as const,
+          whatsapp_count: 3,
+          call_count: 2,
+        },
+      };
+
+      const stats = getCustomerFollowupStats(customer);
+      expect(stats.totalFollowups).toBe(5);
+      expect(stats.isUnresponsive).toBe(false);
+    });
+
+    it("does not mark customer as unresponsive if already marked dormant", () => {
+      const customer = {
+        is_active: false,
+        workflow_state: {
+          response_status: "dormant" as const,
+          whatsapp_count: 4,
+          call_count: 1,
+        },
+      };
+
+      const stats = getCustomerFollowupStats(customer);
+      expect(stats.totalFollowups).toBe(5);
+      expect(stats.isUnresponsive).toBe(false);
+    });
+
+    it("formats relative contact time correctly", () => {
+      expect(formatRelativeContactTime(null)).toBe("");
+      expect(formatRelativeContactTime(undefined)).toBe("");
+      const now = new Date();
+      expect(formatRelativeContactTime(now.toISOString())).toBe("Just now");
+
+      const tenMinsAgo = new Date(Date.now() - 10 * 60_000);
+      expect(formatRelativeContactTime(tenMinsAgo.toISOString())).toBe("10m ago");
     });
   });
 });

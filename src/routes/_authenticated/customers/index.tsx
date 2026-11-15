@@ -20,6 +20,7 @@ import {
   ShoppingCart,
   Trash2,
   UserCheck,
+  UserX,
 } from "lucide-react";
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { StoreVoiceAssistantTab } from "@/components/customers/StoreVoiceAssistantTab";
@@ -37,6 +38,8 @@ import {
   getCustomerResponseStatus,
   getCustomerSalesperson,
   getCustomerResponseStatusLabel,
+  getCustomerFollowupStats,
+  formatRelativeContactTime,
   type CustomerResponseStatus,
 } from "@/lib/customers/crm-status";
 import { transliterateName } from "@/lib/i18n/transliterate";
@@ -105,6 +108,8 @@ import {
   getCustomerContacts,
   listCustomers,
   updateCustomer,
+  updateCustomerCrmStatus,
+  logCustomerContact,
   type CustomerRow,
 } from "@/lib/customers/api";
 import {
@@ -286,6 +291,77 @@ function CustomersPage() {
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
+  // Track the most recently contacted customer to give visual recognition upon returning to list
+  const [lastContacted, setLastContacted] = useState<{
+    customerId: string;
+    channel: "whatsapp" | "call";
+    timestamp: number;
+  } | null>(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const stored = sessionStorage.getItem("stos_last_contacted_customer");
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const logContactMutation = useMutation({
+    mutationFn: (vars: { customerId: string; channel: "whatsapp" | "call"; notes?: string }) =>
+      logCustomerContact(vars),
+    onSuccess: (data, vars) => {
+      const info = { customerId: vars.customerId, channel: vars.channel, timestamp: Date.now() };
+      setLastContacted(info);
+      try {
+        sessionStorage.setItem("stos_last_contacted_customer", JSON.stringify(info));
+      } catch (err) {
+        console.debug("[customers] sessionStorage write skipped:", err);
+      }
+      toast.success(
+        vars.channel === "whatsapp"
+          ? t("customers.whatsappLogged", "WhatsApp follow-up logged")
+          : t("customers.callLogged", "Phone call logged"),
+      );
+      void qc.invalidateQueries({ queryKey: qk.customers.all });
+      void qc.invalidateQueries({ queryKey: qk.customers.byId(vars.customerId) });
+      void qc.invalidateQueries({ queryKey: ["hub", "customer", vars.customerId] });
+      void qc.invalidateQueries({ queryKey: ["customer-pending-followups", vars.customerId] });
+      void qc.invalidateQueries({ queryKey: ["customer-followups-history", vars.customerId] });
+      void qc.invalidateQueries({ queryKey: ["followups"] });
+    },
+  });
+
+  const markDormantMutation = useMutation({
+    mutationFn: (customerId: string) =>
+      updateCustomerCrmStatus({
+        customerId,
+        response_status: "dormant",
+        is_active: false,
+        call_note: "Marked dormant due to lack of response after multiple follow-ups",
+      }),
+    onSuccess: (updated) => {
+      toast.success(`${updated.name} marked as Dormant · Unresponsive`);
+      void qc.invalidateQueries({ queryKey: qk.customers.all });
+      void qc.invalidateQueries({ queryKey: qk.customers.byId(updated.id) });
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
+  const reactivateMutation = useMutation({
+    mutationFn: (customerId: string) =>
+      updateCustomerCrmStatus({
+        customerId,
+        response_status: "active_responsive",
+        is_active: true,
+      }),
+    onSuccess: (updated) => {
+      toast.success(`${updated.name} reactivated`);
+      void qc.invalidateQueries({ queryKey: qk.customers.all });
+      void qc.invalidateQueries({ queryKey: qk.customers.byId(updated.id) });
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
   function hasCustomerPlacedOrder(
     c: CustomerRow,
     orderInfo?: { activeOrderCount: number; hasCompletedOrder?: boolean } | null,
@@ -305,7 +381,9 @@ function CustomersPage() {
 
   const rows = useMemo(() => {
     let list = query.data ?? [];
-    if (statusFilter !== "all") {
+    if (statusFilter === "unresponsive_2plus") {
+      list = list.filter((c) => getCustomerFollowupStats(c).isUnresponsive);
+    } else if (statusFilter !== "all") {
       list = list.filter((c) => getCustomerResponseStatus(c) === statusFilter);
     }
     if (typeFilter !== "all") {
@@ -348,6 +426,17 @@ function CustomersPage() {
     ledgerQuery.data,
     customerOrderMap,
   ]);
+
+  const unresponsiveCount = useMemo(() => {
+    return (query.data ?? []).filter(
+      (c) =>
+        getCustomerFollowupStats(c).isUnresponsive && getCustomerResponseStatus(c) !== "dormant",
+    ).length;
+  }, [query.data]);
+
+  const dormantCount = useMemo(() => {
+    return (query.data ?? []).filter((c) => getCustomerResponseStatus(c) === "dormant").length;
+  }, [query.data]);
 
   const paymentCounts = useMemo(() => {
     const counts: Record<string, number> = {
@@ -594,6 +683,54 @@ function CustomersPage() {
               {t("customers.payment.advanceRcvd", "Advance / Rcvd")}{" "}
               <span className="opacity-75 tabular-nums">({paymentCounts.payment_received})</span>
             </button>
+
+            {/* Quick CRM Follow-up Triage Chips */}
+            {unresponsiveCount > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setStatusFilter((curr) =>
+                    curr === "unresponsive_2plus" ? "all" : "unresponsive_2plus",
+                  );
+                  setPage(1);
+                }}
+                className={cn(
+                  "px-2.5 py-1 text-xs font-semibold rounded-full transition-all shrink-0 flex items-center gap-1.5 cursor-pointer border ml-auto sm:ml-2",
+                  statusFilter === "unresponsive_2plus"
+                    ? "bg-rose-700 text-white shadow-2xs border-rose-800"
+                    : "bg-rose-50 text-rose-800 border-rose-300 hover:bg-rose-100/90",
+                )}
+                title="Filter customers who haven't responded to 2 or more follow-ups"
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
+                <span>⚠️ {t("customers.filter.unresponsiveChip", "Unresponsive (2+)")}</span>
+                <span className="rounded-full bg-rose-200/90 px-1 py-0 text-[10px] text-rose-900 font-bold">
+                  {toIndicDigits(unresponsiveCount, i18n.language)}
+                </span>
+              </button>
+            )}
+            {dormantCount > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setStatusFilter((curr) => (curr === "dormant" ? "all" : "dormant"));
+                  setPage(1);
+                }}
+                className={cn(
+                  "px-2.5 py-1 text-xs font-medium rounded-full transition-all shrink-0 flex items-center gap-1.5 cursor-pointer border",
+                  statusFilter === "dormant"
+                    ? "bg-slate-800 text-white shadow-2xs border-slate-900 font-semibold"
+                    : "bg-slate-100 text-slate-700 border-slate-300/80 hover:bg-slate-200",
+                )}
+                title="Filter dormant customers"
+              >
+                <UserX className="h-3 w-3 text-slate-500" />
+                <span>{t("crm.status.dormant", "Dormant")}</span>
+                <span className="opacity-75 tabular-nums">
+                  ({toIndicDigits(dormantCount, i18n.language)})
+                </span>
+              </button>
+            )}
           </div>
 
           <DataToolbar
@@ -618,6 +755,20 @@ function CustomersPage() {
                   <SelectContent>
                     <SelectItem value="all">
                       {t("customers.filter.allStatuses", "All statuses")}
+                    </SelectItem>
+                    <SelectItem value="unresponsive_2plus">
+                      <span className="flex items-center gap-1.5 text-rose-700 font-semibold">
+                        <span className="h-1.5 w-1.5 rounded-full bg-rose-500 shrink-0 animate-pulse" />
+                        <span>
+                          ⚠️{" "}
+                          {t("customers.filter.unresponsive2plus", "Unresponsive (2+ follow-ups)")}
+                        </span>
+                        {unresponsiveCount > 0 && (
+                          <span className="rounded-full bg-rose-100 px-1.5 py-0.2 text-[10px] text-rose-900 font-bold">
+                            {toIndicDigits(unresponsiveCount, i18n.language)}
+                          </span>
+                        )}
+                      </span>
                     </SelectItem>
                     {(Object.keys(CUSTOMER_RESPONSE_STATUS_CONFIG) as CustomerResponseStatus[]).map(
                       (key) => {
@@ -746,7 +897,7 @@ function CustomersPage() {
                     <TableHead className="w-34 whitespace-nowrap px-1.5 overflow-hidden">
                       {t("customers.table.paymentStatus", "Payment Status")}
                     </TableHead>
-                    <TableHead className="w-40 whitespace-nowrap px-1.5">
+                    <TableHead className="w-44 whitespace-nowrap px-1.5">
                       {t("customers.table.contact", "Contact")}
                     </TableHead>
                     <TableHead className="w-10 text-right px-1" />
@@ -755,6 +906,8 @@ function CustomersPage() {
                 <TableBody>
                   {pageRows.map((c, i) => {
                     const norm = normalizeCustomerRow(c);
+                    const stats = getCustomerFollowupStats(c);
+                    const isLastContacted = lastContacted?.customerId === c.id;
                     const phone =
                       c.primary_phone || (c as unknown as { mobile?: string | null }).mobile || "";
                     const waPhone = c.whatsapp || phone;
@@ -770,8 +923,34 @@ function CustomersPage() {
                       orderNo: orderInfo?.urgentOrderNo,
                     });
                     const waUrl = buildWhatsappUrl(cleanWaPhone, waFollowupText, "wa.me");
+
+                    const handleContactLog = (channel: "whatsapp" | "call") => {
+                      const info = {
+                        customerId: c.id,
+                        channel,
+                        timestamp: Date.now(),
+                      };
+                      setLastContacted(info);
+                      try {
+                        sessionStorage.setItem(
+                          "stos_last_contacted_customer",
+                          JSON.stringify(info),
+                        );
+                      } catch (err) {
+                        console.debug("[customers] sessionStorage write skipped:", err);
+                      }
+                      logContactMutation.mutate({ customerId: c.id, channel });
+                    };
+
                     return (
-                      <TableRow key={c.id}>
+                      <TableRow
+                        key={c.id}
+                        className={cn(
+                          "transition-colors",
+                          isLastContacted &&
+                            "bg-emerald-50/85 hover:bg-emerald-100/80 border-l-4 border-l-emerald-600 ring-1 ring-inset ring-emerald-300/80 shadow-2xs",
+                        )}
+                      >
                         <TableCell className="w-12 text-center font-mono text-xs text-muted-foreground px-1">
                           <Link
                             to="/customers/$customerId"
@@ -797,6 +976,14 @@ function CustomersPage() {
                               {c.customer_code && (
                                 <span className="font-mono text-[11px] text-muted-foreground shrink-0">
                                   ({toIndicDigits(c.customer_code, i18n.language)})
+                                </span>
+                              )}
+                              {isLastContacted && (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-xs shrink-0 animate-in fade-in">
+                                  <Sparkles className="h-3 w-3" />
+                                  {lastContacted.channel === "whatsapp"
+                                    ? t("customers.justMessagedBadge", "✨ Just Messaged")
+                                    : t("customers.justCalledBadge", "✨ Just Called")}
                                 </span>
                               )}
                               {orderInfo?.nearestDeadline &&
@@ -884,21 +1071,41 @@ function CustomersPage() {
                           })()}
                         </TableCell>
                         <TableCell className="min-w-[190px] px-1.5 align-middle">
-                          <CustomerResponseStatusSelect
-                            customerId={c.id}
-                            customerName={c.name}
-                            contactPerson={
-                              c.contact_person ||
-                              ((c.external_ref as Record<string, unknown> | null)
-                                ?.contact_person as string | undefined)
-                            }
-                            phone={c.primary_phone || c.whatsapp}
-                            whatsapp={c.whatsapp || c.primary_phone}
-                            companyName={c.company_name}
-                            isActive={c.is_active}
-                            workflowState={c.workflow_state}
-                            externalRef={c.external_ref}
-                          />
+                          <div className="flex flex-col items-start gap-1">
+                            <CustomerResponseStatusSelect
+                              customerId={c.id}
+                              customerName={c.name}
+                              contactPerson={
+                                c.contact_person ||
+                                ((c.external_ref as Record<string, unknown> | null)
+                                  ?.contact_person as string | undefined)
+                              }
+                              phone={c.primary_phone || c.whatsapp}
+                              whatsapp={c.whatsapp || c.primary_phone}
+                              companyName={c.company_name}
+                              isActive={c.is_active}
+                              workflowState={c.workflow_state}
+                              externalRef={c.external_ref}
+                            />
+                            {stats.isUnresponsive && getCustomerResponseStatus(c) !== "dormant" && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  markDormantMutation.mutate(c.id);
+                                }}
+                                disabled={markDormantMutation.isPending}
+                                className="inline-flex items-center gap-1 rounded bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300/80 px-1.5 py-0.5 text-[10px] font-semibold transition-colors cursor-pointer shadow-2xs touch-manipulation"
+                                title={`Unresponsive after ${toIndicDigits(stats.totalFollowups, i18n.language)} follow-ups. Click to mark Dormant.`}
+                              >
+                                <UserX className="h-3 w-3 text-rose-600 shrink-0" />
+                                <span>{t("crm.markDormant", "Mark Dormant")}</span>
+                                <span className="rounded-full bg-rose-200/90 px-1 py-0 text-[9px] font-bold text-rose-900">
+                                  {toIndicDigits(stats.totalFollowups, i18n.language)}
+                                </span>
+                              </button>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell className="w-32 whitespace-nowrap px-1.5 overflow-hidden">
                           <CustomerAssigneeSelect
@@ -932,30 +1139,66 @@ function CustomersPage() {
                             );
                           })()}
                         </TableCell>
-                        <TableCell className="w-40 whitespace-nowrap px-1.5">
+                        <TableCell className="w-44 whitespace-nowrap px-1.5 align-middle">
                           {phone ? (
-                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                              <a
-                                href={`tel:${phone}`}
-                                title={`Call ${phone}`}
-                                className="inline-flex items-center gap-1 text-slate-700 hover:text-primary font-mono transition-colors"
-                              >
-                                <Phone className="h-3 w-3 text-emerald-600 shrink-0" />
-                                <span className="truncate">
-                                  {toIndicDigits(phone, i18n.language)}
-                                </span>
-                              </a>
-                              {(cleanWaPhone || cleanPhone) && (
+                            <div className="flex flex-col gap-1 py-0.5">
+                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                 <a
-                                  href={waUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  title={`Send follow-up on WhatsApp to ${norm.contact_person || c.name} (Kindly update / unable to finalise)`}
-                                  className="p-1 rounded hover:bg-emerald-50 text-emerald-600 transition-colors shrink-0"
+                                  href={`tel:${phone}`}
+                                  onClick={() => handleContactLog("call")}
+                                  title={`Call ${phone} (auto-registers call follow-up)`}
+                                  className="inline-flex items-center gap-1 text-slate-700 hover:text-primary font-mono transition-colors font-medium"
                                 >
-                                  <MessageSquare className="h-3 w-3" />
+                                  <Phone className="h-3 w-3 text-emerald-600 shrink-0" />
+                                  <span className="truncate">
+                                    {toIndicDigits(phone, i18n.language)}
+                                  </span>
                                 </a>
-                              )}
+                                {(cleanWaPhone || cleanPhone) && (
+                                  <a
+                                    href={waUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={() => handleContactLog("whatsapp")}
+                                    title={`Send follow-up on WhatsApp to ${norm.contact_person || c.name} (auto-registers WhatsApp follow-up)`}
+                                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/80 text-[10.5px] font-medium transition-colors shrink-0 shadow-2xs"
+                                  >
+                                    <MessageSquare className="h-3 w-3 text-emerald-600" />
+                                    <span className="hidden sm:inline">WhatsApp</span>
+                                  </a>
+                                )}
+                              </div>
+
+                              {/* Follow-up count and relative time */}
+                              <div className="flex items-center gap-1 text-[10px]">
+                                {stats.totalFollowups > 0 ? (
+                                  <span
+                                    className={cn(
+                                      "inline-flex items-center gap-1 rounded px-1.5 py-0.5 border text-[10px]",
+                                      isLastContacted
+                                        ? "bg-emerald-100/90 border-emerald-300 text-emerald-950 font-bold"
+                                        : "bg-slate-50 border-slate-200/90 text-slate-600",
+                                    )}
+                                    title={`${toIndicDigits(stats.whatsappCount, i18n.language)} WhatsApp · ${toIndicDigits(stats.callCount, i18n.language)} Call(s). Last: ${stats.lastContactedAt ? formatDate(stats.lastContactedAt, i18n.language) : "Never"}`}
+                                  >
+                                    <span className="font-semibold text-slate-800">
+                                      {toIndicDigits(stats.totalFollowups, i18n.language)} flw-up
+                                      {stats.totalFollowups > 1 ? "s" : ""}
+                                    </span>
+                                    <span className="text-slate-300">·</span>
+                                    <span className="text-muted-foreground whitespace-nowrap">
+                                      {formatRelativeContactTime(
+                                        stats.lastContactedAt,
+                                        i18n.language,
+                                      )}
+                                    </span>
+                                  </span>
+                                ) : (
+                                  <span className="text-[10px] text-slate-400 italic">
+                                    {t("customers.noFollowupsYet", "No follow-ups yet")}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           ) : (
                             <span className="text-xs text-muted-foreground italic">
@@ -990,6 +1233,20 @@ function CustomersPage() {
                                     Sales Order
                                   </Link>
                                 </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                {getCustomerResponseStatus(c) !== "dormant" ? (
+                                  <DropdownMenuItem
+                                    onClick={() => markDormantMutation.mutate(c.id)}
+                                  >
+                                    <UserX className="mr-2 h-4 w-4 text-rose-600" />
+                                    {t("crm.markDormant", "Mark Dormant (Unresponsive)")}
+                                  </DropdownMenuItem>
+                                ) : (
+                                  <DropdownMenuItem onClick={() => reactivateMutation.mutate(c.id)}>
+                                    <UserCheck className="mr-2 h-4 w-4 text-emerald-600" />
+                                    {t("crm.reactivateAccount", "Reactivate Account")}
+                                  </DropdownMenuItem>
+                                )}
                                 <DropdownMenuSeparator />
                                 <LifecycleMenuItems
                                   entityType="customer"

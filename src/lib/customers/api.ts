@@ -523,10 +523,15 @@ export async function updateCustomerCrmStatus(
   } else if (
     input.response_status === "inactive_no_response" ||
     input.response_status === "do_not_contact" ||
+    input.response_status === "dormant" ||
     input.response_status === "order_cancelled_delay" ||
     input.response_status === "order_cancelled_change_of_plans"
   ) {
     targetIsActive = false;
+    if (input.response_status === "dormant") {
+      updatedWf.dormant_at = nowIso;
+      if (input.call_note) updatedWf.dormant_reason = input.call_note;
+    }
   } else if (
     input.response_status === "active_responsive" ||
     input.response_status === "payment_pending" ||
@@ -804,4 +809,115 @@ export async function deleteCustomerContact(contactId: string): Promise<void> {
 
   const { error } = await getDb().from("customer_contacts").delete().eq("id", contactId);
   if (error) throw new AppError(mapDbError(error));
+}
+
+export async function logCustomerContact(input: {
+  customerId: string;
+  channel: "whatsapp" | "call";
+  notes?: string;
+}): Promise<{
+  success: boolean;
+  customerId: string;
+  followup_count: number;
+  last_contacted_at: string;
+  last_contacted_channel: "whatsapp" | "call";
+  customer?: CustomerRow;
+}> {
+  try {
+    const { logCustomerContactServerFn } = await import("./customers.functions");
+    const res = await logCustomerContactServerFn({ data: input });
+    if (res) {
+      return res as {
+        success: boolean;
+        customerId: string;
+        followup_count: number;
+        last_contacted_at: string;
+        last_contacted_channel: "whatsapp" | "call";
+        customer?: CustomerRow;
+      };
+    }
+  } catch (serverErr) {
+    console.warn(
+      "[customers.api] Server logCustomerContact failed, falling back to client:",
+      serverErr,
+    );
+  }
+
+  // Client fallback
+  const db = getDb();
+  const { data: customer } = await db
+    .from("customers")
+    .select("id, name, customer_code, workflow_state, notes")
+    .eq("id", input.customerId)
+    .single();
+
+  const currentWf = (customer?.workflow_state as Record<string, unknown>) || {};
+  const nowIso = new Date().toISOString();
+  const isWa = input.channel === "whatsapp";
+
+  const prevCallCount = Number(currentWf.call_count ?? 0);
+  const prevWaCount = Number(currentWf.whatsapp_count ?? 0);
+  const callCount = isWa ? prevCallCount : prevCallCount + 1;
+  const whatsappCount = isWa ? prevWaCount + 1 : prevWaCount;
+  const followupCount = callCount + whatsappCount;
+
+  const updatedWf: Record<string, unknown> = {
+    ...currentWf,
+    last_contacted_at: nowIso,
+    last_contacted_channel: input.channel,
+    call_count: callCount,
+    whatsapp_count: whatsappCount,
+    followup_count: followupCount,
+  };
+
+  if (isWa) {
+    updatedWf.last_whatsapp_at = nowIso;
+    updatedWf.status_whatsapp_sent = true;
+    updatedWf.status_whatsapp_sent_at = nowIso;
+    updatedWf.status_whatsapp_status_key =
+      (currentWf.response_status as string) || "active_responsive";
+  } else {
+    updatedWf.last_call_at = nowIso;
+  }
+
+  const timestamp = new Date().toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const channelTag = isWa ? "WhatsApp" : "Call";
+  const logLine = `\n[${channelTag} · ${timestamp}] ${input.notes || (isWa ? "Follow-up message sent on WhatsApp" : "Follow-up call initiated")}`;
+  const updatedNotes = customer?.notes ? `${customer.notes.trim()}${logLine}` : logLine.trim();
+
+  await db
+    .from("customers")
+    .update({
+      workflow_state: updatedWf as unknown as import("@/integrations/supabase/types").Json,
+      notes: updatedNotes,
+    })
+    .eq("id", input.customerId);
+
+  try {
+    await db.from("followups").insert({
+      entity_type: "customer",
+      entity_id: input.customerId,
+      channel: input.channel,
+      status: "done",
+      scheduled_at: nowIso,
+      completed_at: nowIso,
+      notes: input.notes || (isWa ? "Follow-up via WhatsApp" : "Follow-up phone call"),
+      outcome_notes: isWa ? "Message sent to customer via WhatsApp" : "Customer called",
+    });
+  } catch (insertErr) {
+    console.warn("[customers.api] followups insert skipped:", insertErr);
+  }
+
+  return {
+    success: true,
+    customerId: input.customerId,
+    followup_count: followupCount,
+    last_contacted_at: nowIso,
+    last_contacted_channel: input.channel,
+  };
 }
