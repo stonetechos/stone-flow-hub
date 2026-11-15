@@ -47,7 +47,6 @@ import type { AppRole } from "@/lib/admin/users";
 
 export type NavGroupId =
   | "overview"
-  | "website"
   | "items"
   | "sales"
   | "purchase"

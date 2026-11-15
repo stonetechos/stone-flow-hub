@@ -27,6 +27,25 @@ export function computeOrderPin(orderNo: string, phone: string): string {
   return String(pinNum);
 }
 
+/**
+ * Generates or derives a persistent 6-digit numeric tracking token (100000 - 999999).
+ * Used by customers on the public tracking portal to monitor fabrication and access
+ * delivery challans and ledger statements even after project completion.
+ */
+export function generateTrackingToken(seed?: string): string {
+  if (seed) {
+    let hash = 0x811c9dc5;
+    const str = `${seed}:stos-tracking-token-2026`;
+    for (let i = 0; i < str.length; i++) {
+      hash ^= str.charCodeAt(i);
+      hash = Math.imul(hash, 0x01000193);
+    }
+    const token = (Math.abs(hash) % 900000) + 100000;
+    return String(token);
+  }
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
 export type OrderProgressStage = "confirmed" | "production" | "ready" | "dispatched" | "delivered";
 
 export interface OrderMilestoneItem {

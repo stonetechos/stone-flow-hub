@@ -17,6 +17,7 @@ import { qk } from "@/lib/query-keys";
 import { listInstallationLedgerSummaries } from "@/lib/installation-ledger/api";
 import { compareAgencyLedgerRows } from "@/lib/ledger-sorting";
 import { useTranslation } from "react-i18next";
+import { transliterateName } from "@/lib/i18n/transliterate";
 
 /**
  * Installation Agency Ledger — index (Task #48). Manual entries only
@@ -31,7 +32,7 @@ export const Route = createFileRoute("/_authenticated/installation-ledger/")({
 });
 
 function InstallationLedgerIndex() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const query = useQuery({
     queryKey: qk.installationLedger.summaries(),
     queryFn: listInstallationLedgerSummaries,
@@ -85,7 +86,7 @@ function InstallationLedgerIndex() {
                       params={{ agencyId: r.installation_agency_id }}
                       className="font-medium text-primary hover:underline"
                     >
-                      {r.agency_name}
+                      {transliterateName(r.agency_name, i18n.language)}
                     </Link>
                     <span className="ml-2 font-mono text-xs text-muted-foreground">
                       {r.agency_code}

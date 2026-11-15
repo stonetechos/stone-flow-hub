@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { autoTranslate } from "@/lib/i18n/auto-translator";
+import { transliterateName } from "@/lib/i18n/transliterate";
 import {
   Banknote,
   Calendar,
@@ -58,7 +59,7 @@ interface Props {
 }
 
 export function EmployeePaymentsManagementView({ initialEmployeeId, embedded = false }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const currentMonth = currentMonthStr();
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const [searchQuery, setSearchQuery] = useState("");
@@ -168,7 +169,9 @@ export function EmployeePaymentsManagementView({ initialEmployeeId, embedded = f
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Calendar className="h-5 w-5 text-primary" />
-          <span className="text-sm font-semibold text-muted-foreground">Cycle Month:</span>
+          <span className="text-sm font-semibold text-muted-foreground">
+            {t("hr.cycleMonth", "Cycle Month:")}
+          </span>
           <Select value={selectedMonth} onValueChange={setSelectedMonth}>
             <SelectTrigger className="w-[180px] h-9 font-medium">
               <SelectValue />
@@ -310,10 +313,10 @@ export function EmployeePaymentsManagementView({ initialEmployeeId, embedded = f
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-2">
             <TabsList className="bg-muted/60">
               <TabsTrigger value="balances" className="text-xs">
-                Salary Balances &amp; Month-End Due ({balances.length})
+                {t("hr.salaryBalancesTab", "Salary Balances & Month-End Due")} ({balances.length})
               </TabsTrigger>
               <TabsTrigger value="transactions" className="text-xs">
-                Payment Ledger ({allPayments.length})
+                {t("hr.paymentLedgerTab", "Payment Ledger")} ({allPayments.length})
               </TabsTrigger>
             </TabsList>
 
@@ -322,7 +325,7 @@ export function EmployeePaymentsManagementView({ initialEmployeeId, embedded = f
                 <div className="relative w-48 sm:w-64">
                   <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
                   <Input
-                    placeholder="Search employee..."
+                    placeholder={t("hr.searchEmployee", "Search employee...")}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-8 h-8 text-xs"
@@ -333,10 +336,16 @@ export function EmployeePaymentsManagementView({ initialEmployeeId, embedded = f
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Staff</SelectItem>
-                    <SelectItem value="pending">Balance Due</SelectItem>
-                    <SelectItem value="partially_paid">Partially Paid</SelectItem>
-                    <SelectItem value="paid">Fully Paid</SelectItem>
+                    <SelectItem value="all">{autoTranslate("All Staff", i18n.language)}</SelectItem>
+                    <SelectItem value="pending">
+                      {autoTranslate("Balance Due", i18n.language)}
+                    </SelectItem>
+                    <SelectItem value="partially_paid">
+                      {autoTranslate("Partially Paid", i18n.language)}
+                    </SelectItem>
+                    <SelectItem value="paid">
+                      {autoTranslate("Fully Paid", i18n.language)}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -357,13 +366,19 @@ export function EmployeePaymentsManagementView({ initialEmployeeId, embedded = f
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/40">
-                      <TableHead>Employee</TableHead>
-                      <TableHead>Department</TableHead>
-                      <TableHead className="text-right">Base Net Salary</TableHead>
-                      <TableHead className="text-right">Intermediate Paid</TableHead>
-                      <TableHead className="text-right">Salary Due After Month Ends</TableHead>
-                      <TableHead className="text-center">Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead>{t("common.employee", "Employee")}</TableHead>
+                      <TableHead>{t("hr.department", "Department")}</TableHead>
+                      <TableHead className="text-right">
+                        {t("hr.baseNetSalary", "Base Net Salary")}
+                      </TableHead>
+                      <TableHead className="text-right">
+                        {t("hr.intermediatePaid", "Intermediate Paid")}
+                      </TableHead>
+                      <TableHead className="text-right">
+                        {t("hr.salaryDueAfterMonthEnds", "Salary Due After Month Ends")}
+                      </TableHead>
+                      <TableHead className="text-center">{t("common.status", "Status")}</TableHead>
+                      <TableHead className="text-right">{t("common.actions", "Actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -371,7 +386,7 @@ export function EmployeePaymentsManagementView({ initialEmployeeId, embedded = f
                       <TableRow key={b.employeeId} className="hover:bg-muted/20">
                         <TableCell>
                           <div className="font-semibold text-foreground flex items-center gap-1.5">
-                            {b.employeeName}
+                            {transliterateName(b.employeeName, i18n.language)}
                           </div>
                           <div className="text-xs text-muted-foreground">
                             {b.employeeCode || "No code"}
@@ -379,7 +394,7 @@ export function EmployeePaymentsManagementView({ initialEmployeeId, embedded = f
                           </div>
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground">
-                          {b.department || "—"}
+                          {b.department ? autoTranslate(b.department, i18n.language) : "—"}
                         </TableCell>
                         <TableCell className="text-right font-medium text-xs tabular-nums">
                           {formatInr(b.estimatedNetSalary)}
@@ -414,7 +429,7 @@ export function EmployeePaymentsManagementView({ initialEmployeeId, embedded = f
                         <TableCell className="text-center">
                           {b.status === "pending_full" && (
                             <Badge variant="outline" className="text-[11px] text-muted-foreground">
-                              Pending Full
+                              {autoTranslate("Pending Full", i18n.language)}
                             </Badge>
                           )}
                           {b.status === "partially_paid" && (
@@ -422,12 +437,12 @@ export function EmployeePaymentsManagementView({ initialEmployeeId, embedded = f
                               variant="secondary"
                               className="text-[11px] bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300"
                             >
-                              Partially Paid
+                              {autoTranslate("Partially Paid", i18n.language)}
                             </Badge>
                           )}
                           {b.status === "fully_paid" && (
                             <Badge variant="default" className="text-[11px] bg-emerald-600">
-                              Fully Paid
+                              {autoTranslate("Fully Paid", i18n.language)}
                             </Badge>
                           )}
                           {b.status === "advance_excess" && (
@@ -435,7 +450,7 @@ export function EmployeePaymentsManagementView({ initialEmployeeId, embedded = f
                               variant="secondary"
                               className="text-[11px] bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-300"
                             >
-                              Advance Surplus
+                              {autoTranslate("Advance Surplus", i18n.language)}
                             </Badge>
                           )}
                         </TableCell>
@@ -447,7 +462,7 @@ export function EmployeePaymentsManagementView({ initialEmployeeId, embedded = f
                               className="h-7 text-xs gap-1"
                               onClick={() => handleRecordForEmployee(b.employeeId)}
                             >
-                              <Plus className="h-3 w-3" /> Pay
+                              <Plus className="h-3 w-3" /> {t("common.pay", "Pay")}
                             </Button>
                             <Button
                               size="sm"
@@ -455,7 +470,7 @@ export function EmployeePaymentsManagementView({ initialEmployeeId, embedded = f
                               className="h-7 text-xs gap-1"
                               onClick={() => handleOpenDrawer(b)}
                             >
-                              Ledger <ArrowRight className="h-3 w-3" />
+                              {t("common.ledger", "Ledger")} <ArrowRight className="h-3 w-3" />
                             </Button>
                             {b.phone && (
                               <Button

@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { autoTranslate } from "@/lib/i18n/auto-translator";
+import { transliterateName } from "@/lib/i18n/transliterate";
 import {
   Plus,
   Users,
@@ -54,6 +55,7 @@ export const Route = createFileRoute("/_authenticated/installation-teams/")({
 type FilterType = "all" | "contractors" | "teams";
 
 function ApplicationPartnersPage() {
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const nav = useNavigate();
   const list = useListPageState("application-partners");
@@ -67,17 +69,21 @@ function ApplicationPartnersPage() {
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
-      { key: "code", label: "Code", required: true },
-      { key: "name", label: "Application Partner / Firm", required: true },
-      { key: "contact", label: "Master / Supervisor" },
-      { key: "phone", label: "Mobile / WhatsApp" },
-      { key: "city", label: "City / Operational Base" },
-      { key: "type", label: "Partner Category" },
-      { key: "skills", label: "Skills & Specializations" },
-      { key: "capacity", label: "Daily Output" },
-      { key: "status", label: "Status" },
+      { key: "code", label: t("common.code", "Code"), required: true },
+      {
+        key: "name",
+        label: t("installationTeams.columns.partner", "Application Partner / Firm"),
+        required: true,
+      },
+      { key: "contact", label: t("installationTeams.columns.supervisor", "Master / Supervisor") },
+      { key: "phone", label: t("installationTeams.columns.contact", "Contact Number") },
+      { key: "city", label: t("installationTeams.columns.city", "City / Base") },
+      { key: "type", label: t("common.type", "Type") },
+      { key: "skills", label: t("installationTeams.columns.specializations", "Specializations") },
+      { key: "capacity", label: t("installationTeams.columns.dailyOutput", "Daily Output") },
+      { key: "status", label: t("common.status", "Status") },
     ],
-    [],
+    [t],
   );
 
   const query = useQuery({
@@ -241,16 +247,40 @@ function ApplicationPartnersPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                {!isHidden("code") && <TableHead className="w-24">Code</TableHead>}
-                {!isHidden("name") && <TableHead>Application Partner / Firm</TableHead>}
-                {!isHidden("contact") && <TableHead>Master / Supervisor</TableHead>}
-                {!isHidden("phone") && <TableHead>Contact Number</TableHead>}
-                {!isHidden("city") && <TableHead>City / Base</TableHead>}
-                {!isHidden("type") && <TableHead>Type</TableHead>}
-                {!isHidden("skills") && <TableHead>Specializations</TableHead>}
-                {!isHidden("capacity") && <TableHead>Daily Output</TableHead>}
-                {!isHidden("status") && <TableHead className="w-20">Status</TableHead>}
-                <TableHead className="w-16 text-right">Actions</TableHead>
+                {!isHidden("code") && (
+                  <TableHead className="w-24">{t("common.code", "Code")}</TableHead>
+                )}
+                {!isHidden("name") && (
+                  <TableHead>
+                    {t("installationTeams.columns.partner", "Application Partner / Firm")}
+                  </TableHead>
+                )}
+                {!isHidden("contact") && (
+                  <TableHead>
+                    {t("installationTeams.columns.supervisor", "Master / Supervisor")}
+                  </TableHead>
+                )}
+                {!isHidden("phone") && (
+                  <TableHead>{t("installationTeams.columns.contact", "Contact Number")}</TableHead>
+                )}
+                {!isHidden("city") && (
+                  <TableHead>{t("installationTeams.columns.city", "City / Base")}</TableHead>
+                )}
+                {!isHidden("type") && <TableHead>{t("common.type", "Type")}</TableHead>}
+                {!isHidden("skills") && (
+                  <TableHead>
+                    {t("installationTeams.columns.specializations", "Specializations")}
+                  </TableHead>
+                )}
+                {!isHidden("capacity") && (
+                  <TableHead>
+                    {t("installationTeams.columns.dailyOutput", "Daily Output")}
+                  </TableHead>
+                )}
+                {!isHidden("status") && (
+                  <TableHead className="w-20">{t("common.status", "Status")}</TableHead>
+                )}
+                <TableHead className="w-16 text-right">{t("common.actions", "Actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -268,10 +298,12 @@ function ApplicationPartnersPage() {
 
                     {!isHidden("name") && (
                       <TableCell>
-                        <div className="font-medium text-foreground">{p.name}</div>
+                        <div className="font-medium text-foreground">
+                          {transliterateName(p.name, i18n.language)}
+                        </div>
                         {p.notes && (
                           <div className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
-                            {p.notes}
+                            {autoTranslate(p.notes, i18n.language)}
                           </div>
                         )}
                       </TableCell>
@@ -279,7 +311,11 @@ function ApplicationPartnersPage() {
 
                     {!isHidden("contact") && (
                       <TableCell>
-                        <span className="text-sm font-medium">{p.contactPerson || "—"}</span>
+                        <span className="text-sm font-medium">
+                          {p.contactPerson
+                            ? transliterateName(p.contactPerson, i18n.language)
+                            : "—"}
+                        </span>
                       </TableCell>
                     )}
 
@@ -314,7 +350,9 @@ function ApplicationPartnersPage() {
                     )}
 
                     {!isHidden("city") && (
-                      <TableCell className="text-xs text-muted-foreground">{p.city}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {autoTranslate(p.city, i18n.language)}
+                      </TableCell>
                     )}
 
                     {!isHidden("type") && (
@@ -330,10 +368,10 @@ function ApplicationPartnersPage() {
                           }
                         >
                           {p.sourceType === "installation_team"
-                            ? "Site Team"
+                            ? autoTranslate("Site Team", i18n.language)
                             : p.sourceType === "vendor"
-                              ? "Vendor Partner"
-                              : "Contract Agency"}
+                              ? autoTranslate("Vendor Partner", i18n.language)
+                              : autoTranslate("Contract Agency", i18n.language)}
                         </Badge>
                       </TableCell>
                     )}
@@ -346,7 +384,7 @@ function ApplicationPartnersPage() {
                               key={sk}
                               className="inline-flex items-center rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground"
                             >
-                              {sk}
+                              {autoTranslate(sk, i18n.language)}
                             </span>
                           ))}
                           {p.skills.length > 3 && (

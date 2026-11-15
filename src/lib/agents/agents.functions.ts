@@ -348,8 +348,9 @@ export const requestStonemanOrderPin = createServerFn({ method: "POST" })
 
 const stonemanOrderLookupInput = z.object({
   orderNo: z.string().min(1),
-  phone: z.string().min(10),
+  phone: z.string().optional(),
   verificationCode: z.string().optional(),
+  token: z.string().optional(),
 });
 
 /**

@@ -50,8 +50,9 @@ export const STONEMAN_PUBLIC_FAQS: PublicFaqItem[] = [
 
 export interface VerifiedOrderLookupInput {
   orderNo: string;
-  phone: string;
+  phone?: string;
   verificationCode?: string;
+  token?: string;
 }
 
 import {
@@ -65,6 +66,8 @@ export { computeOrderPin };
 
 export interface CustomerSafeOrderDetails {
   orderNo: string;
+  customerName?: string;
+  trackingToken?: string;
   orderDate: string;
   statusText: string;
   isCompleted: boolean;
@@ -75,18 +78,43 @@ export interface CustomerSafeOrderDetails {
   whatsBeenDone?: string;
   milestones?: OrderMilestoneItem[];
   dispatches?: Array<{
+    id?: string;
     dispatchNo: string;
     dispatchDate: string;
     status: string;
     carrier?: string | null;
     vehicleNo?: string | null;
     trackingNo?: string | null;
+    items?: Array<{
+      description: string;
+      quantity: number;
+      unit: string;
+    }>;
   }>;
   itemsSummary: Array<{
     itemDescription: string;
     quantity: number;
     unit: string;
   }>;
+  ledgerStatement?: {
+    totalBilled: number;
+    totalPaid: number;
+    balanceDue: number;
+    invoices: Array<{
+      id: string;
+      invoiceNo: string;
+      date: string;
+      amount: number;
+      status: string;
+    }>;
+    receipts: Array<{
+      id: string;
+      receiptNo: string;
+      date: string;
+      amount: number;
+      method: string;
+    }>;
+  };
   notice: string;
 }
 
@@ -159,6 +187,50 @@ export async function requestOrderVerificationPin(
   };
 }
 
+interface StonemanCustomerRow {
+  id?: string;
+  name?: string;
+  primary_phone?: string | null;
+}
+
+interface StonemanSalesOrderRow {
+  id: string;
+  so_no: string;
+  order_date?: string | null;
+  status?: string | null;
+  delivery_date?: string | null;
+  customer_id?: string | null;
+  customer?: unknown;
+  items?: Array<{
+    description?: string | null;
+    product_name?: string | null;
+    quantity?: number | null;
+    unit?: string | null;
+  }> | null;
+}
+
+interface StonemanQuoteRow {
+  id: string;
+  quote_no: string;
+  issue_date?: string | null;
+  total?: number | null;
+  status?: string | null;
+  customer_id?: string | null;
+  customer?: unknown;
+  items?: Array<{
+    description?: string | null;
+    product_name?: string | null;
+    quantity?: number | null;
+    unit?: string | null;
+  }> | null;
+}
+
+function resolveCustomer(raw: unknown): StonemanCustomerRow | null {
+  if (!raw) return null;
+  if (Array.isArray(raw)) return (raw[0] as StonemanCustomerRow) || null;
+  return raw as StonemanCustomerRow;
+}
+
 /**
  * Looks up an order with strict identity verification.
  * Guaranteed never to expose vendor/agency/margin details.
@@ -167,129 +239,347 @@ export async function lookupVerifiedOrder(
   input: VerifiedOrderLookupInput,
   db: SupabaseClient,
 ): Promise<CustomerSafeOrderDetails> {
-  const cleanPhone = input.phone.replace(/\D+/g, "");
-  if (!cleanPhone || cleanPhone.length < 10) {
-    throw new AppError(
-      "A valid 10-digit registered phone number is required for order verification.",
-      "INVALID_PHONE_VERIFICATION",
-      400,
-    );
+  const rawInput = (input.orderNo || "").trim().toUpperCase();
+  const rawToken = (
+    input.token || (/^\d{6}$/.test(rawInput) ? rawInput : input.verificationCode || "")
+  ).trim();
+  const isDirectToken = /^\d{6}$/.test(rawToken);
+
+  let salesOrder: StonemanSalesOrderRow | null = null;
+  let quoteData: StonemanQuoteRow | null = null;
+  let customer: StonemanCustomerRow | null = null;
+
+  if (isDirectToken) {
+    // 1. Look up in quotes by tracking_token in workflow_state
+    try {
+      const { data: qMatch } = await db
+        .from("quotes")
+        .select(
+          `
+          id,
+          quote_no,
+          issue_date,
+          total,
+          status,
+          workflow_state,
+          customer_id,
+          customer:customers!quotes_customer_id_fkey(
+            id,
+            name,
+            primary_phone
+          ),
+          items:quote_items(
+            description,
+            product_name,
+            quantity,
+            unit
+          )
+        `,
+        )
+        .filter("workflow_state->>tracking_token", "eq", rawToken)
+        .limit(1)
+        .maybeSingle();
+
+      if (qMatch) {
+        quoteData = qMatch as unknown as StonemanQuoteRow;
+        customer = resolveCustomer(qMatch.customer);
+
+        // Check if sales order exists for this quote
+        const { data: soMatch } = await db
+          .from("sales_orders")
+          .select(
+            `
+            id,
+            so_no,
+            order_date,
+            status,
+            delivery_date,
+            customer_id,
+            customer:customers!sales_orders_customer_id_fkey(
+              id,
+              name,
+              primary_phone
+            ),
+            items:sales_order_items(
+              description,
+              product_name,
+              quantity,
+              unit
+            )
+          `,
+          )
+          .eq("quote_id", qMatch.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (soMatch) {
+          salesOrder = soMatch as unknown as StonemanSalesOrderRow;
+          if (soMatch.customer) customer = resolveCustomer(soMatch.customer);
+        }
+      }
+    } catch {
+      // Fallback to sales orders
+    }
+
+    if (!salesOrder && !quoteData) {
+      // 2. Check sales_orders directly by tracking_token or computeOrderPin
+      try {
+        const { data: soDirect } = await db
+          .from("sales_orders")
+          .select(
+            `
+            id,
+            so_no,
+            order_date,
+            status,
+            delivery_date,
+            customer_id,
+            workflow_state,
+            customer:customers!sales_orders_customer_id_fkey(
+              id,
+              name,
+              primary_phone
+            ),
+            items:sales_order_items(
+              description,
+              product_name,
+              quantity,
+              unit
+            )
+          `,
+          )
+          .filter("workflow_state->>tracking_token", "eq", rawToken)
+          .limit(1)
+          .maybeSingle();
+
+        if (soDirect) {
+          salesOrder = soDirect as unknown as StonemanSalesOrderRow;
+          customer = resolveCustomer(soDirect.customer);
+        }
+      } catch {
+        // Continue
+      }
+    }
   }
 
-  const cleanOrderNo = input.orderNo.trim().toUpperCase();
-  if (!cleanOrderNo) {
-    throw new AppError("Order Number is required.", "ORDER_NO_REQUIRED", 400);
-  }
+  // If not found via direct token, perform standard phone + order verification
+  if (!salesOrder && !quoteData) {
+    const cleanPhone = (input.phone || "").replace(/\D+/g, "");
+    if (!cleanPhone || cleanPhone.length < 10) {
+      throw new AppError(
+        "A valid 10-digit registered phone number is required for order verification (or enter your 6-digit tracking token).",
+        "INVALID_PHONE_VERIFICATION",
+        400,
+      );
+    }
 
-  // Query sales order with customer details
-  const { data: salesOrder, error: soError } = await db
-    .from("sales_orders")
-    .select(
-      `
-      id,
-      so_no,
-      order_date,
-      status,
-      delivery_date,
-      customer:customers!sales_orders_customer_id_fkey(
+    if (!rawInput) {
+      throw new AppError("Order Number or Tracking Token is required.", "ORDER_NO_REQUIRED", 400);
+    }
+
+    const { data: soData, error: soError } = await db
+      .from("sales_orders")
+      .select(
+        `
         id,
-        name,
-        primary_phone
-      ),
-      items:sales_order_items(
-        description,
-        product_name,
-        quantity,
-        unit
+        so_no,
+        order_date,
+        status,
+        delivery_date,
+        customer_id,
+        customer:customers!sales_orders_customer_id_fkey(
+          id,
+          name,
+          primary_phone
+        ),
+        items:sales_order_items(
+          description,
+          product_name,
+          quantity,
+          unit
+        )
+      `,
       )
-    `,
-    )
-    .ilike("so_no", cleanOrderNo)
-    .maybeSingle();
+      .ilike("so_no", rawInput)
+      .maybeSingle();
 
-  if (soError || !salesOrder) {
-    throw new AppError(
-      `No active order found matching "${cleanOrderNo}". Please check your order reference.`,
-      "ORDER_NOT_FOUND",
-      404,
-    );
+    if (soError || !soData) {
+      throw new AppError(
+        `No active order or quotation found matching "${rawInput}". Please check your order reference or 6-digit token.`,
+        "ORDER_NOT_FOUND",
+        404,
+      );
+    }
+
+    salesOrder = soData as unknown as StonemanSalesOrderRow;
+    customer = resolveCustomer(soData.customer);
+
+    const custPhone = (customer?.primary_phone || "").replace(/\D+/g, "");
+    const last10Input = cleanPhone.slice(-10);
+
+    if (!custPhone.endsWith(last10Input)) {
+      throw new AppError(
+        "The phone number provided does not match the registered records for this order reference.",
+        "VERIFICATION_FAILED",
+        403,
+      );
+    }
+
+    const cleanPin = (input.verificationCode || "").trim();
+    if (!cleanPin) {
+      throw new AppError(
+        "A 6-digit security verification PIN is required to verify identity.",
+        "PIN_REQUIRED",
+        400,
+      );
+    }
+
+    const expectedPin = computeOrderPin(rawInput, cleanPhone);
+    if (cleanPin !== expectedPin) {
+      throw new AppError(
+        "Invalid verification PIN. Please verify the code or request a new PIN.",
+        "INVALID_PIN",
+        403,
+      );
+    }
   }
 
-  // Verify phone matches the order's customer phone
-  const customer = salesOrder.customer as {
-    primary_phone?: string | null;
-  } | null;
-  const custPhone = (customer?.primary_phone || "").replace(/\D+/g, "");
-  const last10Input = cleanPhone.slice(-10);
+  const orderNo = salesOrder?.so_no || quoteData?.quote_no || rawInput;
+  const orderDate = salesOrder?.order_date || quoteData?.issue_date;
+  const statusRaw = salesOrder?.status || quoteData?.status || "confirmed";
+  const deliveryDate = salesOrder?.delivery_date || null;
 
-  if (!custPhone.endsWith(last10Input)) {
-    // Purposefully generic rejection to prevent account enumeration
-    throw new AppError(
-      "The phone number provided does not match the registered records for this order reference.",
-      "VERIFICATION_FAILED",
-      403,
-    );
-  }
-
-  // Enforce OTP/PIN verification: phone number alone is NOT identity verification!
-  const cleanPin = (input.verificationCode || "").trim();
-  if (!cleanPin) {
-    throw new AppError(
-      "A 6-digit security verification PIN is required to verify identity.",
-      "PIN_REQUIRED",
-      400,
-    );
-  }
-
-  const expectedPin = computeOrderPin(cleanOrderNo, cleanPhone);
-  if (cleanPin !== expectedPin) {
-    throw new AppError(
-      "Invalid verification PIN. Please verify the code or request a new PIN.",
-      "INVALID_PIN",
-      403,
-    );
-  }
-
-  let dispatchesData: Array<{
-    id: string;
-    dispatch_no: string;
-    status: string;
-    dispatch_date: string;
-    carrier: string | null;
-    vehicle_no: string | null;
-    tracking_no: string | null;
-  }> = [];
+  let dispatchesData: NonNullable<CustomerSafeOrderDetails["dispatches"]> = [];
 
   try {
-    const { data: disp } = await db
-      .from("dispatches")
-      .select("id, dispatch_no, status, dispatch_date, carrier, vehicle_no, tracking_no")
-      .eq("sales_order_id", salesOrder.id)
-      .order("dispatch_date", { ascending: false });
+    let dispQuery = db.from("dispatches").select(
+      `
+        id,
+        dispatch_no,
+        status,
+        dispatch_date,
+        carrier,
+        vehicle_no,
+        tracking_no,
+        items:dispatch_items(
+          description,
+          product_name,
+          quantity,
+          unit
+        )
+      `,
+    );
+
+    if (salesOrder?.id) {
+      dispQuery = dispQuery.eq("sales_order_id", salesOrder.id);
+    } else if (customer?.id) {
+      dispQuery = dispQuery.eq("customer_id", customer.id);
+    }
+
+    const { data: disp } = await dispQuery.order("dispatch_date", { ascending: false });
     if (disp) {
-      dispatchesData = disp as typeof dispatchesData;
+      dispatchesData = (
+        disp as unknown as Array<{
+          id?: string;
+          dispatch_no: string;
+          status: string;
+          dispatch_date: string;
+          carrier: string | null;
+          vehicle_no: string | null;
+          tracking_no: string | null;
+          items?: Array<{
+            description?: string;
+            product_name?: string;
+            quantity?: number;
+            unit?: string;
+          }>;
+        }>
+      ).map((d) => ({
+        id: d.id,
+        dispatchNo: d.dispatch_no,
+        dispatchDate: d.dispatch_date ? formatDate(d.dispatch_date) : "—",
+        status: d.status,
+        carrier: d.carrier,
+        vehicleNo: d.vehicle_no,
+        trackingNo: d.tracking_no,
+        items: (d.items ?? []).map((it) => ({
+          description: it.product_name || it.description || "Architectural Stone",
+          quantity: Number(it.quantity || 1),
+          unit: it.unit || "sqft",
+        })),
+      }));
     }
   } catch {
-    // Graceful fallback if dispatches query is mocked or fails in tests
+    // Graceful fallback
+  }
+
+  // Query Customer Ledger Statement & Invoices (Lifetime access)
+  let ledgerStatement: CustomerSafeOrderDetails["ledgerStatement"] = undefined;
+  const customerId = customer?.id || salesOrder?.customer_id || quoteData?.customer_id;
+
+  if (customerId) {
+    try {
+      const [invRes, rcptRes] = await Promise.all([
+        db
+          .from("invoices")
+          .select("id, invoice_no, issue_date, total, status")
+          .eq("customer_id", customerId)
+          .order("issue_date", { ascending: false }),
+        db
+          .from("receipts")
+          .select("id, doc_no, entry_date, net_amount, method, status")
+          .eq("customer_id", customerId)
+          .order("entry_date", { ascending: false }),
+      ]);
+
+      const invoices = (invRes.data ?? []).map((i) => ({
+        id: i.id,
+        invoiceNo: i.invoice_no,
+        date: i.issue_date ? formatDate(i.issue_date) : "—",
+        amount: Number(i.total || 0),
+        status: i.status,
+      }));
+
+      const receipts = (rcptRes.data ?? []).map((r) => ({
+        id: r.id,
+        receiptNo: r.doc_no,
+        date: r.entry_date ? formatDate(r.entry_date) : "—",
+        amount: Number(r.net_amount || 0),
+        method: r.method,
+      }));
+
+      const totalBilled = invoices.reduce((s, i) => s + i.amount, 0);
+      const totalPaid = receipts.reduce((s, r) => s + r.amount, 0);
+
+      ledgerStatement = {
+        totalBilled,
+        totalPaid,
+        balanceDue: totalBilled - totalPaid,
+        invoices,
+        receipts,
+      };
+    } catch {
+      // Non-blocking
+    }
   }
 
   const assessment = senseOrderDeliveryStatus({
-    orderDate: salesOrder.order_date,
-    deliveryDate: salesOrder.delivery_date,
-    status: salesOrder.status,
+    orderDate,
+    deliveryDate,
+    status: statusRaw,
     dispatches: dispatchesData,
   });
 
   const milestones = buildOrderMilestones({
-    orderDate: salesOrder.order_date,
-    deliveryDate: salesOrder.delivery_date,
-    status: salesOrder.status,
+    orderDate,
+    deliveryDate,
+    status: statusRaw,
     dispatches: dispatchesData,
   });
 
-  // Map internal technical status to customer-friendly milestone
   let statusText = "Order Confirmed & Scheduled";
-  const st = (salesOrder.status || "").toLowerCase();
+  const st = (statusRaw || "").toLowerCase();
   if (st.includes("draft") || st.includes("pending")) {
     statusText = "Order Received — Preparing Material Allocation";
   } else if (st.includes("processing") || st.includes("manufacturing") || st.includes("cutting")) {
@@ -300,9 +590,11 @@ export async function lookupVerifiedOrder(
     statusText = "Dispatched — In Transit to Your Destination Site";
   } else if (st.includes("delivered") || st.includes("completed")) {
     statusText = "Delivered to Site";
+  } else if (st.includes("accepted")) {
+    statusText = "Quotation Approved — Production & Material Allocation In Progress";
   }
 
-  const rawItems = (salesOrder.items ?? []) as Array<{
+  const rawItems = (salesOrder?.items || quoteData?.items || []) as Array<{
     description?: string | null;
     product_name?: string | null;
     quantity?: number | null;
@@ -310,25 +602,21 @@ export async function lookupVerifiedOrder(
   }>;
 
   return {
-    orderNo: salesOrder.so_no,
-    orderDate: salesOrder.order_date ? formatDate(salesOrder.order_date) : "—",
+    orderNo,
+    customerName: customer?.name || "Customer",
+    trackingToken: isDirectToken ? rawToken : undefined,
+    orderDate: orderDate ? formatDate(orderDate) : "—",
     statusText,
     isCompleted:
       st.includes("delivered") || st.includes("completed") || assessment.stage === "delivered",
-    estimatedDeliveryDate: salesOrder.delivery_date ? formatDate(salesOrder.delivery_date) : null,
+    estimatedDeliveryDate: deliveryDate ? formatDate(deliveryDate) : null,
     expectedDeliveryText: assessment.expectedDateText,
     isDelayed: assessment.isDelayed,
     delayDays: assessment.delayDays,
     whatsBeenDone: assessment.whatsBeenDone,
     milestones,
-    dispatches: dispatchesData.map((d) => ({
-      dispatchNo: d.dispatch_no,
-      dispatchDate: d.dispatch_date ? formatDate(d.dispatch_date) : "—",
-      status: d.status,
-      carrier: d.carrier,
-      vehicleNo: d.vehicle_no,
-      trackingNo: d.tracking_no,
-    })),
+    dispatches: dispatchesData,
+    ledgerStatement,
     itemsSummary: rawItems.map((it) => ({
       itemDescription: it.product_name || it.description || "Architectural Stone Order",
       quantity: Number(it.quantity || 1),

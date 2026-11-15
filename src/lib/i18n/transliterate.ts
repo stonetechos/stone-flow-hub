@@ -426,6 +426,35 @@ const GUJARATI_DICT: Record<string, string> = {
   centre: "સેન્ટર",
   craft: "ક્રાફ્ટ",
   crafts: "ક્રાફ્ટસ",
+  lala: "લાલા",
+  gujarat: "ગુજરાત",
+  jajra: "જાજડા",
+  kushwah: "કુશવાહ",
+  tank: "ટાંક",
+  sompura: "સોમપુરા",
+  falcon: "ફાલ્કન",
+  cargo: "કાર્ગો",
+  saini: "સૈની",
+  punvasi: "પુનવાસી",
+  anubhuti: "અનુભૂતિ",
+  narayan: "નારાયણ",
+  bansal: "બંસલ",
+  jagga: "જગ્ગા",
+  travels: "ટ્રાવેલ્સ",
+  travel: "ટ્રાવેલ",
+  tempo: "ટેમ્પો",
+  mcm: "એમસીએમ",
+  kailash: "કૈલાશ",
+  harish: "હરીશ",
+  brijesh: "બ્રિજેશ",
+  navneet: "નવનીત",
+  xyz: "એક્સવાયઝેડ",
+  bha: "ભા",
+  madam: "મેડમ",
+  bungalows: "બંગલો",
+  bungalow: "બંગલો",
+  swa: "એસડબલ્યુએ",
+  himantbhai: "હિમંતભાઈ",
 };
 
 const GUJARATI_SUFFIXES: Record<string, string> = {
@@ -864,6 +893,35 @@ const HINDI_DICT: Record<string, string> = {
   centre: "सेंटर",
   craft: "क्राफ्ट",
   crafts: "क्राफ्ट्स",
+  lala: "लाला",
+  gujarat: "गुजरात",
+  jajra: "जाजड़ा",
+  kushwah: "कुशवाह",
+  tank: "टांक",
+  sompura: "सोमपुरा",
+  falcon: "फाल्कन",
+  cargo: "कार्गो",
+  saini: "सैनी",
+  punvasi: "पुनवासी",
+  anubhuti: "अनुभूति",
+  narayan: "नारायण",
+  bansal: "बंसल",
+  jagga: "जग्गा",
+  travels: "ट्रैवल्स",
+  travel: "ट्रैवल",
+  tempo: "टेम्पो",
+  mcm: "एमसीएम",
+  kailash: "कैलाश",
+  harish: "हरीश",
+  brijesh: "बृजेश",
+  navneet: "नवनीत",
+  xyz: "एक्सवाईज़ेड",
+  bha: "भा",
+  madam: "मैडम",
+  bungalows: "बंगलो",
+  bungalow: "बंगलो",
+  swa: "एसडब्ल्यूए",
+  himantbhai: "हिम्मतभाई",
 };
 
 const HINDI_SUFFIXES: Record<string, string> = {
@@ -1277,12 +1335,11 @@ export function transliterateName(text?: string | null, lang: string = "gu"): st
 
   if (lang.startsWith("en")) return str;
 
-  // Already Gujarati?
-  if (lang.startsWith("gu") && /[\u0A80-\u0AFF]/.test(str)) {
+  // If the string contains no Latin characters at all, it is already in native Indic script (or numeric/punctuation)
+  if (lang.startsWith("gu") && !/[a-zA-Z]/.test(str)) {
     return str;
   }
-  // Already Devanagari?
-  if (lang.startsWith("hi") && /[\u0900-\u097F]/.test(str)) {
+  if (lang.startsWith("hi") && !/[a-zA-Z]/.test(str)) {
     return str;
   }
 

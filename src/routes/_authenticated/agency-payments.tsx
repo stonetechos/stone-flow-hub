@@ -77,6 +77,7 @@ import { createReceipt } from "@/lib/receipts/api";
 import { useRoles } from "@/hooks/use-roles";
 import { useTranslation } from "react-i18next";
 import { autoTranslate } from "@/lib/i18n/auto-translator";
+import { transliterateName } from "@/lib/i18n/transliterate";
 import { toIndicDigits } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/agency-payments")({
@@ -89,7 +90,7 @@ function today() {
 }
 
 function AgencyPaymentsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const roles = useRoles();
   const [q, setQ] = useState("");
@@ -502,7 +503,9 @@ function AgencyPaymentsPage() {
                       <div className="flex items-center gap-2">
                         <HandCoins className="h-4 w-4 text-muted-foreground shrink-0" />
                         <span className="truncate max-w-[180px]">
-                          {agency?.name ?? t("agencyPayments.unknownAgency", "Unknown agency")}
+                          {agency?.name
+                            ? transliterateName(agency.name, i18n.language)
+                            : t("agencyPayments.unknownAgency", "Unknown agency")}
                         </span>
                       </div>
                     </TableCell>
@@ -517,7 +520,7 @@ function AgencyPaymentsPage() {
                               variant="outline"
                               className={cn("text-[11px] font-medium py-0.5 px-2", cat.badgeClass)}
                             >
-                              {cat.label}
+                              {autoTranslate(cat.label, i18n.language)}
                             </Badge>
                           ))}
                         </div>
@@ -529,7 +532,7 @@ function AgencyPaymentsPage() {
                               className="text-[11px] text-muted-foreground truncate max-w-[220px]"
                               title={r.description}
                             >
-                              {r.description}
+                              {autoTranslate(r.description, i18n.language)}
                             </p>
                           )}
                       </div>
@@ -545,7 +548,7 @@ function AgencyPaymentsPage() {
                               className="text-[10px] bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/30 font-medium gap-1 py-0.5"
                             >
                               <User className="h-3 w-3" />
-                              <span>Paid by Customer</span>
+                              <span>{autoTranslate("Paid by Customer", i18n.language)}</span>
                             </Badge>
                           ) : (
                             <Badge
@@ -553,7 +556,7 @@ function AgencyPaymentsPage() {
                               className="text-[10px] bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-400/30 font-medium gap-1 py-0.5"
                             >
                               <Building2 className="h-3 w-3" />
-                              <span>Company Direct</span>
+                              <span>{autoTranslate("Company Direct", i18n.language)}</span>
                             </Badge>
                           )}
 
@@ -569,7 +572,7 @@ function AgencyPaymentsPage() {
                               variant="secondary"
                               className="text-[9px] font-mono uppercase bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20"
                             >
-                              Cash
+                              {autoTranslate("Cash", i18n.language)}
                             </Badge>
                           ) : null}
                         </div>
@@ -578,7 +581,7 @@ function AgencyPaymentsPage() {
                         <div className="text-xs font-mono text-muted-foreground flex items-center gap-1 truncate max-w-[240px]">
                           {meta.customerName && (
                             <span className="font-sans font-semibold text-foreground mr-1">
-                              {meta.customerName}
+                              {transliterateName(meta.customerName, i18n.language)}
                             </span>
                           )}
                           <span>{r.ref_no ?? "—"}</span>

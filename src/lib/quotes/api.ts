@@ -436,23 +436,81 @@ export async function setQuoteStatus(
     .from("quotes")
     .update({ status })
     .eq("id", id)
-    .select("*, customer:customers!quotes_customer_id_fkey(name)")
+    .select("*, customer:customers!quotes_customer_id_fkey(name, primary_phone, whatsapp_number)")
     .single();
   if (error) throw new AppError(mapDbError(error));
 
+  let finalData = data;
+
   if (status === "accepted" && data) {
     try {
+      const { generateTrackingToken } = await import("@/lib/orders/tracking");
+      const currentWf = (data.workflow_state as Record<string, unknown> | null) ?? {};
+      let token =
+        typeof currentWf.tracking_token === "string" && /^\d{6}$/.test(currentWf.tracking_token)
+          ? currentWf.tracking_token
+          : null;
+
+      if (!token) {
+        token = generateTrackingToken(`${data.id}:${data.quote_no}`);
+        const updatedWf = {
+          ...currentWf,
+          tracking_token: token,
+          tracking_token_generated_at: new Date().toISOString(),
+        };
+        const { data: updatedQuote } = await getDb()
+          .from("quotes")
+          .update({ workflow_state: updatedWf as never })
+          .eq("id", id)
+          .select(
+            "*, customer:customers!quotes_customer_id_fkey(name, primary_phone, whatsapp_number)",
+          )
+          .single();
+        if (updatedQuote) finalData = updatedQuote;
+      }
+
       const { broadcastQuoteApproved } = await import("@/lib/notifications/broadcast");
-      const customerName =
-        (data as unknown as { customer?: { name?: string } | null })?.customer?.name ?? null;
+      const custObj = (
+        finalData as unknown as {
+          customer?: { name?: string; primary_phone?: string; whatsapp_number?: string } | null;
+        }
+      )?.customer;
+      const customerName = custObj?.name ?? null;
+      const customerPhone = custObj?.whatsapp_number || custObj?.primary_phone;
+
       broadcastQuoteApproved({
-        id: data.id,
-        quote_no: data.quote_no,
-        total_amount: Number(data.total ?? 0),
+        id: finalData.id,
+        quote_no: finalData.quote_no,
+        total_amount: Number(finalData.total ?? 0),
         customer_name: customerName,
       });
+
+      // Automated WhatsApp notification to customer with 6-digit tracking token (Zero manual steps required!)
+      if (customerPhone && token) {
+        const { enqueueMessage } = await import("@/lib/notifications/queue");
+        const trackUrl = `https://stonetech.in/track?token=${token}`;
+        const autoMsg = `Namaste ${customerName || "Customer"}, your Stone Tech quotation #${finalData.quote_no} has been APPROVED!\n\nYour 6-Digit Order Tracking Token: *${token}*\n\nTrack fabrication progress, live status, and access your Delivery Challans and Ledger Statements anytime at:\n${trackUrl}\n\nStone Tech · Architectural Natural Stone Atelier`;
+
+        await enqueueMessage({
+          channel: "whatsapp",
+          to: customerPhone,
+          body: autoMsg,
+          relatedType: "quote",
+          relatedId: finalData.id,
+          customerId: finalData.customer_id,
+          templateCode: "quote.approved.token.v1",
+        });
+
+        // Trigger background dispatch immediately
+        try {
+          const { dispatchQueueNow } = await import("@/lib/notifications/dispatch.functions");
+          void dispatchQueueNow({ data: { batchSize: 10, force: true } });
+        } catch {
+          // Non-blocking background dispatch
+        }
+      }
     } catch (e) {
-      console.warn("[quotes] approval broadcast skipped", e);
+      console.warn("[quotes] approval notification skipped", e);
     }
   } else if (status === "sent" && data) {
     try {
@@ -470,7 +528,7 @@ export async function setQuoteStatus(
     }
   }
 
-  return data;
+  return finalData;
 }
 
 export async function convertQuoteToInvoice(input: ConvertQuoteInput) {
@@ -683,6 +741,27 @@ export async function convertQuoteToSalesOrder(quoteId: string): Promise<DbTable
     p_quote_id: quoteId,
   });
   if (error) throw new AppError(mapDbError(error));
+
+  // Sync 6-digit tracking token from quotation to created sales order
+  try {
+    const { data: qData } = await getDb()
+      .from("quotes")
+      .select("workflow_state")
+      .eq("id", quoteId)
+      .single();
+    const token = (qData?.workflow_state as Record<string, unknown> | null)?.tracking_token;
+    if (token && data?.id) {
+      await getDb()
+        .from("sales_orders")
+        .update({
+          workflow_state: JSON.stringify({ tracking_token: token }),
+        })
+        .eq("id", data.id);
+    }
+  } catch {
+    // Non-blocking sync
+  }
+
   return data as DbTable<"sales_orders">;
 }
 

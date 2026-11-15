@@ -249,6 +249,53 @@ export async function assignVendorToQuote(
     .single();
 
   if (updateErr) throw new AppError(mapDbError(updateErr));
+
+  // Automated WhatsApp notification to vendor upon assignment (Zero manual approval required!)
+  if (
+    targetFulfilment === "vendor" &&
+    targetVendorId &&
+    targetVendorId !== "stock_lifted" &&
+    targetVendorId !== "in_house_stock"
+  ) {
+    try {
+      const { data: vData } = await db
+        .from("vendors")
+        .select("company_name, mobile_number, whatsapp_number, contact_person")
+        .eq("id", targetVendorId)
+        .maybeSingle();
+
+      const vendorPhone = vData?.whatsapp_number || vData?.mobile_number;
+      if (vendorPhone) {
+        const { enqueueMessage } = await import("@/lib/notifications/queue");
+        const vendorName =
+          vData?.contact_person || vData?.company_name || targetVendorName || "Partner";
+        const vMsg = `Namaste ${vendorName}, you have been assigned for supply/fabrication on Quotation #${updated.quote_no} by Stone Tech.\n\nScope & Notes: ${
+          input.notes?.trim() ||
+          "Please review order requirements and coordinate material fulfillment."
+        }\n\nStone Tech · Operations Hub`;
+
+        await enqueueMessage({
+          channel: "whatsapp",
+          to: vendorPhone,
+          body: vMsg,
+          relatedType: "quote",
+          relatedId: updated.id,
+          templateCode: "vendor.assigned.auto.v1",
+        });
+
+        // Auto-dispatch queue in background
+        try {
+          const { dispatchQueueNow } = await import("@/lib/notifications/dispatch.functions");
+          void dispatchQueueNow({ data: { batchSize: 10, force: true } });
+        } catch {
+          // Non-blocking
+        }
+      }
+    } catch (e) {
+      console.warn("[vendor-assignment] automated notification skipped", e);
+    }
+  }
+
   return updated;
 }
 
