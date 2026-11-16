@@ -35,6 +35,10 @@ describe("transliterateName", () => {
     expect(transliterateName("Anand", "gu")).toBe("આનંદ");
     expect(transliterateName("Rishi", "hi")).toBe("ऋषि");
     expect(transliterateName("Rishi", "gu")).toBe("ઋષિ");
+    expect(transliterateName("Raman Pupneja", "hi")).toBe("रमन पपनेजा");
+    expect(transliterateName("Raman Pupneja", "gu")).toBe("રમન પપનેજા");
+    expect(transliterateName("Raman Puneja", "hi")).toBe("रमन पपनेजा");
+    expect(transliterateName("Raman Puneja", "gu")).toBe("રમન પપનેજા");
   });
 
   it("transliterates customer and firm names in Hindi and Gujarati", () => {
