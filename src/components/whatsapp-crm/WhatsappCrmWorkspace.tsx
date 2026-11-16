@@ -41,18 +41,6 @@ const SEED_CONVERSATIONS: WhatsappConversation[] = [
     tags: ["Builder", "Site Delivery"],
   },
   {
-    id: "conv-3",
-    phone: "919825012345",
-    contactName: "Karan Desai (New Lead)",
-    lastMessage: "Hi, need natural stone CNC panels for a home mandir. Do you do custom carving?",
-    lastMessageAt: "Nov 10",
-    unreadCount: 1,
-    leadStage: "new",
-    assignedTo: "Unassigned",
-    isGoneQuiet: true,
-    tags: ["Mandir", "CNC"],
-  },
-  {
     id: "conv-4",
     phone: "919426011223",
     contactName: "Rakesh Shah",
@@ -115,16 +103,6 @@ const INITIAL_MESSAGES: Record<string, WhatsappMessage[]> = {
       text: "Quotation QUO-000025 looks good. Can we dispatch the first 500 sq.ft tomorrow?",
       timestamp: "Yesterday, 4:20 PM",
       status: "read",
-    },
-  ],
-  "conv-3": [
-    {
-      id: "m-30",
-      conversationId: "conv-3",
-      sender: "customer",
-      text: "Hi, need natural stone CNC panels for a home mandir. Do you do custom carving?",
-      timestamp: "Nov 10, 11:15 AM",
-      status: "delivered",
     },
   ],
   "conv-4": [
