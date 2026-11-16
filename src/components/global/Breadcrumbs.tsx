@@ -91,7 +91,7 @@ const LABELS: Record<string, string> = {
   "notification-settings": "Notification Settings",
   admin: "Admin",
   users: "Users",
-  settings: "Settings",
+  settings: "Profile & Preferences",
 
   // Common Action Suffixes
   new: "New",

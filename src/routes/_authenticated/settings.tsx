@@ -122,7 +122,7 @@ function SettingsPage() {
   return (
     <div>
       <PageHeader
-        title={t("settings.title", "Settings")}
+        title={t("settings.title", "Profile & Preferences")}
         subtitle={t("settings.subtitle", "Manage your profile, workspace, and preferences.")}
       />
 

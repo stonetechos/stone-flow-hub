@@ -536,7 +536,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   {
     id: "settings",
     to: "/settings",
-    label: "Preferences & Settings",
+    label: "Profile & Preferences",
     icon: Settings,
     group: "settings",
   },
