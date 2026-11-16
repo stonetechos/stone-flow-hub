@@ -38,9 +38,6 @@ export function ZohoDashboardHeader({
                 {t("brand.companyName", "STONE TECH")}
               </span>
             </div>
-            <p className="font-mono text-[11px] sm:text-xs font-semibold text-engraved-kicker truncate">
-              {t("dashboard.zoho.hubSubtitle", "Executive & Operational Hub")}
-            </p>
           </div>
         </div>
 

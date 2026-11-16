@@ -260,10 +260,7 @@ function DashboardPage() {
                 <div className="w-full max-w-full min-w-0 mt-6">
                   <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/70 pb-3 mb-4">
                     <div>
-                      <div className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-engraved-kicker">
-                        {t("dashboard.operationsHub", "Operations Command")}
-                      </div>
-                      <h2 className="mt-0.5 font-display text-base sm:text-lg font-black text-engraved-title">
+                      <h2 className="font-display text-base sm:text-lg font-black text-engraved-title">
                         {opsSubTab === "fulfilment"
                           ? t(
                               "dashboard.tabs.fulfilmentTitle",
