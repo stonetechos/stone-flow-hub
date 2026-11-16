@@ -16,7 +16,7 @@ import type { WhatsappConversation, WhatsappMessage } from "./types";
 const SEED_CONVERSATIONS: WhatsappConversation[] = [
   {
     id: "conv-1",
-    phone: "919784452998",
+    phone: "919879123456",
     contactName: "Ar. Mehul Panchal",
     companyName: "Studio Vista Architects",
     lastMessage: "Please share the rate for 30mm Gwalior Mint Sandstone and Agra Red.",
@@ -42,7 +42,7 @@ const SEED_CONVERSATIONS: WhatsappConversation[] = [
   },
   {
     id: "conv-3",
-    phone: "917742090866",
+    phone: "919825012345",
     contactName: "Karan Desai (New Lead)",
     lastMessage: "Hi, need natural stone CNC panels for a home mandir. Do you do custom carving?",
     lastMessageAt: "Nov 10",
@@ -139,6 +139,34 @@ const INITIAL_MESSAGES: Record<string, WhatsappMessage[]> = {
   ],
 };
 
+function formatChatTime(dateStr?: string | null): string {
+  if (!dateStr) return "Active";
+  try {
+    const d = new Date(dateStr);
+    const now = new Date();
+    const isToday = d.toDateString() === now.toDateString();
+    if (isToday) {
+      return d.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit", hour12: true });
+    }
+    const diffDays = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
+    if (diffDays === 1) return "Yesterday";
+    if (diffDays < 7) {
+      return d.toLocaleDateString("en-IN", { weekday: "short" });
+    }
+    return d.toLocaleDateString("en-IN", { month: "short", day: "numeric" });
+  } catch {
+    return "Recent";
+  }
+}
+
+function mapEnquiryLeadStage(stage?: string | null): WhatsappConversation["leadStage"] {
+  if (!stage) return "new";
+  if (stage === "new_lead") return "new";
+  if (stage === "customer_quotation_sent" || stage === "quoted") return "quoted";
+  if (stage === "customer_approved" || stage === "production" || stage === "dispatch") return "won";
+  return "qualified";
+}
+
 export function WhatsappCrmWorkspace() {
   const { t } = useTranslation();
   const [conversations, setConversations] = useState<WhatsappConversation[]>(SEED_CONVERSATIONS);
@@ -149,66 +177,169 @@ export function WhatsappCrmWorkspace() {
   const [stonePickerOpen, setStonePickerOpen] = useState(false);
   const [stagedText, setStagedText] = useState("");
 
-  // Also query real customers from STOS to allow adding them as chats
-  const { data: realCustomers } = useQuery({
-    queryKey: ["customers", "whatsapp-quick-sync"],
+  // 1. Query all open CRM leads / enquiries from STOS
+  const { data: openEnquiries } = useQuery({
+    queryKey: ["enquiries", "whatsapp-command-center"],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("customers")
-        .select("id,name,primary_phone,whatsapp,customer_type,company_name")
-        .not("primary_phone", "is", null)
-        .limit(10);
+      const { data, error } = await supabase
+        .from("enquiries")
+        .select(
+          `
+          id,
+          enquiry_no,
+          requirement,
+          stage,
+          budget_inr,
+          assigned_to,
+          created_at,
+          customer_id,
+          customer:customers!enquiries_customer_id_fkey(
+            id,
+            name,
+            primary_phone,
+            whatsapp,
+            company_name,
+            customer_type
+          )
+        `,
+        )
+        .not("stage", "in", '("completed","lost","cancelled")')
+        .order("created_at", { ascending: false })
+        .limit(100);
+
+      if (error) {
+        console.warn("Could not fetch open enquiries for WhatsApp command center:", error.message);
+        return [];
+      }
       return data ?? [];
     },
   });
 
-  // Merge real customers who have phone numbers into conversation list if not already present
-  const mergedConversations = useMemo(() => {
-    if (!realCustomers || realCustomers.length === 0) return conversations;
-    const existingPhones = new Set(conversations.map((c) => c.phone.slice(-10)));
-    const additional: WhatsappConversation[] = [];
+  // 2. Query all active CRM customers from STOS with contact numbers
+  const { data: realCustomers } = useQuery({
+    queryKey: ["customers", "whatsapp-command-center"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("customers")
+        .select("id, name, primary_phone, whatsapp, customer_type, company_name, updated_at")
+        .or("primary_phone.not.is.null,whatsapp.not.is.null")
+        .order("updated_at", { ascending: false })
+        .limit(100);
 
-    for (const cust of realCustomers) {
-      const phoneDigits = (cust.whatsapp || cust.primary_phone || "").replace(/\D/g, "");
-      if (phoneDigits.length >= 10 && !existingPhones.has(phoneDigits.slice(-10))) {
-        existingPhones.add(phoneDigits.slice(-10));
-        additional.push({
-          id: `cust-${cust.id}`,
-          phone: phoneDigits,
-          contactName: cust.name,
-          companyName: cust.company_name || undefined,
-          lastMessage: "Customer record synced from STOS.",
-          lastMessageAt: "Synced",
-          unreadCount: 0,
-          leadStage: "qualified",
-          assignedTo: "Sales",
-          isGoneQuiet: false,
-          tags: [cust.customer_type ? cust.customer_type.replace(/_/g, " ") : "Client"],
-        });
+      if (error) {
+        console.warn("Could not fetch customers for WhatsApp command center:", error.message);
+        return [];
+      }
+      return data ?? [];
+    },
+  });
+
+  // Merge live open CRM leads, active customers, and seed chats into conversation list
+  const mergedConversations = useMemo(() => {
+    const list: WhatsappConversation[] = [];
+    const seenPhones = new Set<string>();
+
+    // A. Add all open leads from CRM enquiries first
+    if (openEnquiries && openEnquiries.length > 0) {
+      for (const enq of openEnquiries) {
+        const cust = enq.customer as {
+          id: string;
+          name: string;
+          primary_phone?: string | null;
+          whatsapp?: string | null;
+          company_name?: string | null;
+          customer_type?: string | null;
+        } | null;
+
+        const rawPhone = cust?.whatsapp || cust?.primary_phone || "";
+        const digits = rawPhone.replace(/\D/g, "");
+        if (digits.length >= 10) {
+          const key10 = digits.slice(-10);
+          if (!seenPhones.has(key10)) {
+            seenPhones.add(key10);
+            const stageLabel = (enq.stage || "new_lead").replace(/_/g, " ");
+            const isStale =
+              Date.now() - new Date(enq.created_at).getTime() > 3 * 24 * 60 * 60 * 1000;
+            list.push({
+              id: `enq-${enq.id}`,
+              phone: digits.length === 10 ? `91${digits}` : digits,
+              contactName: cust?.name || "Prospective Lead",
+              companyName: cust?.company_name || undefined,
+              lastMessage: enq.requirement ? enq.requirement : `Open Lead (${enq.enquiry_no})`,
+              lastMessageAt: formatChatTime(enq.created_at),
+              unreadCount: enq.stage === "new_lead" ? 1 : 0,
+              leadStage: mapEnquiryLeadStage(enq.stage),
+              assignedTo: enq.assigned_to ? String(enq.assigned_to) : "Sales",
+              isGoneQuiet: isStale,
+              tags: [enq.enquiry_no, stageLabel],
+            });
+          }
+        }
       }
     }
 
-    return [...conversations, ...additional];
-  }, [conversations, realCustomers]);
+    // B. Add remaining active CRM customers who have phone numbers
+    if (realCustomers && realCustomers.length > 0) {
+      for (const cust of realCustomers) {
+        const rawPhone = cust.whatsapp || cust.primary_phone || "";
+        const digits = rawPhone.replace(/\D/g, "");
+        if (digits.length >= 10) {
+          const key10 = digits.slice(-10);
+          if (!seenPhones.has(key10)) {
+            seenPhones.add(key10);
+            list.push({
+              id: `cust-${cust.id}`,
+              phone: digits.length === 10 ? `91${digits}` : digits,
+              contactName: cust.name,
+              companyName: cust.company_name || undefined,
+              lastMessage: "Customer record synced from STOS CRM",
+              lastMessageAt: formatChatTime(cust.updated_at),
+              unreadCount: 0,
+              leadStage: "qualified",
+              assignedTo: "Sales",
+              isGoneQuiet: false,
+              tags: [cust.customer_type ? cust.customer_type.replace(/_/g, " ") : "Client"],
+            });
+          }
+        }
+      }
+    }
+
+    // C. Include seed demo conversations if their phone isn't already in CRM
+    for (const seed of conversations) {
+      const key10 = seed.phone.replace(/\D/g, "").slice(-10);
+      if (!seenPhones.has(key10)) {
+        seenPhones.add(key10);
+        list.push(seed);
+      }
+    }
+
+    return list;
+  }, [openEnquiries, realCustomers, conversations]);
 
   const activeConv = useMemo(() => {
     return mergedConversations.find((c) => c.id === activeConvId) ?? mergedConversations[0];
   }, [mergedConversations, activeConvId]);
 
   const activeMessages = useMemo(() => {
-    return (
-      messagesMap[activeConv.id] ?? [
-        {
-          id: `init-${activeConv.id}`,
-          conversationId: activeConv.id,
-          sender: "customer",
-          text: `Namaste Stone Tech! Inquiring regarding architectural natural stone supply.`,
-          timestamp: "Recent",
-          status: "read",
-        },
-      ]
-    );
-  }, [messagesMap, activeConv.id]);
+    if (messagesMap[activeConv.id]) {
+      return messagesMap[activeConv.id];
+    }
+    const snippet = activeConv.lastMessage || "Natural stone architectural requirement";
+    return [
+      {
+        id: `init-${activeConv.id}`,
+        conversationId: activeConv.id,
+        sender: "customer" as const,
+        text:
+          snippet.startsWith("Namaste") || snippet.startsWith("Hi")
+            ? snippet
+            : `Namaste Stone Tech! Inquiring regarding: ${snippet}`,
+        timestamp: activeConv.lastMessageAt || "Recent",
+        status: "read" as const,
+      },
+    ];
+  }, [messagesMap, activeConv]);
 
   // STOS Customer context hook: automatically matches customer by phone number
   const crmContext = useWhatsappCrmContext(activeConv?.phone);
