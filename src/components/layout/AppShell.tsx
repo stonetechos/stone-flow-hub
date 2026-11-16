@@ -689,14 +689,16 @@ function NavList({
     return activeItem?.group ?? "overview";
   }, [path]);
 
-  // Smart Accordion: keep active group open and overview open by default, toggle others
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-    [activeGroupId]: true,
-    overview: true,
+  // Smart Accordion: keep non-overview active group open, keep overview collapsed by default on refresh
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
+    if (activeGroupId && activeGroupId !== "overview") {
+      return { [activeGroupId]: true };
+    }
+    return {};
   });
 
   useEffect(() => {
-    if (activeGroupId) {
+    if (activeGroupId && activeGroupId !== "overview") {
       setOpenGroups((prev) => ({
         ...prev,
         [activeGroupId]: true,
@@ -706,7 +708,7 @@ function NavList({
 
   const toggleGroupOpen = (gid: string): void => {
     setOpenGroups((prev) => {
-      const isCurrentlyOpen = prev[gid] ?? (gid === activeGroupId || gid === "overview");
+      const isCurrentlyOpen = prev[gid] ?? (gid !== "overview" && gid === activeGroupId);
       return {
         ...prev,
         [gid]: !isCurrentlyOpen,
@@ -727,7 +729,7 @@ function NavList({
       {resolved.groups.map((group) => {
         if (group.items.length === 0 && group.id !== "overview" && !group.to) return null;
         const isOpen =
-          openGroups[group.id] ?? (group.id === activeGroupId || group.id === "overview");
+          openGroups[group.id] ?? (group.id !== "overview" && group.id === activeGroupId);
         const hasActiveChild = group.items.some((item) => checkActive(item));
         const cleanPath = path.split("?")[0];
         const cleanGroupTo = group.to?.split("?")[0];
