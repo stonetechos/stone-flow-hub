@@ -1662,6 +1662,9 @@ function CustomerFormDialog({
                 onChange={(e) => handleContactChange(e.target.value)}
                 placeholder="e.g. Ramesh Patel"
                 autoFocus={!editing}
+                autoComplete="off"
+                name="stos_contact_person_manual"
+                id="stos_contact_person_field"
               />
             </Field>
 
@@ -1674,6 +1677,9 @@ function CustomerFormDialog({
                 value={form.company_name ?? ""}
                 onChange={(e) => handleFirmChange(e.target.value)}
                 placeholder="e.g. ABC Developers LLP"
+                autoComplete="off"
+                name="stos_company_name_manual"
+                id="stos_company_name_field"
               />
             </Field>
 
@@ -1737,6 +1743,9 @@ function CustomerFormDialog({
                   }}
                   placeholder="e.g. ABC Developers LLP or Ramesh Patel"
                   required
+                  autoComplete="off"
+                  name="stos_reflected_name_manual"
+                  id="stos_reflected_name_field"
                 />
               </Field>
             </div>

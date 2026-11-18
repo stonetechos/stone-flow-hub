@@ -161,6 +161,9 @@ function QuickCreateCustomer({
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="e.g. Ramesh Patel or ABC Enterprises"
                 required
+                autoComplete="off"
+                name="stos_customer_name_quick"
+                id="stos_customer_name_quick"
               />
             </Field>
             <Field label="Contact Person's Name" hint="Key person or representative">
@@ -168,6 +171,9 @@ function QuickCreateCustomer({
                 value={form.contact_person}
                 onChange={(e) => setForm({ ...form, contact_person: e.target.value })}
                 placeholder="e.g. Ramesh Patel"
+                autoComplete="off"
+                name="stos_contact_person_quick"
+                id="stos_contact_person_quick"
               />
             </Field>
             <Field label="Firm / Company Name" hint="Business or enterprise name">
@@ -175,6 +181,9 @@ function QuickCreateCustomer({
                 value={form.company_name}
                 onChange={(e) => setForm({ ...form, company_name: e.target.value })}
                 placeholder="e.g. ABC Developers LLP"
+                autoComplete="off"
+                name="stos_company_name_quick"
+                id="stos_company_name_quick"
               />
             </Field>
             <Field label="Mobile" hint="Select country code & enter mobile number">

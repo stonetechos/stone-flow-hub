@@ -11,7 +11,21 @@ import { autoTranslate } from "@/lib/i18n/auto-translator";
  * background (light, dark, hero panels). Placeholder uses --text-muted.
  */
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
-  ({ className, type, onFocus, onMouseUp, onChange, placeholder, ...props }, ref) => {
+  (
+    {
+      className,
+      type,
+      onFocus,
+      onMouseUp,
+      onChange,
+      placeholder,
+      autoComplete = "off",
+      autoCorrect = "off",
+      spellCheck = false,
+      ...props
+    },
+    ref,
+  ) => {
     const translatedPlaceholder =
       typeof placeholder === "string" ? autoTranslate(placeholder) : placeholder;
 
@@ -82,6 +96,12 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           className,
         )}
         ref={ref}
+        autoComplete={autoComplete}
+        autoCorrect={autoCorrect}
+        spellCheck={spellCheck}
+        data-lpignore="true"
+        data-1p-ignore="true"
+        data-form-type="other"
         onFocus={handleFocus}
         onMouseUp={handleMouseUp}
         onChange={handleChange}

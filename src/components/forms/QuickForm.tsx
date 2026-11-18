@@ -58,6 +58,8 @@ export function QuickForm({
       <form
         onSubmit={onSubmit}
         aria-busy={busy}
+        autoComplete="off"
+        data-form-type="other"
         onKeyDown={(e) => {
           // Ctrl/⌘+Enter submits from anywhere in the form (including textareas).
           if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && !busy) {
