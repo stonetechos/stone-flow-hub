@@ -159,28 +159,48 @@ PRODUCTS = [
     {"src": "part2_page51.jpg", "sec": "Limestone Collection", "name": "Green Limestone", "pat": "Monolithic Texture", "sizes": "1220 × 2440 mm (4×8 ft)"},
 ]
 
+CUSTOM_SLAB_CROPS = {
+    # Specific fine-tuned boxes for known photo variations (removing hands, clips, easel frames, outdoor sky, warehouse racks):
+    'part1_page04.jpg': (230, 355, 1530, 895),  # S. White 02 (hands/edges)
+    'part1_page05.jpg': (250, 380, 1640, 905),  # P006 S. White 03 (top frame bar)
+    'part1_page06.jpg': (220, 355, 1540, 895),  # S. White 04
+    'part1_page11.jpg': (170, 355, 1610, 915),  # Indian Autumn 05 (hands/clips)
+    'part1_page12.jpg': (170, 355, 1610, 915),  # Indian Autumn 06 (hands/clips)
+    'part1_page15.jpg': (170, 355, 1610, 915),  # Tan Brown 02 (hands/clips)
+    'part1_page16.jpg': (170, 355, 1610, 915),  # Tan Brown 03 (hands/clips)
+    'part1_page30.jpg': (220, 380, 1490, 905),  # P031 Forest Fire 02 (top frame & right edge)
+    'part1_page32.jpg': (330, 375, 1510, 905),  # P033 Forest Fire 04 (left upright beam)
+    'part1_page38.jpg': (280, 380, 1420, 905),  # P039 Multi Pink (top corners & right frame)
+    'part1_page39.jpg': (330, 375, 1500, 905),  # P040 Copper 01 (left wooden frame)
+    'part1_page46.jpg': (330, 400, 1500, 905),  # P047 South Grey (top rail & left frame)
+    'part1_page50.jpg': (300, 415, 1400, 830),  # P051 California Gold (top hands & bottom floor)
+    'part1_page51.jpg': (310, 410, 1430, 855),  # P052 Silver Shine Gold (top hand & right arch)
+    'part1_page52.jpg': (290, 380, 1440, 905),  # P053 Silver Shine 01 (top frame bracket)
+    'part2_page07.jpg': (240, 380, 1400, 815),  # P060 Teakwood 01 (easel legs on dirt & top metal tabs)
+    'part2_page13.jpg': (340, 385, 1490, 880),  # P066 Panda White 02 (top rail & left curved shadow)
+    'part2_page14.jpg': (270, 385, 1530, 905),  # P067 Panda White 03 (top easel bar & right edge)
+    'part2_page15.jpg': (350, 375, 1420, 905),  # P068 Smokey Grey (left wooden frame)
+    'part2_page16.jpg': (340, 375, 1470, 905),  # P069 Himalaya White (left wooden frame)
+    'part2_page19.jpg': (220, 415, 1590, 880),  # P072 Black Shimmer 01 (outdoor sky & roof)
+    'part2_page22.jpg': (350, 375, 1470, 905),  # P075 Monsoon Black (left metal rack ladder)
+    'part2_page24.jpg': (350, 375, 1470, 905),  # P077 Rainforest Gold (left frame gap)
+    'part2_page25.jpg': (360, 375, 1440, 905),  # P078 Rainforest Brown (left frame edge)
+    'part2_page26.jpg': (310, 375, 1440, 905),  # P079 Fire Red (clean frontal crop)
+    'part2_page29.jpg': (300, 385, 1460, 905),  # P082 Eroding Sea (top easel frame)
+    'part2_page34.jpg': (380, 385, 1480, 905),  # P087 Atlantic White (top clip & right gap)
+    'part2_page35.jpg': (260, 385, 1540, 905),  # P088 Cloudy White 01 (top right clamp)
+    'part2_page38.jpg': (260, 390, 1540, 905),  # P091 Sea White 02 (top right clamp rail)
+    'part2_page41.jpg': (230, 370, 1540, 860),  # P094 Snow Dunes 01 (hands)
+    'part2_page43.jpg': (230, 370, 1540, 860),  # P096 Snow Dunes 03 (hands)
+    'part2_page45.jpg': (290, 385, 1450, 905),  # P098 Thainos Green (top rail)
+    'part2_page46.jpg': (330, 375, 1450, 905),  # P099 Sparkling Yellow (left black wooden frame)
+    'part2_page47.jpg': (400, 375, 1430, 860),  # P100 Sparkling White (left beam & bottom easel foot)
+}
+
 def get_master_slab_crop(idx, src, im):
     w, h = im.size
-    
-    # Specific fine-tuned boxes for known photo variations (removing hands, clips, easel legs)
-    if src == 'part1_page04.jpg':  # S. White 02 (hands/edges)
-        return (230, 355, 1530, 895)
-    if src == 'part1_page06.jpg':  # S. White 04
-        return (220, 355, 1540, 895)
-    if src == 'part1_page11.jpg':  # Indian Autumn 05 (hands/clips)
-        return (170, 355, 1610, 915)
-    if src == 'part1_page12.jpg':  # Indian Autumn 06 (hands/clips)
-        return (170, 355, 1610, 915)
-    if src == 'part1_page15.jpg':  # Tan Brown 02 (hands/clips)
-        return (170, 355, 1610, 915)
-    if src == 'part1_page16.jpg':  # Tan Brown 03 (hands/clips)
-        return (170, 355, 1610, 915)
-    if src == 'part2_page07.jpg':  # Teakwood 01 (easel legs on dirt & top metal tabs)
-        return (240, 380, 1400, 815)
-    if src == 'part2_page41.jpg':  # Snow Dunes 01 (hands)
-        return (230, 370, 1540, 860)
-    if src == 'part2_page43.jpg':  # Snow Dunes 03 (hands)
-        return (230, 370, 1540, 860)
+    if src in CUSTOM_SLAB_CROPS:
+        return CUSTOM_SLAB_CROPS[src]
         
     # Sandstone group in Part 2 (pages 3 to 10):
     if any(f'part2_page{i:02d}' in src for i in range(3, 11)):
@@ -193,10 +213,10 @@ def get_master_slab_crop(idx, src, im):
     # Default for all other Part 1 & Part 2 slabs (framed slabs in easel):
     row = [im.getpixel((x, 600)) for x in range(w)]
     non_white = [x for x, p in enumerate(row) if not (p[0]>240 and p[1]>240 and p[2]>240)]
-    left = min(non_white) + 38 if non_white else 200
-    right = max(non_white) - 38 if non_white else 1550
-    top = 350
-    bot = 915
+    left = min(non_white) + 48 if non_white else 240
+    right = max(non_white) - 48 if non_white else 1520
+    top = 370
+    bot = 905
     return (left, top, right, bot)
 
 def ensure_assets():
@@ -216,9 +236,12 @@ def ensure_assets():
         
         # Professional HD Tone & Sharpness Enhancement
         enhancer = ImageEnhance.Sharpness(cropped)
-        cropped = enhancer.enhance(1.10)
+        cropped = enhancer.enhance(1.22)
         enhancer = ImageEnhance.Contrast(cropped)
-        cropped = enhancer.enhance(1.04)
+        cropped = enhancer.enhance(1.06)
+        
+        cropped.save(out_path, "JPEG", quality=96, optimize=True, subsampling=0)
+        item["cropped_asset"] = out_path
         
         cropped.save(out_path, "JPEG", quality=96, optimize=True, subsampling=0)
         item["cropped_asset"] = out_path
