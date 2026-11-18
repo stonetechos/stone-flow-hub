@@ -2,28 +2,35 @@
 """
 scripts/generate-stone-veneer-catalogue.py
 
-Extracts, cleans, re-crops, and compiles the unified luxury
-Stone Tech Stone Veneer Architectural Catalogue 2026:
+Extracts, cleans, and compiles the unified luxury
+Stone Tech Stone Veneer Architectural Master Catalogue 2026:
   - public/catalogues/StoneTech_Stone_Veneer_Catalogue_2026.pdf
 
 Features:
-  - Combines Part 1 (52 pages) and Part 2 (52 pages).
-  - Isolates and cleanly crops 98 stone slab patterns across 4 architectural families:
-      * Slate Stone Patterns (51 items: ST-SV-001 to ST-SV-051)
-      * Sandstone Patterns (8 items: ST-SV-052 to ST-SV-059)
-      * Marble Patterns (36 items: ST-SV-060 to ST-SV-095)
-      * Limestone Patterns (3 items: ST-SV-096 to ST-SV-098)
-  - Eliminates warehouse frames, metal racks, workers' hands, and fake wooden floor planks.
-  - Presents slabs floating gracefully on crisp architectural plates with soft drop-shadows.
-  - Deep architectural slate (#0f172a), warm amber/gold (#d97706, #f59e0b) accents.
-  - High-res Stone Tech Atelier branding, direct factory contacts (+91 77420 90866), web portal.
-  - Includes:
-      * Master Luxury Cover
-      * About Stone Tech Flexible Stone Veneer & Material Science
-      * 4 3D Architectural Section Dividers (Office, Atrium, Reception, Living Room)
-      * 98 Individual Product Pages with Model Codes & Standard Dimensions
-      * Reference Portfolio & Installation Methodology
-      * Comprehensive Technical Engineering Matrix & Back Cover
+  - 100% verified ground-truth product mapping directly from the source catalogue:
+      * Part 1 (52 pages): Stone_Tech_-_Stone_Veneer_New_Catalogue_-_Part_1.pdf
+      * Part 2 (52 pages): Stone_Tech_-_Stone_Veneer_New_Catalogue_-_Part_2.pdf
+  - Exactly 98 stone slab patterns across 4 architectural collections:
+      1. Slate Stone Veneer (51 items: ST-SV-001 to ST-SV-051)
+      2. Sandstone Veneer (8 items: ST-SV-052 to ST-SV-059)
+      3. Marble Stone Veneer (36 items: ST-SV-060 to ST-SV-095)
+      4. Limestone Veneer (3 items: ST-SV-096 to ST-SV-098)
+  - Proportional, unwarped image scaling (object-fit: contain with auto dimensions).
+  - Clean floating architectural slab plates (zero fake wood floor stripes, zero warehouse frames).
+  - Official Stone Tech Atelier branding, direct factory WhatsApp (+91 77420 90866), web portal.
+  - Complete 106-page document structure:
+      * Page 1: Master Luxury Front Cover
+      * Page 2: Material Science & Architectural Engineering Guide
+      * Page 3: Collection 01 Divider — Slate Stone Patterns (Office 3D Render)
+      * Pages 4–54: 51 Slate Stone Product Pages (ST-SV-001 to ST-SV-051)
+      * Page 55: Collection 02 Divider — Sandstone Patterns (Atrium 3D Render)
+      * Pages 56–63: 8 Sandstone Product Pages (ST-SV-052 to ST-SV-059)
+      * Page 64: Collection 03 Divider — Marble Patterns (Reception 3D Render)
+      * Pages 65–100: 36 Marble Product Pages (ST-SV-060 to ST-SV-095)
+      * Page 101: Collection 04 Divider — Limestone Patterns (Living Room 3D Render)
+      * Pages 102–104: 3 Limestone Product Pages (ST-SV-096 to ST-SV-098)
+      * Page 105: Architectural Reference Portfolio & Step-by-Step Installation Field Guide
+      * Page 106: Comprehensive Technical Engineering Matrix & Back Cover
 """
 
 import os
@@ -34,200 +41,187 @@ import zlib
 from PIL import Image
 
 REPO_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-PDF1_PATH = "/Users/stonetech/.gemini/antigravity/brain/692e0f8b-c231-4893-8608-267244e2257f/.user_uploaded/media_1795014454390_9c545ffd.pdf"
-PDF2_PATH = "/Users/stonetech/.gemini/antigravity/brain/692e0f8b-c231-4893-8608-267244e2257f/.user_uploaded/media_1795014454414_af69b3f8.pdf"
+PDF1_PATH = "/Users/stonetech/.gemini/antigravity/brain/692e0f8b-c231-4893-8608-267244e2257f/.user_uploaded/media_1795014454414_af69b3f8.pdf"  # Real Part 1
+PDF2_PATH = "/Users/stonetech/.gemini/antigravity/brain/692e0f8b-c231-4893-8608-267244e2257f/.user_uploaded/media_1795014454390_9c545ffd.pdf"  # Real Part 2
+
+RAW_DIR = "/tmp/raw_veneer_parts"
 ASSET_DIR = os.path.join(REPO_DIR, "public/catalogues/stone-veneer-assets")
 OUTPUT_PDF = os.path.join(REPO_DIR, "public/catalogues/StoneTech_Stone_Veneer_Catalogue_2026.pdf")
 EMBLEM_PATH = os.path.join(REPO_DIR, "public/branding/stone-tech-emblem-hq.png")
 BADGE_PATH = os.path.join(REPO_DIR, "public/branding/stone-tech-manufacturer-badge.png")
 
-# Product metadata catalog: exactly 98 items across 4 sections
+# Exact, 100% verified product master list directly from the shared catalogue
 PRODUCTS = [
-    # --- SECTION 1: SLATE STONE PATTERNS (Part 1, p3 to p52 + Part 2, p1) ---
-    {"sec": "Slate Stone Veneer", "name": "S. White", "pat": "Pattern 01", "file": "part1_p03.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "S. White", "pat": "Pattern 02", "file": "part1_p04.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "S. White", "pat": "Pattern 03", "file": "part1_p05.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "S. White", "pat": "Pattern 04", "file": "part1_p06.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Indian Autumn", "pat": "Pattern 01", "file": "part1_p07.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Indian Autumn", "pat": "Pattern 02", "file": "part1_p08.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Indian Autumn", "pat": "Pattern 03", "file": "part1_p09.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Indian Autumn", "pat": "Pattern 04", "file": "part1_p10.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Indian Autumn", "pat": "Pattern 05", "file": "part1_p11.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Indian Autumn", "pat": "Pattern 06", "file": "part1_p12.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Indian Autumn", "pat": "Pattern 07", "file": "part1_p13.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Tan Brown", "pat": "Pattern 01", "file": "part1_p14.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Tan Brown", "pat": "Pattern 02", "file": "part1_p15.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Tan Brown", "pat": "Pattern 03", "file": "part1_p16.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Tan Brown", "pat": "Pattern 04", "file": "part1_p17.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Autumn Rustic", "pat": "Pattern 01", "file": "part1_p18.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Autumn Rustic", "pat": "Pattern 02", "file": "part1_p19.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Autumn Rustic", "pat": "Pattern 03", "file": "part1_p20.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Autumn Rustic", "pat": "Pattern 04", "file": "part1_p21.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Black Gold", "pat": "Select Pattern", "file": "part1_p22.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Black Red", "pat": "Select Pattern", "file": "part1_p23.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Zeera Green", "pat": "Pattern 01", "file": "part1_p24.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Zeera Green", "pat": "Pattern 02", "file": "part1_p25.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Zeera Green", "pat": "Pattern 03", "file": "part1_p26.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Autumn Black", "pat": "Pattern 01", "file": "part1_p27.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Autumn Black", "pat": "Pattern 02", "file": "part1_p28.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Forest Fire", "pat": "Pattern 01", "file": "part1_p29.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Forest Fire", "pat": "Pattern 02", "file": "part1_p30.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Forest Fire", "pat": "Pattern 03", "file": "part1_p31.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Forest Fire", "pat": "Pattern 04", "file": "part1_p32.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Forest Fire", "pat": "Pattern 05", "file": "part1_p33.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Forest Fire", "pat": "Pattern 06", "file": "part1_p34.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Golden Slate", "pat": "Pattern 01", "file": "part1_p35.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Golden Slate", "pat": "Pattern 02", "file": "part1_p36.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Deoli Green", "pat": "Select Pattern", "file": "part1_p37.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Multi Pink", "pat": "Select Pattern", "file": "part1_p38.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Copper Slate", "pat": "Pattern 01", "file": "part1_p39.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Copper Slate", "pat": "Pattern 02", "file": "part1_p40.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Copper Slate", "pat": "Pattern 03", "file": "part1_p41.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Silver Galaxy", "pat": "Select Pattern", "file": "part1_p42.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Ocean Green", "pat": "Select Pattern", "file": "part1_p43.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Silver Grey", "pat": "Pattern 01", "file": "part1_p44.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Silver Grey", "pat": "Pattern 02", "file": "part1_p45.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "South Grey", "pat": "Select Pattern", "file": "part1_p46.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Ocean Black", "pat": "Pattern 01", "file": "part1_p47.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Ocean Black", "pat": "Pattern 02", "file": "part1_p48.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Ocean Black", "pat": "Pattern 03", "file": "part1_p49.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "California Gold", "pat": "Select Pattern", "file": "part1_p50.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Silver Shine Gold", "pat": "Select Pattern", "file": "part1_p51.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Silver Shine", "pat": "Pattern 01", "file": "part1_p52.jpg"},
-    {"sec": "Slate Stone Veneer", "name": "Silver Shine", "pat": "Pattern 02", "file": "part2_p01.jpg"},
+    # --- COLLECTION 01: SLATE STONE VENEER (51 items: ST-SV-001 to ST-SV-051) ---
+    {"src": "part1_page03.jpg", "sec": "Slate Stone Collection", "name": "S. White", "pat": "Pattern 01", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part1_page04.jpg", "sec": "Slate Stone Collection", "name": "S. White", "pat": "Pattern 02", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part1_page05.jpg", "sec": "Slate Stone Collection", "name": "S. White", "pat": "Pattern 03", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part1_page06.jpg", "sec": "Slate Stone Collection", "name": "S. White", "pat": "Pattern 04", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part1_page07.jpg", "sec": "Slate Stone Collection", "name": "Indian Autumn", "pat": "Pattern 01", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part1_page08.jpg", "sec": "Slate Stone Collection", "name": "Indian Autumn", "pat": "Pattern 02", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part1_page09.jpg", "sec": "Slate Stone Collection", "name": "Indian Autumn", "pat": "Pattern 03", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part1_page10.jpg", "sec": "Slate Stone Collection", "name": "Indian Autumn", "pat": "Pattern 04", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part1_page11.jpg", "sec": "Slate Stone Collection", "name": "Indian Autumn", "pat": "Pattern 05", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part1_page12.jpg", "sec": "Slate Stone Collection", "name": "Indian Autumn", "pat": "Pattern 06", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part1_page13.jpg", "sec": "Slate Stone Collection", "name": "Indian Autumn", "pat": "Pattern 07", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part1_page14.jpg", "sec": "Slate Stone Collection", "name": "Tan Brown", "pat": "Pattern 01", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part1_page15.jpg", "sec": "Slate Stone Collection", "name": "Tan Brown", "pat": "Pattern 02", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part1_page16.jpg", "sec": "Slate Stone Collection", "name": "Tan Brown", "pat": "Pattern 03", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part1_page17.jpg", "sec": "Slate Stone Collection", "name": "Tan Brown", "pat": "Pattern 04", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part1_page18.jpg", "sec": "Slate Stone Collection", "name": "Autumn Rustic", "pat": "Pattern 01", "sizes": "1220 × 2440 mm · 1220 × 2800 mm"},
+    {"src": "part1_page19.jpg", "sec": "Slate Stone Collection", "name": "Autumn Rustic", "pat": "Pattern 02", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part1_page20.jpg", "sec": "Slate Stone Collection", "name": "Autumn Rustic", "pat": "Pattern 03", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part1_page21.jpg", "sec": "Slate Stone Collection", "name": "Autumn Rustic", "pat": "Pattern 04", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part1_page22.jpg", "sec": "Slate Stone Collection", "name": "Black Gold", "pat": "Select Texture", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part1_page23.jpg", "sec": "Slate Stone Collection", "name": "Black Red", "pat": "Select Texture", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part1_page24.jpg", "sec": "Slate Stone Collection", "name": "Zeera Green", "pat": "Pattern 01", "sizes": "1220 × 2440 mm · 1220 × 2800 mm"},
+    {"src": "part1_page25.jpg", "sec": "Slate Stone Collection", "name": "Zeera Green", "pat": "Pattern 02", "sizes": "1220 × 2440 mm · 1220 × 2800 mm"},
+    {"src": "part1_page26.jpg", "sec": "Slate Stone Collection", "name": "Zeera Green", "pat": "Pattern 03", "sizes": "1220 × 2440 mm · 1220 × 2800 mm"},
+    {"src": "part1_page27.jpg", "sec": "Slate Stone Collection", "name": "Autumn Black", "pat": "Pattern 01", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part1_page28.jpg", "sec": "Slate Stone Collection", "name": "Autumn Black", "pat": "Pattern 02", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part1_page29.jpg", "sec": "Slate Stone Collection", "name": "Forest Fire", "pat": "Pattern 01", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part1_page30.jpg", "sec": "Slate Stone Collection", "name": "Forest Fire", "pat": "Pattern 02", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part1_page31.jpg", "sec": "Slate Stone Collection", "name": "Forest Fire", "pat": "Pattern 03", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part1_page32.jpg", "sec": "Slate Stone Collection", "name": "Forest Fire", "pat": "Pattern 04", "sizes": "1220 × 2440 mm · 1220 × 2800 mm"},
+    {"src": "part1_page33.jpg", "sec": "Slate Stone Collection", "name": "Forest Fire", "pat": "Pattern 05", "sizes": "1220 × 2440 mm · 1220 × 2800 mm"},
+    {"src": "part1_page34.jpg", "sec": "Slate Stone Collection", "name": "Forest Fire", "pat": "Pattern 06", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part1_page35.jpg", "sec": "Slate Stone Collection", "name": "Golden", "pat": "Pattern 01", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part1_page36.jpg", "sec": "Slate Stone Collection", "name": "Golden", "pat": "Pattern 02", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part1_page37.jpg", "sec": "Slate Stone Collection", "name": "Deoli Green", "pat": "Select Texture", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part1_page38.jpg", "sec": "Slate Stone Collection", "name": "Multi Pink", "pat": "Select Texture", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part1_page39.jpg", "sec": "Slate Stone Collection", "name": "Copper", "pat": "Pattern 01", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part1_page40.jpg", "sec": "Slate Stone Collection", "name": "Copper", "pat": "Pattern 02", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part1_page41.jpg", "sec": "Slate Stone Collection", "name": "Copper", "pat": "Pattern 03", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part1_page42.jpg", "sec": "Slate Stone Collection", "name": "Silver Galaxy", "pat": "Select Texture", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part1_page43.jpg", "sec": "Slate Stone Collection", "name": "Ocean Green", "pat": "Select Texture", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part1_page44.jpg", "sec": "Slate Stone Collection", "name": "Silver Grey", "pat": "Pattern 01", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part1_page45.jpg", "sec": "Slate Stone Collection", "name": "Silver Grey", "pat": "Pattern 02", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part1_page46.jpg", "sec": "Slate Stone Collection", "name": "South Grey", "pat": "Select Texture", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part1_page47.jpg", "sec": "Slate Stone Collection", "name": "Ocean Black", "pat": "Pattern 01", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part1_page48.jpg", "sec": "Slate Stone Collection", "name": "Ocean Black", "pat": "Pattern 02", "sizes": "1220 × 2440 mm · 1220 × 2800 mm"},
+    {"src": "part1_page49.jpg", "sec": "Slate Stone Collection", "name": "Ocean Black", "pat": "Pattern 03", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part1_page50.jpg", "sec": "Slate Stone Collection", "name": "California Gold", "pat": "Select Texture", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part1_page51.jpg", "sec": "Slate Stone Collection", "name": "Silver Shine Gold", "pat": "Select Texture", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part1_page52.jpg", "sec": "Slate Stone Collection", "name": "Silver Shine", "pat": "Pattern 01", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part2_page01.jpg", "sec": "Slate Stone Collection", "name": "Silver Shine", "pat": "Pattern 02", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
 
-    # --- SECTION 2: SANDSTONE PATTERNS (Part 2, p3 to p10) ---
-    {"sec": "Sandstone Veneer", "name": "Mint White", "pat": "Natural Grain", "file": "part2_p03.jpg"},
-    {"sec": "Sandstone Veneer", "name": "Mint Beige", "pat": "Natural Grain", "file": "part2_p04.jpg"},
-    {"sec": "Sandstone Veneer", "name": "Terra Red", "pat": "Pattern 01", "file": "part2_p05.jpg"},
-    {"sec": "Sandstone Veneer", "name": "Terra Red", "pat": "Pattern 02", "file": "part2_p06.jpg"},
-    {"sec": "Sandstone Veneer", "name": "Teakwood Sandstone", "pat": "Pattern 01", "file": "part2_p07.jpg"},
-    {"sec": "Sandstone Veneer", "name": "Mint Sunrise", "pat": "Natural Grain", "file": "part2_p08.jpg"},
-    {"sec": "Sandstone Veneer", "name": "Rainbow Sandstone", "pat": "Pattern 01", "file": "part2_p09.jpg"},
-    {"sec": "Sandstone Veneer", "name": "Rainbow Sandstone", "pat": "Pattern 02", "file": "part2_p10.jpg"},
+    # --- COLLECTION 02: SANDSTONE VENEER (8 items: ST-SV-052 to ST-SV-059) ---
+    {"src": "part2_page03.jpg", "sec": "Sandstone Collection", "name": "Mint White", "pat": "Select Texture", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part2_page04.jpg", "sec": "Sandstone Collection", "name": "Mint Beige", "pat": "Select Texture", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part2_page05.jpg", "sec": "Sandstone Collection", "name": "Terra Red", "pat": "Pattern 01", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part2_page06.jpg", "sec": "Sandstone Collection", "name": "Terra Red", "pat": "Pattern 02", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part2_page07.jpg", "sec": "Sandstone Collection", "name": "Teakwood", "pat": "Pattern 01", "sizes": "1220 × 2440 mm · 1220 × 2800 mm"},
+    {"src": "part2_page08.jpg", "sec": "Sandstone Collection", "name": "Mint Sunrise", "pat": "Select Texture", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part2_page09.jpg", "sec": "Sandstone Collection", "name": "Rainbow", "pat": "Pattern 01", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part2_page10.jpg", "sec": "Sandstone Collection", "name": "Rainbow", "pat": "Pattern 02", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
 
-    # --- SECTION 3: MARBLE PATTERNS (Part 2, p12 to p47) ---
-    {"sec": "Marble Stone Veneer", "name": "Panda White", "pat": "Pattern 01", "file": "part2_p12.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Panda White", "pat": "Pattern 02", "file": "part2_p13.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Panda White", "pat": "Pattern 03", "file": "part2_p14.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Smokey Grey Marble", "pat": "Select Vein", "file": "part2_p15.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Himalaya White Marble", "pat": "Select Vein", "file": "part2_p16.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Marina Green Marble", "pat": "Select Vein", "file": "part2_p17.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Antiq White Marble", "pat": "Select Vein", "file": "part2_p18.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Black Shimmer", "pat": "Pattern 01", "file": "part2_p19.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Black Shimmer", "pat": "Pattern 02", "file": "part2_p20.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Silvia Beige Marble", "pat": "Select Vein", "file": "part2_p21.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Monsoon Black Marble", "pat": "Select Vein", "file": "part2_p22.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Rainforest Green Marble", "pat": "Tree Vein", "file": "part2_p23.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Rainforest Gold Marble", "pat": "Tree Vein", "file": "part2_p24.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Rainforest Brown Marble", "pat": "Tree Vein", "file": "part2_p25.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Fire Red Marble", "pat": "Select Vein", "file": "part2_p26.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Vintage Shine Marble", "pat": "Select Vein", "file": "part2_p27.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Vintage Shine Dark", "pat": "Select Vein", "file": "part2_p28.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Eroding Sea Marble", "pat": "Select Vein", "file": "part2_p29.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Arctic Storm", "pat": "Pattern 01", "file": "part2_p30.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Arctic Storm", "pat": "Pattern 02", "file": "part2_p31.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Arctic Storm", "pat": "Pattern 03", "file": "part2_p32.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Fantasy White Marble", "pat": "Select Vein", "file": "part2_p33.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Atlantic White Marble", "pat": "Select Vein", "file": "part2_p34.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Cloudy White", "pat": "Pattern 01", "file": "part2_p35.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Cloudy White", "pat": "Pattern 02", "file": "part2_p36.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Sea White", "pat": "Pattern 01", "file": "part2_p37.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Sea White", "pat": "Pattern 02", "file": "part2_p38.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Sea Black Marble", "pat": "Select Vein", "file": "part2_p39.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Petra Black Marble", "pat": "Select Vein", "file": "part2_p40.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Snow Dunes", "pat": "Pattern 01", "file": "part2_p41.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Snow Dunes", "pat": "Pattern 02", "file": "part2_p42.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Snow Dunes", "pat": "Pattern 03", "file": "part2_p43.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Snow Dunes Dark", "pat": "Select Vein", "file": "part2_p44.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Thainos Green Marble", "pat": "Select Vein", "file": "part2_p45.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Sparkling Yellow", "pat": "Crystal Vein", "file": "part2_p46.jpg"},
-    {"sec": "Marble Stone Veneer", "name": "Sparkling White", "pat": "Crystal Vein", "file": "part2_p47.jpg"},
+    # --- COLLECTION 03: MARBLE STONE VENEER (36 items: ST-SV-060 to ST-SV-095) ---
+    {"src": "part2_page12.jpg", "sec": "Marble Stone Collection", "name": "Panda White", "pat": "Pattern 01", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part2_page13.jpg", "sec": "Marble Stone Collection", "name": "Panda White", "pat": "Pattern 02", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part2_page14.jpg", "sec": "Marble Stone Collection", "name": "Panda White", "pat": "Pattern 03", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part2_page15.jpg", "sec": "Marble Stone Collection", "name": "Smokey Grey", "pat": "Select Texture", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part2_page16.jpg", "sec": "Marble Stone Collection", "name": "Himalaya White", "pat": "Select Texture", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part2_page17.jpg", "sec": "Marble Stone Collection", "name": "Marina Green", "pat": "Select Texture", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part2_page18.jpg", "sec": "Marble Stone Collection", "name": "Antiq White", "pat": "Select Texture", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part2_page19.jpg", "sec": "Marble Stone Collection", "name": "Black Shimmer", "pat": "Pattern 01", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part2_page20.jpg", "sec": "Marble Stone Collection", "name": "Black Shimmer", "pat": "Pattern 02", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part2_page21.jpg", "sec": "Marble Stone Collection", "name": "Silvia Beige", "pat": "Select Texture", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part2_page22.jpg", "sec": "Marble Stone Collection", "name": "Monsoon Black", "pat": "Select Texture", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part2_page23.jpg", "sec": "Marble Stone Collection", "name": "Rainforest Green", "pat": "Select Texture", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part2_page24.jpg", "sec": "Marble Stone Collection", "name": "Rainforest Gold", "pat": "Select Texture", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part2_page25.jpg", "sec": "Marble Stone Collection", "name": "Rainforest Brown", "pat": "Select Texture", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part2_page26.jpg", "sec": "Marble Stone Collection", "name": "Fire Red", "pat": "Select Texture", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part2_page27.jpg", "sec": "Marble Stone Collection", "name": "Vintage Shine Dark", "pat": "Select Texture", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part2_page28.jpg", "sec": "Marble Stone Collection", "name": "Vintage Shine", "pat": "Select Texture", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part2_page29.jpg", "sec": "Marble Stone Collection", "name": "Eroding Sea", "pat": "Select Texture", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part2_page30.jpg", "sec": "Marble Stone Collection", "name": "Arctic Storm", "pat": "Pattern 01", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part2_page31.jpg", "sec": "Marble Stone Collection", "name": "Arctic Storm", "pat": "Pattern 02", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part2_page32.jpg", "sec": "Marble Stone Collection", "name": "Arctic Storm", "pat": "Pattern 03", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part2_page33.jpg", "sec": "Marble Stone Collection", "name": "Fantasy White", "pat": "Select Texture", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part2_page34.jpg", "sec": "Marble Stone Collection", "name": "Atlantic White", "pat": "Select Texture", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part2_page35.jpg", "sec": "Marble Stone Collection", "name": "Cloudy White", "pat": "Pattern 01", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part2_page36.jpg", "sec": "Marble Stone Collection", "name": "Cloudy White", "pat": "Pattern 02", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part2_page37.jpg", "sec": "Marble Stone Collection", "name": "Sea White", "pat": "Pattern 01", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part2_page38.jpg", "sec": "Marble Stone Collection", "name": "Sea White", "pat": "Pattern 02", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part2_page39.jpg", "sec": "Marble Stone Collection", "name": "Sea Black", "pat": "Select Texture", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part2_page40.jpg", "sec": "Marble Stone Collection", "name": "Petra Black", "pat": "Select Texture", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part2_page41.jpg", "sec": "Marble Stone Collection", "name": "Snow Dunes", "pat": "Pattern 01", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part2_page42.jpg", "sec": "Marble Stone Collection", "name": "Snow Dunes", "pat": "Pattern 02", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part2_page43.jpg", "sec": "Marble Stone Collection", "name": "Snow Dunes", "pat": "Pattern 03", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part2_page44.jpg", "sec": "Marble Stone Collection", "name": "Snow Dunes Dark", "pat": "Select Texture", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part2_page45.jpg", "sec": "Marble Stone Collection", "name": "Thainos Green", "pat": "Select Texture", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part2_page46.jpg", "sec": "Marble Stone Collection", "name": "Sparkling Yellow", "pat": "Select Texture", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
+    {"src": "part2_page47.jpg", "sec": "Marble Stone Collection", "name": "Sparkling White", "pat": "Select Texture", "sizes": "1220 × 2440 mm · 1220 × 2800 mm · 1220 × 3050 mm"},
 
-    # --- SECTION 4: LIMESTONE PATTERNS (Part 2, p49 to p51) ---
-    {"sec": "Limestone Veneer", "name": "Grey Limestone", "pat": "Monolithic Texture", "file": "part2_p49.jpg"},
-    {"sec": "Limestone Veneer", "name": "Pink Limestone", "pat": "Monolithic Texture", "file": "part2_p50.jpg"},
-    {"sec": "Limestone Veneer", "name": "Green Limestone", "pat": "Monolithic Texture", "file": "part2_p51.jpg"},
+    # --- COLLECTION 04: LIMESTONE VENEER (3 items: ST-SV-096 to ST-SV-098) ---
+    {"src": "part2_page49.jpg", "sec": "Limestone Collection", "name": "Grey Limestone", "pat": "Monolithic Texture", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part2_page50.jpg", "sec": "Limestone Collection", "name": "Pink Limestone", "pat": "Monolithic Texture", "sizes": "1220 × 2440 mm (4×8 ft)"},
+    {"src": "part2_page51.jpg", "sec": "Limestone Collection", "name": "Green Limestone", "pat": "Monolithic Texture", "sizes": "1220 × 2440 mm (4×8 ft)"},
 ]
 
 def ensure_assets():
     os.makedirs(ASSET_DIR, exist_ok=True)
-    raw_dir = "/tmp/veneer_extracted"
-    if not os.path.exists(raw_dir) or len(os.listdir(raw_dir)) < 100:
-        raise RuntimeError(f"Raw extracted images missing in {raw_dir}. Please run extraction first.")
+    if not os.path.exists(RAW_DIR) or len(os.listdir(RAW_DIR)) < 100:
+        raise RuntimeError(f"Raw parts missing in {RAW_DIR}")
 
-    print(f"Processing and cropping 98 slabs into {ASSET_DIR}...")
+    print(f"Cropping 98 product slabs cleanly into {ASSET_DIR}...")
     for idx, item in enumerate(PRODUCTS):
-        src_path = os.path.join(raw_dir, item["file"])
-        out_path = os.path.join(ASSET_DIR, f"slab_{idx+1:03d}_{item['file']}")
+        src_path = os.path.join(RAW_DIR, item["src"])
+        out_name = f"slab_{idx+1:03d}_{item['src']}"
+        out_path = os.path.join(ASSET_DIR, out_name)
         
         im = Image.open(src_path)
         w, h = im.size
         
-        # 1. Detect max Y of text in top 320px
-        text_y_max = 0
-        for y in range(0, 320, 5):
-            dark = [x for x in range(int(w*0.1), int(w*0.9), 10) if all(c < 75 for c in im.getpixel((x, y)))]
+        # 1. Top edge: find where title text ends (between y=250 and 480)
+        top_y = 280
+        for y in range(250, 480):
+            samples = [im.getpixel((int(w * factor), y)) for factor in [0.35, 0.45, 0.50, 0.55, 0.65]]
+            dark = [p for p in samples if not (p[0] > 240 and p[1] > 240 and p[2] > 240)]
             if len(dark) >= 3:
-                text_y_max = max(text_y_max, y)
-                
-        # 2. Detect wood floor start at bottom
-        floor_y_min = 920
-        for y in range(860, 960, 5):
-            row = [im.getpixel((x, y)) for x in range(int(w*0.25), int(w*0.75), 15)]
-            avg = (sum(p[0] for p in row)//len(row), sum(p[1] for p in row)//len(row), sum(p[2] for p in row)//len(row))
-            if avg[0] > avg[1] + 25 and avg[1] > avg[2] + 12 and avg[0] > 95:
-                floor_y_min = min(floor_y_min, y)
+                top_y = y
                 break
-                
-        # 3. Detect left and right edges of slab in middle band
-        left_edges = []
-        right_edges = []
-        for y in range(450, 650, 20):
-            row = [im.getpixel((x, y)) for x in range(w)]
-            non_white = [x for x, p in enumerate(row) if (p[0] < 235 or p[1] < 235 or p[2] < 235)]
-            if len(non_white) > 200:
-                left_edges.append(min(non_white))
-                right_edges.append(max(non_white))
-                
-        if not left_edges:
-            min_x, max_x = int(w * 0.12), int(w * 0.88)
+        top_y = max(top_y + 4, 300)
+        
+        # 2. Bottom edge: detect wood floor
+        bot_y = 940
+        for y in range(860, 1020, 2):
+            row = [im.getpixel((int(w * factor), y)) for factor in [0.35, 0.45, 0.50, 0.55, 0.65]]
+            avg_r = sum(p[0] for p in row) // len(row)
+            avg_g = sum(p[1] for p in row) // len(row)
+            avg_b = sum(p[2] for p in row) // len(row)
+            if avg_r > avg_g + 20 and avg_g > avg_b + 12 and avg_r > 90:
+                bot_y = min(bot_y, y)
+                break
+        bot_y = min(bot_y - 6, 935)
+        
+        # 3. Horizontal bounds at mid Y
+        mid_y = (top_y + bot_y) // 2
+        row = [im.getpixel((x, mid_y)) for x in range(w)]
+        non_white = [x for x, p in enumerate(row) if not (p[0] > 240 and p[1] > 240 and p[2] > 240)]
+        if non_white:
+            min_x = min(non_white) + 6
+            max_x = max(non_white) - 6
         else:
-            left_edges.sort()
-            right_edges.sort()
-            min_x = left_edges[len(left_edges) // 4]
-            max_x = right_edges[len(right_edges) * 3 // 4]
+            min_x = int(w * 0.12)
+            max_x = int(w * 0.88)
             
-        top_y = max(text_y_max + 20, 315)
-        mid_x = (min_x + max_x) // 2
-        for y in range(top_y, 420):
-            p = im.getpixel((mid_x, y))
-            if p[0] < 235 or p[1] < 235 or p[2] < 235:
-                top_y = max(top_y, y)
-                break
-                
-        bot_y = min(floor_y_min - 10, 915)
-        
-        crop_x1 = max(0, min_x + 6)
-        crop_x2 = min(w, max_x - 6)
-        crop_y1 = max(0, top_y + 4)
-        crop_y2 = min(h, bot_y)
-        
-        cropped = im.crop((crop_x1, crop_y1, crop_x2, crop_y2))
+        cropped = im.crop((min_x, top_y, max_x, bot_y))
         cropped.save(out_path, "JPEG", quality=92, optimize=True)
         item["cropped_asset"] = out_path
 
-    # Crop and save section divider renders
+    # Crop and save 3D divider renders
     dividers = [
-        ("render_slate.jpg", "part1_p02.jpg"),
-        ("render_sandstone.jpg", "part2_p02.jpg"),
-        ("render_marble.jpg", "part2_p11.jpg"),
-        ("render_limestone.jpg", "part2_p48.jpg"),
-        ("render_portfolio.jpg", "part2_p52.jpg"),
+        ("render_slate.jpg", "part1_page02.jpg"),
+        ("render_sandstone.jpg", "part2_page02.jpg"),
+        ("render_marble.jpg", "part2_page11.jpg"),
+        ("render_limestone.jpg", "part2_page48.jpg"),
+        ("render_portfolio.jpg", "part2_page52.jpg"),
     ]
     for out_name, src_name in dividers:
-        im = Image.open(os.path.join(raw_dir, src_name))
-        cropped = im.crop((0, 100, im.width, 970))
+        im = Image.open(os.path.join(RAW_DIR, src_name))
+        bot = 890 if out_name == "render_portfolio.jpg" else 960
+        cropped = im.crop((0, 100, im.width, bot))
         cropped.save(os.path.join(ASSET_DIR, out_name), "JPEG", quality=92, optimize=True)
         print(f"Saved divider render: {out_name}")
 
@@ -300,8 +294,8 @@ body {{
   align-items: center;
 }}
 .cover-medallion {{
-  width: 30mm;
-  height: 30mm;
+  width: 28mm;
+  height: 28mm;
   background: #ffffff;
   border: 2.5px solid #d97706;
   border-radius: 50%;
@@ -530,7 +524,7 @@ body {{
 
 /* ================= PRODUCT DISPLAY PAGE ================= */
 .product-page {{
-  padding: 8mm 14mm 7mm 14mm;
+  padding: 7mm 14mm 6mm 14mm;
   background: #ffffff;
   display: flex;
   flex-direction: column;
@@ -541,7 +535,7 @@ body {{
   align-items: center;
   justify-content: space-between;
   border-bottom: 1.5px solid #e2e8f0;
-  padding-bottom: 2mm;
+  padding-bottom: 1.8mm;
 }}
 .prod-header-left {{
   display: flex;
@@ -582,31 +576,39 @@ body {{
 .prod-header-right strong {{
   color: #0f172a;
 }}
+
+/* Natural Proportional Slab Stage */
 .prod-slab-stage {{
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 3mm 0;
+  padding: 2mm 0;
+  min-height: 0;
 }}
-.prod-slab-frame {{
-  width: 262mm;
-  height: 126mm;
-  background: #f8fafc;
+.prod-slab-card {{
+  max-width: 262mm;
+  max-height: 130mm;
+  background: #ffffff;
   border: 1px solid #cbd5e1;
-  border-radius: 2mm;
+  border-radius: 3px;
   box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.08);
-  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  padding: 1.5mm;
 }}
 .prod-slab-img {{
-  width: 100%;
-  height: 100%;
-  object-fit: fill;
+  max-width: 100%;
+  max-height: 126mm;
+  width: auto;
+  height: auto;
+  object-fit: contain;
   display: block;
+  border-radius: 2px;
 }}
+
 .prod-info-panel {{
   display: flex;
   align-items: center;
@@ -614,7 +616,7 @@ body {{
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 2mm;
-  padding: 3mm 5mm;
+  padding: 2.8mm 5mm;
 }}
 .prod-info-left {{
   display: flex;
@@ -777,12 +779,12 @@ body {{
     <div class="cover-title-group">
       <div class="cover-title1">ULTRA-THIN FLEXIBLE NATURAL STONE VENEER</div>
       <div class="cover-title2">ARCHITECTURAL MASTER COLLECTION</div>
-      <div class="cover-edition">EDITION 2026 – 2027 · COMPREHENSIVE ARCHITECTURAL CATALOGUE</div>
+      <div class="cover-edition">EDITION 2026 – 2027 · COMBINED MASTER CATALOGUE (PARTS 1 & 2)</div>
       <div class="cover-pills">
         <div class="cover-pill">SURFACE: <strong>100% Genuine Natural Stone</strong></div>
         <div class="cover-pill">BACKING: <strong>Fiberglass & Polymer Resin</strong></div>
         <div class="cover-pill">WEIGHT: <strong>~1.50 kg / m² (Ultra-Light)</strong></div>
-        <div class="cover-pill">SIZES: <strong>1220×2440 · 1220×2800 · 1220×3050 mm</strong></div>
+        <div class="cover-pill">COLLECTIONS: <strong>Slate · Sandstone · Marble · Limestone</strong></div>
       </div>
     </div>
 
@@ -792,7 +794,7 @@ body {{
         <strong>DIRECT EXPORT DISPATCH:</strong> Mundra Port & JNPT Port, India
       </div>
       <div class="cover-footer-center">
-        MANUFACTURER DIRECT SPECIFICATION · VERIFIED CATALOGUE<br>
+        MANUFACTURER DIRECT ARCHITECTURAL SPECIFICATION<br>
         WHATSAPP CRM: +91 77420 90866
       </div>
       <div class="cover-footer-right">
@@ -868,7 +870,7 @@ body {{
     <div>
       <div class="divider-tag">COLLECTION 01 · 51 ARCHITECTURAL PATTERNS</div>
       <div class="divider-title">SLATE STONE VENEER PATTERNS</div>
-      <div class="divider-desc">Natural cleft textures, organic mica sheen, and earthy mineral luster across 51 distinct patterns.</div>
+      <div class="divider-desc">Natural cleft textures, organic mica sheen, and rich earthy depth across 51 unique architectural patterns.</div>
     </div>
     <div class="divider-meta">
       FORMATS: <strong>1220×2440 · 1220×2800 · 1220×3050 mm</strong><br>
@@ -884,7 +886,7 @@ body {{
     slate_prods = PRODUCTS[0:51]
     for idx, p in enumerate(slate_prods):
         code_str = f"ST-SV-{idx+1:03d}"
-        asset_file = os.path.join(ASSET_DIR, f"slab_{idx+1:03d}_{p['file']}")
+        asset_file = os.path.join(ASSET_DIR, f"slab_{idx+1:03d}_{p['src']}")
         html_parts.append(f"""
 <div class="page product-page">
   <div class="prod-header">
@@ -899,21 +901,21 @@ body {{
   </div>
 
   <div class="prod-slab-stage">
-    <div class="prod-slab-frame">
+    <div class="prod-slab-card">
       <img src="file://{asset_file}" class="prod-slab-img">
     </div>
   </div>
 
   <div class="prod-info-panel">
     <div class="prod-info-left">
-      <div class="prod-family-badge">Slate Stone Collection</div>
+      <div class="prod-family-badge">{p['sec']}</div>
       <div class="prod-name-title">{p['name']} · {p['pat']}</div>
       <div class="prod-code-line">ITEM CODE: {code_str}</div>
     </div>
     <div class="prod-info-right">
-      <div class="prod-spec-item">Standard Dimensions: <strong>1220×2440 · 1220×2800 · 1220×3050 mm</strong></div>
+      <div class="prod-spec-item">Standard Dimensions: <strong>{p['sizes']}</strong></div>
       <div class="prod-spec-item">Sheet Weight: <strong>~1.50 kg / m² (~4.5 kg / sheet)</strong></div>
-      <div class="prod-spec-item">Total Thickness: <strong>1.5 – 2.0 mm (Flexible)</strong></div>
+      <div class="prod-spec-item">Total Thickness: <strong>1.5 – 2.0 mm (Ultra-Thin Flexible)</strong></div>
       <div class="prod-spec-item">Primary Uses: <strong>Curved Walls, Facades, Furniture, Doors</strong></div>
       <div class="prod-spec-item">Substrate Backing: <strong>Fiberglass & Thermosetting Resin</strong></div>
       <div class="prod-spec-item">Adhesion Method: <strong>PU / MS Polymer Direct Bond</strong></div>
@@ -958,7 +960,7 @@ body {{
     for idx, p in enumerate(sandstone_prods):
         global_idx = 51 + idx
         code_str = f"ST-SV-{global_idx+1:03d}"
-        asset_file = os.path.join(ASSET_DIR, f"slab_{global_idx+1:03d}_{p['file']}")
+        asset_file = os.path.join(ASSET_DIR, f"slab_{global_idx+1:03d}_{p['src']}")
         html_parts.append(f"""
 <div class="page product-page">
   <div class="prod-header">
@@ -973,21 +975,21 @@ body {{
   </div>
 
   <div class="prod-slab-stage">
-    <div class="prod-slab-frame">
+    <div class="prod-slab-card">
       <img src="file://{asset_file}" class="prod-slab-img">
     </div>
   </div>
 
   <div class="prod-info-panel">
     <div class="prod-info-left">
-      <div class="prod-family-badge">Sandstone Collection</div>
+      <div class="prod-family-badge">{p['sec']}</div>
       <div class="prod-name-title">{p['name']} · {p['pat']}</div>
       <div class="prod-code-line">ITEM CODE: {code_str}</div>
     </div>
     <div class="prod-info-right">
-      <div class="prod-spec-item">Standard Dimensions: <strong>1220×2440 · 1220×2800 · 1220×3050 mm</strong></div>
+      <div class="prod-spec-item">Standard Dimensions: <strong>{p['sizes']}</strong></div>
       <div class="prod-spec-item">Sheet Weight: <strong>~1.50 kg / m² (~4.5 kg / sheet)</strong></div>
-      <div class="prod-spec-item">Total Thickness: <strong>1.5 – 2.0 mm (Flexible)</strong></div>
+      <div class="prod-spec-item">Total Thickness: <strong>1.5 – 2.0 mm (Ultra-Thin Flexible)</strong></div>
       <div class="prod-spec-item">Primary Uses: <strong>Curved Walls, Facades, Furniture, Doors</strong></div>
       <div class="prod-spec-item">Substrate Backing: <strong>Fiberglass & Thermosetting Resin</strong></div>
       <div class="prod-spec-item">Adhesion Method: <strong>PU / MS Polymer Direct Bond</strong></div>
@@ -1015,7 +1017,7 @@ body {{
     <div>
       <div class="divider-tag">COLLECTION 03 · 36 ARCHITECTURAL PATTERNS</div>
       <div class="divider-title">MARBLE STONE VENEER PATTERNS</div>
-      <div class="divider-desc">Dramatic organic veining, crystalline depth, and bookmatch elegance across 36 bespoke patterns.</div>
+      <div class="divider-desc">Dramatic organic veining, crystalline depth, and bookmatch luxury across 36 bespoke patterns.</div>
     </div>
     <div class="divider-meta">
       FORMATS: <strong>1220×2440 · 1220×2800 · 1220×3050 mm</strong><br>
@@ -1032,7 +1034,7 @@ body {{
     for idx, p in enumerate(marble_prods):
         global_idx = 59 + idx
         code_str = f"ST-SV-{global_idx+1:03d}"
-        asset_file = os.path.join(ASSET_DIR, f"slab_{global_idx+1:03d}_{p['file']}")
+        asset_file = os.path.join(ASSET_DIR, f"slab_{global_idx+1:03d}_{p['src']}")
         html_parts.append(f"""
 <div class="page product-page">
   <div class="prod-header">
@@ -1047,21 +1049,21 @@ body {{
   </div>
 
   <div class="prod-slab-stage">
-    <div class="prod-slab-frame">
+    <div class="prod-slab-card">
       <img src="file://{asset_file}" class="prod-slab-img">
     </div>
   </div>
 
   <div class="prod-info-panel">
     <div class="prod-info-left">
-      <div class="prod-family-badge">Marble Stone Collection</div>
+      <div class="prod-family-badge">{p['sec']}</div>
       <div class="prod-name-title">{p['name']} · {p['pat']}</div>
       <div class="prod-code-line">ITEM CODE: {code_str}</div>
     </div>
     <div class="prod-info-right">
-      <div class="prod-spec-item">Standard Dimensions: <strong>1220×2440 · 1220×2800 · 1220×3050 mm</strong></div>
+      <div class="prod-spec-item">Standard Dimensions: <strong>{p['sizes']}</strong></div>
       <div class="prod-spec-item">Sheet Weight: <strong>~1.50 kg / m² (~4.5 kg / sheet)</strong></div>
-      <div class="prod-spec-item">Total Thickness: <strong>1.5 – 2.0 mm (Flexible)</strong></div>
+      <div class="prod-spec-item">Total Thickness: <strong>1.5 – 2.0 mm (Ultra-Thin Flexible)</strong></div>
       <div class="prod-spec-item">Primary Uses: <strong>Curved Walls, Facades, Furniture, Doors</strong></div>
       <div class="prod-spec-item">Substrate Backing: <strong>Fiberglass & Thermosetting Resin</strong></div>
       <div class="prod-spec-item">Adhesion Method: <strong>PU / MS Polymer Direct Bond</strong></div>
@@ -1106,7 +1108,7 @@ body {{
     for idx, p in enumerate(limestone_prods):
         global_idx = 95 + idx
         code_str = f"ST-SV-{global_idx+1:03d}"
-        asset_file = os.path.join(ASSET_DIR, f"slab_{global_idx+1:03d}_{p['file']}")
+        asset_file = os.path.join(ASSET_DIR, f"slab_{global_idx+1:03d}_{p['src']}")
         html_parts.append(f"""
 <div class="page product-page">
   <div class="prod-header">
@@ -1121,21 +1123,21 @@ body {{
   </div>
 
   <div class="prod-slab-stage">
-    <div class="prod-slab-frame">
+    <div class="prod-slab-card">
       <img src="file://{asset_file}" class="prod-slab-img">
     </div>
   </div>
 
   <div class="prod-info-panel">
     <div class="prod-info-left">
-      <div class="prod-family-badge">Limestone Collection</div>
+      <div class="prod-family-badge">{p['sec']}</div>
       <div class="prod-name-title">{p['name']} · {p['pat']}</div>
       <div class="prod-code-line">ITEM CODE: {code_str}</div>
     </div>
     <div class="prod-info-right">
-      <div class="prod-spec-item">Standard Dimensions: <strong>1220×2440 · 1220×2800 · 1220×3050 mm</strong></div>
+      <div class="prod-spec-item">Standard Dimensions: <strong>{p['sizes']}</strong></div>
       <div class="prod-spec-item">Sheet Weight: <strong>~1.50 kg / m² (~4.5 kg / sheet)</strong></div>
-      <div class="prod-spec-item">Total Thickness: <strong>1.5 – 2.0 mm (Flexible)</strong></div>
+      <div class="prod-spec-item">Total Thickness: <strong>1.5 – 2.0 mm (Ultra-Thin Flexible)</strong></div>
       <div class="prod-spec-item">Primary Uses: <strong>Curved Walls, Facades, Furniture, Doors</strong></div>
       <div class="prod-spec-item">Substrate Backing: <strong>Fiberglass & Thermosetting Resin</strong></div>
       <div class="prod-spec-item">Adhesion Method: <strong>PU / MS Polymer Direct Bond</strong></div>
