@@ -3,11 +3,17 @@ import { Search, FileText, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import catalogItems from "@/data/wall-cladding-catalog.json";
 
 interface StoneCatalogPickerProps {
   onInsertText: (text: string) => void;
-  onAttachCatalogPdf: () => void;
+  onAttachCatalogPdf: (type?: "stone" | "glass_bricks") => void;
 }
 
 export function StoneCatalogPicker({ onInsertText, onAttachCatalogPdf }: StoneCatalogPickerProps) {
@@ -46,15 +52,36 @@ export function StoneCatalogPicker({ onInsertText, onAttachCatalogPdf }: StoneCa
         <div className="flex items-center gap-1.5 font-semibold text-foreground">
           <span>Stone Product Master</span>
         </div>
-        <Button
-          size="sm"
-          variant="outline"
-          className="h-7 text-[11px] gap-1 text-emerald-700 dark:text-emerald-400 border-emerald-500/40"
-          onClick={onAttachCatalogPdf}
-        >
-          <FileText className="h-3.5 w-3.5" />
-          Attach Catalog PDF
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-[11px] gap-1 text-emerald-700 dark:text-emerald-400 border-emerald-500/40"
+            >
+              <FileText className="h-3.5 w-3.5" />
+              Attach Catalog PDF
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-64">
+            <DropdownMenuItem onClick={() => onAttachCatalogPdf("stone")}>
+              <div className="flex flex-col">
+                <span className="font-medium text-xs">🏛️ Natural Stone Catalog (71p)</span>
+                <span className="text-[10px] text-muted-foreground">
+                  Wall claddings, CNC & stone
+                </span>
+              </div>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onAttachCatalogPdf("glass_bricks")}>
+              <div className="flex flex-col">
+                <span className="font-medium text-xs">💎 Solid Glass Bricks 2026 (37p)</span>
+                <span className="text-[10px] text-muted-foreground">
+                  Architectural glass bricks collection
+                </span>
+              </div>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <div className="relative">

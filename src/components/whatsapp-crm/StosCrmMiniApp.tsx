@@ -33,7 +33,7 @@ interface StosCrmMiniAppProps {
   contactName: string;
   crmContext: MatchedCustomerContext;
   onInsertToChat: (text: string) => void;
-  onAttachCatalogPdf: () => void;
+  onAttachCatalogPdf: (type?: "stone" | "glass_bricks") => void;
 }
 
 export function StosCrmMiniApp({

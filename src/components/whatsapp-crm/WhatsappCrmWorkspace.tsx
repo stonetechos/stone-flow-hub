@@ -347,9 +347,14 @@ export function WhatsappCrmWorkspace() {
     );
   };
 
-  const handleAttachCatalogPdf = () => {
-    const text = `Namaste! Here is our verified *Stone Tech 2026 Architectural Wall Cladding & Natural Stone Catalog* (PDF, 71 Pages):\nhttps://stonetech.in/catalogues/StoneTech_NaturalStone_WallCl_Options_26-27.pdf\n\nIt features our complete range of Agra Red, Gwalior Mint, Dholpur Sandstone, Travertine, and bespoke CNC reliefs.`;
-    handleInsertToChat(text);
+  const handleAttachCatalogPdf = (type: "stone" | "glass_bricks" = "stone") => {
+    if (type === "glass_bricks") {
+      const text = `Namaste! Here is our verified *Stone Tech 2026 Solid Glass Bricks Architectural Catalog* (PDF, 37 Pages):\nhttps://stonetech.in/catalogues/StoneTech_Solid_Glass_Bricks_Catalogue_2026.pdf\n\nIt features our complete luxury collection of Super Clear, Bubble, Wave, Rock finish, and colored crystal solid glass bricks for luminous architectural partitions and facade installations.`;
+      handleInsertToChat(text);
+    } else {
+      const text = `Namaste! Here is our verified *Stone Tech 2026 Architectural Wall Cladding & Natural Stone Catalog* (PDF, 71 Pages):\nhttps://stonetech.in/catalogues/StoneTech_NaturalStone_WallCl_Options_26-27.pdf\n\nIt features our complete range of Agra Red, Gwalior Mint, Dholpur Sandstone, Travertine, and bespoke CNC reliefs.`;
+      handleInsertToChat(text);
+    }
   };
 
   const handleInsertToChat = (text: string) => {
@@ -458,8 +463,8 @@ export function WhatsappCrmWorkspace() {
               handleInsertToChat(text);
               setStonePickerOpen(false);
             }}
-            onAttachCatalogPdf={() => {
-              handleAttachCatalogPdf();
+            onAttachCatalogPdf={(type) => {
+              handleAttachCatalogPdf(type);
               setStonePickerOpen(false);
             }}
           />

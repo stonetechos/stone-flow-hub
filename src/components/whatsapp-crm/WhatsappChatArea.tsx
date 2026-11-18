@@ -26,7 +26,7 @@ interface WhatsappChatAreaProps {
   messages: WhatsappMessage[];
   onSendMessage: (text: string) => void;
   onOpenStonePicker: () => void;
-  onAttachCatalogPdf: () => void;
+  onAttachCatalogPdf: (type?: "stone" | "glass_bricks") => void;
   insertedText?: string;
 }
 
@@ -34,6 +34,10 @@ const TEMPLATES = [
   {
     title: "Intro & 2026 Stone Catalog",
     text: "Namaste! Thank you for reaching out to Stone Tech — Architectural Stone Atelier. We specialize in natural stone wall claddings, bespoke CNC panels, and Italian marble surfaces. You can download our latest 2026 Architectural Catalog here:\nhttps://stonetech.in/catalogues/StoneTech_NaturalStone_WallCl_Options_26-27.pdf\n\nHow may we assist your project today?",
+  },
+  {
+    title: "Solid Glass Bricks 2026 Catalog",
+    text: "Namaste! Stone Tech Atelier presents our 2026 Solid Glass Bricks Architectural Collection for luminous partitions, counter features, and facade accents. Download our complete 37-page architectural catalog:\nhttps://stonetech.in/catalogues/StoneTech_Solid_Glass_Bricks_Catalogue_2026.pdf\n\nWould you like sample bricks or technical installation details for your project?",
   },
   {
     title: "Quarry & Mandir Experience Visit",
@@ -214,15 +218,36 @@ export function WhatsappChatArea({
             {t("communication.insertStoneSpecs", "Insert Stone Specs")}
           </Button>
 
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-7 text-[11px] gap-1 text-emerald-700 dark:text-emerald-400 border-emerald-500/40"
-            onClick={onAttachCatalogPdf}
-          >
-            <FileText className="h-3.5 w-3.5" />{" "}
-            {t("communication.shareCatalogPdf", "Share Catalog PDF")}
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-[11px] gap-1 text-emerald-700 dark:text-emerald-400 border-emerald-500/40"
+              >
+                <FileText className="h-3.5 w-3.5" />{" "}
+                {t("communication.shareCatalogPdf", "Share Catalog PDF")}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-72">
+              <DropdownMenuItem onClick={() => onAttachCatalogPdf("stone")}>
+                <div className="flex flex-col">
+                  <span className="font-medium text-xs">🏛️ Natural Stone & Wall Cladding</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    71 Pages · Sandstone, Mint, CNC Reliefs
+                  </span>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onAttachCatalogPdf("glass_bricks")}>
+                <div className="flex flex-col">
+                  <span className="font-medium text-xs">💎 Solid Glass Bricks 2026</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    37 Pages · Super Clear, Bubble, Wave, Rock
+                  </span>
+                </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
