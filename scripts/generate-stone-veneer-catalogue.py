@@ -38,7 +38,7 @@ import shutil
 import subprocess
 import time
 import zlib
-from PIL import Image
+from PIL import Image, ImageEnhance
 
 REPO_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 PDF1_PATH = "/Users/stonetech/.gemini/antigravity/brain/692e0f8b-c231-4893-8608-267244e2257f/.user_uploaded/media_1795014454414_af69b3f8.pdf"  # Real Part 1
@@ -159,55 +159,68 @@ PRODUCTS = [
     {"src": "part2_page51.jpg", "sec": "Limestone Collection", "name": "Green Limestone", "pat": "Monolithic Texture", "sizes": "1220 × 2440 mm (4×8 ft)"},
 ]
 
+def get_master_slab_crop(idx, src, im):
+    w, h = im.size
+    
+    # Specific fine-tuned boxes for known photo variations (removing hands, clips, easel legs)
+    if src == 'part1_page04.jpg':  # S. White 02 (hands/edges)
+        return (230, 355, 1530, 895)
+    if src == 'part1_page06.jpg':  # S. White 04
+        return (220, 355, 1540, 895)
+    if src == 'part1_page11.jpg':  # Indian Autumn 05 (hands/clips)
+        return (170, 355, 1610, 915)
+    if src == 'part1_page12.jpg':  # Indian Autumn 06 (hands/clips)
+        return (170, 355, 1610, 915)
+    if src == 'part1_page15.jpg':  # Tan Brown 02 (hands/clips)
+        return (170, 355, 1610, 915)
+    if src == 'part1_page16.jpg':  # Tan Brown 03 (hands/clips)
+        return (170, 355, 1610, 915)
+    if src == 'part2_page07.jpg':  # Teakwood 01 (easel legs on dirt & top metal tabs)
+        return (240, 380, 1400, 815)
+    if src == 'part2_page41.jpg':  # Snow Dunes 01 (hands)
+        return (230, 370, 1540, 860)
+    if src == 'part2_page43.jpg':  # Snow Dunes 03 (hands)
+        return (230, 370, 1540, 860)
+        
+    # Sandstone group in Part 2 (pages 3 to 10):
+    if any(f'part2_page{i:02d}' in src for i in range(3, 11)):
+        return (285, 370, 1495, 915)
+        
+    # Limestone group in Part 2 (pages 49 to 51):
+    if any(f'part2_page{i:02d}' in src for i in range(49, 52)):
+        return (220, 345, 1555, 915)
+        
+    # Default for all other Part 1 & Part 2 slabs (framed slabs in easel):
+    row = [im.getpixel((x, 600)) for x in range(w)]
+    non_white = [x for x, p in enumerate(row) if not (p[0]>240 and p[1]>240 and p[2]>240)]
+    left = min(non_white) + 38 if non_white else 200
+    right = max(non_white) - 38 if non_white else 1550
+    top = 350
+    bot = 915
+    return (left, top, right, bot)
+
 def ensure_assets():
     os.makedirs(ASSET_DIR, exist_ok=True)
     if not os.path.exists(RAW_DIR) or len(os.listdir(RAW_DIR)) < 100:
         raise RuntimeError(f"Raw parts missing in {RAW_DIR}")
 
-    print(f"Cropping 98 product slabs cleanly into {ASSET_DIR}...")
+    print(f"Master-class cropping 98 product slabs cleanly into {ASSET_DIR}...")
     for idx, item in enumerate(PRODUCTS):
         src_path = os.path.join(RAW_DIR, item["src"])
         out_name = f"slab_{idx+1:03d}_{item['src']}"
         out_path = os.path.join(ASSET_DIR, out_name)
         
         im = Image.open(src_path)
-        w, h = im.size
+        bbox = get_master_slab_crop(idx + 1, item["src"], im)
+        cropped = im.crop(bbox)
         
-        # 1. Top edge: find where title text ends (between y=250 and 480)
-        top_y = 280
-        for y in range(250, 480):
-            samples = [im.getpixel((int(w * factor), y)) for factor in [0.35, 0.45, 0.50, 0.55, 0.65]]
-            dark = [p for p in samples if not (p[0] > 240 and p[1] > 240 and p[2] > 240)]
-            if len(dark) >= 3:
-                top_y = y
-                break
-        top_y = max(top_y + 4, 300)
+        # Professional HD Tone & Sharpness Enhancement
+        enhancer = ImageEnhance.Sharpness(cropped)
+        cropped = enhancer.enhance(1.10)
+        enhancer = ImageEnhance.Contrast(cropped)
+        cropped = enhancer.enhance(1.04)
         
-        # 2. Bottom edge: detect wood floor
-        bot_y = 940
-        for y in range(860, 1020, 2):
-            row = [im.getpixel((int(w * factor), y)) for factor in [0.35, 0.45, 0.50, 0.55, 0.65]]
-            avg_r = sum(p[0] for p in row) // len(row)
-            avg_g = sum(p[1] for p in row) // len(row)
-            avg_b = sum(p[2] for p in row) // len(row)
-            if avg_r > avg_g + 20 and avg_g > avg_b + 12 and avg_r > 90:
-                bot_y = min(bot_y, y)
-                break
-        bot_y = min(bot_y - 6, 935)
-        
-        # 3. Horizontal bounds at mid Y
-        mid_y = (top_y + bot_y) // 2
-        row = [im.getpixel((x, mid_y)) for x in range(w)]
-        non_white = [x for x, p in enumerate(row) if not (p[0] > 240 and p[1] > 240 and p[2] > 240)]
-        if non_white:
-            min_x = min(non_white) + 6
-            max_x = max(non_white) - 6
-        else:
-            min_x = int(w * 0.12)
-            max_x = int(w * 0.88)
-            
-        cropped = im.crop((min_x, top_y, max_x, bot_y))
-        cropped.save(out_path, "JPEG", quality=92, optimize=True)
+        cropped.save(out_path, "JPEG", quality=96, optimize=True, subsampling=0)
         item["cropped_asset"] = out_path
 
     # Crop and save 3D divider renders
@@ -577,36 +590,31 @@ body {{
   color: #0f172a;
 }}
 
-/* Natural Proportional Slab Stage */
+/* Master-Class Natural Slab Stage */
 .prod-slab-stage {{
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2mm 0;
+  padding: 2.5mm 0;
   min-height: 0;
 }}
 .prod-slab-card {{
-  max-width: 262mm;
-  max-height: 130mm;
-  background: #ffffff;
+  width: 260mm;
+  height: 119mm;
+  background: #0f172a;
   border: 1px solid #cbd5e1;
-  border-radius: 3px;
-  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.08);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-radius: 4px;
+  box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.12), 0 4px 10px -2px rgba(15, 23, 42, 0.08);
   overflow: hidden;
-  padding: 1.5mm;
+  position: relative;
 }}
 .prod-slab-img {{
-  max-width: 100%;
-  max-height: 126mm;
-  width: auto;
-  height: auto;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
   display: block;
-  border-radius: 2px;
 }}
 
 .prod-info-panel {{
