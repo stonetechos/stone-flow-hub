@@ -240,10 +240,7 @@ def ensure_assets():
         enhancer = ImageEnhance.Contrast(cropped)
         cropped = enhancer.enhance(1.06)
         
-        cropped.save(out_path, "JPEG", quality=96, optimize=True, subsampling=0)
-        item["cropped_asset"] = out_path
-        
-        cropped.save(out_path, "JPEG", quality=96, optimize=True, subsampling=0)
+        cropped.save(out_path, "JPEG", quality=70, optimize=True)
         item["cropped_asset"] = out_path
 
     # Crop and save 3D divider renders
@@ -258,7 +255,7 @@ def ensure_assets():
         im = Image.open(os.path.join(RAW_DIR, src_name))
         bot = 890 if out_name == "render_portfolio.jpg" else 960
         cropped = im.crop((0, 100, im.width, bot))
-        cropped.save(os.path.join(ASSET_DIR, out_name), "JPEG", quality=92, optimize=True)
+        cropped.save(os.path.join(ASSET_DIR, out_name), "JPEG", quality=80, optimize=True)
         print(f"Saved divider render: {out_name}")
 
 def build_html():
