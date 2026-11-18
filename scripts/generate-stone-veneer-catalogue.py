@@ -176,6 +176,7 @@ CUSTOM_SLAB_CROPS = {
     'part1_page50.jpg': (300, 415, 1400, 830),  # P051 California Gold (top hands & bottom floor)
     'part1_page51.jpg': (310, 410, 1430, 855),  # P052 Silver Shine Gold (top hand & right arch)
     'part1_page52.jpg': (290, 380, 1440, 905),  # P053 Silver Shine 01 (top frame bracket)
+    'part2_page04.jpg': (310, 375, 1445, 905),  # ST-SV-053 Mint Beige (Page 57 right edge pipe & sheet bend fix)
     'part2_page07.jpg': (240, 380, 1400, 815),  # P060 Teakwood 01 (easel legs on dirt & top metal tabs)
     'part2_page13.jpg': (340, 385, 1490, 880),  # P066 Panda White 02 (top rail & left curved shadow)
     'part2_page14.jpg': (270, 385, 1530, 905),  # P067 Panda White 03 (top easel bar & right edge)
@@ -625,7 +626,6 @@ body {{
   background: #0f172a;
   border: 1px solid #cbd5e1;
   border-radius: 4px;
-  box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.12), 0 4px 10px -2px rgba(15, 23, 42, 0.08);
   overflow: hidden;
   position: relative;
 }}
