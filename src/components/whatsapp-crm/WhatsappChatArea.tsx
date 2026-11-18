@@ -26,7 +26,7 @@ interface WhatsappChatAreaProps {
   messages: WhatsappMessage[];
   onSendMessage: (text: string) => void;
   onOpenStonePicker: () => void;
-  onAttachCatalogPdf: (type?: "stone" | "glass_bricks") => void;
+  onAttachCatalogPdf: (type?: "stone" | "glass_bricks" | "hollow_glass_bricks") => void;
   insertedText?: string;
 }
 
@@ -37,7 +37,11 @@ const TEMPLATES = [
   },
   {
     title: "Solid Glass Bricks 2026 Catalog",
-    text: "Namaste! Stone Tech Atelier presents our 2026 Solid Glass Bricks Architectural Collection for luminous partitions, counter features, and facade accents. Download our complete 37-page architectural catalog:\nhttps://stonetech.in/catalogues/StoneTech_Solid_Glass_Bricks_Catalogue_2026.pdf\n\nWould you like sample bricks or technical installation details for your project?",
+    text: "Namaste! Stone Tech Atelier presents our 2026 Solid Glass Bricks Architectural Collection for luminous partitions, counter features, and facade accents. Download our complete 34-page architectural catalog:\nhttps://stonetech.in/catalogues/StoneTech_Solid_Glass_Bricks_Catalogue_2026.pdf\n\nWould you like sample bricks or technical installation details for your project?",
+  },
+  {
+    title: "Hollow Glass Bricks 2026 Catalog",
+    text: "Namaste! Stone Tech Atelier presents our 2026 Hollow & Architectural Glass Bricks Collection (49 Pages) featuring Clear and In-Color acoustic & thermal series with VetroKwik™ dry-interlocking system. Download our complete architectural catalog:\nhttps://stonetech.in/catalogues/StoneTech_Glass_Bricks_Catalogue_2026.pdf\n\nWould you like project pricing or technical specs for your wall dimensions?",
   },
   {
     title: "Quarry & Mandir Experience Visit",
@@ -242,7 +246,15 @@ export function WhatsappChatArea({
                 <div className="flex flex-col">
                   <span className="font-medium text-xs">💎 Solid Glass Bricks 2026</span>
                   <span className="text-[10px] text-muted-foreground">
-                    37 Pages · Super Clear, Bubble, Wave, Rock
+                    34 Pages · Super Clear, Bubble, Wave, Rock
+                  </span>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onAttachCatalogPdf("hollow_glass_bricks")}>
+                <div className="flex flex-col">
+                  <span className="font-medium text-xs">🧱 Hollow Glass Bricks 2026</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    49 Pages · Clear & In-Color · VetroKwik™ System
                   </span>
                 </div>
               </DropdownMenuItem>
