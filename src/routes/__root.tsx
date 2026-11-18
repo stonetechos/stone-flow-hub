@@ -304,9 +304,18 @@ function RootComponent() {
 
     // Guard against unhandled chunk load errors when a new deployment is shipped
     const onPreloadError = (e: Event) => {
-      e.preventDefault();
-      // Speculative background preloading failures must NEVER reload the active page
-      console.warn("[router] Background chunk preload failed (non-fatal):", e);
+      // When a chunk import fails (e.g. after a production deploy), attempt auto-recovery.
+      // recoverFromChunkError() is throttled and limited to 1 auto-reload per tab session.
+      const recovered = recoverFromChunkError();
+      if (recovered) {
+        e.preventDefault();
+        return;
+      }
+      // If auto-recovery was throttled or already attempted this session,
+      // do NOT call e.preventDefault()! That allows Vite to throw the chunk load
+      // error so TanStack Router's error boundary catches it and displays the
+      // update/reload screen rather than crashing with "e[t??'default']".
+      console.warn("[router] Chunk preload failed and auto-reload was throttled:", e);
     };
     const onUnhandledRejection = (e: PromiseRejectionEvent) => {
       if (isChunkLoadError(e.reason)) {

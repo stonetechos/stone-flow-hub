@@ -22,8 +22,23 @@ describe("chunk-recovery", () => {
     expect(isChunkLoadError(new Error("Loading chunk 42 failed"))).toBe(true);
   });
 
+  it("detects router lazyRouteComponent skew errors when chunks fail to resolve", () => {
+    expect(
+      isChunkLoadError(new TypeError("undefined is not an object (evaluating 'e[t??'default']')")),
+    ).toBe(true);
+    expect(
+      isChunkLoadError(new TypeError("Cannot read properties of undefined (reading 'component')")),
+    ).toBe(true);
+    expect(
+      isChunkLoadError(new TypeError("Cannot read properties of undefined (reading 'default')")),
+    ).toBe(true);
+  });
+
   it("returns false for regular application errors", () => {
     expect(isChunkLoadError(new Error("Network response was not ok"))).toBe(false);
+    expect(
+      isChunkLoadError(new Error("Cannot read properties of undefined (reading 'name')")),
+    ).toBe(false);
     expect(isChunkLoadError(new Error("Cannot read properties of undefined"))).toBe(false);
     expect(isChunkLoadError(null)).toBe(false);
     expect(isChunkLoadError(undefined)).toBe(false);

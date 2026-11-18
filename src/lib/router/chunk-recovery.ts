@@ -29,7 +29,14 @@ export function isChunkLoadError(error: unknown): boolean {
     lower.includes("error loading dynamically imported module") ||
     lower.includes("unable to preload css") ||
     lower.includes("loading chunk") ||
-    lower.includes("dynamically imported module")
+    lower.includes("dynamically imported module") ||
+    lower.includes("e[t??'default']") ||
+    lower.includes('e[t??"default"]') ||
+    lower.includes("e[t??`default`]") ||
+    (lower.includes("cannot read properties of undefined") &&
+      (lower.includes("'default'") || lower.includes("'component'"))) ||
+    (lower.includes("undefined is not an object") &&
+      (lower.includes("'default'") || lower.includes("'component'")))
   );
 }
 
