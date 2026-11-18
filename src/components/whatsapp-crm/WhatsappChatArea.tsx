@@ -26,7 +26,9 @@ interface WhatsappChatAreaProps {
   messages: WhatsappMessage[];
   onSendMessage: (text: string) => void;
   onOpenStonePicker: () => void;
-  onAttachCatalogPdf: (type?: "stone" | "glass_bricks" | "hollow_glass_bricks") => void;
+  onAttachCatalogPdf: (
+    type?: "stone" | "glass_bricks" | "hollow_glass_bricks" | "stone_veneer",
+  ) => void;
   insertedText?: string;
 }
 
@@ -34,6 +36,10 @@ const TEMPLATES = [
   {
     title: "Intro & 2026 Stone Catalog",
     text: "Namaste! Thank you for reaching out to Stone Tech — Architectural Stone Atelier. We specialize in natural stone wall claddings, bespoke CNC panels, and Italian marble surfaces. You can download our latest 2026 Architectural Catalog here:\nhttps://stonetech.in/catalogues/StoneTech_NaturalStone_WallCl_Options_26-27.pdf\n\nHow may we assist your project today?",
+  },
+  {
+    title: "Flexible Stone Veneer 2026 Catalog",
+    text: "Namaste! Stone Tech Atelier presents our 2026 Ultra-Thin Flexible Natural Stone Veneer Architectural Collection (106 Pages, 98 Master Patterns) across Slate, Sandstone, Marble, and Limestone. Engineered with 100% natural stone face and reinforced fiberglass resin backing (~1.5 kg/m²). Download our complete architectural catalog:\nhttps://stonetech.in/catalogues/StoneTech_Stone_Veneer_Catalogue_2026.pdf\n\nWould you like sample swatches or project pricing for your curved walls, facades, or furniture?",
   },
   {
     title: "Solid Glass Bricks 2026 Catalog",
@@ -239,6 +245,14 @@ export function WhatsappChatArea({
                   <span className="font-medium text-xs">🏛️ Natural Stone & Wall Cladding</span>
                   <span className="text-[10px] text-muted-foreground">
                     71 Pages · Sandstone, Mint, CNC Reliefs
+                  </span>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onAttachCatalogPdf("stone_veneer")}>
+                <div className="flex flex-col">
+                  <span className="font-medium text-xs">🌿 Flexible Stone Veneer 2026</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    106 Pages · 98 Patterns · Slate, Sandstone, Marble
                   </span>
                 </div>
               </DropdownMenuItem>

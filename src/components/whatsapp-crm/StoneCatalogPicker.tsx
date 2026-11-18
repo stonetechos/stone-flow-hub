@@ -13,7 +13,9 @@ import catalogItems from "@/data/wall-cladding-catalog.json";
 
 interface StoneCatalogPickerProps {
   onInsertText: (text: string) => void;
-  onAttachCatalogPdf: (type?: "stone" | "glass_bricks") => void;
+  onAttachCatalogPdf: (
+    type?: "stone" | "glass_bricks" | "hollow_glass_bricks" | "stone_veneer",
+  ) => void;
 }
 
 export function StoneCatalogPicker({ onInsertText, onAttachCatalogPdf }: StoneCatalogPickerProps) {
@@ -63,20 +65,36 @@ export function StoneCatalogPicker({ onInsertText, onAttachCatalogPdf }: StoneCa
               Attach Catalog PDF
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-64">
+          <DropdownMenuContent align="end" className="w-68">
             <DropdownMenuItem onClick={() => onAttachCatalogPdf("stone")}>
               <div className="flex flex-col">
                 <span className="font-medium text-xs">🏛️ Natural Stone Catalog (71p)</span>
                 <span className="text-[10px] text-muted-foreground">
-                  Wall claddings, CNC & stone
+                  Wall claddings, CNC & natural stone
+                </span>
+              </div>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onAttachCatalogPdf("stone_veneer")}>
+              <div className="flex flex-col">
+                <span className="font-medium text-xs">🌿 Flexible Stone Veneer 2026 (106p)</span>
+                <span className="text-[10px] text-muted-foreground">
+                  98 Patterns · Slate, Sandstone, Marble & Limestone
                 </span>
               </div>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onAttachCatalogPdf("glass_bricks")}>
               <div className="flex flex-col">
-                <span className="font-medium text-xs">💎 Solid Glass Bricks 2026 (37p)</span>
+                <span className="font-medium text-xs">💎 Solid Glass Bricks 2026 (34p)</span>
                 <span className="text-[10px] text-muted-foreground">
-                  Architectural glass bricks collection
+                  Crystal solid glass brick series
+                </span>
+              </div>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onAttachCatalogPdf("hollow_glass_bricks")}>
+              <div className="flex flex-col">
+                <span className="font-medium text-xs">🧱 Hollow Glass Bricks 2026 (49p)</span>
+                <span className="text-[10px] text-muted-foreground">
+                  Clear & In-Color · VetroKwik™ system
                 </span>
               </div>
             </DropdownMenuItem>
