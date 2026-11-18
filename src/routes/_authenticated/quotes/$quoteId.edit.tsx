@@ -551,8 +551,8 @@ function LineItemsEditor({
     try {
       const processedUrls: string[] = [];
       for (const file of validFiles) {
-        // High-speed client-side canvas compression down to max 640px width/height and 0.7 quality
-        const compressedDataUrl = await compressImageToDataUrl(file, 640, 0.7);
+        // High-definition compression (1800px, 0.88 quality) preserving natural resolution for A4 print and crisp screen display
+        const compressedDataUrl = await compressImageToDataUrl(file, 1800, 0.88);
         let finalUrl = compressedDataUrl;
 
         try {

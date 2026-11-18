@@ -79,6 +79,7 @@ export type PdfDoc = {
   footer?: string;
   isCashDeal?: boolean;
   saleMode?: "invoiced" | "cash" | "hybrid";
+  visualSpecs?: Array<{ url: string; label: string; caption?: string }>;
 };
 
 export function isCashDealDoc(doc: PdfDoc): boolean {
@@ -223,11 +224,17 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
         <td style="padding:8px 4px;color:${muted};text-align:center;vertical-align:middle !important;width:36px;font-weight:600;font-size:10px;">${i + 1}</td>
         ${
           showPhoto
-            ? `<td style="padding:8px 4px;text-align:center;vertical-align:middle !important;width:96px;">
+            ? `<td style="padding:6px 4px;text-align:center;vertical-align:middle !important;width:100px;">
                 ${
                   l.image || (l.images && l.images.length > 0)
-                    ? `<div style="text-align:center;margin:0 auto;width:90px;">
-                        <img src="${esc(l.image || l.images?.[0])}" alt="${esc(l.label)}" style="width:84px;height:68px;object-fit:cover;background:#f8fafc;border-radius:4px;border:1px solid ${border};box-shadow:0 1px 3px rgba(0,0,0,0.06);display:inline-block;margin:0 auto;" />
+                    ? `<div style="text-align:center;margin:0 auto;width:92px;">
+                        <table style="width:92px;height:72px;border-collapse:collapse;margin:0 auto;background:#f8fafc;border-radius:4px;border:1px solid ${border};box-shadow:0 1px 3px rgba(0,0,0,0.06);overflow:hidden;table-layout:fixed;">
+                          <tr>
+                            <td style="width:92px;height:72px;text-align:center;vertical-align:middle;padding:2px;background:#f8fafc;">
+                              <img src="${esc(l.image || l.images?.[0])}" alt="${esc(l.label)}" style="max-width:88px;max-height:68px;width:auto;height:auto;object-fit:contain;display:inline-block;vertical-align:middle;border-radius:3px;margin:0 auto;" />
+                            </td>
+                          </tr>
+                        </table>
                         ${
                           l.images && l.images.length > 1
                             ? `<div style="text-align:center;margin-top:3px;white-space:nowrap;">
@@ -235,7 +242,13 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
                                   .slice(1, 4)
                                   .map(
                                     (sub) =>
-                                      `<img src="${esc(sub)}" alt="Angle" style="width:24px;height:20px;object-fit:cover;border-radius:2px;border:1px solid ${border};display:inline-block;margin:0 1.5px;" />`,
+                                      `<table style="display:inline-table;width:26px;height:20px;border-collapse:collapse;margin:0 1.5px;background:#f8fafc;border:1px solid ${border};border-radius:2px;overflow:hidden;table-layout:fixed;vertical-align:middle;">
+                                        <tr>
+                                          <td style="width:26px;height:20px;text-align:center;vertical-align:middle;padding:1px;">
+                                            <img src="${esc(sub)}" alt="Angle" style="max-width:24px;max-height:18px;width:auto;height:auto;object-fit:contain;display:inline-block;vertical-align:middle;" />
+                                          </td>
+                                        </tr>
+                                      </table>`,
                                   )
                                   .join("")}
                               </div>`
@@ -404,39 +417,54 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
       </div>`;
   }
 
-  // Collect all unique photos across line items (both primary and multi-photos)
-  const allVisualSpecs: { url: string; label: string }[] = [];
+  // Collect all unique photos across visualSpecs and line items
+  const allVisualSpecs: { url: string; label: string; caption?: string }[] = [];
   const seenVisualUrls = new Set<string>();
+
+  for (const spec of doc.visualSpecs ?? []) {
+    if (spec.url && !seenVisualUrls.has(spec.url)) {
+      seenVisualUrls.add(spec.url);
+      allVisualSpecs.push(spec);
+    }
+  }
+
   for (const l of doc.lines ?? []) {
     const list = [l.image, ...(l.images ?? [])].filter((img): img is string => Boolean(img));
     for (const url of list) {
       if (!seenVisualUrls.has(url)) {
         seenVisualUrls.add(url);
-        allVisualSpecs.push({ url, label: l.label });
+        allVisualSpecs.push({ url, label: l.label, caption: "Product Specification" });
       }
     }
   }
 
   const galleryBlock =
     allVisualSpecs.length > 0
-      ? `<div class="avoid-break" style="margin-top:12px;padding:8px 10px;border:1px solid ${border};border-radius:6px;background:#f8fafc;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #e2e8f0;">
-            <div style="font-size:8.5px;text-transform:uppercase;letter-spacing:.04em;color:${deepTurquoise};font-weight:800;">
-              Material &amp; Product Visual Specifications (Texture &amp; Relief Spec)
+      ? `<div class="avoid-break" style="margin-top:14px;padding:10px 12px;border:1px solid ${border};border-radius:6px;background:#f8fafc;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #e2e8f0;">
+            <div style="font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:${deepTurquoise};font-weight:800;">
+              Site &amp; Architectural Reference Visuals / Product Specifications
             </div>
-            <div style="font-size:7.5px;color:${muted};font-family:sans-serif;">
-              Quarry Selection / Architectural Relief Samples
+            <div style="font-size:8px;color:${muted};font-family:sans-serif;">
+              Reference Photos · Quarry Selection · Texture &amp; Relief Specs
             </div>
           </div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          <div style="display:flex;flex-wrap:wrap;gap:10px;">
             ${allVisualSpecs
               .map(
                 (spec) =>
-                  `<div style="border:1px solid #cbd5e1;border-radius:4px;overflow:hidden;background:#fff;padding:3px;box-shadow:0 1px 2px rgba(0,0,0,0.05);max-width:140px;">
-                    <img src="${esc(spec.url)}" alt="${esc(spec.label)}" style="width:130px;height:95px;object-fit:cover;border-radius:3px;display:block;" />
-                    <div style="font-size:7.5px;font-weight:700;color:${ink};margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;padding:0 1px;" title="${esc(spec.label)}">
+                  `<div style="border:1px solid #cbd5e1;border-radius:6px;overflow:hidden;background:#fff;padding:4px;box-shadow:0 1px 3px rgba(0,0,0,0.06);width:166px;display:inline-block;vertical-align:top;">
+                    <table style="width:158px;height:118px;border-collapse:collapse;table-layout:fixed;background:#f8fafc;border-radius:4px;overflow:hidden;">
+                      <tr>
+                        <td style="width:158px;height:118px;text-align:center;vertical-align:middle;padding:2px;">
+                          <img src="${esc(spec.url)}" alt="${esc(spec.label)}" style="max-width:154px;max-height:114px;width:auto;height:auto;object-fit:contain;display:inline-block;vertical-align:middle;border-radius:3px;" />
+                        </td>
+                      </tr>
+                    </table>
+                    <div style="font-size:8px;font-weight:700;color:${ink};margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:158px;padding:0 2px;" title="${esc(spec.label)}">
                       ${esc(spec.label)}
                     </div>
+                    ${spec.caption ? `<div style="font-size:7px;color:${muted};overflow:hidden;text-overflow:ellipsis;max-width:158px;padding:0 2px;">${esc(spec.caption)}</div>` : ""}
                   </div>`,
               )
               .join("")}
@@ -1234,7 +1262,7 @@ export async function generatePdfBlob(doc: PdfDoc): Promise<Blob> {
     let canvas: HTMLCanvasElement;
     try {
       canvas = await html2canvas(sheetEl, {
-        scale: 1.6,
+        scale: 2.2,
         useCORS: true,
         allowTaint: false,
         logging: false,
@@ -1251,7 +1279,7 @@ export async function generatePdfBlob(doc: PdfDoc): Promise<Blob> {
         (img as HTMLElement).style.display = "none";
       });
       canvas = await html2canvas(sheetEl, {
-        scale: 1.6,
+        scale: 2.2,
         useCORS: false,
         allowTaint: false,
         logging: false,
@@ -1277,8 +1305,8 @@ export async function generatePdfBlob(doc: PdfDoc): Promise<Blob> {
 
     // 1. Single Page Document (Fits within 1 A4 page with 2% tolerance)
     if (canvas.height <= pageCanvasHeight * 1.02) {
-      // Export as high-quality JPEG (0.78) with compression to produce lightweight (~180-250KB) instantaneous WhatsApp uploads
-      const imgData = canvas.toDataURL("image/jpeg", 0.78);
+      // Export as crisp high-definition JPEG (0.92) with compression to produce razor-sharp PDFs
+      const imgData = canvas.toDataURL("image/jpeg", 0.92);
       const imgHeightMm = (canvas.height * pdfWidth) / canvas.width;
       pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, imgHeightMm, undefined, "FAST");
       const outputBlob = pdf.output("blob");
@@ -1352,7 +1380,7 @@ export async function generatePdfBlob(doc: PdfDoc): Promise<Blob> {
         );
       }
 
-      const sliceData = pageCanvas.toDataURL("image/jpeg", 0.78);
+      const sliceData = pageCanvas.toDataURL("image/jpeg", 0.92);
       const sliceHeightMm = (sliceHeight * pdfWidth) / canvas.width;
       pdf.addImage(sliceData, "JPEG", 0, 0, pdfWidth, sliceHeightMm, undefined, "FAST");
 

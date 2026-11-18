@@ -293,12 +293,12 @@ export function EstimateStudioCalculator({
         }
       }
 
-      // 2. Fallback to compact compressed dataUrl (< 40KB) so pruneOversizedDataUrls never strips it
-      const dataUrl = await compressImageToDataUrl(file, 480, 0.65);
+      // 2. Fallback to compressed dataUrl preserving crisp details
+      const dataUrl = await compressImageToDataUrl(file, 1400, 0.85);
       updateProduct(id, { imageDataUrl: dataUrl });
     } catch {
       try {
-        const dataUrl = await compressImageToDataUrl(file, 400, 0.6);
+        const dataUrl = await compressImageToDataUrl(file, 1200, 0.8);
         updateProduct(id, { imageDataUrl: dataUrl });
       } catch {
         const reader = new FileReader();

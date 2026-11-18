@@ -900,7 +900,7 @@ export function StoneMuralCalculator({
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const dataUrl = await compressImageToDataUrl(file, 1000, 0.75);
+      const dataUrl = await compressImageToDataUrl(file, 1800, 0.88);
       setImageDataUrl(dataUrl);
     } catch {
       const reader = new FileReader();

@@ -277,6 +277,39 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
           images: getLineItemImages(it, imageMap),
         };
       });
+
+      // Collect all visual specs (line items + attached wall/product references)
+      const visualSpecs: Array<{ url: string; label: string; caption?: string }> = [];
+      const seenSpecUrls = new Set<string>();
+
+      for (const line of lines) {
+        const itemUrls = [line.image, ...(line.images ?? [])].filter(Boolean) as string[];
+        for (const u of itemUrls) {
+          if (!seenSpecUrls.has(u)) {
+            seenSpecUrls.add(u);
+            visualSpecs.push({ url: u, label: line.label, caption: "Product Specification" });
+          }
+        }
+      }
+
+      for (const [key, val] of imageMap.entries()) {
+        if (!val || val === "__none__" || val === "none" || key.endsWith("_all")) continue;
+        if (!seenSpecUrls.has(val)) {
+          seenSpecUrls.add(val);
+          const isAtt = key.startsWith("att_") || key.startsWith("file_");
+          const isMural = key === "mural";
+          const label = isMural
+            ? "Mural Design / Wall Artwork Reference"
+            : isAtt
+              ? "Architectural Site / Wall Reference Photo"
+              : key;
+          visualSpecs.push({
+            url: val,
+            label,
+            caption: isAtt ? "Site Reference" : "Specification Sample",
+          });
+        }
+      }
       const gstSplit = gstTotalsFromItems(items as unknown as GstItem[]);
       const totals: PdfMeta[] = [
         { label: "Subtotal", value: inr(q.subtotal) },
@@ -312,6 +345,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
           ],
           lines,
           totals,
+          visualSpecs,
           notes: q.notes ?? undefined,
           terms: effectiveTerms || undefined,
         },
@@ -445,6 +479,39 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
           images: getLineItemImages(it, imageMap),
         };
       });
+
+      // Collect all visual specs (line items + attached wall/product references)
+      const visualSpecs: Array<{ url: string; label: string; caption?: string }> = [];
+      const seenSpecUrls = new Set<string>();
+
+      for (const line of lines) {
+        const itemUrls = [line.image, ...(line.images ?? [])].filter(Boolean) as string[];
+        for (const u of itemUrls) {
+          if (!seenSpecUrls.has(u)) {
+            seenSpecUrls.add(u);
+            visualSpecs.push({ url: u, label: line.label, caption: "Product Specification" });
+          }
+        }
+      }
+
+      for (const [key, val] of imageMap.entries()) {
+        if (!val || val === "__none__" || val === "none" || key.endsWith("_all")) continue;
+        if (!seenSpecUrls.has(val)) {
+          seenSpecUrls.add(val);
+          const isAtt = key.startsWith("att_") || key.startsWith("file_");
+          const isMural = key === "mural";
+          const label = isMural
+            ? "Mural Design / Wall Artwork Reference"
+            : isAtt
+              ? "Architectural Site / Wall Reference Photo"
+              : key;
+          visualSpecs.push({
+            url: val,
+            label,
+            caption: isAtt ? "Site Reference" : "Specification Sample",
+          });
+        }
+      }
       const gstSplit = gstTotalsFromItems(items as unknown as GstItem[]);
       const totals: PdfMeta[] = [
         { label: "Subtotal", value: inr(i.subtotal) },

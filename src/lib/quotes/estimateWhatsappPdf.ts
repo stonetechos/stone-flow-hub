@@ -125,7 +125,7 @@ function renderEstimateHtml(
           ${productImageDataUrls
             .map(
               (src) =>
-                `<img src="${esc(src)}" style="max-width:220px;max-height:220px;object-fit:cover;border:1px solid #E5E7EB;border-radius:6px" />`,
+                `<div style="display:inline-block;border:1px solid #E5E7EB;border-radius:6px;background:#f8fafc;padding:3px;box-shadow:0 1px 3px rgba(0,0,0,0.05);"><table style="width:214px;height:160px;border-collapse:collapse;table-layout:fixed;"><tr><td style="width:214px;height:160px;text-align:center;vertical-align:middle;padding:2px;"><img src="${esc(src)}" style="max-width:210px;max-height:156px;width:auto;height:auto;object-fit:contain;display:inline-block;vertical-align:middle;border-radius:4px;" /></td></tr></table></div>`,
             )
             .join("")}
         </div>
