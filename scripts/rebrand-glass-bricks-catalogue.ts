@@ -364,25 +364,67 @@ async function run() {
     } else if (pageNum === 3) {
       // --- DIVIDER PAGE (Product Catalogue) ---
       stream = stream.replace("/X13 Do", "% logo removed");
-      stream = stream.replace("/X12 Do", "% line removed");
+      stream = stream.replace("/X14 Do", "% line removed");
       stream = removeWwwBlocks(stream);
 
       contents.contents = zlib.deflateSync(Buffer.from(stream, "utf8"));
 
-      // Top-Right Badge
-      page.drawImage(badgeImg, {
-        x: 655,
-        y: 475,
-        width: 74,
-        height: 88.8,
+      // Centered Circular Radiating Stone Tech Emblem (keeps side margins 100% free for vertical headings)
+      const embW = 60;
+      const embH = 60;
+      page.drawImage(emblemImg, {
+        x: (768 - embW) / 2,
+        y: 345,
+        width: embW,
+        height: embH,
       });
 
-      // Subtitle
-      page.drawText("STONE TECH ARCHITECTURAL SOLID GLASS COLLECTION · 2026", {
-        x: 45,
-        y: 440,
-        size: 9,
+      // Centered Corporate Lockup
+      const t1 = "STONE TECH ATELIER";
+      const t1W = fontHelveticaBold.widthOfTextAtSize(t1, 16);
+      page.drawText(t1, {
+        x: (768 - t1W) / 2,
+        y: 318,
+        size: 16,
         font: fontHelveticaBold,
+        color: rgb(0.06, 0.09, 0.16),
+      });
+
+      const t2 = "ARCHITECTURAL SOLID GLASS BRICK DIVISION";
+      const t2W = fontHelveticaBold.widthOfTextAtSize(t2, 8.8);
+      page.drawText(t2, {
+        x: (768 - t2W) / 2,
+        y: 302,
+        size: 8.8,
+        font: fontHelveticaBold,
+        color: rgb(0.01, 0.45, 0.65),
+      });
+
+      // Centered hairline divider
+      page.drawLine({
+        start: { x: 284, y: 290 },
+        end: { x: 484, y: 290 },
+        thickness: 0.75,
+        color: rgb(0.72, 0.78, 0.84),
+      });
+
+      const t3 = "ARCHITECTURAL K9 OPTICAL CRYSTAL COLLECTION · 2026-27";
+      const t3W = fontHelveticaBold.widthOfTextAtSize(t3, 8);
+      page.drawText(t3, {
+        x: (768 - t3W) / 2,
+        y: 274,
+        size: 8,
+        font: fontHelveticaBold,
+        color: rgb(0.2, 0.25, 0.3),
+      });
+
+      const t4 = "FACTORY DIRECT ORDERS: +91 77420 90866 · WWW.STONETECH.IN";
+      const t4W = fontHelvetica.widthOfTextAtSize(t4, 7.5);
+      page.drawText(t4, {
+        x: (768 - t4W) / 2,
+        y: 260,
+        size: 7.5,
+        font: fontHelvetica,
         color: rgb(0.35, 0.4, 0.45),
       });
 
@@ -561,6 +603,15 @@ async function run() {
       });
     }
   }
+
+  // Remove empty Photo Gallery pages (original pages 34, 35, 36; 0-indexed 33, 34, 35)
+  // Page 33 is Installation Process (0-indexed 32), Page 37 is Back Cover (0-indexed 36).
+  // Removing in descending order (35, then 34, then 33) cleanly drops the empty pages.
+  console.log("Removing empty Photo Gallery pages (pages 34, 35, 36)...");
+  pdfDoc.removePage(35);
+  pdfDoc.removePage(34);
+  pdfDoc.removePage(33);
+  console.log(`Final catalog page count: ${pdfDoc.getPageCount()} pages.`);
 
   console.log("Saving new Stone Tech manufacturer catalogue PDF...");
   const finalPdfBytes = await pdfDoc.save();
