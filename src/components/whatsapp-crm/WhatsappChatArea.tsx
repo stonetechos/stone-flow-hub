@@ -39,7 +39,7 @@ const TEMPLATES = [
   },
   {
     title: "Flexible Stone Veneer 2026 Catalog",
-    text: "Namaste! Stone Tech Atelier presents our 2026 Ultra-Thin Flexible Natural Stone Veneer Architectural Collection (106 Pages, 98 Master Patterns) across Slate, Sandstone, Marble, and Limestone. Engineered with 100% natural stone face and reinforced fiberglass resin backing (~1.5 kg/m²). Download our complete architectural catalog:\nhttps://stonetech.in/catalogues/StoneTech_Stone_Veneer_Catalogue_2026.pdf\n\nWould you like sample swatches or project pricing for your curved walls, facades, or furniture?",
+    text: "Namaste! Stone Tech Atelier presents our 2026 Ultra-Thin Flexible Natural Stone Veneer Architectural Collection (106 Pages, 98 Master Patterns) across Slate, Sandstone, Marble, and Limestone. Engineered with 100% natural stone face and reinforced fiberglass resin backing (~1.5 kg/m²).\n\nDownload our complete architectural catalog in your preferred language:\n• English: https://stonetech.in/catalogues/StoneTech_Stone_Veneer_Catalogue_English.pdf\n• हिंदी: https://stonetech.in/catalogues/StoneTech_Stone_Veneer_Catalogue_Hindi.pdf\n• ગુજરાતી: https://stonetech.in/catalogues/StoneTech_Stone_Veneer_Catalogue_Gujarati.pdf\n\nWould you like sample swatches or project pricing for your curved walls, facades, or furniture?",
   },
   {
     title: "Solid Glass Bricks 2026 Catalog",

@@ -506,13 +506,67 @@ def generate_html_document(lang, catalog, logo_path, thumb_dir):
 @font-face {{
   font-family: 'CatalogHindiFont';
   src: url('data:font/ttf;base64,{hi_reg_b64}') format('truetype');
-  font-weight: 100 500;
+  font-weight: 100;
+  font-style: normal;
+}}
+@font-face {{
+  font-family: 'CatalogHindiFont';
+  src: url('data:font/ttf;base64,{hi_reg_b64}') format('truetype');
+  font-weight: 200;
+  font-style: normal;
+}}
+@font-face {{
+  font-family: 'CatalogHindiFont';
+  src: url('data:font/ttf;base64,{hi_reg_b64}') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}}
+@font-face {{
+  font-family: 'CatalogHindiFont';
+  src: url('data:font/ttf;base64,{hi_reg_b64}') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}}
+@font-face {{
+  font-family: 'CatalogHindiFont';
+  src: url('data:font/ttf;base64,{hi_reg_b64}') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+}}
+@font-face {{
+  font-family: 'CatalogHindiFont';
+  src: url('data:font/ttf;base64,{hi_reg_b64}') format('truetype');
+  font-weight: normal;
   font-style: normal;
 }}
 @font-face {{
   font-family: 'CatalogHindiFont';
   src: url('data:font/ttf;base64,{hi_bold_b64}') format('truetype');
-  font-weight: 600 900;
+  font-weight: 600;
+  font-style: normal;
+}}
+@font-face {{
+  font-family: 'CatalogHindiFont';
+  src: url('data:font/ttf;base64,{hi_bold_b64}') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}}
+@font-face {{
+  font-family: 'CatalogHindiFont';
+  src: url('data:font/ttf;base64,{hi_bold_b64}') format('truetype');
+  font-weight: 800;
+  font-style: normal;
+}}
+@font-face {{
+  font-family: 'CatalogHindiFont';
+  src: url('data:font/ttf;base64,{hi_bold_b64}') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+}}
+@font-face {{
+  font-family: 'CatalogHindiFont';
+  src: url('data:font/ttf;base64,{hi_bold_b64}') format('truetype');
+  font-weight: bold;
   font-style: normal;
 }}
 """
@@ -525,13 +579,67 @@ def generate_html_document(lang, catalog, logo_path, thumb_dir):
 @font-face {{
   font-family: 'CatalogGujaratiFont';
   src: url('data:font/ttf;base64,{gu_reg_b64}') format('truetype');
-  font-weight: 100 500;
+  font-weight: 100;
+  font-style: normal;
+}}
+@font-face {{
+  font-family: 'CatalogGujaratiFont';
+  src: url('data:font/ttf;base64,{gu_reg_b64}') format('truetype');
+  font-weight: 200;
+  font-style: normal;
+}}
+@font-face {{
+  font-family: 'CatalogGujaratiFont';
+  src: url('data:font/ttf;base64,{gu_reg_b64}') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}}
+@font-face {{
+  font-family: 'CatalogGujaratiFont';
+  src: url('data:font/ttf;base64,{gu_reg_b64}') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}}
+@font-face {{
+  font-family: 'CatalogGujaratiFont';
+  src: url('data:font/ttf;base64,{gu_reg_b64}') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+}}
+@font-face {{
+  font-family: 'CatalogGujaratiFont';
+  src: url('data:font/ttf;base64,{gu_reg_b64}') format('truetype');
+  font-weight: normal;
   font-style: normal;
 }}
 @font-face {{
   font-family: 'CatalogGujaratiFont';
   src: url('data:font/ttf;base64,{gu_bold_b64}') format('truetype');
-  font-weight: 600 900;
+  font-weight: 600;
+  font-style: normal;
+}}
+@font-face {{
+  font-family: 'CatalogGujaratiFont';
+  src: url('data:font/ttf;base64,{gu_bold_b64}') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}}
+@font-face {{
+  font-family: 'CatalogGujaratiFont';
+  src: url('data:font/ttf;base64,{gu_bold_b64}') format('truetype');
+  font-weight: 800;
+  font-style: normal;
+}}
+@font-face {{
+  font-family: 'CatalogGujaratiFont';
+  src: url('data:font/ttf;base64,{gu_bold_b64}') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+}}
+@font-face {{
+  font-family: 'CatalogGujaratiFont';
+  src: url('data:font/ttf;base64,{gu_bold_b64}') format('truetype');
+  font-weight: bold;
   font-style: normal;
 }}
 """
