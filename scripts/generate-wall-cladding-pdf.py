@@ -21,6 +21,7 @@ Features:
   - WhatsApp Safe: Optimized to stay strictly under 25 MiB.
 """
 
+import base64
 import json
 import math
 import os
@@ -174,7 +175,7 @@ PDF_I18N = {
         "copyright": "© 2026 Stone Tech OS / Stone Tech Atelier. All Rights Reserved.",
     },
     "hi": {
-        "font_family": "-apple-system, BlinkMacSystemFont, 'Kohinoor Devanagari', 'Noto Sans Devanagari', 'Mangal', sans-serif",
+        "font_family": "'CatalogHindiFont', 'Noto Sans Devanagari', 'Kohinoor Devanagari', sans-serif",
         "brand_title": "स्टोन टेक अटेलियर",
         "brand_subtitle": "आर्किटेक्चरल स्टोन फैब्रिकेटर्स एवं शिल्पी",
         "cover_title": "प्राकृतिक पत्थर वॉल क्लैडिंग",
@@ -228,7 +229,7 @@ PDF_I18N = {
         "copyright": "© २०२६ स्टोन टेक ओएस / स्टोन टेक अटेलियर. सर्वाधिकार सुरक्षित.",
     },
     "gu": {
-        "font_family": "-apple-system, BlinkMacSystemFont, 'Kohinoor Gujarati', 'Noto Sans Gujarati', 'Shruti', sans-serif",
+        "font_family": "'CatalogGujaratiFont', 'Noto Sans Gujarati', 'Kohinoor Gujarati', sans-serif",
         "brand_title": "સ્ટોન ટેક એટેલિયર",
         "brand_subtitle": "આર્કિટેક્ચરલ સ્ટોન ફેબ્રિકેટર્સ અને કારીગરો",
         "cover_title": "કુદરતી પથ્થર વોલ ક્લેડિંગ",
@@ -495,8 +496,45 @@ def generate_html_document(lang, catalog, logo_path, thumb_dir):
     tag1_text = t["cover_tagline1"].format(count=cat_count_str)
 
     repo_dir = os.path.abspath(".")
-    hi_font_path = os.path.join(repo_dir, "scripts/fonts/NotoSansDevanagari-Regular.ttf")
-    gu_font_path = os.path.join(repo_dir, "scripts/fonts/NotoSansGujarati-Regular.ttf")
+    fonts_css = ""
+    if lang == "hi":
+        with open(os.path.join(repo_dir, "scripts/fonts/NotoSansDevanagari-Regular.ttf"), "rb") as f:
+            hi_reg_b64 = base64.b64encode(f.read()).decode("utf-8")
+        with open(os.path.join(repo_dir, "scripts/fonts/NotoSansDevanagari-Bold.ttf"), "rb") as f:
+            hi_bold_b64 = base64.b64encode(f.read()).decode("utf-8")
+        fonts_css = f"""
+@font-face {{
+  font-family: 'CatalogHindiFont';
+  src: url('data:font/ttf;base64,{hi_reg_b64}') format('truetype');
+  font-weight: 100 500;
+  font-style: normal;
+}}
+@font-face {{
+  font-family: 'CatalogHindiFont';
+  src: url('data:font/ttf;base64,{hi_bold_b64}') format('truetype');
+  font-weight: 600 900;
+  font-style: normal;
+}}
+"""
+    elif lang == "gu":
+        with open(os.path.join(repo_dir, "scripts/fonts/NotoSansGujarati-Regular.ttf"), "rb") as f:
+            gu_reg_b64 = base64.b64encode(f.read()).decode("utf-8")
+        with open(os.path.join(repo_dir, "scripts/fonts/NotoSansGujarati-Bold.ttf"), "rb") as f:
+            gu_bold_b64 = base64.b64encode(f.read()).decode("utf-8")
+        fonts_css = f"""
+@font-face {{
+  font-family: 'CatalogGujaratiFont';
+  src: url('data:font/ttf;base64,{gu_reg_b64}') format('truetype');
+  font-weight: 100 500;
+  font-style: normal;
+}}
+@font-face {{
+  font-family: 'CatalogGujaratiFont';
+  src: url('data:font/ttf;base64,{gu_bold_b64}') format('truetype');
+  font-weight: 600 900;
+  font-style: normal;
+}}
+"""
 
     html_parts = []
     html_parts.append(f"""<!DOCTYPE html>
@@ -506,15 +544,8 @@ def generate_html_document(lang, catalog, logo_path, thumb_dir):
 <style>
 @page {{ size: 210mm 297mm; margin: 0; }}
 * {{ box-sizing: border-box; }}
-@font-face {{
-  font-family: 'CatalogHindiFont';
-  src: url('file://{hi_font_path}');
-}}
-@font-face {{
-  font-family: 'CatalogGujaratiFont';
-  src: url('file://{gu_font_path}');
-}}
-body {{ margin: 0; font-family: {font_fam}, 'CatalogHindiFont', 'CatalogGujaratiFont'; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }}
+{fonts_css}
+body {{ margin: 0; font-family: {font_fam}; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }}
 .page {{
   width: 210mm;
   height: 297mm;
