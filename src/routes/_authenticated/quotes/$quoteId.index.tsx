@@ -193,8 +193,8 @@ function QuoteDetailPage() {
     try {
       const processedUrls: string[] = [];
       for (const file of validFiles) {
-        // High-definition compression (1800px, 0.88 quality) preserving natural resolution for A4 print and crisp screen display
-        const compressedDataUrl = await compressImageToDataUrl(file, 1800, 0.88);
+        // Ultra-high-definition compression (2400px, 0.92 quality) preserving fine text, CAD diagrams, and relief textures for crisp zoom
+        const compressedDataUrl = await compressImageToDataUrl(file, 2400, 0.92);
         let finalUrl = compressedDataUrl;
 
         try {

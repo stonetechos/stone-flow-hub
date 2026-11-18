@@ -294,11 +294,11 @@ export function EstimateStudioCalculator({
       }
 
       // 2. Fallback to compressed dataUrl preserving crisp details
-      const dataUrl = await compressImageToDataUrl(file, 1400, 0.85);
+      const dataUrl = await compressImageToDataUrl(file, 2400, 0.92);
       updateProduct(id, { imageDataUrl: dataUrl });
     } catch {
       try {
-        const dataUrl = await compressImageToDataUrl(file, 1200, 0.8);
+        const dataUrl = await compressImageToDataUrl(file, 1800, 0.88);
         updateProduct(id, { imageDataUrl: dataUrl });
       } catch {
         const reader = new FileReader();

@@ -438,8 +438,41 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
     }
   }
 
+  const specCount = allVisualSpecs.length;
+  // Adaptive sizing for architectural reference specs:
+  // - 1 visual spec: full width plate (up to 710px wide, 340px tall) so architectural elevation drawings and wall breakdowns are fully legible and crisp on zoom
+  // - 2 visual specs: 50% width split (~350px wide, 240px tall)
+  // - 3-4 visual specs: 50% 2x2 grid (~350px wide, 200px tall)
+  // - 5+ visual specs: 33.3% 3-column grid (~230px wide, 165px tall)
+  let cardWidth = "166px";
+  let tableHeight = "118px";
+  let imgMaxHeight = "112px";
+  let titleFontSize = "8.5px";
+
+  if (specCount === 1) {
+    cardWidth = "100%";
+    tableHeight = "340px";
+    imgMaxHeight = "330px";
+    titleFontSize = "10px";
+  } else if (specCount === 2) {
+    cardWidth = "calc(50% - 6px)";
+    tableHeight = "240px";
+    imgMaxHeight = "232px";
+    titleFontSize = "9.5px";
+  } else if (specCount <= 4) {
+    cardWidth = "calc(50% - 6px)";
+    tableHeight = "200px";
+    imgMaxHeight = "192px";
+    titleFontSize = "9px";
+  } else {
+    cardWidth = "calc(33.333% - 7px)";
+    tableHeight = "165px";
+    imgMaxHeight = "157px";
+    titleFontSize = "8.5px";
+  }
+
   const galleryBlock =
-    allVisualSpecs.length > 0
+    specCount > 0
       ? `<div class="avoid-break" style="margin-top:14px;padding:10px 12px;border:1px solid ${border};border-radius:6px;background:#f8fafc;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #e2e8f0;">
             <div style="font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:${deepTurquoise};font-weight:800;">
@@ -453,18 +486,18 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
             ${allVisualSpecs
               .map(
                 (spec) =>
-                  `<div style="border:1px solid #cbd5e1;border-radius:6px;overflow:hidden;background:#fff;padding:4px;box-shadow:0 1px 3px rgba(0,0,0,0.06);width:166px;display:inline-block;vertical-align:top;">
-                    <table style="width:158px;height:118px;border-collapse:collapse;table-layout:fixed;background:#f8fafc;border-radius:4px;overflow:hidden;">
+                  `<div style="border:1px solid #cbd5e1;border-radius:6px;overflow:hidden;background:#fff;padding:6px;box-shadow:0 1px 3px rgba(0,0,0,0.06);width:${cardWidth};box-sizing:border-box;display:inline-block;vertical-align:top;">
+                    <table style="width:100%;height:${tableHeight};border-collapse:collapse;table-layout:fixed;background:#f8fafc;border-radius:4px;overflow:hidden;">
                       <tr>
-                        <td style="width:158px;height:118px;text-align:center;vertical-align:middle;padding:2px;">
-                          <img src="${esc(spec.url)}" alt="${esc(spec.label)}" style="max-width:154px;max-height:114px;width:auto;height:auto;object-fit:contain;display:inline-block;vertical-align:middle;border-radius:3px;" />
+                        <td style="width:100%;height:${tableHeight};text-align:center;vertical-align:middle;padding:4px;background:#f8fafc;">
+                          <img src="${esc(spec.url)}" alt="${esc(spec.label)}" style="max-width:100%;max-height:${imgMaxHeight};width:auto;height:auto;object-fit:contain;display:inline-block;vertical-align:middle;border-radius:3px;image-rendering:-webkit-optimize-contrast;image-rendering:high-quality;" />
                         </td>
                       </tr>
                     </table>
-                    <div style="font-size:8px;font-weight:700;color:${ink};margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:158px;padding:0 2px;" title="${esc(spec.label)}">
+                    <div style="font-size:${titleFontSize};font-weight:700;color:${ink};margin-top:6px;line-height:1.35;word-break:break-word;padding:0 2px;" title="${esc(spec.label)}">
                       ${esc(spec.label)}
                     </div>
-                    ${spec.caption ? `<div style="font-size:7px;color:${muted};overflow:hidden;text-overflow:ellipsis;max-width:158px;padding:0 2px;">${esc(spec.caption)}</div>` : ""}
+                    ${spec.caption ? `<div style="font-size:7.5px;color:${muted};line-height:1.3;margin-top:2px;padding:0 2px;">${esc(spec.caption)}</div>` : ""}
                   </div>`,
               )
               .join("")}
@@ -496,6 +529,10 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: geometricPrecision;
+  }
+  img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: high-quality;
   }
   .sheet { max-width: 750px; margin: 0 auto; padding: 14px 18px; }
   .toolbar { position: sticky; top:0; background:#f8fafc; border-bottom:1px solid ${border}; padding:6px 20px; display:flex; gap:8px; justify-content:flex-end; }
@@ -1262,7 +1299,7 @@ export async function generatePdfBlob(doc: PdfDoc): Promise<Blob> {
     let canvas: HTMLCanvasElement;
     try {
       canvas = await html2canvas(sheetEl, {
-        scale: 2.2,
+        scale: 2.8,
         useCORS: true,
         allowTaint: false,
         logging: false,
@@ -1279,7 +1316,7 @@ export async function generatePdfBlob(doc: PdfDoc): Promise<Blob> {
         (img as HTMLElement).style.display = "none";
       });
       canvas = await html2canvas(sheetEl, {
-        scale: 2.2,
+        scale: 2.8,
         useCORS: false,
         allowTaint: false,
         logging: false,
@@ -1305,10 +1342,10 @@ export async function generatePdfBlob(doc: PdfDoc): Promise<Blob> {
 
     // 1. Single Page Document (Fits within 1 A4 page with 2% tolerance)
     if (canvas.height <= pageCanvasHeight * 1.02) {
-      // Export as crisp high-definition JPEG (0.92) with compression to produce razor-sharp PDFs
-      const imgData = canvas.toDataURL("image/jpeg", 0.92);
+      // Export as crisp ultra-high-definition JPEG (0.96) with lossless stream embedding so zoom doesn't blur
+      const imgData = canvas.toDataURL("image/jpeg", 0.96);
       const imgHeightMm = (canvas.height * pdfWidth) / canvas.width;
-      pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, imgHeightMm, undefined, "FAST");
+      pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, imgHeightMm, undefined, "NONE");
       const outputBlob = pdf.output("blob");
       if (outputBlob.size > 100) return outputBlob;
       return await generateVectorPdfFallback(doc);
@@ -1380,9 +1417,9 @@ export async function generatePdfBlob(doc: PdfDoc): Promise<Blob> {
         );
       }
 
-      const sliceData = pageCanvas.toDataURL("image/jpeg", 0.92);
+      const sliceData = pageCanvas.toDataURL("image/jpeg", 0.96);
       const sliceHeightMm = (sliceHeight * pdfWidth) / canvas.width;
-      pdf.addImage(sliceData, "JPEG", 0, 0, pdfWidth, sliceHeightMm, undefined, "FAST");
+      pdf.addImage(sliceData, "JPEG", 0, 0, pdfWidth, sliceHeightMm, undefined, "NONE");
 
       sliceTop = sliceBottom;
     }
