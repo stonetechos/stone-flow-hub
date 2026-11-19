@@ -53,6 +53,7 @@ import {
   Camera,
   Wrench,
   FileUp,
+  Layers,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,6 +67,10 @@ import { CustomerInquiryLookupDialog } from "@/components/enquiry/CustomerInquir
 import { StoneGalleryFeed } from "@/components/landing/StoneGalleryFeed";
 import { LuxuryProductShowcase } from "@/components/landing/LuxuryProductShowcase";
 import { WallCladdingCatalog } from "@/components/catalog/WallCladdingCatalog";
+import { StoneVeneerCatalog } from "@/components/catalog/StoneVeneerCatalog";
+import { GlassBricksCatalog } from "@/components/catalog/GlassBricksCatalog";
+import { FlexibleClayCatalog } from "@/components/catalog/FlexibleClayCatalog";
+import { InstalledWorksGallery } from "@/components/catalog/InstalledWorksGallery";
 import { ContactCenter } from "@/components/landing/ContactCenter";
 import { JobOpeningsDialog } from "@/components/landing/JobOpeningsDialog";
 import { ShreeYantraHeroShowcase } from "@/components/landing/ShreeYantraHeroShowcase";
@@ -280,6 +285,13 @@ const MASTER_PRODUCT_OPTIONS: ProductOption[] = [
     tagline: "Eco-friendly ultra-thin flexible clay wall coverings and terracotta finishes",
   },
   {
+    id: "glass_bricks",
+    name: "Glass Bricks",
+    tagline:
+      "Architectural hollow and solid crystal glass blocks for acoustic partitions & luminous facades",
+    popular: true,
+  },
+  {
     id: "pu_panels",
     name: "PU Panels",
     tagline: "Ultra-lightweight, quick-mount high-definition faux stone replica panels",
@@ -405,7 +417,9 @@ function HomePage() {
 
   // Form states (2-Step Continuation 1/2 and 2/2)
   const [formStep, setFormStep] = useState<1 | 2>(1);
-  const [showcaseTab, setShowcaseTab] = useState<"products" | "installations">("products");
+  const [showcaseTab, setShowcaseTab] = useState<
+    "cladding" | "stone-veneer" | "glass-bricks" | "clay-veneers" | "installations" | "products"
+  >("cladding");
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [spaceType, setSpaceType] = useState<string>("");
   const [serviceScope, setServiceScope] = useState<"supply_and_installation" | "supply_only">(
@@ -520,8 +534,11 @@ function HomePage() {
     if (trimmed.includes("temple") || trimmed.includes("mandir")) {
       return "Temple Work Handcrafting";
     }
-    if (trimmed.includes("clay")) {
+    if (trimmed.includes("clay") || trimmed.includes("fcv")) {
       return "Clay Veneers";
+    }
+    if (trimmed.includes("glass") || trimmed.includes("brick")) {
+      return "Glass Bricks";
     }
     if (trimmed.includes("veneer") || trimmed.includes("slim") || trimmed.includes("sheet")) {
       return "Stone Veneer";
@@ -2245,47 +2262,81 @@ function HomePage() {
 
           {/* Top Tabs Switcher */}
           <div className="flex justify-center">
-            <div className="inline-flex p-1 rounded-2xl bg-muted/80 border border-border shadow-xs">
+            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-muted/80 border border-border shadow-xs overflow-x-auto max-w-full scrollbar-none [touch-action:pan-x]">
               <button
                 type="button"
-                onClick={() => setShowcaseTab("products")}
+                onClick={() => setShowcaseTab("cladding")}
                 className={cn(
-                  "flex items-center gap-2 px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all",
-                  showcaseTab === "products"
+                  "flex items-center gap-2 px-3.5 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
+                  showcaseTab === "cladding" || showcaseTab === "products"
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                <Sparkles className="h-4 w-4" />
-                <span>
-                  {isEn
-                    ? cmsContent.productsTabTitle || texts.showcase.productsTab
-                    : texts.showcase.productsTab}
-                </span>
+                <Layers className="h-4 w-4" />
+                <span>{texts.showcase.claddingTab || "Natural Stone Cladding"}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowcaseTab("stone-veneer")}
+                className={cn(
+                  "flex items-center gap-2 px-3.5 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
+                  showcaseTab === "stone-veneer"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <Sparkles className="h-4 w-4 text-amber-500" />
+                <span>{texts.showcase.veneerTab || "Stone Veneer (98)"}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowcaseTab("glass-bricks")}
+                className={cn(
+                  "flex items-center gap-2 px-3.5 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
+                  showcaseTab === "glass-bricks"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <Gem className="h-4 w-4 text-cyan-500" />
+                <span>{texts.showcase.glassBricksTab || "Glass Bricks (67)"}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowcaseTab("clay-veneers")}
+                className={cn(
+                  "flex items-center gap-2 px-3.5 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
+                  showcaseTab === "clay-veneers"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <Compass className="h-4 w-4 text-orange-500" />
+                <span>{texts.showcase.clayVeneersTab || "Clay Veneers (40)"}</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setShowcaseTab("installations")}
                 className={cn(
-                  "flex items-center gap-2 px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all",
+                  "flex items-center gap-2 px-3.5 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
                   showcaseTab === "installations"
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                <Camera className="h-4 w-4" />
-                <span>
-                  {isEn
-                    ? cmsContent.installationsTabTitle || texts.showcase.installationsTab
-                    : texts.showcase.installationsTab}
-                </span>
+                <Camera className="h-4 w-4 text-emerald-500" />
+                <span>{texts.showcase.installationsTab || "Live Installed Works"}</span>
               </button>
             </div>
           </div>
 
-          {/* TAB 1: NATURAL STONE PRODUCTS & CATALOGUE */}
-          {showcaseTab === "products" && (
+          {/* TAB 1: NATURAL STONE CLADDING & CATALOGUE */}
+          {(showcaseTab === "cladding" || showcaseTab === "products") && (
             <div className="animate-in fade-in duration-300">
               <WallCladdingCatalog
                 onSelectPattern={(pattern, price) => {
@@ -2298,9 +2349,43 @@ function HomePage() {
             </div>
           )}
 
-          {/* TAB 2: LIVE INSTALLATIONS & EXECUTED WORKS */}
+          {/* TAB 2: STONE VENEER CATALOGUE */}
+          {showcaseTab === "stone-veneer" && (
+            <div className="animate-in fade-in duration-300">
+              <StoneVeneerCatalog
+                onSelectProduct={(productDesc) => {
+                  scrollToForm(productDesc);
+                }}
+              />
+            </div>
+          )}
+
+          {/* TAB 3: GLASS BRICKS CATALOGUE */}
+          {showcaseTab === "glass-bricks" && (
+            <div className="animate-in fade-in duration-300">
+              <GlassBricksCatalog
+                onSelectProduct={(productDesc) => {
+                  scrollToForm(productDesc);
+                }}
+              />
+            </div>
+          )}
+
+          {/* TAB 4: FLEXIBLE CLAY VENEERS CATALOGUE */}
+          {showcaseTab === "clay-veneers" && (
+            <div className="animate-in fade-in duration-300">
+              <FlexibleClayCatalog
+                onSelectProduct={(productDesc) => {
+                  scrollToForm(productDesc);
+                }}
+              />
+            </div>
+          )}
+
+          {/* TAB 5: LIVE INSTALLATIONS & EXECUTED WORKS */}
           {showcaseTab === "installations" && (
             <div id="gallery-feed" className="animate-in fade-in duration-300 space-y-12">
+              <InstalledWorksGallery onSelectProduct={scrollToForm} />
               <StoneGalleryFeed onSelectProduct={scrollToForm} />
               <LuxuryProductShowcase
                 onSelectProduct={scrollToForm}

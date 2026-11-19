@@ -1,0 +1,763 @@
+/**
+ * FlexibleClayCatalog.tsx
+ *
+ * Architectural Product Catalogue for Flexible Clay Veneers (Modified Mineral Powder).
+ * Displays 40 authentic products:
+ *   - 18 Architectural 3D Textures (Fluted, Hammerstone, Ripple, Weave, Cube, etc.)
+ *   - 10 Punch Traventino Slabs (TS201 to TS220)
+ *   - 12 Punch Slat Slabs (SK103 to SK119)
+ *
+ * Capabilities:
+ * - 3-column square aspect grid with smooth infinite batch scrolling
+ * - Elegant hover overlay with product name, code, series & factory rates
+ * - Architectural Lightbox Modal with toggle between Swatch Macro & Live Installed Facade
+ * - One-click "Request Estimation" connecting directly to the lead form
+ * - Direct download for Flexible Clay Veneers 2026 Master Catalogue (37 Pgs)
+ */
+
+import { useState, useMemo, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  Search,
+  Download,
+  Share2,
+  Sparkles,
+  Eye,
+  ShieldCheck,
+  RotateCw,
+  ArrowUpDown,
+  FileDown,
+  X,
+  ChevronDown,
+  ArrowRight,
+  Flame,
+  Maximize2,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import rawClayData from "@/data/flexible-clay-catalog.json";
+
+export interface FlexibleClayItem {
+  id: string;
+  index: number;
+  code: string;
+  name: string;
+  rawName: string;
+  slug: string;
+  series: "Architectural 3D Textures" | "Punch Traventino Series" | "Punch Slat Series";
+  category: string;
+  profile: string;
+  image: string;
+  sceneImage: string;
+  standardSizes: string;
+  thickness: string;
+  weight: string;
+  bending: string;
+  fire: string;
+  applications: string[];
+  finishes: string[];
+  price: number;
+  unit: string;
+  badge: string;
+  leadTime: string;
+  desc: string;
+}
+
+const CLAY_PRODUCTS: FlexibleClayItem[] = rawClayData as FlexibleClayItem[];
+
+interface FlexibleClayCatalogProps {
+  onSelectProduct?: (productName: string) => void;
+  className?: string;
+  initialSeries?: string;
+}
+
+const TEXTS = {
+  en: {
+    heading: "Flexible Clay Veneers & 3D Architectural Textures",
+    patternsCount: "Patterns",
+    allSeries: "All Collections",
+    texturesSeries: "3D Architectural Textures (18)",
+    traventinoSeries: "Punch Traventino Slabs (10)",
+    slatSeries: "Punch Slat Slabs (12)",
+    searchPlaceholder: "Search 40 flexible clay textures, fluted, travertino, slat...",
+    cataloguesBtn: "Catalogue (PDF)",
+    downloadPdf: "Download Master Catalogue",
+    catalogue2026: "Flexible Clay Catalogue 2026 (37 Pgs)",
+    sortBy: "Sort by",
+    sortDefault: "Default Sequence",
+    sortName: "Name (A–Z)",
+    sortPriceAsc: "Price (Low to High)",
+    sortPriceDesc: "Price (High to Low)",
+    requestEstimate: "Request Estimation for this Clay Veneer",
+    quickEstimate: "Quick Estimate",
+    viewDetails: "View Details & Specs",
+    specs: "Technical Architecture Specs",
+    dimensions: "Standard Dimensions",
+    thickness: "Thickness",
+    weight: "Weight / m²",
+    bendingRadius: "Bending Radius",
+    fireSafety: "Fire Safety Rating",
+    profile: "Texture Profile",
+    applications: "Recommended Applications",
+    finishes: "Available Finishes",
+    quarryRate: "Direct Factory Benchmark",
+    inStock: "Ready to Ship",
+    shareWhatsApp: "Share on WhatsApp",
+    noMatching: "No matching flexible clay patterns found",
+    resetFilters: "Reset Filters",
+  },
+  hi: {
+    heading: "फ्लेक्सिबल क्ले विनियर एवं ३D आर्किटेक्चरल टेक्सचर्स",
+    patternsCount: "पैटर्न्स",
+    allSeries: "सभी संग्रह",
+    texturesSeries: "३D आर्किटेक्चरल टेक्सचर्स (१८)",
+    traventinoSeries: "पंच ट्रावेन्टिनो स्लैब्स (१०)",
+    slatSeries: "पंच स्लैट स्लैब्स (१२)",
+    searchPlaceholder: "४० फ्लेक्सिबल क्ले पैटर्न्स, फ्लूटेड, ट्रावेन्टिनो खोजें...",
+    cataloguesBtn: "कैटलॉग डाउनलोड (PDF)",
+    downloadPdf: "मास्टर कैटलॉग डाउनलोड करें",
+    catalogue2026: "फ्लेक्सिबल क्ले कैटलॉग २०२६ (३७ पेज)",
+    sortBy: "क्रमबद्ध करें",
+    sortDefault: "डिफ़ॉल्ट क्रम",
+    sortName: "नाम (A–Z)",
+    sortPriceAsc: "मूल्य (कम से अधिक)",
+    sortPriceDesc: "मूल्य (अधिक से कम)",
+    requestEstimate: "इस क्ले विनियर हेतु अनुमान का अनुरोध करें",
+    quickEstimate: "त्वरित अनुमान",
+    viewDetails: "विवरण और विशेषताएं",
+    specs: "तकनीकी वास्तुशिल्प विनिर्देश",
+    dimensions: "मानक माप",
+    thickness: "मोटाई",
+    weight: "वजन / वर्गमीटर",
+    bendingRadius: "मोड़ने की क्षमता",
+    fireSafety: "अग्नि सुरक्षा रेटिंग",
+    profile: "टेक्सचर प्रोफ़ाइल",
+    applications: "उपयुक्त अनुप्रयोग",
+    finishes: "उपलब्ध फिनिश",
+    quarryRate: "सीधी फैक्ट्री दर",
+    inStock: "तत्काल शिपिंग हेतु उपलब्ध",
+    shareWhatsApp: "व्हाट्सएप पर साझा करें",
+    noMatching: "कोई मेल खाता पैटर्न नहीं मिला",
+    resetFilters: "फ़िल्टर रीसेट करें",
+  },
+  gu: {
+    heading: "ફ્લેક્સિબલ ક્લે વિનિયર અને ૩D આર્કિટેક્ચરલ ટેક્સચર",
+    patternsCount: "પેટર્ન",
+    allSeries: "બધા સંગ્રહ",
+    texturesSeries: "૩D આર્કિટેક્ચરલ ટેક્સચર (૧૮)",
+    traventinoSeries: "પંચ ત્રાવેન્ટિનો સ્લેબ્સ (૧૦)",
+    slatSeries: "પંચ સ્લેટ સ્લેબ્સ (૧૨)",
+    searchPlaceholder: "૪૦ ફ્લેક્સિબલ ક્લે પેટર્ન, ફ્લુટેડ, ત્રાવેન્ટિનો શોધો...",
+    cataloguesBtn: "કેટલોગ ડાઉનલોડ (PDF)",
+    downloadPdf: "માસ્ટર કેટલોગ ડાઉનલોડ કરો",
+    catalogue2026: "ફ્લેક્સિબલ ક્લે કેટલોગ ૨૦૨૬ (૩૭ પેજ)",
+    sortBy: "ક્રમબદ્ધ કરો",
+    sortDefault: "ડિફૉલ્ટ ક્રમ",
+    sortName: "નામ (A–Z)",
+    sortPriceAsc: "કિંમત (ઓછી થી વધુ)",
+    sortPriceDesc: "કિંમત (વધુ થી ઓછી)",
+    requestEstimate: "આ ક્લે વિનિયર માટે અંદાજ મેળવો",
+    quickEstimate: "ઝડપી અંદાજ",
+    viewDetails: "વિગતો અને સ્પષ્ટીકરણો",
+    specs: "ટેકનિકલ વિગતો",
+    dimensions: "સ્ટાન્ડર્ડ માપ",
+    thickness: "જાડાઈ",
+    weight: "વજન / ચો.મી.",
+    bendingRadius: "વાળવાની ત્રિજ્યા",
+    fireSafety: "અગ્નિ સુરક્ષા રેટિંગ",
+    profile: "ટેક્સચર પ્રોફાઇલ",
+    applications: "ઉપયોગી એપ્લિકેશન્સ",
+    finishes: "ઉપલબ્ધ ફિનિશ",
+    quarryRate: "સીધા ફેક્ટરી દર",
+    inStock: "શિપિંગ માટે તૈયાર",
+    shareWhatsApp: "વોટ્સએપ પર શેર કરો",
+    noMatching: "કોઈ મેળ ખાતી પેટર્ન મળી નથી",
+    resetFilters: "ફિલ્ટર્સ રીસેટ કરો",
+  },
+};
+
+const INITIAL_BATCH = 18;
+const BATCH_SIZE = 18;
+
+export function FlexibleClayCatalog({
+  onSelectProduct,
+  className,
+  initialSeries = "all",
+}: FlexibleClayCatalogProps) {
+  const { i18n } = useTranslation();
+  const lang = (i18n.language?.substring(0, 2) || "en") as "en" | "hi" | "gu";
+  const t = TEXTS[lang] || TEXTS.en;
+
+  const [search, setSearch] = useState("");
+  const [selectedSeries, setSelectedSeries] = useState<string>(initialSeries);
+  const [sortBy, setSortBy] = useState<"index" | "name" | "price-asc" | "price-desc">("index");
+  const [visibleCount, setVisibleCount] = useState<number>(INITIAL_BATCH);
+  const [lightboxTarget, setLightboxTarget] = useState<FlexibleClayItem | null>(null);
+  const [activeViewMode, setActiveViewMode] = useState<"swatch" | "scene">("swatch");
+  const [imageRotation, setImageRotation] = useState<number>(0);
+  const [isFullScreenZoom, setIsFullScreenZoom] = useState<boolean>(false);
+
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  // Filtered & Sorted items
+  const filteredItems = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const items = CLAY_PRODUCTS.filter((item) => {
+      if (selectedSeries !== "all" && item.series !== selectedSeries) return false;
+      if (!q) return true;
+      return (
+        item.name.toLowerCase().includes(q) ||
+        item.rawName.toLowerCase().includes(q) ||
+        item.code.toLowerCase().includes(q) ||
+        item.series.toLowerCase().includes(q) ||
+        item.profile.toLowerCase().includes(q)
+      );
+    });
+
+    if (sortBy === "name") {
+      return [...items].sort((a, b) => a.name.localeCompare(b.name));
+    }
+    if (sortBy === "price-asc") {
+      return [...items].sort((a, b) => a.price - b.price);
+    }
+    if (sortBy === "price-desc") {
+      return [...items].sort((a, b) => b.price - a.price);
+    }
+    return items;
+  }, [search, selectedSeries, sortBy]);
+
+  // Infinite scroll
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    const container = scrollContainerRef.current;
+    if (!sentinel || !container) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const first = entries[0];
+        if (first?.isIntersecting) {
+          setVisibleCount((prev) => {
+            if (prev >= filteredItems.length) return prev;
+            return Math.min(prev + BATCH_SIZE, filteredItems.length);
+          });
+        }
+      },
+      { root: container, rootMargin: "300px" },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [filteredItems.length]);
+
+  const visibleItems = useMemo(
+    () => filteredItems.slice(0, visibleCount),
+    [filteredItems, visibleCount],
+  );
+
+  const handleEstimateClick = (item: FlexibleClayItem) => {
+    setLightboxTarget(null);
+    if (onSelectProduct) {
+      onSelectProduct(`${item.name} (${item.code}) - ${item.series} @ ₹${item.price}/${item.unit}`);
+    }
+  };
+
+  const shareWhatsApp = (item: FlexibleClayItem) => {
+    const text = encodeURIComponent(
+      `Hello Stone Tech Team, I am interested in *${item.name}* (${item.code}) - ${item.series}.\nSize: ${item.standardSizes}, ${item.thickness}.\nPlease provide an estimation quote.`,
+    );
+    window.open(`https://api.whatsapp.com/send?phone=919825123456&text=${text}`, "_blank");
+  };
+
+  return (
+    <div
+      className={cn(
+        "bg-card border border-border/70 rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden p-4 sm:p-6 lg:p-8 space-y-6",
+        className,
+      )}
+    >
+      {/* 1. TOP HEADER & TOOLBAR */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-border/60 pb-5">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h3 className="text-xl sm:text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-orange-500" />
+              <span>{t.heading}</span>
+            </h3>
+            <Badge variant="secondary" className="font-bold text-xs px-2.5 py-0.5 rounded-full">
+              {filteredItems.length} {t.patternsCount}
+            </Badge>
+          </div>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Class A Non-Combustible eco-friendly modified clay mineral panels · Ultra-thin,
+            featherlight & bendable
+          </p>
+        </div>
+
+        {/* Action Controls: PDF Catalogs & Sorters */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 gap-1.5 font-bold text-xs border-orange-500/30 text-orange-600 dark:text-orange-400 hover:bg-orange-500/10"
+              >
+                <FileDown className="h-4 w-4" />
+                <span>{t.cataloguesBtn}</span>
+                <ChevronDown className="h-3 w-3 opacity-60" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-64 p-2 space-y-1">
+              <DropdownMenuLabel className="text-xs font-bold text-muted-foreground uppercase tracking-wider px-2 py-1">
+                {t.downloadPdf}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <a
+                  href="/catalogues/StoneTech_Flexible_Clay_Veneers_Catalogue_2026.pdf"
+                  download="StoneTech_Flexible_Clay_Veneers_Catalogue_2026.pdf"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center justify-between text-xs font-semibold cursor-pointer py-2 px-2.5 rounded-md hover:bg-muted"
+                >
+                  <span className="flex items-center gap-2">
+                    <Download className="h-3.5 w-3.5 text-orange-600" />
+                    <span>{t.catalogue2026}</span>
+                  </span>
+                  <Badge variant="outline" className="text-[10px] font-mono">
+                    15.4 MB
+                  </Badge>
+                </a>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <Select
+            value={sortBy}
+            onValueChange={(val: "index" | "name" | "price-asc" | "price-desc") => setSortBy(val)}
+          >
+            <SelectTrigger className="h-9 text-xs w-[160px] gap-1.5 font-medium">
+              <ArrowUpDown className="h-3.5 w-3.5 opacity-60 shrink-0" />
+              <SelectValue placeholder={t.sortBy} />
+            </SelectTrigger>
+            <SelectContent align="end">
+              <SelectItem value="index">{t.sortDefault}</SelectItem>
+              <SelectItem value="name">{t.sortName}</SelectItem>
+              <SelectItem value="price-asc">{t.sortPriceAsc}</SelectItem>
+              <SelectItem value="price-desc">{t.sortPriceDesc}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* 2. FILTERS: SEARCH BAR + SERIES PILLS */}
+      <div className="space-y-3">
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t.searchPlaceholder}
+              className="pl-9 h-10 text-xs sm:text-sm bg-background/80"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Series Filter Tabs / Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+          <button
+            type="button"
+            onClick={() => setSelectedSeries("all")}
+            className={cn(
+              "px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer",
+              selectedSeries === "all"
+                ? "bg-primary text-primary-foreground shadow-xs"
+                : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground",
+            )}
+          >
+            <span>{t.allSeries}</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded-full font-mono bg-background/80">
+              {CLAY_PRODUCTS.length}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSelectedSeries("Architectural 3D Textures")}
+            className={cn(
+              "px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer",
+              selectedSeries === "Architectural 3D Textures"
+                ? "bg-primary text-primary-foreground shadow-xs"
+                : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground",
+            )}
+          >
+            <span>{t.texturesSeries}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSelectedSeries("Punch Traventino Series")}
+            className={cn(
+              "px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer",
+              selectedSeries === "Punch Traventino Series"
+                ? "bg-primary text-primary-foreground shadow-xs"
+                : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground",
+            )}
+          >
+            <span>{t.traventinoSeries}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSelectedSeries("Punch Slat Series")}
+            className={cn(
+              "px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer",
+              selectedSeries === "Punch Slat Series"
+                ? "bg-primary text-primary-foreground shadow-xs"
+                : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground",
+            )}
+          >
+            <span>{t.slatSeries}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 3. 3-COLUMN PRODUCT GRID CONTAINER WITH INFINITE SCROLL */}
+      <div
+        ref={scrollContainerRef}
+        className="max-h-[640px] sm:max-h-[700px] lg:max-h-[750px] overflow-y-auto overscroll-contain pr-1 rounded-2xl border border-border/40 p-2 sm:p-3 bg-stone-950/20 dark:bg-black/40"
+      >
+        {filteredItems.length === 0 ? (
+          <div className="py-16 text-center space-y-3">
+            <p className="text-sm font-semibold text-muted-foreground">{t.noMatching}</p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSearch("");
+                setSelectedSeries("all");
+              }}
+            >
+              {t.resetFilters}
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2.5 sm:gap-4">
+            {visibleItems.map((item, idx) => (
+              <div
+                key={item.id}
+                onClick={() => {
+                  setLightboxTarget(item);
+                  setActiveViewMode("swatch");
+                  setImageRotation(0);
+                }}
+                className="group relative aspect-square rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer bg-stone-900/95 dark:bg-black border border-border/60 hover:border-orange-500/50 shadow-2xs hover:shadow-md transition-all duration-300 flex items-center justify-center p-1 sm:p-2"
+              >
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  loading={idx < 9 ? "eager" : "lazy"}
+                  decoding="async"
+                  className="w-full h-full object-cover rounded-lg sm:rounded-xl transition-transform duration-500 group-hover:scale-105"
+                />
+
+                {/* Top Badge: Series Tag */}
+                <div className="absolute top-2 left-2 z-10 flex items-center gap-1">
+                  <Badge className="bg-black/75 hover:bg-black/90 backdrop-blur-md text-[10px] text-orange-300 border-white/20 font-semibold px-2 py-0.5">
+                    {item.series.replace(" Series", "").replace("Architectural ", "")}
+                  </Badge>
+                </div>
+
+                {/* Bottom Hover Overlay with Details & Quick Estimate Button */}
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/80 to-transparent p-2.5 sm:p-3.5 pt-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end gap-1.5 z-10">
+                  <div className="flex items-start justify-between gap-1">
+                    <div className="min-w-0">
+                      <p className="text-xs sm:text-sm font-bold truncate text-white">
+                        {item.name}
+                      </p>
+                      <p className="text-[10px] text-orange-200 truncate font-mono">
+                        {item.code} · {item.thickness}
+                      </p>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <p className="text-xs font-black text-orange-400">
+                        ₹{item.price}/{item.unit}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 pt-1">
+                    <Button
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEstimateClick(item);
+                      }}
+                      className="flex-1 h-7 text-[11px] font-bold bg-orange-500 hover:bg-orange-600 text-stone-950 gap-1 rounded-lg"
+                    >
+                      <span>{t.quickEstimate}</span>
+                      <ArrowRight className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setLightboxTarget(item);
+                        setActiveViewMode("swatch");
+                      }}
+                      className="h-7 px-2 text-[11px] border-white/20 bg-white/10 hover:bg-white/20 text-white rounded-lg"
+                    >
+                      <Eye className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div ref={sentinelRef} className="h-10 w-full" />
+      </div>
+
+      {/* 4. ARCHITECTURAL LIGHTBOX MODAL DIALOG */}
+      <Dialog
+        open={Boolean(lightboxTarget)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setLightboxTarget(null);
+            setIsFullScreenZoom(false);
+          }
+        }}
+      >
+        {lightboxTarget && (
+          <DialogContent className="max-w-4xl p-0 overflow-hidden rounded-2xl sm:rounded-3xl border-border bg-card">
+            <div className="grid grid-cols-1 md:grid-cols-2 max-h-[85vh] overflow-y-auto">
+              {/* Left Column: Full Uncropped Image with Swatch vs Installed Scene Switcher */}
+              <div className="relative bg-stone-950 dark:bg-black p-4 flex flex-col items-center justify-center min-h-[320px] md:min-h-[480px]">
+                {/* View Switcher: Swatch Macro vs Installed Architectural Scene */}
+                <div className="absolute top-3 left-3 z-20 flex items-center gap-1 bg-black/75 backdrop-blur-md rounded-xl p-0.5 border border-white/15">
+                  <button
+                    type="button"
+                    onClick={() => setActiveViewMode("swatch")}
+                    className={cn(
+                      "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer",
+                      activeViewMode === "swatch"
+                        ? "bg-orange-500 text-stone-950 font-bold"
+                        : "text-stone-300 hover:text-white",
+                    )}
+                  >
+                    Macro Swatch
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveViewMode("scene")}
+                    className={cn(
+                      "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer",
+                      activeViewMode === "scene"
+                        ? "bg-orange-500 text-stone-950 font-bold"
+                        : "text-stone-300 hover:text-white",
+                    )}
+                  >
+                    Installed Facade
+                  </button>
+                </div>
+
+                {/* 90° Rotation Tool */}
+                <div className="absolute top-3 right-3 z-20 flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setImageRotation((prev) => (prev + 90) % 360)}
+                    className="p-1.5 bg-black/75 hover:bg-black text-white rounded-xl backdrop-blur-md border border-white/15 cursor-pointer transition-colors"
+                    title="Rotate 90°"
+                  >
+                    <RotateCw className="h-4 w-4" />
+                  </button>
+                </div>
+
+                {/* Image Display */}
+                <div className="w-full h-full flex items-center justify-center overflow-hidden p-2">
+                  <img
+                    src={
+                      activeViewMode === "swatch" ? lightboxTarget.image : lightboxTarget.sceneImage
+                    }
+                    alt={lightboxTarget.name}
+                    style={{ transform: `rotate(${imageRotation}deg)` }}
+                    className={cn(
+                      "max-h-[380px] md:max-h-[440px] w-auto max-w-full object-contain rounded-xl transition-transform duration-300",
+                      isFullScreenZoom && "scale-125 cursor-zoom-out",
+                    )}
+                    onClick={() => setIsFullScreenZoom((prev) => !prev)}
+                  />
+                </div>
+
+                <div className="absolute bottom-3 inset-x-0 text-center pointer-events-none">
+                  <span className="text-[11px] text-orange-200 bg-black/60 px-3 py-1 rounded-full backdrop-blur-xs">
+                    {activeViewMode === "swatch"
+                      ? "High-Resolution Pure Mineral Clay Texture"
+                      : "Executed Architectural Installation Facade"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Right Column: Full Specifications & Actions */}
+              <div className="p-5 sm:p-6 space-y-4 flex flex-col justify-between">
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Badge className="bg-orange-500 text-stone-950 font-bold text-[11px]">
+                        {lightboxTarget.series}
+                      </Badge>
+                      <Badge variant="outline" className="font-mono text-[11px]">
+                        {lightboxTarget.code}
+                      </Badge>
+                    </div>
+                    <DialogTitle className="text-xl sm:text-2xl font-black text-foreground">
+                      {lightboxTarget.name}
+                    </DialogTitle>
+                    <DialogDescription className="text-xs text-muted-foreground mt-1">
+                      {lightboxTarget.desc}
+                    </DialogDescription>
+                  </div>
+
+                  {/* Benchmark Factory Price */}
+                  <div className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-between">
+                    <div>
+                      <p className="text-[11px] font-bold text-orange-700 dark:text-orange-400 uppercase tracking-wider">
+                        {t.quarryRate}
+                      </p>
+                      <p className="text-lg font-black text-foreground">
+                        ₹{lightboxTarget.price}{" "}
+                        <span className="text-xs font-normal text-muted-foreground">
+                          /{lightboxTarget.unit}
+                        </span>
+                      </p>
+                    </div>
+                    <Badge variant="secondary" className="text-xs font-semibold">
+                      {t.inStock}
+                    </Badge>
+                  </div>
+
+                  {/* Engineering Specifications Table */}
+                  <div className="space-y-2 text-xs">
+                    <p className="font-bold text-foreground text-xs uppercase tracking-wider text-muted-foreground">
+                      {t.specs}
+                    </p>
+                    <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-muted/60 border border-border/50 text-[11px]">
+                      <div>
+                        <span className="text-muted-foreground block">{t.profile}</span>
+                        <span className="font-semibold text-foreground">
+                          {lightboxTarget.profile}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground block">{t.dimensions}</span>
+                        <span className="font-semibold text-foreground">
+                          {lightboxTarget.standardSizes}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground block">{t.thickness}</span>
+                        <span className="font-semibold text-foreground">
+                          {lightboxTarget.thickness}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground block">{t.weight}</span>
+                        <span className="font-semibold text-foreground">
+                          {lightboxTarget.weight}
+                        </span>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="text-muted-foreground block">{t.bendingRadius}</span>
+                        <span className="font-semibold text-foreground">
+                          {lightboxTarget.bending}
+                        </span>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="text-muted-foreground block">{t.fireSafety}</span>
+                        <span className="font-semibold text-foreground">{lightboxTarget.fire}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Applications */}
+                  <div className="space-y-1.5">
+                    <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                      {t.applications}
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      {lightboxTarget.applications.map((app) => (
+                        <span
+                          key={app}
+                          className="px-2 py-0.5 rounded-md bg-muted text-[10px] font-medium text-foreground"
+                        >
+                          {app}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom Actions */}
+                <div className="pt-3 border-t border-border/60 space-y-2">
+                  <Button
+                    onClick={() => handleEstimateClick(lightboxTarget)}
+                    className="w-full h-11 text-xs sm:text-sm font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-2 rounded-xl shadow-md cursor-pointer"
+                  >
+                    <span>{t.requestEstimate}</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    onClick={() => shareWhatsApp(lightboxTarget)}
+                    className="w-full h-9 text-xs font-semibold gap-2 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 rounded-xl cursor-pointer"
+                  >
+                    <Share2 className="h-3.5 w-3.5" />
+                    <span>{t.shareWhatsApp}</span>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        )}
+      </Dialog>
+    </div>
+  );
+}

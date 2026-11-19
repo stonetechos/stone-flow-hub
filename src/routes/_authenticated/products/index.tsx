@@ -59,6 +59,10 @@ import {
 } from "@/lib/products/schema";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WallCladdingCatalog } from "@/components/catalog/WallCladdingCatalog";
+import { StoneVeneerCatalog } from "@/components/catalog/StoneVeneerCatalog";
+import { GlassBricksCatalog } from "@/components/catalog/GlassBricksCatalog";
+import { FlexibleClayCatalog } from "@/components/catalog/FlexibleClayCatalog";
+import { InstalledWorksGallery } from "@/components/catalog/InstalledWorksGallery";
 import { WebsiteProductsBackend } from "@/components/admin/WebsiteProductsBackend";
 import { SidebarTabsBackend } from "@/components/admin/SidebarTabsBackend";
 import { DEFAULT_NATURAL_STONE_PRODUCTS } from "@/lib/products/default-catalog";
@@ -91,7 +95,14 @@ function ProductsPage() {
   const [toDelete, setToDelete] = useState<ProductRow | null>(null);
   const { prefs, setDensity, toggleColumn, isHidden } = list;
   const [activeTab, setActiveTab] = useState<
-    "website-catalog" | "cladding" | "sidebar-tabs" | "inventory"
+    | "website-catalog"
+    | "cladding"
+    | "veneer"
+    | "glass-bricks"
+    | "clay-veneers"
+    | "installations"
+    | "sidebar-tabs"
+    | "inventory"
   >("website-catalog");
 
   // If a non-super-admin employee loads or is on a restricted tab, switch to inventory
@@ -191,7 +202,17 @@ function ProductsPage() {
       <Tabs
         value={activeTab}
         onValueChange={(v) =>
-          setActiveTab(v as "website-catalog" | "cladding" | "sidebar-tabs" | "inventory")
+          setActiveTab(
+            v as
+              | "website-catalog"
+              | "cladding"
+              | "veneer"
+              | "glass-bricks"
+              | "clay-veneers"
+              | "installations"
+              | "sidebar-tabs"
+              | "inventory",
+          )
         }
         className="w-full space-y-4"
       >
@@ -211,7 +232,35 @@ function ProductsPage() {
               className="text-xs gap-1.5 data-[state=active]:bg-cyan-600 data-[state=active]:text-white font-semibold"
             >
               <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-              <span>Catalog Visual Display &amp; PDF</span>
+              <span>Wall Cladding (275)</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="veneer"
+              className="text-xs gap-1.5 data-[state=active]:bg-cyan-600 data-[state=active]:text-white font-semibold"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+              <span>Stone Veneer (98)</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="glass-bricks"
+              className="text-xs gap-1.5 data-[state=active]:bg-cyan-600 data-[state=active]:text-white font-semibold"
+            >
+              <Globe className="h-3.5 w-3.5 text-cyan-500" />
+              <span>Glass Bricks (67)</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="clay-veneers"
+              className="text-xs gap-1.5 data-[state=active]:bg-cyan-600 data-[state=active]:text-white font-semibold"
+            >
+              <PanelLeft className="h-3.5 w-3.5 text-orange-500" />
+              <span>Clay Veneers (40)</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="installations"
+              className="text-xs gap-1.5 data-[state=active]:bg-cyan-600 data-[state=active]:text-white font-semibold"
+            >
+              <Globe className="h-3.5 w-3.5 text-emerald-500" />
+              <span>Live Installed Works</span>
             </TabsTrigger>
             {isSuperAdmin && (
               <TabsTrigger
@@ -251,6 +300,22 @@ function ProductsPage() {
 
         <TabsContent value="cladding" className="pt-2">
           <WallCladdingCatalog showAdminBanner={isSuperAdmin} />
+        </TabsContent>
+
+        <TabsContent value="veneer" className="pt-2">
+          <StoneVeneerCatalog />
+        </TabsContent>
+
+        <TabsContent value="glass-bricks" className="pt-2">
+          <GlassBricksCatalog />
+        </TabsContent>
+
+        <TabsContent value="clay-veneers" className="pt-2">
+          <FlexibleClayCatalog />
+        </TabsContent>
+
+        <TabsContent value="installations" className="pt-2">
+          <InstalledWorksGallery />
         </TabsContent>
 
         {isSuperAdmin ? (

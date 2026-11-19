@@ -720,6 +720,43 @@ export function WallCladdingCatalog({
                     </a>
                   </div>
                 </div>
+
+                {/* 4. Flexible Clay Veneers Catalogue */}
+                <div className="rounded-lg border border-orange-500/20 bg-orange-500/5 p-2 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-xs text-foreground flex items-center gap-1.5">
+                      <FileDown className="h-3.5 w-3.5 text-orange-600" />
+                      {lang === "gu"
+                        ? "ફ્લેક્સિબલ ક્લે વિનિયર"
+                        : lang === "hi"
+                          ? "फ्लेक्सिबल क्ले विनियर"
+                          : "Flexible Clay Veneers"}
+                    </span>
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] px-1.5 py-0 h-4 border-orange-500/40 text-orange-700 dark:text-orange-300"
+                    >
+                      37 Pgs
+                    </Badge>
+                  </div>
+                  <a
+                    href="/catalogues/StoneTech_Flexible_Clay_Veneers_Catalogue_2026.pdf?v=2026-v1"
+                    download="StoneTech_Flexible_Clay_Veneers_Catalogue_2026.pdf"
+                    className="w-full py-1 px-2 text-[11px] font-medium rounded border bg-background/80 hover:bg-accent border-border text-foreground flex items-center justify-between gap-1"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Download className="h-3 w-3 text-orange-600" />
+                      <span>
+                        {lang === "gu"
+                          ? "માસ્ટર કેટલોગ ૨૦૨૬"
+                          : lang === "hi"
+                            ? "मास्टर कैटलॉग २०२६"
+                            : "Master Catalogue 2026"}
+                      </span>
+                    </span>
+                    <span className="text-[10px] text-muted-foreground font-mono">15.4 MB</span>
+                  </a>
+                </div>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
