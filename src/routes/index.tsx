@@ -72,6 +72,7 @@ import { StoneVeneerCatalog } from "@/components/catalog/StoneVeneerCatalog";
 import { GlassBricksCatalog } from "@/components/catalog/GlassBricksCatalog";
 import { FlexibleClayCatalog } from "@/components/catalog/FlexibleClayCatalog";
 import { StonePebblesCatalog } from "@/components/catalog/StonePebblesCatalog";
+import { MasterProductCatalog, type ProductTab } from "@/components/catalog/MasterProductCatalog";
 import { InstalledWorksGallery } from "@/components/catalog/InstalledWorksGallery";
 import { ContactCenter } from "@/components/landing/ContactCenter";
 import { JobOpeningsDialog } from "@/components/landing/JobOpeningsDialog";
@@ -419,15 +420,7 @@ function HomePage() {
 
   // Form states (2-Step Continuation 1/2 and 2/2)
   const [formStep, setFormStep] = useState<1 | 2>(1);
-  const [showcaseTab, setShowcaseTab] = useState<
-    | "cladding"
-    | "stone-veneer"
-    | "glass-bricks"
-    | "clay-veneers"
-    | "pebbles"
-    | "installations"
-    | "products"
-  >("cladding");
+  const [showcaseTab, setShowcaseTab] = useState<ProductTab>("cladding");
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [spaceType, setSpaceType] = useState<string>("");
   const [serviceScope, setServiceScope] = useState<"supply_and_installation" | "supply_only">(
@@ -1039,7 +1032,7 @@ function HomePage() {
           <nav className="hidden md:flex items-center gap-6 xl:gap-8 text-sm font-semibold text-foreground/80">
             <a
               href="#wall-cladding-catalogue"
-              onClick={() => setShowcaseTab("products")}
+              onClick={() => setShowcaseTab("cladding")}
               className="hover:text-primary transition-colors whitespace-nowrap py-1"
             >
               {texts.nav.ourProducts || "Our Products"}
@@ -2268,157 +2261,18 @@ function HomePage() {
             </p>
           </div>
 
-          {/* Top Tabs Switcher */}
-          <div className="flex justify-center">
-            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-muted/80 border border-border shadow-xs overflow-x-auto max-w-full scrollbar-none [touch-action:pan-x]">
-              <button
-                type="button"
-                onClick={() => setShowcaseTab("cladding")}
-                className={cn(
-                  "flex items-center gap-2 px-3.5 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
-                  showcaseTab === "cladding" || showcaseTab === "products"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                <Layers className="h-4 w-4" />
-                <span>{texts.showcase.claddingTab || "Natural Stone Cladding"}</span>
-              </button>
+          {/* MASTER ARCHITECTURAL PRODUCT DISPLAY WITH INTEGRATED TABS & DYNAMIC DROPDOWNS */}
+          <MasterProductCatalog
+            activeTab={showcaseTab}
+            onTabChange={(tab) => setShowcaseTab(tab)}
+            onSelectProduct={(productDesc) => {
+              scrollToForm(productDesc);
+            }}
+          />
 
-              <button
-                type="button"
-                onClick={() => setShowcaseTab("stone-veneer")}
-                className={cn(
-                  "flex items-center gap-2 px-3.5 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
-                  showcaseTab === "stone-veneer"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                <Sparkles className="h-4 w-4 text-amber-500" />
-                <span>{texts.showcase.veneerTab || "Stone Veneer (98)"}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowcaseTab("glass-bricks")}
-                className={cn(
-                  "flex items-center gap-2 px-3.5 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
-                  showcaseTab === "glass-bricks"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                <Gem className="h-4 w-4 text-cyan-500" />
-                <span>{texts.showcase.glassBricksTab || "Glass Bricks (67)"}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowcaseTab("clay-veneers")}
-                className={cn(
-                  "flex items-center gap-2 px-3.5 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
-                  showcaseTab === "clay-veneers"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                <Compass className="h-4 w-4 text-orange-500" />
-                <span>{texts.showcase.clayVeneersTab || "Clay Veneers (40)"}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowcaseTab("pebbles")}
-                className={cn(
-                  "flex items-center gap-2 px-3.5 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
-                  showcaseTab === "pebbles"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                <CircleDot className="h-4 w-4 text-amber-500" />
-                <span>{texts.showcase.pebblesTab || "Stone Pebbles (75)"}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowcaseTab("installations")}
-                className={cn(
-                  "flex items-center gap-2 px-3.5 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
-                  showcaseTab === "installations"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                <Camera className="h-4 w-4 text-emerald-500" />
-                <span>{texts.showcase.installationsTab || "Live Installed Works"}</span>
-              </button>
-            </div>
-          </div>
-
-          {/* TAB 1: NATURAL STONE CLADDING & CATALOGUE */}
-          {(showcaseTab === "cladding" || showcaseTab === "products") && (
-            <div className="animate-in fade-in duration-300">
-              <WallCladdingCatalog
-                onSelectPattern={(pattern, price) => {
-                  scrollToForm(
-                    `${pattern.name} (${pattern.id}) - ${pattern.stoneType} @ ${price.currency}${price.price}/${price.unit}`,
-                  );
-                }}
-                showAdminBanner={false}
-              />
-            </div>
-          )}
-
-          {/* TAB 2: STONE VENEER CATALOGUE */}
-          {showcaseTab === "stone-veneer" && (
-            <div className="animate-in fade-in duration-300">
-              <StoneVeneerCatalog
-                onSelectProduct={(productDesc) => {
-                  scrollToForm(productDesc);
-                }}
-              />
-            </div>
-          )}
-
-          {/* TAB 3: GLASS BRICKS CATALOGUE */}
-          {showcaseTab === "glass-bricks" && (
-            <div className="animate-in fade-in duration-300">
-              <GlassBricksCatalog
-                onSelectProduct={(productDesc) => {
-                  scrollToForm(productDesc);
-                }}
-              />
-            </div>
-          )}
-
-          {/* TAB 4: FLEXIBLE CLAY VENEERS CATALOGUE */}
-          {showcaseTab === "clay-veneers" && (
-            <div className="animate-in fade-in duration-300">
-              <FlexibleClayCatalog
-                onSelectProduct={(productDesc) => {
-                  scrollToForm(productDesc);
-                }}
-              />
-            </div>
-          )}
-
-          {/* TAB 5: NATURAL STONE PEBBLES & AGGREGATES */}
-          {showcaseTab === "pebbles" && (
-            <div className="animate-in fade-in duration-300">
-              <StonePebblesCatalog
-                onSelectProduct={(productDesc) => {
-                  scrollToForm(productDesc);
-                }}
-              />
-            </div>
-          )}
-
-          {/* TAB 6: LIVE INSTALLATIONS & EXECUTED WORKS */}
+          {/* ADDITIONAL LIVE INSTALLATIONS SOCIAL FEEDS (WHEN INSTALLATIONS TAB ACTIVE) */}
           {showcaseTab === "installations" && (
-            <div id="gallery-feed" className="animate-in fade-in duration-300 space-y-12">
-              <InstalledWorksGallery onSelectProduct={scrollToForm} />
+            <div id="gallery-feed" className="animate-in fade-in duration-300 space-y-12 pt-6">
               <StoneGalleryFeed onSelectProduct={scrollToForm} />
               <LuxuryProductShowcase
                 onSelectProduct={scrollToForm}

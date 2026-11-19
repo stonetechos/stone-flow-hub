@@ -750,11 +750,48 @@ export function WallCladdingCatalog({
                         {lang === "gu"
                           ? "માસ્ટર કેટલોગ ૨૦૨૬"
                           : lang === "hi"
-                            ? "मास्टर कैटलॉग २०२६"
+                            ? "मास्टर कैटलॉग २०२૬"
                             : "Master Catalogue 2026"}
                       </span>
                     </span>
                     <span className="text-[10px] text-muted-foreground font-mono">15.4 MB</span>
+                  </a>
+                </div>
+
+                {/* 5. Natural Stone Pebbles & Semi-Precious Aggregates Catalogue */}
+                <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-2 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-xs text-foreground flex items-center gap-1.5">
+                      <FileDown className="h-3.5 w-3.5 text-amber-600" />
+                      {lang === "gu"
+                        ? "કુદરતી સ્ટોન પેબલ્સ"
+                        : lang === "hi"
+                          ? "नेचुरल स्टोन पेबल्स"
+                          : "Natural Stone Pebbles"}
+                    </span>
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] px-1.5 py-0 h-4 border-amber-500/40 text-amber-700 dark:text-amber-300"
+                    >
+                      23 Pgs
+                    </Badge>
+                  </div>
+                  <a
+                    href="/catalogues/StoneTech_Stone_Pebbles_Catalogue_2026.pdf?v=2026-v1"
+                    download="StoneTech_Stone_Pebbles_Catalogue_2026.pdf"
+                    className="w-full py-1 px-2 text-[11px] font-medium rounded border bg-background/80 hover:bg-accent border-border text-foreground flex items-center justify-between gap-1"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Download className="h-3 w-3 text-amber-600" />
+                      <span>
+                        {lang === "gu"
+                          ? "માસ્ટર કેટલોગ ૨૦૨૬"
+                          : lang === "hi"
+                            ? "मास्टर कैटलॉग २०२६"
+                            : "Master Catalogue 2026"}
+                      </span>
+                    </span>
+                    <span className="text-[10px] text-muted-foreground font-mono">16.2 MB</span>
                   </a>
                 </div>
               </DropdownMenuContent>
