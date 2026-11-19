@@ -530,3 +530,40 @@ installed_gallery.extend(cladding_installs)
 with open('src/data/installed-works-gallery.json', 'w') as f:
     json.dump(installed_gallery, f, indent=2)
 print(f"Exported {len(installed_gallery)} installed works items.")
+
+# -------------------------------------------------------------
+# 5. STONE PEBBLES & SEMI-PRECIOUS AGGREGATES CATALOG (75 items)
+# -------------------------------------------------------------
+sp = load_mod('sp', 'scripts/generate-stone-pebbles-catalogue.py')
+pebbles_items = []
+for p in sp.PEBBLES:
+    item_id = p["id"]
+    price = 120 if "Semi-Precious" in p["category"] else (85 if "Onyx" in p["category"] else (45 if "Jumbo" in p["category"] else (28 if "Mini" in p["category"] or "Chips" in p["category"] else 38)))
+    hardness = "7.0 Mohs (High Quartz)" if ("Quartz" in p["mineral"] or "Agate" in p["mineral"]) else ("6.0 - 6.5 Mohs (Basalt/Granite)" if ("Basalt" in p["mineral"] or "Granite" in p["mineral"]) else "3.5 - 5.5 Mohs")
+    apps = [a.strip() for a in p["use"].split(",")]
+    pebbles_items.append({
+        "id": p["code"],
+        "index": item_id,
+        "code": p["code"],
+        "name": p["name"],
+        "fullName": f"{p['name']} Architectural Natural Stone Pebbles",
+        "slug": p["name"].lower().replace(" ", "-").replace("'", "").replace("&", "and"),
+        "category": p["category"],
+        "mineral": p["mineral"],
+        "finish": p["finish"],
+        "sizes": p["sizes"],
+        "color": p["color"],
+        "image": f"/catalogues/stone-pebbles-assets/pebble_{item_id:03d}.jpg",
+        "price": price,
+        "unit": "kg",
+        "hardness": hardness,
+        "applications": apps,
+        "packaging": "25 kg UV Bag / 1.0 MT Jumbo Bulk / Wooden Crate",
+        "leadTime": "In Stock · Ready to Dispatch",
+        "badge": "100% Natural River / Quarry Aggregate",
+        "desc": p["desc"]
+    })
+
+with open('src/data/stone-pebbles-catalog.json', 'w') as f:
+    json.dump(pebbles_items, f, indent=2)
+print(f"Exported {len(pebbles_items)} stone pebbles catalog items.")

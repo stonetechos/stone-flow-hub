@@ -62,11 +62,12 @@ import { WallCladdingCatalog } from "@/components/catalog/WallCladdingCatalog";
 import { StoneVeneerCatalog } from "@/components/catalog/StoneVeneerCatalog";
 import { GlassBricksCatalog } from "@/components/catalog/GlassBricksCatalog";
 import { FlexibleClayCatalog } from "@/components/catalog/FlexibleClayCatalog";
+import { StonePebblesCatalog } from "@/components/catalog/StonePebblesCatalog";
 import { InstalledWorksGallery } from "@/components/catalog/InstalledWorksGallery";
 import { WebsiteProductsBackend } from "@/components/admin/WebsiteProductsBackend";
 import { SidebarTabsBackend } from "@/components/admin/SidebarTabsBackend";
 import { DEFAULT_NATURAL_STONE_PRODUCTS } from "@/lib/products/default-catalog";
-import { Sliders, Globe, PanelLeft, ShieldAlert } from "lucide-react";
+import { Sliders, Globe, PanelLeft, ShieldAlert, CircleDot } from "lucide-react";
 import { useRoles } from "@/hooks/use-roles";
 
 export const Route = createFileRoute("/_authenticated/products/")({
@@ -256,6 +257,13 @@ function ProductsPage() {
               <span>Clay Veneers (40)</span>
             </TabsTrigger>
             <TabsTrigger
+              value="pebbles"
+              className="text-xs gap-1.5 data-[state=active]:bg-cyan-600 data-[state=active]:text-white font-semibold"
+            >
+              <CircleDot className="h-3.5 w-3.5 text-amber-500" />
+              <span>Stone Pebbles (75)</span>
+            </TabsTrigger>
+            <TabsTrigger
               value="installations"
               className="text-xs gap-1.5 data-[state=active]:bg-cyan-600 data-[state=active]:text-white font-semibold"
             >
@@ -312,6 +320,10 @@ function ProductsPage() {
 
         <TabsContent value="clay-veneers" className="pt-2">
           <FlexibleClayCatalog />
+        </TabsContent>
+
+        <TabsContent value="pebbles" className="pt-2">
+          <StonePebblesCatalog />
         </TabsContent>
 
         <TabsContent value="installations" className="pt-2">

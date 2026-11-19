@@ -54,6 +54,7 @@ import {
   Wrench,
   FileUp,
   Layers,
+  CircleDot,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,6 +71,7 @@ import { WallCladdingCatalog } from "@/components/catalog/WallCladdingCatalog";
 import { StoneVeneerCatalog } from "@/components/catalog/StoneVeneerCatalog";
 import { GlassBricksCatalog } from "@/components/catalog/GlassBricksCatalog";
 import { FlexibleClayCatalog } from "@/components/catalog/FlexibleClayCatalog";
+import { StonePebblesCatalog } from "@/components/catalog/StonePebblesCatalog";
 import { InstalledWorksGallery } from "@/components/catalog/InstalledWorksGallery";
 import { ContactCenter } from "@/components/landing/ContactCenter";
 import { JobOpeningsDialog } from "@/components/landing/JobOpeningsDialog";
@@ -418,7 +420,13 @@ function HomePage() {
   // Form states (2-Step Continuation 1/2 and 2/2)
   const [formStep, setFormStep] = useState<1 | 2>(1);
   const [showcaseTab, setShowcaseTab] = useState<
-    "cladding" | "stone-veneer" | "glass-bricks" | "clay-veneers" | "installations" | "products"
+    | "cladding"
+    | "stone-veneer"
+    | "glass-bricks"
+    | "clay-veneers"
+    | "pebbles"
+    | "installations"
+    | "products"
   >("cladding");
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [spaceType, setSpaceType] = useState<string>("");
@@ -2321,6 +2329,20 @@ function HomePage() {
 
               <button
                 type="button"
+                onClick={() => setShowcaseTab("pebbles")}
+                className={cn(
+                  "flex items-center gap-2 px-3.5 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
+                  showcaseTab === "pebbles"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <CircleDot className="h-4 w-4 text-amber-500" />
+                <span>{texts.showcase.pebblesTab || "Stone Pebbles (75)"}</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setShowcaseTab("installations")}
                 className={cn(
                   "flex items-center gap-2 px-3.5 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
@@ -2382,7 +2404,18 @@ function HomePage() {
             </div>
           )}
 
-          {/* TAB 5: LIVE INSTALLATIONS & EXECUTED WORKS */}
+          {/* TAB 5: NATURAL STONE PEBBLES & AGGREGATES */}
+          {showcaseTab === "pebbles" && (
+            <div className="animate-in fade-in duration-300">
+              <StonePebblesCatalog
+                onSelectProduct={(productDesc) => {
+                  scrollToForm(productDesc);
+                }}
+              />
+            </div>
+          )}
+
+          {/* TAB 6: LIVE INSTALLATIONS & EXECUTED WORKS */}
           {showcaseTab === "installations" && (
             <div id="gallery-feed" className="animate-in fade-in duration-300 space-y-12">
               <InstalledWorksGallery onSelectProduct={scrollToForm} />
