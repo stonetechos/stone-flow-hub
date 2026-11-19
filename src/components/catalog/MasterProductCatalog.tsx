@@ -36,6 +36,8 @@ import {
   FileDown,
   X,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   ArrowRight,
   Eye,
   ShieldCheck,
@@ -142,17 +144,19 @@ export function MasterProductCatalog({
     setSearchQuery("");
     setSelectedCategory("all");
     setSelectedSubFilter("all");
-    setVisibleCount(18);
+    setCurrentPage(1);
+    setShowAll(false);
   };
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedSubFilter, setSelectedSubFilter] = useState("all");
-  const [visibleCount, setVisibleCount] = useState(18);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [showAll, setShowAll] = useState(false);
   const [lightboxItem, setLightboxItem] = useState<CatalogItem | null>(null);
 
-  const loaderRef = useRef<HTMLDivElement>(null);
+  const ITEMS_PER_PAGE = 16;
 
   // Normalize data collections
   const currentDataset: CatalogItem[] = useMemo(() => {
@@ -355,27 +359,29 @@ export function MasterProductCatalog({
     });
   }, [currentDataset, selectedCategory, selectedSubFilter, searchQuery]);
 
-  const displayedItems = useMemo(() => {
-    return filteredItems.slice(0, visibleCount);
-  }, [filteredItems, visibleCount]);
-
-  // Infinite scroll
+  // Reset page when criteria changes
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && visibleCount < filteredItems.length) {
-          setVisibleCount((prev) => Math.min(prev + 18, filteredItems.length));
-        }
-      },
-      { threshold: 0.2 },
-    );
+    setCurrentPage(1);
+    setShowAll(false);
+  }, [currentTab, selectedCategory, selectedSubFilter, searchQuery]);
 
-    const el = loaderRef.current;
-    if (el) observer.observe(el);
-    return () => {
-      if (el) observer.unobserve(el);
-    };
-  }, [visibleCount, filteredItems.length]);
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / ITEMS_PER_PAGE));
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, filteredItems.length);
+
+  const displayedItems = useMemo(() => {
+    if (showAll) return filteredItems;
+    return filteredItems.slice(startIndex, endIndex);
+  }, [filteredItems, startIndex, endIndex, showAll]);
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    setShowAll(false);
+    const catalogEl = document.getElementById("wall-cladding-catalogue");
+    if (catalogEl) {
+      catalogEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   const handleSelectProductClick = (item: CatalogItem, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -595,7 +601,7 @@ export function MasterProductCatalog({
             value={selectedCategory}
             onValueChange={(val) => {
               setSelectedCategory(val);
-              setVisibleCount(18);
+              setCurrentPage(1);
             }}
           >
             <SelectTrigger className="h-8 text-xs bg-background/90 w-[150px] sm:w-[170px]">
@@ -618,7 +624,7 @@ export function MasterProductCatalog({
             value={selectedSubFilter}
             onValueChange={(val) => {
               setSelectedSubFilter(val);
-              setVisibleCount(18);
+              setCurrentPage(1);
             }}
           >
             <SelectTrigger className="h-8 text-xs bg-background/90 w-[130px] sm:w-[150px] hidden sm:flex">
@@ -645,7 +651,7 @@ export function MasterProductCatalog({
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
-                setVisibleCount(18);
+                setCurrentPage(1);
               }}
               className="pl-8 h-8 text-xs bg-background/90"
             />
@@ -852,7 +858,7 @@ export function MasterProductCatalog({
           type="button"
           onClick={() => {
             setSelectedCategory("all");
-            setVisibleCount(18);
+            setCurrentPage(1);
           }}
           className={cn(
             "px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer",
@@ -869,7 +875,7 @@ export function MasterProductCatalog({
             type="button"
             onClick={() => {
               setSelectedCategory(cat.key);
-              setVisibleCount(18);
+              setCurrentPage(1);
             }}
             className={cn(
               "px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer",
@@ -902,28 +908,28 @@ export function MasterProductCatalog({
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 pt-1">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-2.5 sm:gap-3 pt-1">
           {displayedItems.map((item) => (
             <div
               key={item.code}
               onClick={() => setLightboxItem(item)}
-              className="group relative flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-card hover:border-amber-500/50 hover:shadow-lg transition-all duration-300 cursor-pointer"
+              className="group relative flex flex-col overflow-hidden rounded-xl border border-border/70 bg-card hover:border-amber-500/60 hover:shadow-md transition-all duration-200 cursor-pointer"
             >
-              {/* Product Image Frame */}
+              {/* Squeezed Product Image Frame */}
               <div className="relative aspect-square w-full overflow-hidden bg-slate-950/80">
                 <img
                   src={item.image}
                   alt={item.name}
                   loading="lazy"
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
 
                 {/* Top badges */}
-                <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-10">
-                  <span className="rounded-md bg-amber-500 px-2 py-0.5 text-[10px] font-extrabold text-slate-950 tracking-wider shadow-sm">
+                <div className="absolute top-2 left-2 flex items-center gap-1 z-10">
+                  <span className="rounded-md bg-amber-500 px-1.5 py-0.5 text-[9px] font-extrabold text-slate-950 tracking-wider shadow-xs">
                     {item.code}
                   </span>
-                  <span className="rounded-md bg-slate-950/80 backdrop-blur-xs px-2 py-0.5 text-[9px] font-semibold text-cyan-300 border border-cyan-500/30">
+                  <span className="rounded-md bg-slate-950/85 backdrop-blur-xs px-1.5 py-0.5 text-[8.5px] font-semibold text-cyan-300 border border-cyan-500/30 line-clamp-1 max-w-[110px]">
                     {item.category}
                   </span>
                 </div>
@@ -932,18 +938,18 @@ export function MasterProductCatalog({
                 <button
                   type="button"
                   onClick={(e) => handleShare(item, e)}
-                  className="absolute top-2.5 right-2.5 rounded-full bg-slate-950/70 backdrop-blur-xs p-1.5 text-slate-300 hover:text-white transition-opacity z-10 cursor-pointer opacity-80 group-hover:opacity-100"
+                  className="absolute top-2 right-2 rounded-full bg-slate-950/70 backdrop-blur-xs p-1 text-slate-300 hover:text-white transition-opacity z-10 cursor-pointer opacity-70 group-hover:opacity-100"
                   title="Share"
                 >
-                  <Share2 className="h-3.5 w-3.5" />
+                  <Share2 className="h-3 w-3" />
                 </button>
 
                 {/* Hover overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3.5 z-10">
-                  <p className="text-[11px] text-amber-300 font-medium line-clamp-1 mb-1">
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-2.5 z-10">
+                  <p className="text-[10px] text-amber-300 font-medium line-clamp-1 mb-0.5">
                     {item.details}
                   </p>
-                  <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center justify-between text-[11px]">
                     {item.price ? (
                       <span className="text-white font-bold">
                         ₹{item.price}/{item.unit}
@@ -951,35 +957,35 @@ export function MasterProductCatalog({
                     ) : (
                       <span className="text-white font-bold">Verified Portfolio</span>
                     )}
-                    <span className="flex items-center gap-1 text-[11px] text-amber-400 font-semibold">
-                      <Eye className="h-3.5 w-3.5" /> Details
+                    <span className="flex items-center gap-0.5 text-[10px] text-amber-400 font-semibold">
+                      <Eye className="h-3 w-3" /> Details
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Product Info */}
-              <div className="p-3.5 flex flex-col flex-1 justify-between gap-2">
+              {/* Squeezed Product Info */}
+              <div className="p-2.5 flex flex-col flex-1 justify-between gap-1.5">
                 <div>
-                  <h3 className="text-sm font-bold text-foreground group-hover:text-amber-500 transition-colors line-clamp-1">
+                  <h3 className="text-xs sm:text-sm font-bold text-foreground group-hover:text-amber-500 transition-colors line-clamp-1">
                     {item.name}
                   </h3>
-                  <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium line-clamp-1">
+                  <p className="text-[10px] sm:text-[11px] text-amber-600 dark:text-amber-400 font-medium line-clamp-1">
                     {item.details}
                   </p>
-                  <p className="mt-1 text-[11px] text-muted-foreground line-clamp-1">
-                    <strong>Sizes:</strong> {item.sizes}
+                  <p className="mt-0.5 text-[10px] text-muted-foreground line-clamp-1">
+                    <span className="font-semibold">Size:</span> {item.sizes}
                   </p>
                 </div>
 
-                <div className="pt-2 border-t border-border/40 flex items-center justify-between">
+                <div className="pt-1.5 border-t border-border/40 flex items-center justify-between gap-1">
                   {item.price ? (
                     <div>
                       <span className="text-xs font-bold text-foreground">₹{item.price}</span>
-                      <span className="text-[10px] text-muted-foreground">/{item.unit}</span>
+                      <span className="text-[9px] text-muted-foreground">/{item.unit}</span>
                     </div>
                   ) : (
-                    <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                    <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
                       Live Executed
                     </span>
                   )}
@@ -988,10 +994,10 @@ export function MasterProductCatalog({
                     size="sm"
                     variant="outline"
                     onClick={(e) => handleSelectProductClick(item, e)}
-                    className="h-7 text-[11px] px-2.5 border-amber-500/40 hover:bg-amber-500 hover:text-slate-950 cursor-pointer font-semibold"
+                    className="h-6 text-[10px] px-2 border-amber-500/40 hover:bg-amber-500 hover:text-slate-950 cursor-pointer font-semibold shrink-0"
                   >
                     Estimate
-                    <ArrowRight className="h-3 w-3 ml-1" />
+                    <ArrowRight className="h-2.5 w-2.5 ml-1" />
                   </Button>
                 </div>
               </div>
@@ -1000,18 +1006,108 @@ export function MasterProductCatalog({
         </div>
       )}
 
-      {/* Infinite scroll sentinel */}
-      {visibleCount < filteredItems.length && (
-        <div ref={loaderRef} className="flex justify-center py-6">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setVisibleCount((prev) => Math.min(prev + 18, filteredItems.length))}
-            className="text-xs gap-2 cursor-pointer border-amber-500/30"
-          >
-            <RotateCw className="h-3.5 w-3.5 text-amber-500" />
-            Load More ({filteredItems.length - visibleCount} remaining)
-          </Button>
+      {/* SQUEEZED PAGINATION CONTROLS (Eliminates infinite bounce & enables immediate smooth scrolling to footer) */}
+      {filteredItems.length > ITEMS_PER_PAGE && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-border/60">
+          <div className="text-xs text-muted-foreground font-medium">
+            {showAll ? (
+              <span>Showing all {filteredItems.length} products</span>
+            ) : (
+              <span>
+                Showing{" "}
+                <strong className="text-foreground">
+                  {startIndex + 1}–{endIndex}
+                </strong>{" "}
+                of <strong className="text-foreground">{filteredItems.length}</strong>{" "}
+                {tabMetadata.countLabel} (Page {currentPage} of {totalPages})
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {!showAll ? (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage <= 1}
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  className="h-7 px-2.5 text-xs gap-1 cursor-pointer"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                  <span>Prev</span>
+                </Button>
+
+                {/* Numbered Page Buttons */}
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                    .reduce<(number | string)[]>((acc, p, idx, arr) => {
+                      if (
+                        idx > 0 &&
+                        typeof arr[idx - 1] === "number" &&
+                        (p as number) - (arr[idx - 1] as number) > 1
+                      ) {
+                        acc.push("...");
+                      }
+                      acc.push(p);
+                      return acc;
+                    }, [])
+                    .map((pageItem, idx) =>
+                      pageItem === "..." ? (
+                        <span key={`dots-${idx}`} className="px-1 text-xs text-muted-foreground">
+                          …
+                        </span>
+                      ) : (
+                        <Button
+                          key={`page-${pageItem}`}
+                          variant={currentPage === pageItem ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handlePageChange(pageItem as number)}
+                          className={cn(
+                            "h-7 w-7 p-0 text-xs font-bold cursor-pointer",
+                            currentPage === pageItem
+                              ? "bg-primary text-primary-foreground"
+                              : "text-muted-foreground hover:text-foreground",
+                          )}
+                        >
+                          {pageItem}
+                        </Button>
+                      ),
+                    )}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage >= totalPages}
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  className="h-7 px-2.5 text-xs gap-1 cursor-pointer"
+                >
+                  <span>Next</span>
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowAll(true)}
+                  className="h-7 px-2 text-[11px] text-muted-foreground hover:text-foreground cursor-pointer hidden md:inline-flex"
+                >
+                  Show All ({filteredItems.length})
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAll(false)}
+                className="h-7 px-3 text-xs cursor-pointer"
+              >
+                Switch to Paginated View (16 per page)
+              </Button>
+            )}
+          </div>
         </div>
       )}
 

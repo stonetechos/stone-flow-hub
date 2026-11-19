@@ -144,12 +144,9 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
           </div>
         </div>
 
-        {/* 3-Column Scrollable Feed with Native Momentum & Offscreen Culling */}
-        <div
-          ref={scrollContainerRef}
-          className="max-h-[640px] sm:max-h-[700px] lg:max-h-[750px] overflow-y-auto overscroll-y-auto pr-1 rounded-2xl scrollbar-thin scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/40 [touch-action:pan-y] [-webkit-overflow-scrolling:touch]"
-        >
-          <div className="grid grid-cols-3 gap-1.5 sm:gap-2 pb-2">
+        {/* Unconstrained Squeezed Feed without inner scroll trap (allows reaching footer) */}
+        <div ref={scrollContainerRef} className="rounded-2xl pb-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-2.5 pb-2">
             {visiblePosts.map((post, idx) => {
               const hasMultiplePhotos =
                 (post.carouselImages && post.carouselImages.length > 1) ||
@@ -235,34 +232,27 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
             })}
           </div>
 
-          {/* Sentinel element observed by IntersectionObserver to seamlessly load next batches */}
+          {/* Load More Button — Manual control to prevent infinite scroll bounce & traps */}
           {visiblePosts.length < allPosts.length && (
-            <div
-              ref={sentinelRef}
-              className="h-8 w-full flex items-center justify-center py-2"
-              aria-hidden="true"
-            >
-              <div className="h-4 w-4 rounded-full border-2 border-amber-600/60 border-t-transparent animate-spin" />
-            </div>
-          )}
-
-          {/* Bottom gentle indicator with manual trigger fallback */}
-          <div className="py-2 text-center text-[10px] text-muted-foreground font-medium">
-            {visiblePosts.length < allPosts.length ? (
+            <div className="py-6 text-center flex items-center justify-center gap-2">
               <button
                 type="button"
                 onClick={() =>
                   setVisibleCount((prev) => Math.min(prev + BATCH_SIZE, allPosts.length))
                 }
-                className="hover:text-foreground hover:underline cursor-pointer transition-colors"
+                className="px-4 py-2 rounded-lg border border-amber-500/30 bg-card hover:bg-muted text-xs font-semibold text-foreground cursor-pointer transition-all shadow-xs"
               >
-                Showing {visiblePosts.length} of {allPosts.length} works · Scroll or tap to load
-                more
+                Load More Projects ({allPosts.length - visiblePosts.length} remaining)
               </button>
-            ) : (
-              `Showing all ${allPosts.length} executed atelier projects`
-            )}
-          </div>
+              <button
+                type="button"
+                onClick={() => setVisibleCount(allPosts.length)}
+                className="px-3 py-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+              >
+                Show All ({allPosts.length})
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

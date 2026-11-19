@@ -266,23 +266,7 @@ export function StonePebblesCatalog({
     return filteredItems.slice(0, visibleCount);
   }, [filteredItems, visibleCount]);
 
-  // Infinite scroll
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && visibleCount < filteredItems.length) {
-          setVisibleCount((prev) => Math.min(prev + BATCH_SIZE, filteredItems.length));
-        }
-      },
-      { threshold: 0.2 },
-    );
-
-    const el = loaderRef.current;
-    if (el) observer.observe(el);
-    return () => {
-      if (el) observer.unobserve(el);
-    };
-  }, [visibleCount, filteredItems.length]);
+  // Manual load more to prevent infinite scroll bounce & traps
 
   const handleShare = (item: StonePebbleItem, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -472,7 +456,7 @@ export function StonePebblesCatalog({
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-2.5 sm:gap-3">
           {displayedItems.map((item) => (
             <div
               key={item.code}

@@ -853,11 +853,8 @@ export function WallCladdingCatalog({
             })}
         </div>
 
-        {/* 3-Column Scrollable Box with Native Momentum — EXACT SAME SPEC as StoneGalleryFeed */}
-        <div
-          ref={scrollContainerRef}
-          className="max-h-[640px] sm:max-h-[700px] lg:max-h-[750px] overflow-y-auto overscroll-y-auto pr-1 rounded-2xl scrollbar-thin scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/40 [touch-action:pan-y] [-webkit-overflow-scrolling:touch]"
-        >
+        {/* Unconstrained Flow Grid without inner scroll trap (enables smooth scrolling to footer) */}
+        <div ref={scrollContainerRef} className="rounded-2xl pb-2">
           {filteredItems.length === 0 ? (
             <div className="text-center py-16 border rounded-2xl bg-muted/20 space-y-3">
               <Layers className="h-10 w-10 text-muted-foreground mx-auto" />
@@ -877,7 +874,7 @@ export function WallCladdingCatalog({
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-1.5 sm:gap-2 pb-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-2.5 pb-2">
               {displayedItems.map((item, idx) => {
                 const price = getPrice(item.id, item.category, item.stoneType, item.index);
 
@@ -953,13 +950,27 @@ export function WallCladdingCatalog({
             </div>
           )}
 
-          {/* Sentinel element observed by IntersectionObserver to seamlessly load next batches */}
+          {/* Load More Button — Manual control to prevent infinite scroll bounce & traps */}
           {displayedItems.length < filteredItems.length && (
-            <div ref={sentinelRef} className="py-4 text-center">
-              <span className="text-xs text-muted-foreground flex items-center justify-center gap-2">
-                <span className="animate-spin h-3.5 w-3.5 border-2 border-primary border-t-transparent rounded-full" />
-                Loading more patterns ({displayedItems.length}/{filteredItems.length})...
-              </span>
+            <div className="py-6 text-center flex items-center justify-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setVisibleCount((prev) => Math.min(prev + BATCH_SIZE, filteredItems.length))
+                }
+                className="h-8 text-xs cursor-pointer border-amber-500/30 font-semibold"
+              >
+                Load More Patterns ({filteredItems.length - displayedItems.length} remaining)
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setVisibleCount(filteredItems.length)}
+                className="h-8 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+              >
+                Show All ({filteredItems.length})
+              </Button>
             </div>
           )}
         </div>

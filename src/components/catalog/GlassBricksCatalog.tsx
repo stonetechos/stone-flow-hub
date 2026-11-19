@@ -469,11 +469,8 @@ export function GlassBricksCatalog({
         </div>
       </div>
 
-      {/* 3. 3-COLUMN PRODUCT GRID CONTAINER WITH INFINITE SCROLL */}
-      <div
-        ref={scrollContainerRef}
-        className="max-h-[640px] sm:max-h-[700px] lg:max-h-[750px] overflow-y-auto overscroll-contain pr-1 rounded-2xl border border-border/40 p-2 sm:p-3 bg-stone-950/20 dark:bg-black/40"
-      >
+      {/* 3. SQUEEZED PRODUCT GRID (Unconstrained Flow without inner scroll trap) */}
+      <div ref={scrollContainerRef} className="rounded-2xl pb-2">
         {filteredItems.length === 0 ? (
           <div className="py-16 text-center space-y-3">
             <p className="text-sm font-semibold text-muted-foreground">{t.noMatching}</p>
@@ -489,7 +486,7 @@ export function GlassBricksCatalog({
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2.5 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-2.5 sm:gap-3">
             {visibleItems.map((item, idx) => (
               <div
                 key={item.id}
@@ -564,7 +561,27 @@ export function GlassBricksCatalog({
           </div>
         )}
 
-        <div ref={sentinelRef} className="h-10 w-full" />
+        {/* Load More Button — Manual control to prevent infinite scroll bounce & traps */}
+        {visibleItems.length < filteredItems.length && (
+          <div className="py-6 text-center flex items-center justify-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setVisibleCount((prev) => Math.min(prev + 18, filteredItems.length))}
+              className="h-8 text-xs cursor-pointer border-cyan-500/30 font-semibold"
+            >
+              Load More Designs ({filteredItems.length - visibleItems.length} remaining)
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setVisibleCount(filteredItems.length)}
+              className="h-8 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+            >
+              Show All ({filteredItems.length})
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* 4. ARCHITECTURAL LIGHTBOX MODAL DIALOG */}
