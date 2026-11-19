@@ -43,6 +43,7 @@ import { PURCHASE_ORDER_STATUSES } from "@/lib/purchase-orders/schema";
 import { invalidatePurchaseOrder } from "@/lib/query-invalidation";
 import { useRoles } from "@/hooks/use-roles";
 import { formatDate } from "@/lib/format";
+import { AccountingGuard } from "@/components/auth/AccountingGuard";
 
 export const Route = createFileRoute("/_authenticated/purchase-orders/")({
   ssr: false,
@@ -101,6 +102,10 @@ function PurchaseOrdersPage() {
     setQ(v);
     nav({ to: "/purchase-orders", search: { status: status || undefined, q: v || undefined } });
   };
+
+  if (roles.isReady && !roles.hasAnyRole(["admin", "super_admin", "purchase"])) {
+    return <AccountingGuard moduleName="Purchase Orders & Procurement" />;
+  }
 
   const rows = query.data ?? [];
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);

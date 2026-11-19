@@ -178,6 +178,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     label: "Agent Centre",
     icon: Bot,
     group: "overview",
+    allowedRoles: ["admin", "super_admin"],
   },
 
   // 2. Items & Inventory
@@ -202,6 +203,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     label: "Price Lists & Masters",
     icon: Gem,
     group: "items",
+    allowedRoles: ["admin", "super_admin", "sales_manager"],
   },
 
   // 3. Sales & CRM
@@ -276,6 +278,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     label: "Supplying Partners",
     icon: Factory,
     group: "purchase",
+    allowedRoles: ["admin", "super_admin", "purchase"],
     quickCreateTo: "/vendors?create=true",
   },
   {
@@ -284,6 +287,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     label: "Work & Supply Directory",
     icon: Users,
     group: "purchase",
+    allowedRoles: ["admin", "super_admin", "purchase"],
   },
   {
     id: "rfqs",
@@ -291,6 +295,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     label: "RFQ (Request for Quote)",
     icon: Send,
     group: "purchase",
+    allowedRoles: ["admin", "super_admin", "purchase"],
   },
   {
     id: "purchase-orders",
@@ -298,6 +303,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     label: "Purchase Orders",
     icon: ClipboardList,
     group: "purchase",
+    allowedRoles: ["admin", "super_admin", "purchase"],
     quickCreateTo: "/purchase-orders/new",
   },
   {
@@ -306,6 +312,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     label: "Purchase Invoices (Bills)",
     icon: Receipt,
     group: "purchase",
+    allowedRoles: ["admin", "super_admin", "purchase"],
     quickCreateTo: "/purchase-invoices/new",
   },
   {

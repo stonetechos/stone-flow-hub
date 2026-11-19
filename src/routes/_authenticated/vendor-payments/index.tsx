@@ -38,6 +38,7 @@ import { invalidateVendorPayment } from "@/lib/query-invalidation";
 import { useRoles } from "@/hooks/use-roles";
 import { formatInr, toIndicDigits } from "@/lib/format";
 import { transliterateName } from "@/lib/i18n/transliterate";
+import { AccountingGuard } from "@/components/auth/AccountingGuard";
 
 export const Route = createFileRoute("/_authenticated/vendor-payments/")({
   ssr: false,
@@ -113,187 +114,189 @@ function VendorPaymentsPage() {
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
 
   return (
-    <div>
-      <PageHeader
-        navId="vendor-payments"
-        title={t("vendorPayments.title", "Supplier Payments")}
-        subtitle={t(
-          "vendorPayments.subtitle",
-          "Advance, part, full, retention, credit / debit note and refund settlements across supplying partners.",
-        )}
-      />
-
-      <DataToolbar
-        count={rows.length}
-        search={q}
-        onSearchChange={setQ}
-        searchPlaceholder={t(
-          "vendorPayments.searchPlaceholder",
-          "Search supplier name, payment no, reference, notes…",
-        )}
-        columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
-        density={<DensityMenu density={prefs.density} onChange={setDensity} />}
-        action={
-          roles.canWrite ? (
-            <Button size="sm" className="h-8" onClick={() => nav({ to: "/vendor-payments/new" })}>
-              <Plus className="mr-1.5 h-3.5 w-3.5" />{" "}
-              {t("vendorPayments.recordPayment", "Record team payment")}
-            </Button>
-          ) : null
-        }
-      />
-
-      {query.isLoading ? (
-        <SkeletonTable rows={6} columns={6} />
-      ) : query.error ? (
-        <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
-      ) : rows.length === 0 ? (
-        <EmptyState
-          icon={<Banknote className="h-6 w-6" />}
-          title={t("vendorPayments.noPaymentsYet", "No supplier payments yet")}
-          message={t(
-            "vendorPayments.noPaymentsYetDesc",
-            "Record an advance, part or full payment to a team partner.",
+    <AccountingGuard moduleName="Supplier Payments">
+      <div>
+        <PageHeader
+          navId="vendor-payments"
+          title={t("vendorPayments.title", "Supplier Payments")}
+          subtitle={t(
+            "vendorPayments.subtitle",
+            "Advance, part, full, retention, credit / debit note and refund settlements across supplying partners.",
           )}
+        />
+
+        <DataToolbar
+          count={rows.length}
+          search={q}
+          onSearchChange={setQ}
+          searchPlaceholder={t(
+            "vendorPayments.searchPlaceholder",
+            "Search supplier name, payment no, reference, notes…",
+          )}
+          columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
+          density={<DensityMenu density={prefs.density} onChange={setDensity} />}
           action={
             roles.canWrite ? (
-              <Button onClick={() => nav({ to: "/vendor-payments/new" })}>
-                <Plus className="mr-2 h-4 w-4" />{" "}
+              <Button size="sm" className="h-8" onClick={() => nav({ to: "/vendor-payments/new" })}>
+                <Plus className="mr-1.5 h-3.5 w-3.5" />{" "}
                 {t("vendorPayments.recordPayment", "Record team payment")}
               </Button>
-            ) : undefined
+            ) : null
           }
         />
-      ) : (
-        <DataTableShell
-          density={prefs.density}
-          footer={
-            <TablePagination
-              page={page}
-              pageSize={pageSize}
-              total={rows.length}
-              onPageChange={setPage}
-              onPageSizeChange={(s) => {
-                setPageSize(s);
-                setPage(1);
-              }}
-            />
-          }
-        >
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {!isHidden("no") && (
-                  <TableHead>{t("table.paymentNo", "Payment / Vendor")}</TableHead>
-                )}
-                {!isHidden("vendor") && <TableHead>{t("table.vendor", "Vendor")}</TableHead>}
-                {!isHidden("po") && <TableHead>{t("table.po", "PO")}</TableHead>}
-                {!isHidden("type") && <TableHead>{t("table.type", "Type")}</TableHead>}
-                {!isHidden("amount") && (
-                  <TableHead className="text-right">{t("table.amount", "Amount")}</TableHead>
-                )}
-                {!isHidden("paid") && <TableHead>{t("table.paidOn", "Paid on")}</TableHead>}
-                <TableHead className="w-12" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {pageRows.map((r) => (
-                <TableRow key={r.id}>
+
+        {query.isLoading ? (
+          <SkeletonTable rows={6} columns={6} />
+        ) : query.error ? (
+          <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
+        ) : rows.length === 0 ? (
+          <EmptyState
+            icon={<Banknote className="h-6 w-6" />}
+            title={t("vendorPayments.noPaymentsYet", "No supplier payments yet")}
+            message={t(
+              "vendorPayments.noPaymentsYetDesc",
+              "Record an advance, part or full payment to a team partner.",
+            )}
+            action={
+              roles.canWrite ? (
+                <Button onClick={() => nav({ to: "/vendor-payments/new" })}>
+                  <Plus className="mr-2 h-4 w-4" />{" "}
+                  {t("vendorPayments.recordPayment", "Record team payment")}
+                </Button>
+              ) : undefined
+            }
+          />
+        ) : (
+          <DataTableShell
+            density={prefs.density}
+            footer={
+              <TablePagination
+                page={page}
+                pageSize={pageSize}
+                total={rows.length}
+                onPageChange={setPage}
+                onPageSizeChange={(s) => {
+                  setPageSize(s);
+                  setPage(1);
+                }}
+              />
+            }
+          >
+            <Table>
+              <TableHeader>
+                <TableRow>
                   {!isHidden("no") && (
-                    <TableCell className="text-xs">
-                      <div className="flex flex-col min-w-0">
-                        <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
-                          {transliterateName(r.vendor?.company_name, i18n.language) ?? "—"}
-                        </span>
-                        <Link
-                          to="/vendor-payments/$id"
-                          params={{ id: r.id }}
-                          className="font-mono text-[11px] text-primary hover:underline truncate"
-                        >
-                          {toIndicDigits(r.payment_no, i18n.language)}
-                        </Link>
-                      </div>
-                    </TableCell>
+                    <TableHead>{t("table.paymentNo", "Payment / Vendor")}</TableHead>
                   )}
-                  {!isHidden("vendor") && (
-                    <TableCell>
-                      {r.vendor ? (
-                        <Link
-                          to="/vendors/$vendorId"
-                          params={{ vendorId: r.vendor.id }}
-                          className="text-primary hover:underline"
-                        >
-                          {transliterateName(r.vendor.company_name, i18n.language)}
-                        </Link>
-                      ) : (
-                        "—"
-                      )}
-                    </TableCell>
-                  )}
-                  {!isHidden("po") && (
-                    <TableCell>
-                      {r.purchase_order ? (
-                        <Link
-                          to="/purchase-orders/$id"
-                          params={{ id: r.purchase_order.id }}
-                          className="text-primary hover:underline"
-                        >
-                          {toIndicDigits(r.purchase_order.po_no, i18n.language)}
-                        </Link>
-                      ) : (
-                        "—"
-                      )}
-                    </TableCell>
-                  )}
-                  {!isHidden("type") && (
-                    <TableCell>
-                      <Badge variant="secondary" className="capitalize">
-                        {t(
-                          `vendorPayments.types.${r.payment_type}`,
-                          r.payment_type.replace(/_/g, " "),
-                        )}
-                      </Badge>
-                    </TableCell>
-                  )}
+                  {!isHidden("vendor") && <TableHead>{t("table.vendor", "Vendor")}</TableHead>}
+                  {!isHidden("po") && <TableHead>{t("table.po", "PO")}</TableHead>}
+                  {!isHidden("type") && <TableHead>{t("table.type", "Type")}</TableHead>}
                   {!isHidden("amount") && (
-                    <TableCell className="text-right font-medium tabular-nums">
-                      {toIndicDigits(formatInr(Number(r.amount)), i18n.language)}
-                    </TableCell>
+                    <TableHead className="text-right">{t("table.amount", "Amount")}</TableHead>
                   )}
-                  {!isHidden("paid") && (
-                    <TableCell>{toIndicDigits(r.paid_at, i18n.language)}</TableCell>
-                  )}
-                  <TableCell>
-                    <RowActions onEdit={() => setToEdit(r)} onDelete={() => setToDelete(r)} />
-                  </TableCell>
+                  {!isHidden("paid") && <TableHead>{t("table.paidOn", "Paid on")}</TableHead>}
+                  <TableHead className="w-12" />
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </DataTableShell>
-      )}
+              </TableHeader>
+              <TableBody>
+                {pageRows.map((r) => (
+                  <TableRow key={r.id}>
+                    {!isHidden("no") && (
+                      <TableCell className="text-xs">
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
+                            {transliterateName(r.vendor?.company_name, i18n.language) ?? "—"}
+                          </span>
+                          <Link
+                            to="/vendor-payments/$id"
+                            params={{ id: r.id }}
+                            className="font-mono text-[11px] text-primary hover:underline truncate"
+                          >
+                            {toIndicDigits(r.payment_no, i18n.language)}
+                          </Link>
+                        </div>
+                      </TableCell>
+                    )}
+                    {!isHidden("vendor") && (
+                      <TableCell>
+                        {r.vendor ? (
+                          <Link
+                            to="/vendors/$vendorId"
+                            params={{ vendorId: r.vendor.id }}
+                            className="text-primary hover:underline"
+                          >
+                            {transliterateName(r.vendor.company_name, i18n.language)}
+                          </Link>
+                        ) : (
+                          "—"
+                        )}
+                      </TableCell>
+                    )}
+                    {!isHidden("po") && (
+                      <TableCell>
+                        {r.purchase_order ? (
+                          <Link
+                            to="/purchase-orders/$id"
+                            params={{ id: r.purchase_order.id }}
+                            className="text-primary hover:underline"
+                          >
+                            {toIndicDigits(r.purchase_order.po_no, i18n.language)}
+                          </Link>
+                        ) : (
+                          "—"
+                        )}
+                      </TableCell>
+                    )}
+                    {!isHidden("type") && (
+                      <TableCell>
+                        <Badge variant="secondary" className="capitalize">
+                          {t(
+                            `vendorPayments.types.${r.payment_type}`,
+                            r.payment_type.replace(/_/g, " "),
+                          )}
+                        </Badge>
+                      </TableCell>
+                    )}
+                    {!isHidden("amount") && (
+                      <TableCell className="text-right font-medium tabular-nums">
+                        {toIndicDigits(formatInr(Number(r.amount)), i18n.language)}
+                      </TableCell>
+                    )}
+                    {!isHidden("paid") && (
+                      <TableCell>{toIndicDigits(r.paid_at, i18n.language)}</TableCell>
+                    )}
+                    <TableCell>
+                      <RowActions onEdit={() => setToEdit(r)} onDelete={() => setToDelete(r)} />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </DataTableShell>
+        )}
 
-      <EditVendorPaymentDialog
-        open={!!toEdit}
-        onOpenChange={(o) => !o && setToEdit(null)}
-        payment={toEdit}
-        onSuccess={() => void query.refetch()}
-      />
+        <EditVendorPaymentDialog
+          open={!!toEdit}
+          onOpenChange={(o) => !o && setToEdit(null)}
+          payment={toEdit}
+          onSuccess={() => void query.refetch()}
+        />
 
-      <ConfirmDialog
-        open={!!toDelete}
-        onOpenChange={(o) => !o && setToDelete(null)}
-        title={t("vendorPayments.deleteTitle", "Delete vendor payment?")}
-        description={
-          toDelete
-            ? t("vendorPayments.deleteDesc", "{{no}} will be reversed from the vendor ledger.", {
-                no: toDelete.payment_no,
-              })
-            : ""
-        }
-        busy={del.isPending}
-        onConfirm={() => toDelete && del.mutate(toDelete.id)}
-      />
-    </div>
+        <ConfirmDialog
+          open={!!toDelete}
+          onOpenChange={(o) => !o && setToDelete(null)}
+          title={t("vendorPayments.deleteTitle", "Delete vendor payment?")}
+          description={
+            toDelete
+              ? t("vendorPayments.deleteDesc", "{{no}} will be reversed from the vendor ledger.", {
+                  no: toDelete.payment_no,
+                })
+              : ""
+          }
+          busy={del.isPending}
+          onConfirm={() => toDelete && del.mutate(toDelete.id)}
+        />
+      </div>
+    </AccountingGuard>
   );
 }

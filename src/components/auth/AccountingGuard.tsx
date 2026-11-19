@@ -6,7 +6,7 @@ import { SkeletonTable } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
 
 interface AccountingGuardProps {
-  children: ReactNode;
+  children?: ReactNode;
   moduleName?: string;
 }
 

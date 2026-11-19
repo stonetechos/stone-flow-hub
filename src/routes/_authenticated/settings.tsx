@@ -1,7 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { User, Building2, Palette, Shield, Bell, Compass, Info, FolderLock } from "lucide-react";
+import {
+  User,
+  Building2,
+  Palette,
+  Shield,
+  Bell,
+  Compass,
+  Info,
+  FolderLock,
+  Users,
+  ArrowRight,
+} from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -157,6 +168,12 @@ function SettingsPage() {
             <Info className="mr-2 h-4 w-4" />
             {t("settings.tabs.about", "About")}
           </TabsTrigger>
+          {(roles.isAdmin || roles.isSuperAdmin) && (
+            <TabsTrigger value="team">
+              <Users className="mr-2 h-4 w-4" />
+              Team & Roles
+            </TabsTrigger>
+          )}
           {roles.isSuperAdmin && (
             <TabsTrigger value="ecd">
               <FolderLock className="mr-2 h-4 w-4" />
@@ -467,6 +484,112 @@ function SettingsPage() {
             </CardContent>
           </Card>
         </TabsContent>
+        {(roles.isAdmin || roles.isSuperAdmin) && (
+          <TabsContent value="team" className="mt-4">
+            <Card className="shadow-1">
+              <CardHeader>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <CardTitle className="text-base font-bold flex items-center gap-2">
+                      <Users className="h-5 w-5 text-primary" />
+                      Team & Role Governance
+                    </CardTitle>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Manage staff accounts, assign granular role boundaries, and control access to
+                      purchasing prices, ledgers, and sales.
+                    </p>
+                  </div>
+                  <Button asChild size="sm" className="gap-1.5 shrink-0">
+                    <Link to="/admin/users">
+                      <span>Open Users & Roles</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                  <div className="p-3 rounded-lg border border-border/80 bg-muted/40 space-y-1.5">
+                    <div className="flex items-center gap-2 font-bold text-foreground">
+                      <Badge
+                        variant="outline"
+                        className="border-cyan-500/40 text-cyan-700 dark:text-cyan-400"
+                      >
+                        Sales
+                      </Badge>
+                      <span>Sales & Dispatches Only</span>
+                    </div>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Permitted: Sales Pipeline, Enquiries, Quotations, Sales Orders, Outbound
+                      Delivery Challans & Dispatches, Invoices, Customer Directory.
+                      <br />
+                      <strong className="text-amber-700 dark:text-amber-400">
+                        Restricted:
+                      </strong>{" "}
+                      Strictly blocked from Purchase Orders, Supplier Bills, Buying Costs, Vendor
+                      Ledgers, Banking & Cashbooks.
+                    </p>
+                  </div>
+
+                  <div className="p-3 rounded-lg border border-border/80 bg-muted/40 space-y-1.5">
+                    <div className="flex items-center gap-2 font-bold text-foreground">
+                      <Badge
+                        variant="outline"
+                        className="border-purple-500/40 text-purple-700 dark:text-purple-400"
+                      >
+                        Purchase
+                      </Badge>
+                      <span>Procurement & Supply Chain</span>
+                    </div>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Permitted: RFQs, Purchase Orders, Vendor Directory, Inbound Supplier Bills,
+                      and stock receipts.
+                      <br />
+                      <strong className="text-amber-700 dark:text-amber-400">
+                        Restricted:
+                      </strong>{" "}
+                      Strictly blocked from Banking, Money Flow, Customer Ledgers, and Company
+                      Accounts.
+                    </p>
+                  </div>
+
+                  <div className="p-3 rounded-lg border border-border/80 bg-muted/40 space-y-1.5">
+                    <div className="flex items-center gap-2 font-bold text-foreground">
+                      <Badge
+                        variant="outline"
+                        className="border-blue-500/40 text-blue-700 dark:text-blue-400"
+                      >
+                        Admin
+                      </Badge>
+                      <span>Full Operational Administration</span>
+                    </div>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Unrestricted access across all operational modules: Sales, Purchasing,
+                      Inventory, Production, Accounting Ledgers, Reports, and Staff Management.
+                    </p>
+                  </div>
+
+                  <div className="p-3 rounded-lg border border-border/80 bg-muted/40 space-y-1.5">
+                    <div className="flex items-center gap-2 font-bold text-foreground">
+                      <Badge
+                        variant="outline"
+                        className="border-emerald-500/40 text-emerald-700 dark:text-emerald-400"
+                      >
+                        Super Admin
+                      </Badge>
+                      <span>Root Platform Owner</span>
+                    </div>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Root governance, ECD keys, database sync, organizational roles, and full
+                      master control over all tenants and configurations.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
+
         {roles.isSuperAdmin && (
           <TabsContent value="ecd" className="mt-4">
             <EcdManagerCard />

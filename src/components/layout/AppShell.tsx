@@ -11,6 +11,7 @@ import {
   Settings as SettingsIcon,
   Keyboard,
   Shield,
+  ShieldCheck,
   LayoutDashboard,
   X,
   Globe,
@@ -883,6 +884,15 @@ function UserMenu({
             <SettingsIcon className="mr-2 h-4 w-4" aria-hidden />
             {t("user.preferences", "Preferences")}
           </DropdownMenuItem>
+          {(isAdmin || isSuperAdmin) && (
+            <DropdownMenuItem onClick={() => void navigate({ to: "/admin/users" })}>
+              <ShieldCheck
+                className="mr-2 h-4 w-4 text-emerald-600 dark:text-emerald-400"
+                aria-hidden
+              />
+              <span>{t("admin.usersTitle", "User & Role Management")}</span>
+            </DropdownMenuItem>
+          )}
           {onOpenCustomizeNav && (
             <DropdownMenuItem onClick={onOpenCustomizeNav}>
               <Sliders className="mr-2 h-4 w-4" aria-hidden />

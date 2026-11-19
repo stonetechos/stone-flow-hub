@@ -44,6 +44,7 @@ import {
 } from "@/lib/vendors/ledger";
 import { compareVendorLedgerRows } from "@/lib/ledger-sorting";
 import { formatInr, formatDate } from "@/lib/format";
+import { AccountingGuard } from "@/components/auth/AccountingGuard";
 import { SupplierLedgerDrawer } from "@/components/vendors/SupplierLedgerDrawer";
 import { ShareStatementDialog } from "@/components/statements/ShareStatementDialog";
 import {
@@ -148,206 +149,212 @@ function PurchaseLedgerIndexPage() {
   };
 
   return (
-    <div className="space-y-4">
-      <PageHeader
-        navId="vendor-ledger"
-        title={t("purchaseLedger.title", "Suppliers Ledger")}
-        subtitle={t(
-          "purchaseLedger.subtitle",
-          "Running balances, invoice statements, and payment history across supplying partners.",
-        )}
-      />
-
-      {/* Top Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <Card className="shadow-2xs">
-          <CardContent className="p-3.5">
-            <span className="text-xs text-muted-foreground font-medium block">
-              Total Supplier Bills
-            </span>
-            <span className="text-xl font-bold font-mono text-foreground mt-0.5 block">
-              {formatInr(totalBilled)}
-            </span>
-          </CardContent>
-        </Card>
-        <Card className="shadow-2xs">
-          <CardContent className="p-3.5">
-            <span className="text-xs text-muted-foreground font-medium block">
-              Total Paid to Suppliers
-            </span>
-            <span className="text-xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-0.5 block">
-              {formatInr(totalPaid)}
-            </span>
-          </CardContent>
-        </Card>
-        <Card className="shadow-2xs">
-          <CardContent className="p-3.5">
-            <span className="text-xs text-muted-foreground font-medium block">
-              Net Payables Due
-            </span>
-            <span className="text-xl font-bold font-mono text-amber-600 dark:text-amber-400 mt-0.5 block">
-              {formatInr(totalOutstanding)}
-            </span>
-          </CardContent>
-        </Card>
-      </div>
-
-      <DataToolbar
-        count={rows.length}
-        search={q}
-        onSearchChange={(v) => {
-          setQ(v);
-          setPage(1);
-        }}
-        searchPlaceholder={t(
-          "purchaseLedger.searchPlaceholder",
-          "Search supplier, code, GST, city…",
-        )}
-      />
-
-      {isLoading ? (
-        <SkeletonTable rows={6} columns={6} />
-      ) : error ? (
-        <ErrorBlock
-          message={toUserMessage(error)}
-          onRetry={() => {
-            vendorsQ.refetch();
-            summariesQ.refetch();
-          }}
-        />
-      ) : rows.length === 0 ? (
-        <EmptyState
-          icon={<Wallet className="h-6 w-6" />}
-          title={t("purchaseLedger.empty.title", "No supplier partners found")}
-          message={t(
-            "purchaseLedger.empty.message",
-            "Supplying partners will appear here with complete billing, payment records, and ledger statements.",
+    <AccountingGuard moduleName="Suppliers & Vendor Ledgers">
+      <div className="space-y-4">
+        <PageHeader
+          navId="vendor-ledger"
+          title={t("purchaseLedger.title", "Suppliers Ledger")}
+          subtitle={t(
+            "purchaseLedger.subtitle",
+            "Running balances, invoice statements, and payment history across supplying partners.",
           )}
         />
-      ) : (
-        <DataTableShell
-          footer={
-            <TablePagination
-              page={page}
-              pageSize={pageSize}
-              total={rows.length}
-              onPageChange={setPage}
-              onPageSizeChange={(s) => {
-                setPageSize(s);
-                setPage(1);
-              }}
-            />
-          }
-        >
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t("purchaseLedger.columns.vendor", "Supplier Partner")}</TableHead>
-                <TableHead>{t("purchaseLedger.columns.lastActivity", "Last Activity")}</TableHead>
-                <TableHead className="text-right">
-                  {t("purchaseLedger.columns.totalDebit", "Total Debit (Billed)")}
-                </TableHead>
-                <TableHead className="text-right">
-                  {t("purchaseLedger.columns.totalCredit", "Total Credit (Paid)")}
-                </TableHead>
-                <TableHead className="text-right">
-                  {t("purchaseLedger.columns.outstanding", "Outstanding Due")}
-                </TableHead>
-                <TableHead className="text-right w-44">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {pageRows.map(({ vendor, summary }) => {
-                const bal = summary?.outstanding ?? 0;
-                const contact = getVendorContactName(vendor);
-                const phone = getVendorPhone(vendor);
 
-                return (
-                  <TableRow
-                    key={vendor.id}
-                    onClick={() => handleOpenDrawer(vendor)}
-                    className="cursor-pointer hover:bg-slate-50/80 dark:hover:bg-slate-900/60 transition-colors"
-                  >
-                    <TableCell>
-                      <div className="font-semibold text-foreground text-sm flex items-center gap-1.5">
-                        <span>{vendor.company_name}</span>
-                        {vendor.vendor_code && (
-                          <Badge
+        {/* Top Summary KPI Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <Card className="shadow-2xs">
+            <CardContent className="p-3.5">
+              <span className="text-xs text-muted-foreground font-medium block">
+                Total Supplier Bills
+              </span>
+              <span className="text-xl font-bold font-mono text-foreground mt-0.5 block">
+                {formatInr(totalBilled)}
+              </span>
+            </CardContent>
+          </Card>
+          <Card className="shadow-2xs">
+            <CardContent className="p-3.5">
+              <span className="text-xs text-muted-foreground font-medium block">
+                Total Paid to Suppliers
+              </span>
+              <span className="text-xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-0.5 block">
+                {formatInr(totalPaid)}
+              </span>
+            </CardContent>
+          </Card>
+          <Card className="shadow-2xs">
+            <CardContent className="p-3.5">
+              <span className="text-xs text-muted-foreground font-medium block">
+                Net Payables Due
+              </span>
+              <span className="text-xl font-bold font-mono text-amber-600 dark:text-amber-400 mt-0.5 block">
+                {formatInr(totalOutstanding)}
+              </span>
+            </CardContent>
+          </Card>
+        </div>
+
+        <DataToolbar
+          count={rows.length}
+          search={q}
+          onSearchChange={(v) => {
+            setQ(v);
+            setPage(1);
+          }}
+          searchPlaceholder={t(
+            "purchaseLedger.searchPlaceholder",
+            "Search supplier, code, GST, city…",
+          )}
+        />
+
+        {isLoading ? (
+          <SkeletonTable rows={6} columns={6} />
+        ) : error ? (
+          <ErrorBlock
+            message={toUserMessage(error)}
+            onRetry={() => {
+              vendorsQ.refetch();
+              summariesQ.refetch();
+            }}
+          />
+        ) : rows.length === 0 ? (
+          <EmptyState
+            icon={<Wallet className="h-6 w-6" />}
+            title={t("purchaseLedger.empty.title", "No supplier partners found")}
+            message={t(
+              "purchaseLedger.empty.message",
+              "Supplying partners will appear here with complete billing, payment records, and ledger statements.",
+            )}
+          />
+        ) : (
+          <DataTableShell
+            footer={
+              <TablePagination
+                page={page}
+                pageSize={pageSize}
+                total={rows.length}
+                onPageChange={setPage}
+                onPageSizeChange={(s) => {
+                  setPageSize(s);
+                  setPage(1);
+                }}
+              />
+            }
+          >
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("purchaseLedger.columns.vendor", "Supplier Partner")}</TableHead>
+                  <TableHead>{t("purchaseLedger.columns.lastActivity", "Last Activity")}</TableHead>
+                  <TableHead className="text-right">
+                    {t("purchaseLedger.columns.totalDebit", "Total Debit (Billed)")}
+                  </TableHead>
+                  <TableHead className="text-right">
+                    {t("purchaseLedger.columns.totalCredit", "Total Credit (Paid)")}
+                  </TableHead>
+                  <TableHead className="text-right">
+                    {t("purchaseLedger.columns.outstanding", "Outstanding Due")}
+                  </TableHead>
+                  <TableHead className="text-right w-44">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pageRows.map(({ vendor, summary }) => {
+                  const bal = summary?.outstanding ?? 0;
+                  const contact = getVendorContactName(vendor);
+                  const phone = getVendorPhone(vendor);
+
+                  return (
+                    <TableRow
+                      key={vendor.id}
+                      onClick={() => handleOpenDrawer(vendor)}
+                      className="cursor-pointer hover:bg-slate-50/80 dark:hover:bg-slate-900/60 transition-colors"
+                    >
+                      <TableCell>
+                        <div className="font-semibold text-foreground text-sm flex items-center gap-1.5">
+                          <span>{vendor.company_name}</span>
+                          {vendor.vendor_code && (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] py-0 px-1 font-mono font-normal text-muted-foreground"
+                            >
+                              {vendor.vendor_code}
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
+                          {contact && <span>{contact}</span>}
+                          {phone && <span>· {phone}</span>}
+                          {vendor.city && <span>· {vendor.city}</span>}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {summary?.lastEntryAt ? formatDate(summary.lastEntryAt) : "—"}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums font-mono text-xs">
+                        {formatInr(summary?.totalDebit ?? 0)}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums font-mono text-xs text-emerald-600 dark:text-emerald-400">
+                        {formatInr(summary?.totalCredit ?? 0)}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums font-mono font-semibold text-xs">
+                        <span
+                          className={
+                            bal > 0
+                              ? "text-amber-600 dark:text-amber-400"
+                              : bal < 0
+                                ? "text-blue-600"
+                                : ""
+                          }
+                        >
+                          {formatInr(bal)}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Button
+                            size="sm"
                             variant="outline"
-                            className="text-[10px] py-0 px-1 font-mono font-normal text-muted-foreground"
+                            className="h-7 px-2 text-[11px] font-medium gap-1 bg-white dark:bg-slate-900 shadow-2xs hover:bg-slate-100"
+                            onClick={() => handleOpenDrawer(vendor)}
+                            title="View complete chronological ledger statement"
                           >
-                            {vendor.vendor_code}
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
-                        {contact && <span>{contact}</span>}
-                        {phone && <span>· {phone}</span>}
-                        {vendor.city && <span>· {vendor.city}</span>}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {summary?.lastEntryAt ? formatDate(summary.lastEntryAt) : "—"}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums font-mono text-xs">
-                      {formatInr(summary?.totalDebit ?? 0)}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums font-mono text-xs text-emerald-600 dark:text-emerald-400">
-                      {formatInr(summary?.totalCredit ?? 0)}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums font-mono font-semibold text-xs">
-                      <span
-                        className={
-                          bal > 0
-                            ? "text-amber-600 dark:text-amber-400"
-                            : bal < 0
-                              ? "text-blue-600"
-                              : ""
-                        }
-                      >
-                        {formatInr(bal)}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-end gap-1.5">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 px-2 text-[11px] font-medium gap-1 bg-white dark:bg-slate-900 shadow-2xs hover:bg-slate-100"
-                          onClick={() => handleOpenDrawer(vendor)}
-                          title="View complete chronological ledger statement"
-                        >
-                          <FileText className="h-3 w-3 text-primary" />
-                          <span>Ledger</span>
-                        </Button>
-                        <Button
-                          size="sm"
-                          className="h-7 px-2 text-[11px] font-semibold gap-1 bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs"
-                          onClick={(e) => handleOpenStatement(vendor, e)}
-                          title="Share statement on WhatsApp, copy, or print"
-                        >
-                          <MessageCircle className="h-3 w-3" />
-                          <span>Statement</span>
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </DataTableShell>
-      )}
+                            <FileText className="h-3 w-3 text-primary" />
+                            <span>Ledger</span>
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="h-7 px-2 text-[11px] font-semibold gap-1 bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs"
+                            onClick={(e) => handleOpenStatement(vendor, e)}
+                            title="Share statement on WhatsApp, copy, or print"
+                          >
+                            <MessageCircle className="h-3 w-3" />
+                            <span>Statement</span>
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </DataTableShell>
+        )}
 
-      {/* Supplier Ledger Drawer (Slide-Over inspection) */}
-      <SupplierLedgerDrawer vendor={drawerVendor} open={drawerOpen} onOpenChange={setDrawerOpen} />
+        {/* Supplier Ledger Drawer (Slide-Over inspection) */}
+        <SupplierLedgerDrawer
+          vendor={drawerVendor}
+          open={drawerOpen}
+          onOpenChange={setDrawerOpen}
+        />
 
-      {/* Direct Row Share Statement Dialog */}
-      <ShareStatementDialog
-        open={statementOpen}
-        onOpenChange={setStatementOpen}
-        data={directStatementData}
-      />
-    </div>
+        {/* Direct Row Share Statement Dialog */}
+        <ShareStatementDialog
+          open={statementOpen}
+          onOpenChange={setStatementOpen}
+          data={directStatementData}
+        />
+      </div>
+    </AccountingGuard>
   );
 }

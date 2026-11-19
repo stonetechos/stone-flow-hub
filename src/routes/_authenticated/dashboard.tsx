@@ -26,6 +26,7 @@ import { autoTranslate } from "@/lib/i18n/auto-translator";
 import { greetingFor, getNocturnalQuip, isNocturnalHour } from "@/lib/dashboard/greeting";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { useRoles } from "@/hooks/use-roles";
 import { useExecutiveInsights } from "@/hooks/useExecutiveInsights";
 import type { ProcessedInsight } from "@/lib/insights/quality/pipeline";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -91,6 +92,7 @@ function DashboardPage() {
   const { t, i18n } = useTranslation();
   const { user } = useAuthReady();
   const qc = useQueryClient();
+  const roles = useRoles();
   const { processedInsights } = useExecutiveInsights({ enabled: true });
 
   const [activeTab, setActiveTab] = useState<DashboardViewTab>("operations");
@@ -298,19 +300,21 @@ function DashboardPage() {
                         )}
                       </button>
 
-                      <button
-                        type="button"
-                        onClick={() => setOpsSubTab("money")}
-                        className={cn(
-                          "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
-                          opsSubTab === "money"
-                            ? "bg-white dark:bg-slate-800 text-emerald-950 dark:text-emerald-200 shadow-xs border border-border/40"
-                            : "text-muted-foreground hover:text-foreground",
-                        )}
-                      >
-                        <Wallet className="h-3.5 w-3.5 text-emerald-600" />
-                        <span>{t("dashboard.tabs.money", "Cash & Liabilities")}</span>
-                      </button>
+                      {(roles.isAdmin || roles.isSuperAdmin) && (
+                        <button
+                          type="button"
+                          onClick={() => setOpsSubTab("money")}
+                          className={cn(
+                            "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                            opsSubTab === "money"
+                              ? "bg-white dark:bg-slate-800 text-emerald-950 dark:text-emerald-200 shadow-xs border border-border/40"
+                              : "text-muted-foreground hover:text-foreground",
+                          )}
+                        >
+                          <Wallet className="h-3.5 w-3.5 text-emerald-600" />
+                          <span>{t("dashboard.tabs.money", "Cash & Liabilities")}</span>
+                        </button>
+                      )}
 
                       <button
                         type="button"
@@ -336,8 +340,12 @@ function DashboardPage() {
                   {/* TAB 1: Fulfilment & Production */}
                   {opsSubTab === "fulfilment" && (
                     <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
-                      <SuperAdminQuoteChallanDiscrepancyCard />
-                      <VendorDeliveryPromptCard />
+                      {(roles.isAdmin || roles.isSuperAdmin) && (
+                        <>
+                          <SuperAdminQuoteChallanDiscrepancyCard />
+                          <VendorDeliveryPromptCard />
+                        </>
+                      )}
                       <DispatchAndInstallation kpis={kpisQ.data} />
                       <TodayTimeline
                         followups={followups}
@@ -349,7 +357,7 @@ function DashboardPage() {
                   )}
 
                   {/* TAB 2: Cash & Liabilities */}
-                  {opsSubTab === "money" && (
+                  {opsSubTab === "money" && (roles.isAdmin || roles.isSuperAdmin) && (
                     <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
                       <DueLiabilitiesPromptCard />
                       <DailyMoneyFlowCard />
@@ -595,6 +603,7 @@ function ExecutiveHero({
 
 function BusinessHealthGrid({ kpis }: { kpis: DashboardKpis }) {
   const { t, i18n } = useTranslation();
+  const roles = useRoles();
   const totalVolume =
     (kpis.customers ?? 0) +
     (kpis.activeEnquiries ?? 0) +
@@ -654,23 +663,36 @@ function BusinessHealthGrid({ kpis }: { kpis: DashboardKpis }) {
               : t("dashboard.floorClear", "Floor is clear to plan next batch")
           }
         />
-        <HealthCard
-          to="/invoices"
-          icon={<Wallet className="h-4 w-4" />}
-          label={t("dashboard.finance", "Finance")}
-          value={"₹" + formatMoney(kpis.outstandingInr, i18n.language)}
-          trend={t("dashboard.outstandingTrend", "outstanding")}
-          target={`${t("dashboard.collectedMtd", "collected MTD")} ₹${formatMoney(kpis.paymentsThisMonthInr, i18n.language)}`}
-          tone={financeTone}
-          insight={
-            kpis.collectionsTodayInr > 0
-              ? t("dashboard.collectedTodayAmount", {
-                  amount: formatMoney(kpis.collectionsTodayInr, i18n.language),
-                  defaultValue: `₹${formatMoney(kpis.collectionsTodayInr, i18n.language)} collected today`,
-                })
-              : t("dashboard.noCollectionsToday", "No collections logged yet today")
-          }
-        />
+        {roles.isAdmin || roles.isSuperAdmin ? (
+          <HealthCard
+            to="/invoices"
+            icon={<Wallet className="h-4 w-4" />}
+            label={t("dashboard.finance", "Finance")}
+            value={"₹" + formatMoney(kpis.outstandingInr, i18n.language)}
+            trend={t("dashboard.outstandingTrend", "outstanding")}
+            target={`${t("dashboard.collectedMtd", "collected MTD")} ₹${formatMoney(kpis.paymentsThisMonthInr, i18n.language)}`}
+            tone={financeTone}
+            insight={
+              kpis.collectionsTodayInr > 0
+                ? t("dashboard.collectedTodayAmount", {
+                    amount: formatMoney(kpis.collectionsTodayInr, i18n.language),
+                    defaultValue: `₹${formatMoney(kpis.collectionsTodayInr, i18n.language)} collected today`,
+                  })
+                : t("dashboard.noCollectionsToday", "No collections logged yet today")
+            }
+          />
+        ) : (
+          <HealthCard
+            to="/dispatch"
+            icon={<Truck className="h-4 w-4" />}
+            label={t("dashboard.dispatch", "Dispatches")}
+            value={String(kpis.deliveriesToday || 0)}
+            trend="active dispatches"
+            target={`${kpis.ordersToStart || 0} pending dispatches`}
+            tone="steady"
+            insight="Track delivery challans & outbound dispatch schedules"
+          />
+        )}
         <HealthCard
           to="/followups"
           icon={<Users className="h-4 w-4" />}

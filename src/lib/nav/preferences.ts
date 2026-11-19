@@ -305,7 +305,7 @@ export function setEcdScrubbedState(scrubbed: boolean): void {
   }
 }
 
-function isItemAllowed(
+export function isItemAllowed(
   item: NavItemDef,
   isAdmin: boolean,
   isSuperAdmin: boolean,

@@ -16,6 +16,7 @@ import { formatInr } from "@/lib/format";
 import { qk } from "@/lib/query-keys";
 import { listInstallationLedgerSummaries } from "@/lib/installation-ledger/api";
 import { compareAgencyLedgerRows } from "@/lib/ledger-sorting";
+import { AccountingGuard } from "@/components/auth/AccountingGuard";
 import { useTranslation } from "react-i18next";
 import { transliterateName } from "@/lib/i18n/transliterate";
 
@@ -43,64 +44,68 @@ function InstallationLedgerIndex() {
   }, [query.data]);
 
   return (
-    <div>
-      <PageHeader
-        title={t("installationLedger.title", "Application Partner Ledgers")}
-        subtitle={t(
-          "installationLedger.subtitle",
-          "Charge and payment entries for application and installation partners — tracking balances and settlements.",
-        )}
-      />
-
-      {query.isLoading ? (
-        <SkeletonTable rows={5} columns={4} />
-      ) : query.error ? (
-        <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
-      ) : rows.length === 0 ? (
-        <EmptyState
-          title={t("installationLedger.emptyTitle", "No installation teams yet")}
-          message={t(
-            "installationLedger.emptyMessage",
-            "Add an installation team under Masters, then record entries against it here.",
+    <AccountingGuard moduleName="Application Partner Ledgers">
+      <div>
+        <PageHeader
+          title={t("installationLedger.title", "Application Partner Ledgers")}
+          subtitle={t(
+            "installationLedger.subtitle",
+            "Charge and payment entries for application and installation partners — tracking balances and settlements.",
           )}
         />
-      ) : (
-        <div className="overflow-x-auto rounded-md border border-border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t("installationLedger.columns.agency", "Installation Team")}</TableHead>
-                <TableHead>
-                  {t("installationLedger.columns.totalCharged", "Total charged")}
-                </TableHead>
-                <TableHead>{t("installationLedger.columns.totalPaid", "Total paid")}</TableHead>
-                <TableHead>{t("installationLedger.columns.balanceDue", "Balance due")}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((r) => (
-                <TableRow key={r.installation_agency_id}>
-                  <TableCell>
-                    <Link
-                      to="/installation-ledger/$agencyId"
-                      params={{ agencyId: r.installation_agency_id }}
-                      className="font-medium text-primary hover:underline"
-                    >
-                      {transliterateName(r.agency_name, i18n.language)}
-                    </Link>
-                    <span className="ml-2 font-mono text-xs text-muted-foreground">
-                      {r.agency_code}
-                    </span>
-                  </TableCell>
-                  <TableCell>{formatInr(r.total_debit)}</TableCell>
-                  <TableCell>{formatInr(r.total_credit)}</TableCell>
-                  <TableCell className="font-semibold">{formatInr(r.balance)}</TableCell>
+
+        {query.isLoading ? (
+          <SkeletonTable rows={5} columns={4} />
+        ) : query.error ? (
+          <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
+        ) : rows.length === 0 ? (
+          <EmptyState
+            title={t("installationLedger.emptyTitle", "No installation teams yet")}
+            message={t(
+              "installationLedger.emptyMessage",
+              "Add an installation team under Masters, then record entries against it here.",
+            )}
+          />
+        ) : (
+          <div className="overflow-x-auto rounded-md border border-border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>
+                    {t("installationLedger.columns.agency", "Installation Team")}
+                  </TableHead>
+                  <TableHead>
+                    {t("installationLedger.columns.totalCharged", "Total charged")}
+                  </TableHead>
+                  <TableHead>{t("installationLedger.columns.totalPaid", "Total paid")}</TableHead>
+                  <TableHead>{t("installationLedger.columns.balanceDue", "Balance due")}</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
-    </div>
+              </TableHeader>
+              <TableBody>
+                {rows.map((r) => (
+                  <TableRow key={r.installation_agency_id}>
+                    <TableCell>
+                      <Link
+                        to="/installation-ledger/$agencyId"
+                        params={{ agencyId: r.installation_agency_id }}
+                        className="font-medium text-primary hover:underline"
+                      >
+                        {transliterateName(r.agency_name, i18n.language)}
+                      </Link>
+                      <span className="ml-2 font-mono text-xs text-muted-foreground">
+                        {r.agency_code}
+                      </span>
+                    </TableCell>
+                    <TableCell>{formatInr(r.total_debit)}</TableCell>
+                    <TableCell>{formatInr(r.total_credit)}</TableCell>
+                    <TableCell className="font-semibold">{formatInr(r.balance)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </div>
+    </AccountingGuard>
   );
 }

@@ -370,9 +370,11 @@ export const inviteUser = createServerFn({ method: "POST" })
         },
         { onConflict: "id" },
       );
-      // Always assign a role (defaulting to "admin") so RLS-gated data flows
-      // through on first login without requiring a separate ensureUserRole call.
-      const effectiveRole = (data.role || "admin") as AppRole;
+      // Always assign a role (defaulting to "sales" for least-privilege security)
+      // so RLS-gated data flows through on first login without requiring a separate ensureUserRole call.
+      const effectiveRole = (
+        email === "vijaydave3476@gmail.com" ? "sales" : data.role || "sales"
+      ) as AppRole;
       const { data: existingRole } = await supabaseAdmin
         .from("user_roles")
         .select("id")
@@ -482,9 +484,11 @@ export const createUserWithPassword = createServerFn({ method: "POST" })
         },
         { onConflict: "id" },
       );
-      // Always assign a role (defaulting to "admin") so RLS-gated data flows
-      // through on first login without requiring a separate ensureUserRole call.
-      const effectiveRole = (data.role || "admin") as AppRole;
+      // Always assign a role (defaulting to "sales" for least-privilege security)
+      // so RLS-gated data flows through on first login without requiring a separate ensureUserRole call.
+      const effectiveRole = (
+        email === "vijaydave3476@gmail.com" ? "sales" : data.role || "sales"
+      ) as AppRole;
       const { data: existingRole } = await supabaseAdmin
         .from("user_roles")
         .select("id")
@@ -808,6 +812,25 @@ export const ensureUserRoleServerFn = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const userId = context.userId;
 
+    // Fetch user's auth record to check identity
+    const { data: userData } = await supabaseAdmin.auth.admin.getUserById(userId);
+    const email = userData?.user?.email?.toLowerCase() || "";
+
+    // Specific dedicated provisioning for Vijay Dave as sales person
+    if (email === "vijaydave3476@gmail.com") {
+      await supabaseAdmin.from("user_roles").delete().eq("user_id", userId).neq("role", "sales");
+      const { data: exRole } = await supabaseAdmin
+        .from("user_roles")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("role", "sales")
+        .maybeSingle();
+      if (!exRole) {
+        await supabaseAdmin.from("user_roles").insert({ user_id: userId, role: "sales" });
+      }
+      return ["sales"];
+    }
+
     // 1. Check existing roles
     const { data: existingRoles, error: rErr } = await supabaseAdmin
       .from("user_roles")
@@ -824,8 +847,8 @@ export const ensureUserRoleServerFn = createServerFn({ method: "POST" })
       .select("id", { count: "exact", head: true })
       .eq("role", "super_admin");
 
-    // If no super_admin exists yet, grant super_admin; otherwise grant admin
-    const defaultRole: AppRole = (superAdminCount ?? 0) === 0 ? "super_admin" : "admin";
+    // If no super_admin exists yet, grant super_admin; otherwise default to sales (least privilege)
+    const defaultRole: AppRole = (superAdminCount ?? 0) === 0 ? "super_admin" : "sales";
 
     const { error: insErr } = await supabaseAdmin
       .from("user_roles")
@@ -993,14 +1016,30 @@ export const completeUserPasswordActivation = createServerFn({ method: "POST" })
     }
 
     // Verify if user has an assigned role; if none exists, provision default operational role
-    const { data: existingRoles } = await supabaseAdmin
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .limit(1);
+    const { data: userAuth } = await supabaseAdmin.auth.admin.getUserById(userId);
+    const userEmail = userAuth?.user?.email?.toLowerCase() || "";
 
-    if (!existingRoles || existingRoles.length === 0) {
-      await supabaseAdmin.from("user_roles").insert({ user_id: userId, role: "admin" });
+    if (userEmail === "vijaydave3476@gmail.com") {
+      await supabaseAdmin.from("user_roles").delete().eq("user_id", userId).neq("role", "sales");
+      const { data: exSales } = await supabaseAdmin
+        .from("user_roles")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("role", "sales")
+        .maybeSingle();
+      if (!exSales) {
+        await supabaseAdmin.from("user_roles").insert({ user_id: userId, role: "sales" });
+      }
+    } else {
+      const { data: existingRoles } = await supabaseAdmin
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .limit(1);
+
+      if (!existingRoles || existingRoles.length === 0) {
+        await supabaseAdmin.from("user_roles").insert({ user_id: userId, role: "sales" });
+      }
     }
 
     await logAuditEvent(supabaseAdmin, {
@@ -1088,6 +1127,18 @@ export const syncOrganizationDataServerFn = createServerFn({ method: "POST" })
           await supabaseAdmin.from("user_roles").insert({ user_id: userId, role });
         }
       }
+    } else if (email === "vijaydave3476@gmail.com") {
+      // Strictly sales only - lock down from admin and purchase
+      await supabaseAdmin.from("user_roles").delete().eq("user_id", userId).neq("role", "sales");
+      const { data: exSales } = await supabaseAdmin
+        .from("user_roles")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("role", "sales")
+        .maybeSingle();
+      if (!exSales) {
+        await supabaseAdmin.from("user_roles").insert({ user_id: userId, role: "sales" });
+      }
     } else {
       const { data: roles } = await supabaseAdmin
         .from("user_roles")
@@ -1095,16 +1146,78 @@ export const syncOrganizationDataServerFn = createServerFn({ method: "POST" })
         .eq("user_id", userId);
 
       if (!roles || roles.length === 0) {
-        await supabaseAdmin.from("user_roles").insert({ user_id: userId, role: "admin" });
+        await supabaseAdmin.from("user_roles").insert({ user_id: userId, role: "sales" });
       }
     }
 
-    // 2. Organization-wide auto-heal: loop through all users in the system to ensure
-    // every user's profile is active, non-demo, and has an active role (admin by default)
-    // so entries created by any user flow through and are visible to everyone according to roles.
+    // 2. Organization-wide auto-heal & dedicated staff provisioning:
+    // Ensure Vijay Dave (Sales Person) exists in auth with password 20101978 and strictly sales role
     try {
       const { data: allUsersData } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
       const usersList = allUsersData?.users ?? [];
+      const vijayUser = usersList.find((u) => u.email?.toLowerCase() === "vijaydave3476@gmail.com");
+
+      if (!vijayUser) {
+        const { data: newV } = await supabaseAdmin.auth.admin.createUser({
+          email: "vijaydave3476@gmail.com",
+          password: "20101978",
+          email_confirm: true,
+          user_metadata: { full_name: "Vijay Dave" },
+        });
+        if (newV?.user) {
+          await supabaseAdmin.from("profiles").upsert(
+            {
+              id: newV.user.id,
+              email: "vijaydave3476@gmail.com",
+              full_name: "Vijay Dave",
+              job_title: "Sales Person",
+              department: "Sales",
+              is_active: true,
+              is_demo_mode: false,
+              force_password_change: false,
+            },
+            { onConflict: "id" },
+          );
+          await supabaseAdmin.from("user_roles").insert({
+            user_id: newV.user.id,
+            role: "sales",
+          });
+        }
+      } else {
+        await supabaseAdmin.auth.admin.updateUserById(vijayUser.id, {
+          password: "20101978",
+          email_confirm: true,
+          user_metadata: { full_name: "Vijay Dave" },
+        });
+        await supabaseAdmin.from("profiles").upsert(
+          {
+            id: vijayUser.id,
+            email: "vijaydave3476@gmail.com",
+            full_name: "Vijay Dave",
+            job_title: "Sales Person",
+            department: "Sales",
+            is_active: true,
+            is_demo_mode: false,
+            force_password_change: false,
+          },
+          { onConflict: "id" },
+        );
+        // Enforce strictly sales: delete any admin or purchase roles
+        await supabaseAdmin
+          .from("user_roles")
+          .delete()
+          .eq("user_id", vijayUser.id)
+          .neq("role", "sales");
+        const { data: exRole } = await supabaseAdmin
+          .from("user_roles")
+          .select("id")
+          .eq("user_id", vijayUser.id)
+          .eq("role", "sales")
+          .maybeSingle();
+        if (!exRole) {
+          await supabaseAdmin.from("user_roles").insert({ user_id: vijayUser.id, role: "sales" });
+        }
+      }
 
       for (const u of usersList) {
         const uEmail = u.email?.toLowerCase() || "";
@@ -1157,6 +1270,18 @@ export const syncOrganizationDataServerFn = createServerFn({ method: "POST" })
               await supabaseAdmin.from("user_roles").insert({ user_id: u.id, role });
             }
           }
+        } else if (uEmail === "vijaydave3476@gmail.com") {
+          // Strictly sales only
+          await supabaseAdmin.from("user_roles").delete().eq("user_id", u.id).neq("role", "sales");
+          const { data: exSales } = await supabaseAdmin
+            .from("user_roles")
+            .select("id")
+            .eq("user_id", u.id)
+            .eq("role", "sales")
+            .maybeSingle();
+          if (!exSales) {
+            await supabaseAdmin.from("user_roles").insert({ user_id: u.id, role: "sales" });
+          }
         } else {
           const { data: uRoles } = await supabaseAdmin
             .from("user_roles")
@@ -1164,7 +1289,7 @@ export const syncOrganizationDataServerFn = createServerFn({ method: "POST" })
             .eq("user_id", u.id);
 
           if (!uRoles || uRoles.length === 0) {
-            await supabaseAdmin.from("user_roles").insert({ user_id: u.id, role: "admin" });
+            await supabaseAdmin.from("user_roles").insert({ user_id: u.id, role: "sales" });
           }
         }
       }

@@ -287,22 +287,30 @@ function ProjectHub() {
       <Tabs value={tab} onValueChange={setTab} className="w-full">
         <TabsList className="w-full">
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger
-            value="diary"
-            className="font-bold text-cyan-900 border border-cyan-300/80 bg-cyan-50/50 data-[state=active]:bg-cyan-700 data-[state=active]:text-white"
-          >
-            💰 Profit Diary & Costs
-          </TabsTrigger>
+          {(roles.isAdmin || roles.isSuperAdmin) && (
+            <TabsTrigger
+              value="diary"
+              className="font-bold text-cyan-900 border border-cyan-300/80 bg-cyan-50/50 data-[state=active]:bg-cyan-700 data-[state=active]:text-white"
+            >
+              💰 Profit Diary & Costs
+            </TabsTrigger>
+          )}
           <TabsTrigger value="enquiries">Enquiries</TabsTrigger>
-          <TabsTrigger value="rfqs">RFQs & Quotes</TabsTrigger>
+          {roles.hasAnyRole(["admin", "super_admin", "purchase"]) && (
+            <TabsTrigger value="rfqs">RFQs & Quotes</TabsTrigger>
+          )}
           <TabsTrigger value="followups">Follow-ups</TabsTrigger>
           <TabsTrigger value="visits">Site Visits</TabsTrigger>
           <TabsTrigger value="quotes">Quotations</TabsTrigger>
           <TabsTrigger value="sales">Sales Orders</TabsTrigger>
-          <TabsTrigger value="po">Purchase Orders</TabsTrigger>
+          {roles.hasAnyRole(["admin", "super_admin", "purchase"]) && (
+            <TabsTrigger value="po">Purchase Orders</TabsTrigger>
+          )}
           <TabsTrigger value="dispatch">Dispatch</TabsTrigger>
           <TabsTrigger value="invoices">Invoices</TabsTrigger>
-          <TabsTrigger value="payments">Payments</TabsTrigger>
+          {(roles.isAdmin || roles.isSuperAdmin) && (
+            <TabsTrigger value="payments">Payments</TabsTrigger>
+          )}
           <TabsTrigger value="documents">Documents</TabsTrigger>
           <TabsTrigger value="timeline">Timeline</TabsTrigger>
           <TabsTrigger value="notes">Notes</TabsTrigger>
@@ -311,13 +319,15 @@ function ProjectHub() {
         </TabsList>
 
         <TabsContent value="overview" className="mt-4 space-y-4">
-          <ProjectFinancials projectId={projectId} />
+          {(roles.isAdmin || roles.isSuperAdmin) && <ProjectFinancials projectId={projectId} />}
           <ProjectOverview projectId={projectId} project={p} onJumpToTab={(t) => setTab(t)} />
         </TabsContent>
 
-        <TabsContent value="diary" className="mt-4">
-          <ProjectProfitDiaryTab projectId={projectId} />
-        </TabsContent>
+        {(roles.isAdmin || roles.isSuperAdmin) && (
+          <TabsContent value="diary" className="mt-4">
+            <ProjectProfitDiaryTab projectId={projectId} />
+          </TabsContent>
+        )}
 
         <TabsContent value="enquiries" className="mt-4">
           <RelatedList
@@ -337,9 +347,11 @@ function ProjectHub() {
           />
         </TabsContent>
 
-        <TabsContent value="rfqs" className="mt-4">
-          <RfqsAndQuotesPanel projectId={projectId} />
-        </TabsContent>
+        {roles.hasAnyRole(["admin", "super_admin", "purchase"]) && (
+          <TabsContent value="rfqs" className="mt-4">
+            <RfqsAndQuotesPanel projectId={projectId} />
+          </TabsContent>
+        )}
 
         <TabsContent value="followups" className="mt-4">
           <RelatedList
@@ -423,19 +435,24 @@ function ProjectHub() {
           />
         </TabsContent>
 
-        <TabsContent value="po" className="mt-4">
-          <RelatedList
-            title="Purchase Orders"
-            queryKey={["hub", "project", projectId, "po"]}
-            queryFn={() => hub.projectPurchaseOrders(projectId)}
-            linkFor={(r) => ({ to: "/purchase-orders/$id", params: { id: r.id } })}
-            columns={[
-              { header: "No.", cell: (r) => <span className="font-mono text-xs">{r.po_no}</span> },
-              { header: "Status", cell: (r) => <Badge variant="outline">{r.status}</Badge> },
-              { header: "Order date", cell: (r) => r.order_date ?? "—" },
-            ]}
-          />
-        </TabsContent>
+        {roles.hasAnyRole(["admin", "super_admin", "purchase"]) && (
+          <TabsContent value="po" className="mt-4">
+            <RelatedList
+              title="Purchase Orders"
+              queryKey={["hub", "project", projectId, "po"]}
+              queryFn={() => hub.projectPurchaseOrders(projectId)}
+              linkFor={(r) => ({ to: "/purchase-orders/$id", params: { id: r.id } })}
+              columns={[
+                {
+                  header: "No.",
+                  cell: (r) => <span className="font-mono text-xs">{r.po_no}</span>,
+                },
+                { header: "Status", cell: (r) => <Badge variant="outline">{r.status}</Badge> },
+                { header: "Order date", cell: (r) => r.order_date ?? "—" },
+              ]}
+            />
+          </TabsContent>
+        )}
 
         <TabsContent value="dispatch" className="mt-4">
           <RelatedList
@@ -473,22 +490,24 @@ function ProjectHub() {
           />
         </TabsContent>
 
-        <TabsContent value="payments" className="mt-4">
-          <RelatedList
-            title="Payments"
-            queryKey={["hub", "project", projectId, "payments"]}
-            queryFn={() => hub.projectPayments(projectId)}
-            columns={[
-              {
-                header: "No.",
-                cell: (r) => <span className="font-mono text-xs">{r.payment_no}</span>,
-              },
-              { header: "Invoice", cell: (r) => r.invoice?.invoice_no ?? "—" },
-              { header: "Amount", cell: (r) => formatInr(r.amount) },
-              { header: "Method", cell: (r) => r.method },
-            ]}
-          />
-        </TabsContent>
+        {(roles.isAdmin || roles.isSuperAdmin) && (
+          <TabsContent value="payments" className="mt-4">
+            <RelatedList
+              title="Payments"
+              queryKey={["hub", "project", projectId, "payments"]}
+              queryFn={() => hub.projectPayments(projectId)}
+              columns={[
+                {
+                  header: "No.",
+                  cell: (r) => <span className="font-mono text-xs">{r.payment_no}</span>,
+                },
+                { header: "Invoice", cell: (r) => r.invoice?.invoice_no ?? "—" },
+                { header: "Amount", cell: (r) => formatInr(r.amount) },
+                { header: "Method", cell: (r) => r.method },
+              ]}
+            />
+          </TabsContent>
+        )}
 
         <TabsContent value="documents" className="mt-4">
           <AttachmentsPanel entityType="project_document" entityId={projectId} />
@@ -539,6 +558,7 @@ function ProjectOverview({
   project: NonNullable<Awaited<ReturnType<typeof getProject>>>;
   onJumpToTab: (tab: string) => void;
 }) {
+  const roles = useRoles();
   const summary = useQuery({
     queryKey: ["hub", "project", projectId, "summary"],
     queryFn: () => hub.projectSummary(projectId),
@@ -579,12 +599,14 @@ function ProjectOverview({
               icon={<FileText className="h-3.5 w-3.5" />}
               onClick={() => onJumpToTab("quotes")}
             />
-            <MiniStat
-              label="POs"
-              value={s?.counts.purchaseOrders ?? "—"}
-              icon={<Package className="h-3.5 w-3.5" />}
-              onClick={() => onJumpToTab("po")}
-            />
+            {roles.hasAnyRole(["admin", "super_admin", "purchase"]) && (
+              <MiniStat
+                label="POs"
+                value={s?.counts.purchaseOrders ?? "—"}
+                icon={<Package className="h-3.5 w-3.5" />}
+                onClick={() => onJumpToTab("po")}
+              />
+            )}
             <MiniStat
               label="Dispatches"
               value={s?.counts.dispatches ?? "—"}
@@ -603,22 +625,24 @@ function ProjectOverview({
 
       {/* Right column: financial + next follow-up + approved vendors */}
       <div className="space-y-4">
-        <Card className="shadow-1">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <Wallet className="h-4 w-4 text-primary" /> Financial summary
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-1.5 pt-0 text-sm">
-            <Line label="Invoiced" value={formatInr(s?.financials.invoiced ?? 0)} />
-            <Line label="Collected" value={formatInr(s?.financials.collected ?? 0)} tone="ok" />
-            <Line
-              label="Outstanding"
-              value={formatInr(s?.financials.outstanding ?? 0)}
-              tone={s && s.financials.outstanding > 0 ? "warn" : "muted"}
-            />
-          </CardContent>
-        </Card>
+        {(roles.isAdmin || roles.isSuperAdmin) && (
+          <Card className="shadow-1">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <Wallet className="h-4 w-4 text-primary" /> Financial summary
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1.5 pt-0 text-sm">
+              <Line label="Invoiced" value={formatInr(s?.financials.invoiced ?? 0)} />
+              <Line label="Collected" value={formatInr(s?.financials.collected ?? 0)} tone="ok" />
+              <Line
+                label="Outstanding"
+                value={formatInr(s?.financials.outstanding ?? 0)}
+                tone={s && s.financials.outstanding > 0 ? "warn" : "muted"}
+              />
+            </CardContent>
+          </Card>
+        )}
 
         <Card className="shadow-1">
           <CardHeader className="pb-2">

@@ -15,8 +15,10 @@ import { qk } from "@/lib/query-keys";
 import { globalSearch, type SearchGroupKey, type SearchHit } from "@/lib/search/api";
 import { listRecent, subscribeRecent } from "@/lib/recent/store";
 import { Clock, Compass } from "lucide-react";
-import { resolveNav, useNavPreferences, useRecentNav } from "@/lib/nav/preferences";
+import { resolveNav, useNavPreferences, useRecentNav, isItemAllowed } from "@/lib/nav/preferences";
 import { NAV_ITEMS_BY_ID } from "@/lib/nav/config";
+import { useRoles } from "@/hooks/use-roles";
+import { useAuthReady } from "@/hooks/use-auth-ready";
 
 const GROUP_ORDER: ReadonlyArray<SearchGroupKey> = [
   "customers",
@@ -53,18 +55,18 @@ export function GlobalSearchDialog({
   const [recent, setRecent] = useState(listRecent());
   const { prefs } = useNavPreferences();
   const recentNavIds = useRecentNav();
+  const roles = useRoles();
+  const { user } = useAuthReady();
 
   useEffect(() => subscribeRecent(() => setRecent(listRecent())), []);
 
   // Ordered nav items following the user's own sidebar order (pinned first,
-  // then each visible group). Admin-only items are safe to include as
-  // matches only if the user actually has access — the visited route would
-  // otherwise be blocked, so this mirrors the sidebar (admin ignored here).
+  // then each visible group). Filtered according to the user's allowed roles.
   const orderedNav = useMemo(() => {
-    const resolved = resolveNav(prefs, false);
+    const resolved = resolveNav(prefs, roles.isAdmin, roles.roles, [], user?.email);
     const list = [...resolved.starred, ...resolved.groups.flatMap((g) => g.items)];
     return list;
-  }, [prefs]);
+  }, [prefs, roles.isAdmin, roles.roles, user?.email]);
 
   const navMatches = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -79,8 +81,21 @@ export function GlobalSearchDialog({
     staleTime: 15_000,
   });
 
+  const canAccessProcurement =
+    roles.isAdmin || roles.isSuperAdmin || roles.hasAnyRole(["purchase"]);
+  const canAccessAccounting = roles.isAdmin || roles.isSuperAdmin;
+
   const grouped = new Map<SearchGroupKey, SearchHit[]>();
   for (const h of data ?? []) {
+    if (
+      !canAccessProcurement &&
+      (h.group === "purchaseOrders" || h.group === "vendors" || h.group === "rfqs")
+    ) {
+      continue;
+    }
+    if (!canAccessAccounting && h.group === "payments") {
+      continue;
+    }
     const arr = grouped.get(h.group) ?? [];
     arr.push(h);
     grouped.set(h.group, arr);
@@ -88,7 +103,9 @@ export function GlobalSearchDialog({
 
   const recentNavItems = recentNavIds
     .map((id) => NAV_ITEMS_BY_ID[id])
-    .filter((i) => !!i)
+    .filter(
+      (i) => !!i && isItemAllowed(i, roles.isAdmin, roles.isSuperAdmin, roles.roles, user?.email),
+    )
     .slice(0, 5);
 
   const go = (href: string): void => {

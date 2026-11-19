@@ -43,6 +43,7 @@ import { PURCHASE_INVOICE_STATUSES } from "@/lib/purchase-invoices/schema";
 import { invalidatePurchaseInvoice } from "@/lib/query-invalidation";
 import { formatInr, formatDate } from "@/lib/format";
 import { useRoles } from "@/hooks/use-roles";
+import { AccountingGuard } from "@/components/auth/AccountingGuard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PurchaseTransportView } from "../purchase-transport";
 
@@ -105,6 +106,10 @@ function PurchaseInvoicesPage() {
     setQ(v);
     nav({ to: "/purchase-invoices", search: { status: status || undefined, q: v || undefined } });
   };
+
+  if (roles.isReady && !roles.hasAnyRole(["admin", "super_admin", "purchase"])) {
+    return <AccountingGuard moduleName="Purchase Invoices & Bills" />;
+  }
 
   const rows = query.data ?? [];
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
