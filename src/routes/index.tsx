@@ -65,7 +65,6 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { CountryCodeSelect } from "@/components/forms/inputs/CountryCodeSelect";
 import { CustomerInquiryLookupDialog } from "@/components/enquiry/CustomerInquiryLookupDialog";
-import { StoneGalleryFeed } from "@/components/landing/StoneGalleryFeed";
 import { LuxuryProductShowcase } from "@/components/landing/LuxuryProductShowcase";
 import { WallCladdingCatalog } from "@/components/catalog/WallCladdingCatalog";
 import { StoneVeneerCatalog } from "@/components/catalog/StoneVeneerCatalog";
@@ -2270,10 +2269,9 @@ function HomePage() {
             }}
           />
 
-          {/* ADDITIONAL LIVE INSTALLATIONS SOCIAL FEEDS (WHEN INSTALLATIONS TAB ACTIVE) */}
+          {/* LUXURY ARCHITECTURAL SHOWCASE (WHEN INSTALLATIONS TAB ACTIVE) */}
           {showcaseTab === "installations" && (
             <div id="gallery-feed" className="animate-in fade-in duration-300 space-y-12 pt-6">
-              <StoneGalleryFeed onSelectProduct={scrollToForm} />
               <LuxuryProductShowcase
                 onSelectProduct={scrollToForm}
                 selectedProducts={selectedProducts}

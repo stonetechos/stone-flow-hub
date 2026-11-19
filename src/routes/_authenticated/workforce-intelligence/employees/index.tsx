@@ -45,6 +45,33 @@ import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useRoles } from "@/hooks/use-roles";
 import { useTranslation } from "react-i18next";
 import { transliterateName } from "@/lib/i18n/transliterate";
+import { cn } from "@/lib/utils";
+
+export function getEmployeeDisplayCode(
+  rawCode?: string | null,
+  email?: string | null,
+  name?: string | null,
+): string {
+  const normEmail = (email || "").toLowerCase().trim();
+  const normName = (name || "").toLowerCase().trim();
+
+  if (normEmail.includes("guvtamsolanki") || normName.includes("gautam")) {
+    return "001";
+  }
+  if (normEmail.includes("rp140528") || normName.includes("rahul")) {
+    return "002";
+  }
+  if (normEmail.includes("vijaydave") || normName.includes("vijay")) {
+    return "003";
+  }
+
+  if (rawCode && rawCode.trim()) {
+    const match = rawCode.match(/\d+$/);
+    if (match) return match[0].padStart(3, "0");
+    return rawCode;
+  }
+  return "—";
+}
 
 export const Route = createFileRoute("/_authenticated/workforce-intelligence/employees/")({
   head: () => ({ meta: [{ title: "Employees — Workforce Intelligence" }] }),
@@ -110,10 +137,33 @@ function EmployeesPage() {
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
+  const activeWorkingCount = useMemo(() => {
+    return (employees.data ?? []).filter(
+      (e) => e.employment_status !== "terminated" && e.employment_status !== "resigned",
+    ).length;
+  }, [employees.data]);
+
   const filteredRows = useMemo(() => {
     const list = employees.data ?? [];
-    if (statusFilter === "all") return list;
-    return list.filter((e) => e.employment_status === statusFilter);
+    const filtered =
+      statusFilter === "all" ? list : list.filter((e) => e.employment_status === statusFilter);
+
+    // Sort: Active/working employees first, terminated employees at the very last
+    return [...filtered].sort((a, b) => {
+      const isATerminated =
+        a.employment_status === "terminated" || a.employment_status === "resigned";
+      const isBTerminated =
+        b.employment_status === "terminated" || b.employment_status === "resigned";
+
+      // 1. Terminated employees must go to the very last of the list
+      if (isATerminated && !isBTerminated) return 1;
+      if (!isATerminated && isBTerminated) return -1;
+
+      // 2. Secondary sort: By employee number ascending (001, 002, 003...)
+      const codeA = getEmployeeDisplayCode(a.employee_code, a.email, a.full_name);
+      const codeB = getEmployeeDisplayCode(b.employee_code, b.email, b.full_name);
+      return codeA.localeCompare(codeB, undefined, { numeric: true });
+    });
   }, [employees.data, statusFilter]);
 
   return (
@@ -160,6 +210,16 @@ function EmployeesPage() {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-xs font-semibold">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+            </span>
+            <span>
+              {t("workforce.employees.currentlyWorking", "Currently Working")}: {activeWorkingCount}{" "}
+              {t("workforce.employees.staffMembers", "Employees")}
+            </span>
           </div>
         </div>
       </div>
@@ -209,6 +269,9 @@ function EmployeesPage() {
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
+                <TableHead className="w-16 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {t("workforce.employees.columns.sno", "S.No")}
+                </TableHead>
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   {t("workforce.employees.columns.code", "Code")}
                 </TableHead>
@@ -236,132 +299,167 @@ function EmployeesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredRows.map((e) => (
-                <TableRow key={e.id} className="transition-colors">
-                  <TableCell className="text-sm font-medium text-muted-foreground tabular-nums">
-                    {e.employee_code || "—"}
-                  </TableCell>
-                  <TableCell className="text-sm font-medium">
-                    <Link
-                      to="/workforce-intelligence/employees/$id"
-                      params={{ id: e.id }}
-                      className="text-foreground hover:text-primary hover:underline transition-colors"
-                    >
-                      {transliterateName(e.full_name, i18n.language)}
-                    </Link>
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {e.email ? (
-                      <a
-                        href={`mailto:${e.email}`}
-                        className="text-muted-foreground hover:text-primary hover:underline inline-flex items-center gap-1.5 transition-colors"
-                        title={e.email}
-                      >
-                        <Mail className="h-3.5 w-3.5 text-muted-foreground/70 shrink-0" />
-                        <span className="truncate max-w-[190px]">{e.email}</span>
-                      </a>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
+              {filteredRows.map((e) => {
+                const isWorking =
+                  e.employment_status !== "terminated" && e.employment_status !== "resigned";
+                let serialNumber: number | null = null;
+                if (isWorking) {
+                  const workingList = filteredRows.filter(
+                    (row) =>
+                      row.employment_status !== "terminated" &&
+                      row.employment_status !== "resigned",
+                  );
+                  const idx = workingList.findIndex((row) => row.id === e.id);
+                  if (idx !== -1) {
+                    serialNumber = idx + 1;
+                  }
+                }
+                const displayCode = getEmployeeDisplayCode(e.employee_code, e.email, e.full_name);
+
+                return (
+                  <TableRow
+                    key={e.id}
+                    className={cn(
+                      "transition-colors",
+                      !isWorking && "bg-muted/20 opacity-75 hover:bg-muted/30",
                     )}
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {(() => {
-                      const desigIds =
-                        e.designation_ids && e.designation_ids.length > 0
-                          ? e.designation_ids
-                          : e.designation_id
-                            ? [e.designation_id]
-                            : [];
-                      const names = desigIds
-                        .map((id) => desigById.get(id))
-                        .filter(Boolean) as string[];
-                      if (names.length === 0) {
-                        return <span className="text-muted-foreground">—</span>;
-                      }
-                      const localized = names.map((n) => t(`workforce.designations.${n}`, t(n, n)));
-                      if (localized.length === 1) {
-                        return <span className="text-foreground">{localized[0]}</span>;
-                      }
-                      return (
-                        <div
-                          className="flex items-center gap-1.5 flex-wrap"
-                          title={localized.join(", ")}
-                        >
-                          <span className="text-foreground">{localized[0]}</span>
-                          <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800">
-                            +{localized.length - 1} {t("common.more", "more")}
-                          </span>
-                        </div>
-                      );
-                    })()}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {e.department
-                      ? t(`workforce.departments.${e.department}`, t(e.department, e.department))
-                      : "—"}
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    <Select
-                      value={e.employment_status}
-                      disabled={updateStatusMut.isPending}
-                      onValueChange={(val) => {
-                        if (val === "terminated" && !isSuperAdmin) {
-                          toast.error(
-                            "Admins are not permitted to terminate employees. Only Super Admin can perform termination.",
-                          );
-                          return;
-                        }
-                        updateStatusMut.mutate({ id: e.id, status: val as EmploymentStatus });
-                      }}
-                    >
-                      <SelectTrigger className="h-7 w-[125px] text-xs font-medium">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {EMPLOYMENT_STATUSES.map((st) => {
-                          if (st === "terminated" && !isSuperAdmin) {
-                            return null;
-                          }
-                          return (
-                            <SelectItem key={st} value={st} className="text-xs">
-                              {EMPLOYMENT_STATUS_LABELS[st]}
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground tabular-nums">
-                    {e.phone ?? "—"}
-                  </TableCell>
-                  <TableCell className="w-28 text-right text-sm">
-                    <div className="flex items-center justify-end gap-1">
-                      <Button
-                        asChild
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        title="Edit employee"
+                  >
+                    <TableCell className="text-sm font-semibold text-muted-foreground tabular-nums">
+                      {serialNumber !== null ? (
+                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-primary/10 text-primary text-xs font-bold">
+                          {serialNumber}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground text-xs italic px-1">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-sm font-bold text-foreground tabular-nums">
+                      {displayCode}
+                    </TableCell>
+                    <TableCell className="text-sm font-medium">
+                      <Link
+                        to="/workforce-intelligence/employees/$id"
+                        params={{ id: e.id }}
+                        className="text-foreground hover:text-primary hover:underline transition-colors"
                       >
-                        <Link to="/workforce-intelligence/employees/new" search={{ id: e.id }}>
-                          <Pencil className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
-                        </Link>
-                      </Button>
-                      {isSuperAdmin && (
+                        {transliterateName(e.full_name, i18n.language)}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {e.email ? (
+                        <a
+                          href={`mailto:${e.email}`}
+                          className="text-muted-foreground hover:text-primary hover:underline inline-flex items-center gap-1.5 transition-colors"
+                          title={e.email}
+                        >
+                          <Mail className="h-3.5 w-3.5 text-muted-foreground/70 shrink-0" />
+                          <span className="truncate max-w-[190px]">{e.email}</span>
+                        </a>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {(() => {
+                        const desigIds =
+                          e.designation_ids && e.designation_ids.length > 0
+                            ? e.designation_ids
+                            : e.designation_id
+                              ? [e.designation_id]
+                              : [];
+                        const names = desigIds
+                          .map((id) => desigById.get(id))
+                          .filter(Boolean) as string[];
+                        if (names.length === 0) {
+                          return <span className="text-muted-foreground">—</span>;
+                        }
+                        const localized = names.map((n) =>
+                          t(`workforce.designations.${n}`, t(n, n)),
+                        );
+                        if (localized.length === 1) {
+                          return <span className="text-foreground">{localized[0]}</span>;
+                        }
+                        return (
+                          <div
+                            className="flex items-center gap-1.5 flex-wrap"
+                            title={localized.join(", ")}
+                          >
+                            <span className="text-foreground">{localized[0]}</span>
+                            <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800">
+                              +{localized.length - 1} {t("common.more", "more")}
+                            </span>
+                          </div>
+                        );
+                      })()}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {e.department
+                        ? t(`workforce.departments.${e.department}`, t(e.department, e.department))
+                        : "—"}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      <Select
+                        value={e.employment_status}
+                        disabled={updateStatusMut.isPending}
+                        onValueChange={(val) => {
+                          if (val === "terminated" && !isSuperAdmin) {
+                            toast.error(
+                              "Admins are not permitted to terminate employees. Only Super Admin can perform termination.",
+                            );
+                            return;
+                          }
+                          updateStatusMut.mutate({ id: e.id, status: val as EmploymentStatus });
+                        }}
+                      >
+                        <SelectTrigger className="h-7 w-[125px] text-xs font-medium">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {EMPLOYMENT_STATUSES.map((st) => {
+                            if (st === "terminated" && !isSuperAdmin) {
+                              return null;
+                            }
+                            return (
+                              <SelectItem key={st} value={st} className="text-xs">
+                                {EMPLOYMENT_STATUS_LABELS[st]}
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground tabular-nums">
+                      {e.phone ?? "—"}
+                    </TableCell>
+                    <TableCell className="w-28 text-right text-sm">
+                      <div className="flex items-center justify-end gap-1">
                         <Button
+                          asChild
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                          title="Remove employee (Super Admin only)"
-                          onClick={() => setToDelete(e)}
+                          className="h-7 w-7"
+                          title="Edit employee"
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Link to="/workforce-intelligence/employees/new" search={{ id: e.id }}>
+                            <Pencil className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+                          </Link>
                         </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+                        {isSuperAdmin && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                            title="Remove employee (Super Admin only)"
+                            onClick={() => setToDelete(e)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>

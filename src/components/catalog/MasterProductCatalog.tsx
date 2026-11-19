@@ -84,6 +84,7 @@ import rawClayData from "@/data/flexible-clay-catalog.json";
 import rawPebblesData from "@/data/stone-pebbles-catalog.json";
 import rawInstallsData from "@/data/installed-works-gallery.json";
 import { CATALOG_ITEMS_BY_CODE } from "@/lib/i18n/catalogue-items-i18n";
+import { StoneGalleryFeed } from "@/components/landing/StoneGalleryFeed";
 
 export type ProductTab =
   | "cladding"
@@ -122,7 +123,8 @@ const LOCALIZED_CATALOG_STRINGS: Record<string, { hi: string; gu: string }> = {
   "Glass Bricks": { hi: "कांच की ईंटें", gu: "કાચની ઈંટો" },
   "Clay Veneers": { hi: "फ्लेक्सिबल क्ले विनियर्स", gu: "ક્લે વિનિયર્સ" },
   "Stone Pebbles": { hi: "स्टोन पेबल्स एवं कंकड़", gu: "સ્ટોન પેબલ્સ" },
-  "Live Installed Works": { hi: "लाइव स्थापित कार्य", gu: "લાઇવ સ્થાપિત કાર્યો" },
+  "A few of more works": { hi: "हमारे कुछ और कार्य", gu: "અમારા કેટલાક વધુ કાર્યો" },
+  "Live Installed Works": { hi: "हमारे कुछ और कार्य", gu: "અમારા કેટલાક વધુ કાર્યો" },
 
   // Categories & Series
   "Hollow Glass Bricks": { hi: "खोखली कांच की ईंटें", gu: "પોલી કાચની ઈંટો" },
@@ -766,10 +768,10 @@ export function MasterProductCatalog({
     installations: {
       title:
         lang === "gu"
-          ? "લાઇવ સ્થાપિત કાર્યો અને પ્રોજેક્ટ ગેલેરી"
+          ? "અમારા કેટલાક વધુ કાર્યો"
           : lang === "hi"
-            ? "लाइव स्थापित कार्य एवं प्रोजेक्ट गैलरी"
-            : "LIVE INSTALLED WORKS & ARCHITECTURAL PROJECTS",
+            ? "हमारे कुछ और कार्य"
+            : "A FEW OF MORE WORKS",
       countLabel: lang === "gu" ? "પ્રોજેક્ટ્સ" : lang === "hi" ? "प्रोजेक्ट्स" : "Projects",
       dropdown1Placeholder:
         lang === "gu" ? "બધી શ્રેણીઓ" : lang === "hi" ? "सभी श्रेणियां" : "All Categories",
@@ -1011,13 +1013,20 @@ export function MasterProductCatalog({
           <Camera className="h-4 w-4 text-emerald-500" />
           <span>
             {lang === "gu"
-              ? "લાઇવ સ્થાપિત કાર્યો"
+              ? "અમારા કેટલાક વધુ કાર્યો"
               : lang === "hi"
-                ? "लाइव निष्पादित कार्य"
-                : "Live Installed Works"}
+                ? "हमारे कुछ और कार्य"
+                : "A few of more works"}
           </span>
         </button>
       </div>
+
+      {/* 1b. LIVE INSTAGRAM FEED OVER "A FEW OF MORE WORKS" (WHEN INSTALLATIONS ACTIVE) */}
+      {currentTab === "installations" && (
+        <div className="pt-1 pb-3 animate-in fade-in duration-300">
+          <StoneGalleryFeed onSelectProduct={onSelectProduct} />
+        </div>
+      )}
 
       {/* 2. DYNAMIC CONTROLS ROW: TITLE, 2 ADAPTIVE DROPDOWNS, SEARCH & 5-PDF MENU */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pt-1 border-t border-border/40">

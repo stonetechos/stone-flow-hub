@@ -55,7 +55,7 @@ interface InstalledWorksGalleryProps {
 
 const TEXTS = {
   en: {
-    heading: "Live Installed Works & Architectural Portfolio",
+    heading: "A few of more works",
     projectsCount: "Executed Projects",
     allCategories: "All Projects",
     claddingCategory: "Stone Cladding",
@@ -75,7 +75,7 @@ const TEXTS = {
     resetFilters: "Reset Filters",
   },
   hi: {
-    heading: "लाइव इंस्टॉलेशन कार्य एवं वास्तुशिल्प पोर्टफोलियो",
+    heading: "हमारे कुछ और कार्य",
     projectsCount: "पूर्ण प्रोजेक्ट्स",
     allCategories: "सभी प्रोजेक्ट्स",
     claddingCategory: "स्टोन क्लैडिंग",
@@ -95,7 +95,7 @@ const TEXTS = {
     resetFilters: "फ़िल्टर रीसेट करें",
   },
   gu: {
-    heading: "વાસ્તવિક સ્થાપિત કાર્યો અને વાસ્તુશિલ્પીય પોર્ટફોલિયો",
+    heading: "અમારા કેટલાક વધુ કાર્યો",
     projectsCount: "પૂર્ણ પ્રોજેક્ટ્સ",
     allCategories: "બધા પ્રોજેક્ટ્સ",
     claddingCategory: "પાષાણ ક્લેડિંગ",

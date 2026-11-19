@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { getLandingTexts } from "@/lib/i18n/landing-i18n";
 
 interface StoneGalleryFeedProps {
@@ -144,9 +145,20 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
           </div>
         </div>
 
-        {/* Unconstrained Squeezed Feed without inner scroll trap (allows reaching footer) */}
-        <div ref={scrollContainerRef} className="rounded-2xl pb-2">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-2.5 pb-2">
+        {/* 2-Row Bounded Instagram Feed Box with Smooth In-Box Scroll */}
+        <div
+          ref={scrollContainerRef}
+          aria-label="Instagram Live Feed Scrollable Box"
+          className={cn(
+            "relative w-full rounded-2xl border border-border/80 bg-card/40 p-2 sm:p-3 shadow-inner",
+            "h-[380px] sm:h-[420px] md:h-[480px] lg:h-[520px]",
+            "overflow-y-auto overscroll-y-auto",
+            "[scrollbar-width:thin] scrollbar-thumb-muted-foreground/30 hover:scrollbar-thumb-muted-foreground/60",
+            "[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-muted/30 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/50",
+          )}
+          style={{ overscrollBehaviorY: "auto" }}
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-2.5 sm:gap-3.5 pb-2">
             {visiblePosts.map((post, idx) => {
               const hasMultiplePhotos =
                 (post.carouselImages && post.carouselImages.length > 1) ||
@@ -253,6 +265,20 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
               </button>
             </div>
           )}
+        </div>
+
+        {/* Footer strip showing count and in-box scroll notice */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/40 text-[11px] text-muted-foreground">
+          <span className="font-semibold text-foreground">
+            {currentLang === "gu"
+              ? `લાઇવ ઇન્સ્ટાગ્રામ સ્થાપિત કાર્યો (${allPosts.length}) · અંદર સ્ક્રોલ કરો`
+              : currentLang === "hi"
+                ? `लाइव इंस्टाग्राम निष्पादित कार्य (${allPosts.length}) · बॉक्स के अंदर स्क्रॉल करें`
+                : `Live Instagram Executed Works (${allPosts.length} posts) · Scroll box to explore`}
+          </span>
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+            @stonetech_official
+          </span>
         </div>
       </div>
 

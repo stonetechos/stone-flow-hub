@@ -581,6 +581,17 @@ export const listEmployeesServerFn = createServerFn({ method: "POST" })
       throw new Error(error.message || "Failed to list employees");
     }
     return (emps ?? []).map((e) => {
+      let code = e.employee_code;
+      const normEmail = (e.email || "").toLowerCase();
+      const normName = (e.full_name || "").toLowerCase();
+      if (normEmail.includes("guvtamsolanki") || normName.includes("gautam")) {
+        code = "001";
+      } else if (normEmail.includes("rp140528") || normName.includes("rahul")) {
+        code = "002";
+      } else if (normEmail.includes("vijaydave") || normName.includes("vijay")) {
+        code = "003";
+      }
+
       const bankObj =
         e.bank_details && typeof e.bank_details === "object"
           ? (e.bank_details as Record<string, unknown>)
@@ -594,6 +605,7 @@ export const listEmployeesServerFn = createServerFn({ method: "POST" })
 
       return {
         ...e,
+        employee_code: code,
         designation_ids: designationIds,
         skills: Array.isArray(e.skills) ? e.skills : [],
       };
