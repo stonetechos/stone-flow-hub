@@ -501,21 +501,60 @@ export function MasterProductCatalog({
         };
       case "glass-bricks":
         return {
-          label: "Glass Bricks (67 Designs)",
-          url: "/catalogues/StoneTech_Solid_Glass_Bricks_Catalogue_2026.pdf",
-          filename: "StoneTech_Solid_Glass_Bricks_Catalogue_2026.pdf",
+          label:
+            lang === "gu"
+              ? "ગ્લાસ બ્રિક્સ (67 ડિઝાઇન્સ)"
+              : lang === "hi"
+                ? "ग्लास ब्रिक्स (67 डिज़ाइन्स)"
+                : "Glass Bricks (67 Designs)",
+          url: isHi
+            ? "/catalogues/StoneTech_Solid_Glass_Bricks_Catalogue_Hindi.pdf"
+            : isGu
+              ? "/catalogues/StoneTech_Solid_Glass_Bricks_Catalogue_Gujarati.pdf"
+              : "/catalogues/StoneTech_Solid_Glass_Bricks_Catalogue_English.pdf",
+          filename: isHi
+            ? "StoneTech_Solid_Glass_Bricks_Catalogue_Hindi.pdf"
+            : isGu
+              ? "StoneTech_Solid_Glass_Bricks_Catalogue_Gujarati.pdf"
+              : "StoneTech_Solid_Glass_Bricks_Catalogue_English.pdf",
         };
       case "clay-veneers":
         return {
-          label: "Clay Veneers (37 Pgs)",
-          url: "/catalogues/StoneTech_Flexible_Clay_Veneers_Catalogue_2026.pdf",
-          filename: "StoneTech_Flexible_Clay_Veneers_Catalogue_2026.pdf",
+          label:
+            lang === "gu"
+              ? "ક્લે વિનિયર્સ (37 Pgs)"
+              : lang === "hi"
+                ? "क्ले विनियर्स (37 Pgs)"
+                : "Clay Veneers (37 Pgs)",
+          url: isHi
+            ? "/catalogues/StoneTech_Flexible_Clay_Veneers_Catalogue_Hindi.pdf"
+            : isGu
+              ? "/catalogues/StoneTech_Flexible_Clay_Veneers_Catalogue_Gujarati.pdf"
+              : "/catalogues/StoneTech_Flexible_Clay_Veneers_Catalogue_English.pdf",
+          filename: isHi
+            ? "StoneTech_Flexible_Clay_Veneers_Catalogue_Hindi.pdf"
+            : isGu
+              ? "StoneTech_Flexible_Clay_Veneers_Catalogue_Gujarati.pdf"
+              : "StoneTech_Flexible_Clay_Veneers_Catalogue_English.pdf",
         };
       case "pebbles":
         return {
-          label: "Stone Pebbles (23 Pgs)",
-          url: "/catalogues/StoneTech_Stone_Pebbles_Catalogue_2026.pdf",
-          filename: "StoneTech_Stone_Pebbles_Catalogue_2026.pdf",
+          label:
+            lang === "gu"
+              ? "સ્ટોન પેબલ્સ (23 Pgs)"
+              : lang === "hi"
+                ? "स्टोन पेबल्स (23 Pgs)"
+                : "Stone Pebbles (23 Pgs)",
+          url: isHi
+            ? "/catalogues/StoneTech_Stone_Pebbles_Catalogue_Hindi.pdf"
+            : isGu
+              ? "/catalogues/StoneTech_Stone_Pebbles_Catalogue_Gujarati.pdf"
+              : "/catalogues/StoneTech_Stone_Pebbles_Catalogue_English.pdf",
+          filename: isHi
+            ? "StoneTech_Stone_Pebbles_Catalogue_Hindi.pdf"
+            : isGu
+              ? "StoneTech_Stone_Pebbles_Catalogue_Gujarati.pdf"
+              : "StoneTech_Stone_Pebbles_Catalogue_English.pdf",
         };
       case "cladding":
       default:
@@ -872,30 +911,116 @@ export function MasterProductCatalog({
               </div>
 
               {/* 3. Glass Bricks Catalogues */}
-              <div className="rounded-lg border border-sky-500/20 bg-sky-500/5 p-2 space-y-1.5">
+              <div className="rounded-lg border border-sky-500/20 bg-sky-500/5 p-2 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-xs text-foreground flex items-center gap-1.5">
                     <Gem className="h-3.5 w-3.5 text-sky-600" />
                     Architectural Glass Bricks (67 Designs)
                   </span>
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] px-1.5 py-0 h-4 border-sky-500/40 text-sky-700 dark:text-sky-300"
+                  >
+                    67 Designs
+                  </Badge>
                 </div>
-                <div className="grid grid-cols-2 gap-1.5 pt-0.5">
-                  <a
-                    href="/catalogues/StoneTech_Solid_Glass_Bricks_Catalogue_2026.pdf"
-                    download="StoneTech_Solid_Glass_Bricks_Catalogue_2026.pdf"
-                    className="py-1 px-1.5 text-[11px] font-medium rounded border bg-background/80 hover:bg-accent border-border text-foreground flex items-center justify-center gap-1"
-                  >
-                    <Download className="h-3 w-3 text-sky-600" />
-                    Solid Glass (34 Pgs)
-                  </a>
-                  <a
-                    href="/catalogues/StoneTech_Glass_Bricks_Catalogue_2026.pdf"
-                    download="StoneTech_Glass_Bricks_Catalogue_2026.pdf"
-                    className="py-1 px-1.5 text-[11px] font-medium rounded border bg-background/80 hover:bg-accent border-border text-foreground flex items-center justify-center gap-1"
-                  >
-                    <Download className="h-3 w-3 text-sky-600" />
-                    Hollow Glass (49 Pgs)
-                  </a>
+
+                {/* Solid Glass Bricks */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Download className="h-3 w-3 text-sky-600" />
+                      Solid Glass Bricks (34 Pgs)
+                    </span>
+                    <span className="text-[10px] font-mono">9.0 MB</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <a
+                      href="/catalogues/StoneTech_Solid_Glass_Bricks_Catalogue_English.pdf"
+                      download="StoneTech_Solid_Glass_Bricks_Catalogue_English.pdf"
+                      className={cn(
+                        "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
+                        activeLangCode === "en"
+                          ? "bg-sky-600 text-white border-sky-600 shadow-xs"
+                          : "bg-background/80 hover:bg-accent border-border text-foreground",
+                      )}
+                    >
+                      English
+                    </a>
+                    <a
+                      href="/catalogues/StoneTech_Solid_Glass_Bricks_Catalogue_Hindi.pdf"
+                      download="StoneTech_Solid_Glass_Bricks_Catalogue_Hindi.pdf"
+                      className={cn(
+                        "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
+                        activeLangCode === "hi"
+                          ? "bg-sky-600 text-white border-sky-600 shadow-xs"
+                          : "bg-background/80 hover:bg-accent border-border text-foreground",
+                      )}
+                    >
+                      हिंदी
+                    </a>
+                    <a
+                      href="/catalogues/StoneTech_Solid_Glass_Bricks_Catalogue_Gujarati.pdf"
+                      download="StoneTech_Solid_Glass_Bricks_Catalogue_Gujarati.pdf"
+                      className={cn(
+                        "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
+                        activeLangCode === "gu"
+                          ? "bg-sky-600 text-white border-sky-600 shadow-xs"
+                          : "bg-background/80 hover:bg-accent border-border text-foreground",
+                      )}
+                    >
+                      ગુજરાતી
+                    </a>
+                  </div>
+                </div>
+
+                {/* Hollow Glass Bricks */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Download className="h-3 w-3 text-sky-600" />
+                      Hollow Glass Bricks (49 Pgs)
+                    </span>
+                    <span className="text-[10px] font-mono">4.5 MB</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <a
+                      href="/catalogues/StoneTech_Glass_Bricks_Catalogue_English.pdf"
+                      download="StoneTech_Glass_Bricks_Catalogue_English.pdf"
+                      className={cn(
+                        "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
+                        activeLangCode === "en"
+                          ? "bg-sky-600 text-white border-sky-600 shadow-xs"
+                          : "bg-background/80 hover:bg-accent border-border text-foreground",
+                      )}
+                    >
+                      English
+                    </a>
+                    <a
+                      href="/catalogues/StoneTech_Glass_Bricks_Catalogue_Hindi.pdf"
+                      download="StoneTech_Glass_Bricks_Catalogue_Hindi.pdf"
+                      className={cn(
+                        "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
+                        activeLangCode === "hi"
+                          ? "bg-sky-600 text-white border-sky-600 shadow-xs"
+                          : "bg-background/80 hover:bg-accent border-border text-foreground",
+                      )}
+                    >
+                      हिंदी
+                    </a>
+                    <a
+                      href="/catalogues/StoneTech_Glass_Bricks_Catalogue_Gujarati.pdf"
+                      download="StoneTech_Glass_Bricks_Catalogue_Gujarati.pdf"
+                      className={cn(
+                        "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
+                        activeLangCode === "gu"
+                          ? "bg-sky-600 text-white border-sky-600 shadow-xs"
+                          : "bg-background/80 hover:bg-accent border-border text-foreground",
+                      )}
+                    >
+                      ગુજરાતી
+                    </a>
+                  </div>
                 </div>
               </div>
 
@@ -913,20 +1038,47 @@ export function MasterProductCatalog({
                     40 Textures
                   </Badge>
                 </div>
-                <a
-                  href="/catalogues/StoneTech_Flexible_Clay_Veneers_Catalogue_2026.pdf"
-                  download="StoneTech_Flexible_Clay_Veneers_Catalogue_2026.pdf"
-                  className="w-full py-1 px-2 text-[11px] font-medium rounded border bg-background/80 hover:bg-accent border-border text-foreground flex items-center justify-between gap-1"
-                >
-                  <span className="flex items-center gap-1.5">
-                    <Download className="h-3 w-3 text-orange-600" />
-                    <span>Master Catalogue 2026</span>
-                  </span>
-                  <span className="text-[10px] text-muted-foreground font-mono">15.4 MB</span>
-                </a>
+                <div className="flex items-center gap-1.5 pt-1">
+                  <a
+                    href="/catalogues/StoneTech_Flexible_Clay_Veneers_Catalogue_English.pdf"
+                    download="StoneTech_Flexible_Clay_Veneers_Catalogue_English.pdf"
+                    className={cn(
+                      "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
+                      activeLangCode === "en"
+                        ? "bg-orange-600 text-white border-orange-600 shadow-xs"
+                        : "bg-background/80 hover:bg-accent border-border text-foreground",
+                    )}
+                  >
+                    English
+                  </a>
+                  <a
+                    href="/catalogues/StoneTech_Flexible_Clay_Veneers_Catalogue_Hindi.pdf"
+                    download="StoneTech_Flexible_Clay_Veneers_Catalogue_Hindi.pdf"
+                    className={cn(
+                      "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
+                      activeLangCode === "hi"
+                        ? "bg-orange-600 text-white border-orange-600 shadow-xs"
+                        : "bg-background/80 hover:bg-accent border-border text-foreground",
+                    )}
+                  >
+                    हिंदी
+                  </a>
+                  <a
+                    href="/catalogues/StoneTech_Flexible_Clay_Veneers_Catalogue_Gujarati.pdf"
+                    download="StoneTech_Flexible_Clay_Veneers_Catalogue_Gujarati.pdf"
+                    className={cn(
+                      "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
+                      activeLangCode === "gu"
+                        ? "bg-orange-600 text-white border-orange-600 shadow-xs"
+                        : "bg-background/80 hover:bg-accent border-border text-foreground",
+                    )}
+                  >
+                    ગુજરાતી
+                  </a>
+                </div>
               </div>
 
-              {/* 5. Natural Stone Pebbles Catalogue (NEW!) */}
+              {/* 5. Natural Stone Pebbles Catalogue */}
               <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-2 space-y-1.5">
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-xs text-foreground flex items-center gap-1.5">
@@ -940,19 +1092,44 @@ export function MasterProductCatalog({
                     75 Varieties
                   </Badge>
                 </div>
-                <a
-                  href="/catalogues/StoneTech_Stone_Pebbles_Catalogue_2026.pdf"
-                  download="StoneTech_Stone_Pebbles_Catalogue_2026.pdf"
-                  className="w-full py-1 px-2 text-[11px] font-medium rounded border bg-background/80 hover:bg-accent border-border text-foreground flex items-center justify-between gap-1"
-                >
-                  <span className="flex items-center gap-1.5">
-                    <Download className="h-3 w-3 text-amber-500" />
-                    <span className="font-semibold text-amber-600 dark:text-amber-400">
-                      Master Catalogue 2026
-                    </span>
-                  </span>
-                  <span className="text-[10px] text-muted-foreground font-mono">16.2 MB</span>
-                </a>
+                <div className="flex items-center gap-1.5 pt-1">
+                  <a
+                    href="/catalogues/StoneTech_Stone_Pebbles_Catalogue_English.pdf"
+                    download="StoneTech_Stone_Pebbles_Catalogue_English.pdf"
+                    className={cn(
+                      "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
+                      activeLangCode === "en"
+                        ? "bg-amber-600 text-white border-amber-600 shadow-xs"
+                        : "bg-background/80 hover:bg-accent border-border text-foreground",
+                    )}
+                  >
+                    English
+                  </a>
+                  <a
+                    href="/catalogues/StoneTech_Stone_Pebbles_Catalogue_Hindi.pdf"
+                    download="StoneTech_Stone_Pebbles_Catalogue_Hindi.pdf"
+                    className={cn(
+                      "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
+                      activeLangCode === "hi"
+                        ? "bg-amber-600 text-white border-amber-600 shadow-xs"
+                        : "bg-background/80 hover:bg-accent border-border text-foreground",
+                    )}
+                  >
+                    हिंदी
+                  </a>
+                  <a
+                    href="/catalogues/StoneTech_Stone_Pebbles_Catalogue_Gujarati.pdf"
+                    download="StoneTech_Stone_Pebbles_Catalogue_Gujarati.pdf"
+                    className={cn(
+                      "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
+                      activeLangCode === "gu"
+                        ? "bg-amber-600 text-white border-amber-600 shadow-xs"
+                        : "bg-background/80 hover:bg-accent border-border text-foreground",
+                    )}
+                  >
+                    ગુજરાતી
+                  </a>
+                </div>
               </div>
             </DropdownMenuContent>
           </DropdownMenu>
