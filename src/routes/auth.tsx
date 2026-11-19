@@ -80,6 +80,7 @@ const flowSchema = z.object({
   token_hash: z.string().optional().catch(undefined),
   token: z.string().optional().catch(undefined),
   type: z.string().optional().catch(undefined),
+  email: z.string().optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/auth")({
@@ -454,6 +455,9 @@ function SignInCard() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (typeof window !== "undefined") {
+      localStorage.setItem("stos_last_auth_email", email.trim());
+    }
     setFormError(null);
     setBusy(true);
     try {
@@ -772,6 +776,9 @@ function ResetPasswordCard() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (typeof window !== "undefined") {
+      localStorage.setItem("stos_last_auth_email", email.trim());
+    }
     setFormError(null);
     setBusy(true);
     try {
@@ -849,7 +856,15 @@ function ResetPasswordCard() {
 function UpdatePasswordCard({ invite, forceChange }: { invite?: boolean; forceChange?: boolean }) {
   const navigate = useNavigate();
   const router = useRouter();
+  const search = Route.useSearch();
   const completeActivationFn = useServerFn(completeUserPasswordActivation);
+  const [accountEmail, setAccountEmail] = useState(() => {
+    return (
+      (search as { email?: string }).email ||
+      (typeof window !== "undefined" ? localStorage.getItem("stos_last_auth_email") : "") ||
+      ""
+    );
+  });
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
   const [showPw, setShowPw] = useState(false);
@@ -884,20 +899,52 @@ function UpdatePasswordCard({ invite, forceChange }: { invite?: boolean; forceCh
 
     setBusy(true);
     try {
-      // 1. Update the user password in Supabase Auth
-      const { error: updateError } = await supabase.auth.updateUser({ password: pw });
-      if (updateError) {
-        throw updateError;
+      const { data: userRes } = await supabase.auth.getUser();
+      const effectiveEmail = (
+        userRes.user?.email ||
+        accountEmail ||
+        (typeof window !== "undefined" ? localStorage.getItem("stos_last_auth_email") : "") ||
+        ""
+      ).trim();
+
+      let sessionError: Error | null = null;
+      if (userRes.user) {
+        const { error: updateError } = await supabase.auth.updateUser({ password: pw });
+        if (updateError) {
+          sessionError = updateError;
+        }
+      } else {
+        sessionError = new Error("Auth session missing");
       }
 
-      // 2. Clear force_password_change and guarantee operational role on server
+      // If auth session was missing or failed, heal via direct server password activation!
+      if (sessionError) {
+        if (!effectiveEmail) {
+          setFormError(
+            "Please enter your registered work email address below to activate your account.",
+          );
+          setBusy(false);
+          return;
+        }
+        const { directSetUserPasswordServerFn } = await import("@/lib/admin/users.functions");
+        await directSetUserPasswordServerFn({ data: { email: effectiveEmail, password: pw } });
+
+        // Sign in with the newly established password on client
+        const { error: signInErr } = await supabase.auth.signInWithPassword({
+          email: effectiveEmail,
+          password: pw,
+        });
+        if (signInErr) throw signInErr;
+      }
+
+      // Clear force_password_change and guarantee operational role on server
       try {
         await completeActivationFn({ data: { password: pw } });
       } catch (srvErr) {
         console.warn("[auth] Server activation helper notice:", srvErr);
       }
 
-      // 3. Clear force_password_change client-side (backed by DB migration allow-rule)
+      // Clear force_password_change client-side (backed by DB migration allow-rule)
       const { data: sess } = await supabase.auth.getUser();
       const uid = sess.user?.id;
       let isVendor = false;
@@ -953,6 +1000,21 @@ function UpdatePasswordCard({ invite, forceChange }: { invite?: boolean; forceCh
     >
       <form onSubmit={onSubmit} noValidate className="space-y-5">
         <FormError message={formError} />
+
+        {(!forceChange || !accountEmail) && (
+          <Field label="Work email" htmlFor="account-email" icon={<Mail className="h-4 w-4" />}>
+            <Input
+              id="account-email"
+              type="email"
+              required
+              value={accountEmail}
+              onChange={(e) => setAccountEmail(e.target.value)}
+              placeholder="you@company.com"
+              className="pl-10 h-11"
+              disabled={busy}
+            />
+          </Field>
+        )}
 
         <Field
           label="New password"

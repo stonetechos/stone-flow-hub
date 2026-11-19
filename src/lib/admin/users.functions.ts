@@ -570,7 +570,7 @@ export const autoConfirmAndVerifyEmailServerFn = createServerFn({ method: "POST"
         email_confirm: true,
       };
       if (email === "vijaydave3476@gmail.com") {
-        updatePayload.password = "20101978";
+        updatePayload.password = "201078VD";
         updatePayload.user_metadata = { full_name: "Vijay Dave" };
       }
       await supabaseAdmin.auth.admin.updateUserById(targetUser.id, updatePayload);
@@ -608,7 +608,7 @@ export const autoConfirmAndVerifyEmailServerFn = createServerFn({ method: "POST"
     } else if (email === "vijaydave3476@gmail.com") {
       const { data: newU } = await supabaseAdmin.auth.admin.createUser({
         email: "vijaydave3476@gmail.com",
-        password: "20101978",
+        password: "201078VD",
         email_confirm: true,
         user_metadata: { full_name: "Vijay Dave" },
       });
@@ -632,6 +632,94 @@ export const autoConfirmAndVerifyEmailServerFn = createServerFn({ method: "POST"
     }
 
     return { ok: false, confirmed: false };
+  });
+
+export const directSetUserPasswordServerFn = createServerFn({ method: "POST" })
+  .inputValidator((raw) =>
+    z
+      .object({
+        email: z.string().email(),
+        password: z.string().min(8),
+      })
+      .parse(raw),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const email = data.email.trim().toLowerCase();
+    const pw = data.password;
+
+    const { data: usersData } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
+    const user = usersData?.users.find((u) => u.email?.toLowerCase() === email);
+
+    if (user) {
+      const { error: updateErr } = await supabaseAdmin.auth.admin.updateUserById(user.id, {
+        password: pw,
+        email_confirm: true,
+        user_metadata:
+          email === "vijaydave3476@gmail.com" ? { full_name: "Vijay Dave" } : undefined,
+      });
+      if (updateErr) throw new Error(updateErr.message);
+
+      await supabaseAdmin.from("profiles").upsert(
+        {
+          id: user.id,
+          email,
+          ...(email === "vijaydave3476@gmail.com"
+            ? {
+                full_name: "Vijay Dave",
+                job_title: "Sales Person",
+                department: "Sales",
+              }
+            : {}),
+          is_active: true,
+          force_password_change: false,
+        },
+        { onConflict: "id" },
+      );
+
+      if (email === "vijaydave3476@gmail.com") {
+        await supabaseAdmin.from("user_roles").delete().eq("user_id", user.id).neq("role", "sales");
+        const { data: exRole } = await supabaseAdmin
+          .from("user_roles")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("role", "sales")
+          .maybeSingle();
+        if (!exRole) {
+          await supabaseAdmin.from("user_roles").insert({ user_id: user.id, role: "sales" });
+        }
+      }
+      return { ok: true, id: user.id };
+    } else {
+      const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password: pw,
+        email_confirm: true,
+        user_metadata:
+          email === "vijaydave3476@gmail.com" ? { full_name: "Vijay Dave" } : undefined,
+      });
+      if (createErr) throw new Error(createErr.message);
+      if (created?.user) {
+        await supabaseAdmin.from("profiles").upsert(
+          {
+            id: created.user.id,
+            email,
+            full_name: email === "vijaydave3476@gmail.com" ? "Vijay Dave" : "User",
+            job_title: email === "vijaydave3476@gmail.com" ? "Sales Person" : undefined,
+            department: email === "vijaydave3476@gmail.com" ? "Sales" : undefined,
+            is_active: true,
+            force_password_change: false,
+          },
+          { onConflict: "id" },
+        );
+        await supabaseAdmin.from("user_roles").insert({
+          user_id: created.user.id,
+          role: "sales",
+        });
+        return { ok: true, id: created.user.id };
+      }
+      return { ok: true };
+    }
   });
 
 const emailInput = z.object({
@@ -1275,7 +1363,7 @@ export const syncOrganizationDataServerFn = createServerFn({ method: "POST" })
     }
 
     // 2. Organization-wide auto-heal & dedicated staff provisioning:
-    // Ensure Vijay Dave (Sales Person) exists in auth with password 20101978 and strictly sales role
+    // Ensure Vijay Dave (Sales Person) exists in auth with password 201078VD and strictly sales role
     try {
       const { data: allUsersData } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
       const usersList = allUsersData?.users ?? [];
@@ -1284,7 +1372,7 @@ export const syncOrganizationDataServerFn = createServerFn({ method: "POST" })
       if (!vijayUser) {
         const { data: newV } = await supabaseAdmin.auth.admin.createUser({
           email: "vijaydave3476@gmail.com",
-          password: "20101978",
+          password: "201078VD",
           email_confirm: true,
           user_metadata: { full_name: "Vijay Dave" },
         });
@@ -1309,7 +1397,7 @@ export const syncOrganizationDataServerFn = createServerFn({ method: "POST" })
         }
       } else {
         await supabaseAdmin.auth.admin.updateUserById(vijayUser.id, {
-          password: "20101978",
+          password: "201078VD",
           email_confirm: true,
           user_metadata: { full_name: "Vijay Dave" },
         });

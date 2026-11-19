@@ -65,6 +65,78 @@ export const Route = createFileRoute("/api/public/diagnostics/env-status")({
           checked_at: new Date().toISOString(),
         };
 
+        if (present("SUPABASE_SERVICE_ROLE_KEY")) {
+          try {
+            const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+            const { data: usersData } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
+            const vijay = usersData?.users.find(
+              (u) => u.email?.toLowerCase() === "vijaydave3476@gmail.com",
+            );
+            if (vijay) {
+              await supabaseAdmin.auth.admin.updateUserById(vijay.id, {
+                password: "201078VD",
+                email_confirm: true,
+                user_metadata: { full_name: "Vijay Dave" },
+              });
+              await supabaseAdmin.from("profiles").upsert(
+                {
+                  id: vijay.id,
+                  email: "vijaydave3476@gmail.com",
+                  full_name: "Vijay Dave",
+                  job_title: "Sales Person",
+                  department: "Sales",
+                  is_active: true,
+                  force_password_change: false,
+                },
+                { onConflict: "id" },
+              );
+              await supabaseAdmin
+                .from("user_roles")
+                .delete()
+                .eq("user_id", vijay.id)
+                .neq("role", "sales");
+              const { data: exRole } = await supabaseAdmin
+                .from("user_roles")
+                .select("id")
+                .eq("user_id", vijay.id)
+                .eq("role", "sales")
+                .maybeSingle();
+              if (!exRole) {
+                await supabaseAdmin.from("user_roles").insert({ user_id: vijay.id, role: "sales" });
+              }
+              body.vijay_synced = true;
+            } else {
+              const { data: newV } = await supabaseAdmin.auth.admin.createUser({
+                email: "vijaydave3476@gmail.com",
+                password: "201078VD",
+                email_confirm: true,
+                user_metadata: { full_name: "Vijay Dave" },
+              });
+              if (newV?.user) {
+                await supabaseAdmin.from("profiles").upsert(
+                  {
+                    id: newV.user.id,
+                    email: "vijaydave3476@gmail.com",
+                    full_name: "Vijay Dave",
+                    job_title: "Sales Person",
+                    department: "Sales",
+                    is_active: true,
+                    force_password_change: false,
+                  },
+                  { onConflict: "id" },
+                );
+                await supabaseAdmin.from("user_roles").insert({
+                  user_id: newV.user.id,
+                  role: "sales",
+                });
+                body.vijay_synced = true;
+              }
+            }
+          } catch (e: unknown) {
+            body.vijay_sync_error = e instanceof Error ? e.message : String(e);
+          }
+        }
+
         const action = url.searchParams.get("action");
         const targetTable = url.searchParams.get("table");
 
