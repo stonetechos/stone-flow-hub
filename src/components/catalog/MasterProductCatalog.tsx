@@ -250,6 +250,23 @@ const LOCALIZED_CATALOG_STRINGS: Record<string, { hi: string; gu: string }> = {
   "Split Face": { hi: "स्प्लिट फेस", gu: "સ્પ્લિટ ફેસ" },
   "Chiseled Stone": { hi: "छैनी तराशा पत्थर", gu: "ટાંકણે ઘડેલો પથ્થર" },
   "Linear Groove": { hi: "लीनियर ग्रूव्ज", gu: "લીનિયર ગ્રૂવ્સ" },
+  "Fluted Texture Architectural Installation": {
+    hi: "फ्लूटेड टेक्सचर आर्किटेक्चरल स्थापना",
+    gu: "ફ્લુટેડ ટેક્સચર આર્કિટેક્ચરલ સ્થાપના",
+  },
+  "Hammerstone Texture Architectural Installation": {
+    hi: "हैमरस्टोन टेक्सचर आर्किटेक्चरल स्थापना",
+    gu: "હેમરસ્ટોન ટેક્સચર આર્કિટેક્ચરલ સ્થાપના",
+  },
+  "Ripple Texture Architectural Installation": {
+    hi: "रिपल टेक्सचर आर्किटेक्चरल स्थापना",
+    gu: "રિપલ ટેક્સચર આર્કિટેક્ચરલ સ્થાપના",
+  },
+  "Weave Texture Architectural Installation": {
+    hi: "वीव टेक्सचर आर्किटेक्चरल स्थापना",
+    gu: "વીવ ટેક્સચર આર્કિટેક્ચરલ સ્થાપના",
+  },
+  "Live Executed": { hi: "लाइव स्थापित", gu: "લાઇવ સ્થાપિત" },
 
   // Units
   "sq.ft": { hi: "वर्ग फुट", gu: "ચોરસ ફૂટ" },
@@ -257,10 +274,7 @@ const LOCALIZED_CATALOG_STRINGS: Record<string, { hi: string; gu: string }> = {
   kg: { hi: "किग्रा", gu: "કિગ્રા" },
 };
 
-function localizeCatalogTerm(
-  term: string | null | undefined,
-  lang: "en" | "hi" | "gu",
-): string {
+function localizeCatalogTerm(term: string | null | undefined, lang: "en" | "hi" | "gu"): string {
   if (!term) return "";
   if (lang === "en") return term;
   if (LOCALIZED_CATALOG_STRINGS[term]) {
