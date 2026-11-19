@@ -144,19 +144,19 @@ export function MasterProductCatalog({
     setSearchQuery("");
     setSelectedCategory("all");
     setSelectedSubFilter("all");
-    setCurrentPage(1);
-    setShowAll(false);
+    setDisplayLimit(27);
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
+    }
   };
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedSubFilter, setSelectedSubFilter] = useState("all");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [showAll, setShowAll] = useState(false);
+  const [displayLimit, setDisplayLimit] = useState(27);
   const [lightboxItem, setLightboxItem] = useState<CatalogItem | null>(null);
-
-  const ITEMS_PER_PAGE = 16;
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Normalize data collections
   const currentDataset: CatalogItem[] = useMemo(() => {
@@ -359,29 +359,40 @@ export function MasterProductCatalog({
     });
   }, [currentDataset, selectedCategory, selectedSubFilter, searchQuery]);
 
-  // Reset page when criteria changes
+  // Reset display limit and scroll position when filter criteria changes
   useEffect(() => {
-    setCurrentPage(1);
-    setShowAll(false);
+    setDisplayLimit(27);
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
+    }
   }, [currentTab, selectedCategory, selectedSubFilter, searchQuery]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredItems.length / ITEMS_PER_PAGE));
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, filteredItems.length);
-
-  const displayedItems = useMemo(() => {
-    if (showAll) return filteredItems;
-    return filteredItems.slice(startIndex, endIndex);
-  }, [filteredItems, startIndex, endIndex, showAll]);
-
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage);
-    setShowAll(false);
-    const catalogEl = document.getElementById("wall-cladding-catalogue");
-    if (catalogEl) {
-      catalogEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  // Infinite scroll loader inside the 9-item frame
+  const handleContainerScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < 250) {
+      setDisplayLimit((prev) => Math.min(prev + 18, filteredItems.length));
     }
   };
+
+  const scrollByPage = (direction: "up" | "down") => {
+    if (!scrollContainerRef.current) return;
+    const scrollAmount = scrollContainerRef.current.clientHeight * 0.85;
+    scrollContainerRef.current.scrollBy({
+      top: direction === "down" ? scrollAmount : -scrollAmount,
+      behavior: "smooth",
+    });
+  };
+
+  const scrollToContainerTop = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const displayedItems = useMemo(() => {
+    return filteredItems.slice(0, displayLimit);
+  }, [filteredItems, displayLimit]);
 
   const handleSelectProductClick = (item: CatalogItem, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -483,6 +494,72 @@ export function MasterProductCatalog({
       searchPlaceholder: "Search executed projects, villas, hotels, temples...",
     },
   }[currentTab];
+
+  const isHi = lang.startsWith("hi");
+  const isGu = lang.startsWith("gu");
+  const activeLangCode: "en" | "hi" | "gu" = isHi ? "hi" : isGu ? "gu" : "en";
+
+  const activeTabPdf = useMemo(() => {
+    switch (currentTab) {
+      case "stone-veneer":
+        return {
+          label:
+            lang === "gu"
+              ? "વિનિયર (106 Pgs)"
+              : lang === "hi"
+                ? "विनियर (106 Pgs)"
+                : "Stone Veneer (106 Pgs)",
+          url: isHi
+            ? "/catalogues/StoneTech_Stone_Veneer_Catalogue_Hindi.pdf"
+            : isGu
+              ? "/catalogues/StoneTech_Stone_Veneer_Catalogue_Gujarati.pdf"
+              : "/catalogues/StoneTech_Stone_Veneer_Catalogue_2026.pdf",
+          filename: isHi
+            ? "StoneTech_Stone_Veneer_Catalogue_Hindi.pdf"
+            : isGu
+              ? "StoneTech_Stone_Veneer_Catalogue_Gujarati.pdf"
+              : "StoneTech_Stone_Veneer_Catalogue_2026.pdf",
+        };
+      case "glass-bricks":
+        return {
+          label: "Glass Bricks (67 Designs)",
+          url: "/catalogues/StoneTech_Solid_Glass_Bricks_Catalogue_2026.pdf",
+          filename: "StoneTech_Solid_Glass_Bricks_Catalogue_2026.pdf",
+        };
+      case "clay-veneers":
+        return {
+          label: "Clay Veneers (37 Pgs)",
+          url: "/catalogues/StoneTech_Flexible_Clay_Veneers_Catalogue_2026.pdf",
+          filename: "StoneTech_Flexible_Clay_Veneers_Catalogue_2026.pdf",
+        };
+      case "pebbles":
+        return {
+          label: "Stone Pebbles (23 Pgs)",
+          url: "/catalogues/StoneTech_Stone_Pebbles_Catalogue_2026.pdf",
+          filename: "StoneTech_Stone_Pebbles_Catalogue_2026.pdf",
+        };
+      case "cladding":
+      default:
+        return {
+          label:
+            lang === "gu"
+              ? "વોલ ક્લેડિંગ (71 Pgs)"
+              : lang === "hi"
+                ? "वॉल क्लैडिंग (71 Pgs)"
+                : "Wall Cladding (71 Pgs)",
+          url: isHi
+            ? "/catalogues/StoneTech_NaturalStone_WallCl_Options_Hindi.pdf"
+            : isGu
+              ? "/catalogues/StoneTech_NaturalStone_WallCl_Options_Gujarati.pdf"
+              : "/catalogues/StoneTech_NaturalStone_WallCl_Options_English.pdf",
+          filename: isHi
+            ? "StoneTech_NaturalStone_WallCl_Options_Hindi.pdf"
+            : isGu
+              ? "StoneTech_NaturalStone_WallCl_Options_Gujarati.pdf"
+              : "StoneTech_NaturalStone_WallCl_Options_English.pdf",
+        };
+    }
+  }, [currentTab, isHi, isGu, lang]);
 
   return (
     <div
@@ -601,7 +678,6 @@ export function MasterProductCatalog({
             value={selectedCategory}
             onValueChange={(val) => {
               setSelectedCategory(val);
-              setCurrentPage(1);
             }}
           >
             <SelectTrigger className="h-8 text-xs bg-background/90 w-[150px] sm:w-[170px]">
@@ -624,7 +700,6 @@ export function MasterProductCatalog({
             value={selectedSubFilter}
             onValueChange={(val) => {
               setSelectedSubFilter(val);
-              setCurrentPage(1);
             }}
           >
             <SelectTrigger className="h-8 text-xs bg-background/90 w-[130px] sm:w-[150px] hidden sm:flex">
@@ -651,7 +726,6 @@ export function MasterProductCatalog({
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
-                setCurrentPage(1);
               }}
               className="pl-8 h-8 text-xs bg-background/90"
             />
@@ -665,6 +739,30 @@ export function MasterProductCatalog({
               </button>
             )}
           </div>
+
+          {/* Quick 1-Click Active Language PDF Download */}
+          <a
+            href={activeTabPdf.url}
+            download={activeTabPdf.filename}
+            className="inline-flex"
+            title={`Download ${activeTabPdf.label} (${activeLangCode.toUpperCase()})`}
+          >
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 px-2.5 text-xs text-amber-700 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/10 gap-1.5 cursor-pointer font-semibold shrink-0"
+            >
+              <Download className="h-3.5 w-3.5 text-amber-500" />
+              <span className="hidden md:inline font-medium">{activeTabPdf.label}</span>
+              <span className="md:hidden font-medium">PDF</span>
+              <Badge
+                variant="secondary"
+                className="text-[9px] px-1 py-0 h-3.5 uppercase font-mono font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300"
+              >
+                {activeLangCode}
+              </Badge>
+            </Button>
+          </a>
 
           {/* Catalogues (PDF) Comprehensive Library Dropdown */}
           <DropdownMenu>
@@ -704,21 +802,36 @@ export function MasterProductCatalog({
                   <a
                     href="/catalogues/StoneTech_NaturalStone_WallCl_Options_English.pdf"
                     download="StoneTech_NaturalStone_WallCl_Options_English.pdf"
-                    className="flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border bg-background/80 hover:bg-accent border-border text-foreground"
+                    className={cn(
+                      "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
+                      activeLangCode === "en"
+                        ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                        : "bg-background/80 hover:bg-accent border-border text-foreground",
+                    )}
                   >
                     English
                   </a>
                   <a
                     href="/catalogues/StoneTech_NaturalStone_WallCl_Options_Hindi.pdf"
                     download="StoneTech_NaturalStone_WallCl_Options_Hindi.pdf"
-                    className="flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border bg-background/80 hover:bg-accent border-border text-foreground"
+                    className={cn(
+                      "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
+                      activeLangCode === "hi"
+                        ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                        : "bg-background/80 hover:bg-accent border-border text-foreground",
+                    )}
                   >
                     हिंदी
                   </a>
                   <a
                     href="/catalogues/StoneTech_NaturalStone_WallCl_Options_Gujarati.pdf"
                     download="StoneTech_NaturalStone_WallCl_Options_Gujarati.pdf"
-                    className="flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border bg-background/80 hover:bg-accent border-border text-foreground"
+                    className={cn(
+                      "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
+                      activeLangCode === "gu"
+                        ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                        : "bg-background/80 hover:bg-accent border-border text-foreground",
+                    )}
                   >
                     ગુજરાતી
                   </a>
@@ -743,21 +856,36 @@ export function MasterProductCatalog({
                   <a
                     href="/catalogues/StoneTech_Stone_Veneer_Catalogue_English.pdf"
                     download="StoneTech_Stone_Veneer_Catalogue_English.pdf"
-                    className="flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border bg-background/80 hover:bg-accent border-border text-foreground"
+                    className={cn(
+                      "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
+                      activeLangCode === "en"
+                        ? "bg-amber-600 text-white border-amber-600 shadow-xs"
+                        : "bg-background/80 hover:bg-accent border-border text-foreground",
+                    )}
                   >
                     English
                   </a>
                   <a
                     href="/catalogues/StoneTech_Stone_Veneer_Catalogue_Hindi.pdf"
                     download="StoneTech_Stone_Veneer_Catalogue_Hindi.pdf"
-                    className="flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border bg-background/80 hover:bg-accent border-border text-foreground"
+                    className={cn(
+                      "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
+                      activeLangCode === "hi"
+                        ? "bg-amber-600 text-white border-amber-600 shadow-xs"
+                        : "bg-background/80 hover:bg-accent border-border text-foreground",
+                    )}
                   >
                     हिंदी
                   </a>
                   <a
                     href="/catalogues/StoneTech_Stone_Veneer_Catalogue_Gujarati.pdf"
                     download="StoneTech_Stone_Veneer_Catalogue_Gujarati.pdf"
-                    className="flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border bg-background/80 hover:bg-accent border-border text-foreground"
+                    className={cn(
+                      "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
+                      activeLangCode === "gu"
+                        ? "bg-amber-600 text-white border-amber-600 shadow-xs"
+                        : "bg-background/80 hover:bg-accent border-border text-foreground",
+                    )}
                   >
                     ગુજરાતી
                   </a>
@@ -858,7 +986,6 @@ export function MasterProductCatalog({
           type="button"
           onClick={() => {
             setSelectedCategory("all");
-            setCurrentPage(1);
           }}
           className={cn(
             "px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer",
@@ -875,7 +1002,6 @@ export function MasterProductCatalog({
             type="button"
             onClick={() => {
               setSelectedCategory(cat.key);
-              setCurrentPage(1);
             }}
             className={cn(
               "px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer",
@@ -889,7 +1015,7 @@ export function MasterProductCatalog({
         ))}
       </div>
 
-      {/* 4. PRODUCT GRID */}
+      {/* 4. SQUEEZED 9-ITEM BOX VIEWPORT WITH SMOOTH IN-BOX SCROLLING */}
       {displayedItems.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl border border-dashed border-border bg-card/40">
           <Layers className="h-10 w-10 text-muted-foreground/60 mb-3" />
@@ -908,205 +1034,168 @@ export function MasterProductCatalog({
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-2.5 sm:gap-3 pt-1">
-          {displayedItems.map((item) => (
-            <div
-              key={item.code}
-              onClick={() => setLightboxItem(item)}
-              className="group relative flex flex-col overflow-hidden rounded-xl border border-border/70 bg-card hover:border-amber-500/60 hover:shadow-md transition-all duration-200 cursor-pointer"
-            >
-              {/* Squeezed Product Image Frame */}
-              <div className="relative aspect-square w-full overflow-hidden bg-slate-950/80">
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  loading="lazy"
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-
-                {/* Top badges */}
-                <div className="absolute top-2 left-2 flex items-center gap-1 z-10">
-                  <span className="rounded-md bg-amber-500 px-1.5 py-0.5 text-[9px] font-extrabold text-slate-950 tracking-wider shadow-xs">
-                    {item.code}
-                  </span>
-                  <span className="rounded-md bg-slate-950/85 backdrop-blur-xs px-1.5 py-0.5 text-[8.5px] font-semibold text-cyan-300 border border-cyan-500/30 line-clamp-1 max-w-[110px]">
-                    {item.category}
-                  </span>
-                </div>
-
-                {/* Quick Share */}
-                <button
-                  type="button"
-                  onClick={(e) => handleShare(item, e)}
-                  className="absolute top-2 right-2 rounded-full bg-slate-950/70 backdrop-blur-xs p-1 text-slate-300 hover:text-white transition-opacity z-10 cursor-pointer opacity-70 group-hover:opacity-100"
-                  title="Share"
+        <div className="space-y-2.5">
+          {/* Squeezed Box Frame: 3 Columns x 3 Rows = Exactly 9 Items in View */}
+          <div
+            ref={scrollContainerRef}
+            tabIndex={0}
+            onScroll={handleContainerScroll}
+            aria-label="Architectural Products 9-Grid Frame"
+            className={cn(
+              "relative w-full rounded-2xl border border-border/80 bg-card/40 p-2 sm:p-3 shadow-inner",
+              "h-[560px] sm:h-[620px] md:h-[670px] lg:h-[700px]",
+              "overflow-y-auto overscroll-y-auto",
+              "focus:outline-hidden focus:ring-1 focus:ring-primary/40",
+              "[scrollbar-width:thin] scrollbar-thumb-muted-foreground/30 hover:scrollbar-thumb-muted-foreground/60",
+              "[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-muted/30 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/50",
+            )}
+            style={{ overscrollBehaviorY: "auto" }}
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2.5 sm:gap-3">
+              {displayedItems.map((item) => (
+                <div
+                  key={item.code}
+                  onClick={() => setLightboxItem(item)}
+                  className="group relative flex flex-col overflow-hidden rounded-xl border border-border/70 bg-card hover:border-amber-500/60 hover:shadow-md transition-all duration-200 cursor-pointer"
                 >
-                  <Share2 className="h-3 w-3" />
-                </button>
+                  {/* Squeezed Product Image Frame */}
+                  <div className="relative aspect-square w-full overflow-hidden bg-slate-950/80">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      loading="lazy"
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
 
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-2.5 z-10">
-                  <p className="text-[10px] text-amber-300 font-medium line-clamp-1 mb-0.5">
-                    {item.details}
-                  </p>
-                  <div className="flex items-center justify-between text-[11px]">
-                    {item.price ? (
-                      <span className="text-white font-bold">
-                        ₹{item.price}/{item.unit}
+                    {/* Top badges */}
+                    <div className="absolute top-2 left-2 flex items-center gap-1 z-10">
+                      <span className="rounded-md bg-amber-500 px-1.5 py-0.5 text-[9px] font-extrabold text-slate-950 tracking-wider shadow-xs">
+                        {item.code}
                       </span>
-                    ) : (
-                      <span className="text-white font-bold">Verified Portfolio</span>
-                    )}
-                    <span className="flex items-center gap-0.5 text-[10px] text-amber-400 font-semibold">
-                      <Eye className="h-3 w-3" /> Details
-                    </span>
+                      <span className="rounded-md bg-slate-950/85 backdrop-blur-xs px-1.5 py-0.5 text-[8.5px] font-semibold text-cyan-300 border border-cyan-500/30 line-clamp-1 max-w-[110px]">
+                        {item.category}
+                      </span>
+                    </div>
+
+                    {/* Quick Share */}
+                    <button
+                      type="button"
+                      onClick={(e) => handleShare(item, e)}
+                      className="absolute top-2 right-2 rounded-full bg-slate-950/70 backdrop-blur-xs p-1 text-slate-300 hover:text-white transition-opacity z-10 cursor-pointer opacity-70 group-hover:opacity-100"
+                      title="Share"
+                    >
+                      <Share2 className="h-3 w-3" />
+                    </button>
+
+                    {/* Hover overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-2.5 z-10">
+                      <p className="text-[10px] text-amber-300 font-medium line-clamp-1 mb-0.5">
+                        {item.details}
+                      </p>
+                      <div className="flex items-center justify-between text-[11px]">
+                        {item.price ? (
+                          <span className="text-white font-bold">
+                            ₹{item.price}/{item.unit}
+                          </span>
+                        ) : (
+                          <span className="text-white font-bold">Verified Portfolio</span>
+                        )}
+                        <span className="flex items-center gap-0.5 text-[10px] text-amber-400 font-semibold">
+                          <Eye className="h-3 w-3" /> Details
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Squeezed Product Info */}
+                  <div className="p-2.5 flex flex-col flex-1 justify-between gap-1.5">
+                    <div>
+                      <h3 className="text-xs sm:text-sm font-bold text-foreground group-hover:text-amber-500 transition-colors line-clamp-1">
+                        {item.name}
+                      </h3>
+                      <p className="text-[10px] sm:text-[11px] text-amber-600 dark:text-amber-400 font-medium line-clamp-1">
+                        {item.details}
+                      </p>
+                      <p className="mt-0.5 text-[10px] text-muted-foreground line-clamp-1">
+                        <span className="font-semibold">Size:</span> {item.sizes}
+                      </p>
+                    </div>
+
+                    <div className="pt-1.5 border-t border-border/40 flex items-center justify-between gap-1">
+                      {item.price ? (
+                        <div>
+                          <span className="text-xs font-bold text-foreground">₹{item.price}</span>
+                          <span className="text-[9px] text-muted-foreground">/{item.unit}</span>
+                        </div>
+                      ) : (
+                        <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                          Live Executed
+                        </span>
+                      )}
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={(e) => handleSelectProductClick(item, e)}
+                        className="h-6 text-[10px] px-2 border-amber-500/40 hover:bg-amber-500 hover:text-slate-950 cursor-pointer font-semibold shrink-0"
+                      >
+                        Estimate
+                        <ArrowRight className="h-2.5 w-2.5 ml-1" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              {/* Squeezed Product Info */}
-              <div className="p-2.5 flex flex-col flex-1 justify-between gap-1.5">
-                <div>
-                  <h3 className="text-xs sm:text-sm font-bold text-foreground group-hover:text-amber-500 transition-colors line-clamp-1">
-                    {item.name}
-                  </h3>
-                  <p className="text-[10px] sm:text-[11px] text-amber-600 dark:text-amber-400 font-medium line-clamp-1">
-                    {item.details}
-                  </p>
-                  <p className="mt-0.5 text-[10px] text-muted-foreground line-clamp-1">
-                    <span className="font-semibold">Size:</span> {item.sizes}
-                  </p>
-                </div>
-
-                <div className="pt-1.5 border-t border-border/40 flex items-center justify-between gap-1">
-                  {item.price ? (
-                    <div>
-                      <span className="text-xs font-bold text-foreground">₹{item.price}</span>
-                      <span className="text-[9px] text-muted-foreground">/{item.unit}</span>
-                    </div>
-                  ) : (
-                    <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
-                      Live Executed
-                    </span>
-                  )}
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={(e) => handleSelectProductClick(item, e)}
-                    className="h-6 text-[10px] px-2 border-amber-500/40 hover:bg-amber-500 hover:text-slate-950 cursor-pointer font-semibold shrink-0"
-                  >
-                    Estimate
-                    <ArrowRight className="h-2.5 w-2.5 ml-1" />
-                  </Button>
-                </div>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
-      )}
-
-      {/* SQUEEZED PAGINATION CONTROLS (Eliminates infinite bounce & enables immediate smooth scrolling to footer) */}
-      {filteredItems.length > ITEMS_PER_PAGE && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-border/60">
-          <div className="text-xs text-muted-foreground font-medium">
-            {showAll ? (
-              <span>Showing all {filteredItems.length} products</span>
-            ) : (
-              <span>
-                Showing{" "}
-                <strong className="text-foreground">
-                  {startIndex + 1}–{endIndex}
-                </strong>{" "}
-                of <strong className="text-foreground">{filteredItems.length}</strong>{" "}
-                {tabMetadata.countLabel} (Page {currentPage} of {totalPages})
-              </span>
-            )}
           </div>
 
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {!showAll ? (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={currentPage <= 1}
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  className="h-7 px-2.5 text-xs gap-1 cursor-pointer"
-                >
-                  <ChevronLeft className="h-3.5 w-3.5" />
-                  <span>Prev</span>
-                </Button>
+          {/* Crisp Action & Navigation Bar */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 px-3 py-2 rounded-xl border border-border/60 bg-muted/30 text-xs">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <span className="font-semibold text-foreground">
+                Showing {Math.min(displayedItems.length, filteredItems.length)} of{" "}
+                {filteredItems.length} {tabMetadata.countLabel}
+              </span>
+              <span className="hidden md:inline text-[11px]">·</span>
+              <span className="hidden md:inline text-[11px]">
+                3×3 Frame (9 in view) · Scroll box to explore all
+              </span>
+            </div>
 
-                {/* Numbered Page Buttons */}
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1)
-                    .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
-                    .reduce<(number | string)[]>((acc, p, idx, arr) => {
-                      if (
-                        idx > 0 &&
-                        typeof arr[idx - 1] === "number" &&
-                        (p as number) - (arr[idx - 1] as number) > 1
-                      ) {
-                        acc.push("...");
-                      }
-                      acc.push(p);
-                      return acc;
-                    }, [])
-                    .map((pageItem, idx) =>
-                      pageItem === "..." ? (
-                        <span key={`dots-${idx}`} className="px-1 text-xs text-muted-foreground">
-                          …
-                        </span>
-                      ) : (
-                        <Button
-                          key={`page-${pageItem}`}
-                          variant={currentPage === pageItem ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => handlePageChange(pageItem as number)}
-                          className={cn(
-                            "h-7 w-7 p-0 text-xs font-bold cursor-pointer",
-                            currentPage === pageItem
-                              ? "bg-primary text-primary-foreground"
-                              : "text-muted-foreground hover:text-foreground",
-                          )}
-                        >
-                          {pageItem}
-                        </Button>
-                      ),
-                    )}
-                </div>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={currentPage >= totalPages}
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  className="h-7 px-2.5 text-xs gap-1 cursor-pointer"
-                >
-                  <span>Next</span>
-                  <ChevronRight className="h-3.5 w-3.5" />
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowAll(true)}
-                  className="h-7 px-2 text-[11px] text-muted-foreground hover:text-foreground cursor-pointer hidden md:inline-flex"
-                >
-                  Show All ({filteredItems.length})
-                </Button>
-              </>
-            ) : (
+            <div className="flex items-center gap-1.5">
               <Button
+                type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => setShowAll(false)}
-                className="h-7 px-3 text-xs cursor-pointer"
+                onClick={() => scrollByPage("up")}
+                className="h-7 px-2 text-[11px] cursor-pointer"
+                title="Scroll Up"
               >
-                Switch to Paginated View (16 per page)
+                <ChevronLeft className="h-3 w-3 mr-0.5" />
+                Prev 9
               </Button>
-            )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => scrollByPage("down")}
+                className="h-7 px-2 text-[11px] cursor-pointer"
+                title="Scroll Down"
+              >
+                Next 9
+                <ChevronRight className="h-3 w-3 ml-0.5" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={scrollToContainerTop}
+                className="h-7 px-2 text-[11px] text-muted-foreground hover:text-foreground cursor-pointer"
+                title="Scroll to Top of Box"
+              >
+                Top
+              </Button>
+            </div>
           </div>
         </div>
       )}

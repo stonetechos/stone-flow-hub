@@ -1162,32 +1162,32 @@ def generate_html():
       </div>
     </div>
     <div class="prod-header-right">
-      FACTORY DIRECT ORDERS: <strong>+91 77420 90866</strong> · <strong>WWW.STONETECH.IN</strong>
+      FACTORY DIRECT ORDERS: <strong>+91 77420 90866 / +91 97844 52998</strong> · <strong>WWW.STONETECH.IN</strong>
     </div>
   </div>
 
-  <div style="display:grid;grid-template-columns:120mm 157mm;gap:6mm;padding:6mm 10mm 12mm;height:calc(210mm - 22mm);">
-    <div style="display:flex;flex-direction:column;justify-content:space-between;height:100%;">
+  <div style="display:grid;grid-template-columns:120mm 157mm;gap:6mm;padding:6mm 10mm 10mm;height:calc(210mm - 22mm);">
+    <div style="display:flex;flex-direction:column;gap:3.5mm;height:100%;text-align:left;">
       <div>
-        <div style="font-size:9pt;font-weight:800;color:#f59e0b;letter-spacing:1.5px;margin-bottom:1mm;">NATURE, ENGINEERED</div>
-        <div style="font-size:20pt;font-weight:900;color:#ffffff;line-height:1.15;margin-bottom:3mm;">Redefining Facades with Flexible Sheets</div>
-        <div style="font-size:8.5pt;color:#cbd5e1;line-height:1.5;margin-bottom:4mm;">
+        <div style="font-size:8.5pt;font-weight:800;color:#f59e0b;letter-spacing:1.5px;margin-bottom:1.5mm;text-transform:uppercase;">NATURE, ENGINEERED</div>
+        <div style="font-size:19pt;font-weight:900;color:#ffffff;line-height:1.2;margin-bottom:3mm;letter-spacing:-0.3px;">Redefining Facades with Flexible Sheets</div>
+        <div style="font-size:8.5pt;color:#e2e8f0;line-height:1.6;margin-bottom:3mm;text-align:left;word-break:keep-all;">
           Crafted from real mineral stone, these ultra-thin, flexible sheets retain the richness of natural textures while unlocking unprecedented architectural freedom.
         </div>
-        <div style="font-size:8pt;color:#94a3b8;line-height:1.5;margin-bottom:4mm;">
+        <div style="font-size:8pt;color:#94a3b8;line-height:1.6;margin-bottom:3.5mm;text-align:left;word-break:keep-all;">
           It bends and integrates seamlessly where traditional stone cannot. From flat exterior planes to organic columns, undulating canopies, and double-height curves, this is stone designed for boundless creativity.
         </div>
-        <div style="background:#1e293b;border:0.4mm solid #334155;border-left:1.5mm solid #d97706;border-radius:2mm;padding:3mm;margin-bottom:4mm;">
-          <div style="font-size:7.5pt;font-weight:800;color:#f59e0b;margin-bottom:1mm;">A MATERIAL THAT EXPANDS DESIGN</div>
-          <div style="font-size:7pt;color:#cbd5e1;line-height:1.4;">
+        <div style="background:#1e293b;border:0.4mm solid #334155;border-left:1.5mm solid #d97706;border-radius:2mm;padding:3.5mm 4mm;margin-bottom:2mm;">
+          <div style="font-size:7.5pt;font-weight:800;color:#f59e0b;margin-bottom:1.5mm;letter-spacing:0.8px;">A MATERIAL THAT EXPANDS DESIGN</div>
+          <div style="font-size:7.2pt;color:#cbd5e1;line-height:1.55;text-align:left;word-break:keep-all;">
             Traditional masonry imposes severe structural dead-weight, requiring expensive heavy steel brackets and complex structural substructures. Stone Tech Flexible Clay Veneers weigh under 4 kg/m², bonding directly with polymer adhesive onto concrete, plaster, cement boards, and curved substrates.
           </div>
         </div>
       </div>
 
-      <div style="background:#0f172a;border:0.4mm solid #334155;border-radius:2mm;padding:3mm;">
+      <div style="background:#0f172a;border:0.4mm solid #334155;border-radius:2mm;padding:3mm 3.5mm;margin-top:auto;">
         <div style="font-size:7pt;font-weight:800;color:#67e8f9;letter-spacing:1px;margin-bottom:2mm;">KEY MATERIAL ADVANTAGES</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2mm;font-size:6.8pt;color:#cbd5e1;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2mm;font-size:6.8pt;color:#cbd5e1;line-height:1.45;">
           <div>• <strong>Zero Chipping:</strong> Highly ductile</div>
           <div>• <strong>Easy Cutting:</strong> Utility blade / saw</div>
           <div>• <strong>Class A Fire:</strong> Non-combustible</div>
@@ -1200,7 +1200,7 @@ def generate_html():
 
     <div style="border:0.4mm solid #334155;border-radius:2.5mm;overflow:hidden;background:#020617;position:relative;">
       <img src="file://{hero_img}" style="width:100%;height:100%;object-fit:cover;">
-      <div style="position:absolute;bottom:3mm;left:3mm;right:3mm;background:rgba(15,23,42,0.88);border:0.3mm solid #d97706;border-radius:1.5mm;padding:2mm 3mm;font-size:7pt;color:#e2e8f0;">
+      <div style="position:absolute;bottom:3mm;left:3mm;right:3mm;background:rgba(15,23,42,0.88);border:0.3mm solid #d97706;border-radius:1.5mm;padding:2mm 3mm;font-size:7pt;color:#e2e8f0;line-height:1.45;text-align:left;">
         <strong style="color:#fbbf24;">Dynamic 360° Cold Bending:</strong> Multi-tonal flexible sheets wrapping curved architectural columns and facade contours with zero thermal preheating.
       </div>
     </div>
@@ -1209,7 +1209,7 @@ def generate_html():
   <div class="prod-footer-bar">
     <span>STONE TECH ATELIER · ARCHITECTURAL SPECIFICATION CATALOGUE 2026-2027</span>
     <span>PAGE 2 OF {total_pages}</span>
-    <span>WWW.STONETECH.IN · DIRECT FACTORY ENQUIRIES: +91 77420 90866</span>
+    <span>WWW.STONETECH.IN · DIRECT FACTORY ENQUIRIES: +91 77420 90866 / +91 97844 52998</span>
   </div>
 </div>
 """)
@@ -1229,15 +1229,15 @@ def generate_html():
       </div>
     </div>
     <div class="prod-header-right">
-      FACTORY DIRECT ORDERS: <strong>+91 77420 90866</strong> · <strong>WWW.STONETECH.IN</strong>
+      FACTORY DIRECT ORDERS: <strong>+91 77420 90866 / +91 97844 52998</strong> · <strong>WWW.STONETECH.IN</strong>
     </div>
   </div>
 
-  <div style="padding:5mm 10mm 12mm;height:calc(210mm - 22mm);display:flex;flex-direction:column;justify-content:space-between;">
-    <div style="border-bottom:0.4mm solid #334155;padding-bottom:2mm;">
-      <div style="font-size:8pt;font-weight:800;color:#f59e0b;letter-spacing:1px;">CURATED EARTH TONALITIES</div>
-      <div style="font-size:16pt;font-weight:900;color:#ffffff;margin:0.5mm 0;">9 Signature Architectural Colors</div>
-      <div style="font-size:7.5pt;color:#94a3b8;">
+  <div style="padding:5mm 10mm 10mm;height:calc(210mm - 22mm);display:flex;flex-direction:column;justify-content:space-between;text-align:left;">
+    <div style="border-bottom:0.4mm solid #334155;padding-bottom:2.5mm;">
+      <div style="font-size:8pt;font-weight:800;color:#f59e0b;letter-spacing:1px;text-transform:uppercase;">CURATED EARTH TONALITIES</div>
+      <div style="font-size:16pt;font-weight:900;color:#ffffff;margin:1mm 0;letter-spacing:-0.2px;">9 Signature Architectural Colors</div>
+      <div style="font-size:7.5pt;color:#94a3b8;line-height:1.55;text-align:left;word-break:keep-all;">
         Every texture profile in our 3D series is precision-crafted across 9 elemental mineral shades, formulated using inorganic natural pigments with 2000+ hour UV colorfastness.
       </div>
     </div>
@@ -1850,7 +1850,7 @@ def generate_html():
         <div class="studio-card-body">
           <strong>STONE TECH ATELIER · EXPERIENCE CENTER</strong><br>
           E-02, Ground Floor, SG Business Hub, Vasant Nagar, Gota, Ahmedabad, Gujarat 380060<br>
-          <strong>Direct WhatsApp &amp; Sales Hotline:</strong> +91 77420 90866 / +91 97844 52118<br>
+          <strong>Direct WhatsApp &amp; Sales Hotline:</strong> +91 77420 90866 / +91 97844 52998<br>
           <strong>Email:</strong> info@stonetech.in · <strong>Website:</strong> www.stonetech.in<br>
           <em>Studio Hours: Monday – Saturday, 10:00 AM – 7:30 PM</em>
         </div>

@@ -856,6 +856,7 @@ body {
   padding: 3.5mm 4.5mm;
   display: flex;
   flex-direction: column;
+  text-align: left;
 }
 .overview-title {
   font-size: 9.5pt;
@@ -866,11 +867,14 @@ body {
   margin-bottom: 2mm;
   border-bottom: 0.3mm solid #1e293b;
   padding-bottom: 1.5mm;
+  text-align: left;
 }
 .overview-body {
   font-size: 7.2pt;
-  line-height: 1.45;
+  line-height: 1.55;
   color: #cbd5e1;
+  text-align: left;
+  word-break: keep-all;
 }
 .overview-body strong {
   color: #ffffff;
@@ -1263,7 +1267,7 @@ def generate_html():
   <div class="prod-footer-bar">
     <span>STONE TECH ATELIER · ARCHITECTURAL SPECIFICATION CATALOGUE 2026-2027</span>
     <span>PAGE {current_page} OF {total_pages}</span>
-    <span>WWW.STONETECH.IN · DIRECT FACTORY ENQUIRIES: +91 77420 90866</span>
+    <span>WWW.STONETECH.IN · DIRECT FACTORY ENQUIRIES: +91 77420 90866 / +91 97844 52998</span>
   </div>
 </div>
 """)
@@ -1433,7 +1437,7 @@ def generate_html():
   <div class="prod-footer-bar">
     <span>STONE TECH ATELIER · ARCHITECTURAL SPECIFICATION CATALOGUE 2026-2027</span>
     <span>PAGE {current_page} OF {total_pages}</span>
-    <span>WWW.STONETECH.IN · DIRECT FACTORY ENQUIRIES: +91 77420 90866</span>
+    <span>WWW.STONETECH.IN · DIRECT FACTORY ENQUIRIES: +91 77420 90866 / +91 97844 52998</span>
   </div>
 </div>
 """)
@@ -1461,7 +1465,7 @@ def generate_html():
         <div class="studio-card-title">ATELIER EXPERIENCE CENTER &amp; HEADQUARTERS</div>
         <strong>STONE TECH PRIVATE LIMITED</strong><br>
         E-02, Ground Floor, SG Business Hub, Vasant Nagar, Gota, Ahmedabad, Gujarat 380060<br><br>
-        <strong>Direct WhatsApp &amp; Sales Hotline:</strong> +91 77420 90866 / +91 97844 52118<br>
+        <strong>Direct WhatsApp &amp; Sales Hotline:</strong> +91 77420 90866 / +91 97844 52998<br>
         <strong>Email:</strong> info@stonetech.in · sales@stonetech.in<br>
         <strong>Official Website:</strong> www.stonetech.in<br>
         <em>Atelier Hours: Monday – Saturday, 10:00 AM – 7:30 PM IST</em>
@@ -1488,7 +1492,7 @@ def generate_html():
   <div class="prod-footer-bar">
     <span>STONE TECH ATELIER · ARCHITECTURAL SPECIFICATION CATALOGUE 2026-2027</span>
     <span>PAGE {current_page} OF {total_pages}</span>
-    <span>WWW.STONETECH.IN · DIRECT FACTORY ENQUIRIES: +91 77420 90866</span>
+    <span>WWW.STONETECH.IN · DIRECT FACTORY ENQUIRIES: +91 77420 90866 / +91 97844 52998</span>
   </div>
 </div>
 """)

@@ -245,6 +245,18 @@ def to_indic(num_str, lang):
         return str(num_str).translate(gu_digits)
     return str(num_str)
 
+def localize_sizes(sizes_str, lang):
+    if lang == "en":
+        return sizes_str
+    s = sizes_str
+    if lang == "hi":
+        s = s.replace("mm", "मिमी").replace("ft", "फीट")
+        return to_indic(s, "hi")
+    elif lang == "gu":
+        s = s.replace("mm", "મીમી").replace("ft", "ફૂટ")
+        return to_indic(s, "gu")
+    return s
+
 def get_product_title(item, lang):
     name = item["name"]
     pat = item["pat"]
@@ -258,7 +270,11 @@ def get_product_title(item, lang):
     else:
         local_pat = PAT_TRANSLATION.get(pat, {}).get(lang, pat)
     
-    return f"{name} · {local_name} · {local_pat}"
+    if lang == "hi":
+        return f"{local_name} ({name}) · {local_pat}"
+    elif lang == "gu":
+        return f"{local_name} ({name}) · {local_pat}"
+    return f"{name} · {pat}"
 
 def build_html_for_lang(lang="en"):
     total_pages = 106
@@ -606,7 +622,9 @@ body {{
   padding: 5mm 6mm;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 3mm;
+  text-align: left;
 }}
 .about-card-title {{
   font-size: 10.5pt;
@@ -614,25 +632,31 @@ body {{
   color: #0f172a;
   border-bottom: 2px solid #d97706;
   padding-bottom: 2mm;
-  margin-bottom: 3mm;
+  margin-bottom: 1mm;
   letter-spacing: 0.5px;
+  text-align: left;
 }}
 .about-text {{
   font-size: 7.6pt;
-  line-height: 1.5;
+  line-height: 1.6;
   color: #334155;
-  margin-bottom: 2.5mm;
+  margin-bottom: 2mm;
+  text-align: left;
+  word-break: keep-all;
 }}
 .about-feat-list {{
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 2mm;
+  gap: 2.5mm;
+  margin-top: 1mm;
 }}
 .about-feat-item {{
   font-size: 7.4pt;
-  line-height: 1.4;
+  line-height: 1.5;
   color: #334155;
+  text-align: left;
+  word-break: keep-all;
 }}
 .about-feat-bullet {{
   color: #d97706;
@@ -666,7 +690,7 @@ body {{
 }}
 .divider-banner {{
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   border-top: 1.5px solid #d97706;
   padding-top: 3mm;
@@ -677,23 +701,29 @@ body {{
   font-size: 8pt;
   font-weight: 800;
   letter-spacing: 1.5px;
+  text-align: left;
 }}
 .divider-title {{
   color: #ffffff;
   font-size: 18pt;
   font-weight: 900;
   letter-spacing: 0.5px;
+  text-align: left;
+  margin-top: 0.5mm;
 }}
 .divider-desc {{
   color: #94a3b8;
   font-size: 8pt;
-  margin-top: 1mm;
+  margin-top: 1.5mm;
+  text-align: left;
+  line-height: 1.4;
 }}
 .divider-meta {{
   text-align: right;
   font-size: 7.5pt;
   color: #cbd5e1;
-  line-height: 1.4;
+  line-height: 1.5;
+  white-space: nowrap;
 }}
 .divider-meta strong {{
   color: #fbbf24;
@@ -942,7 +972,7 @@ body {{
         c_p3 = "वजन: <strong>~१.५० किग्रा / वर्गमीटर (अल्ट्रा-लाइट)</strong>"
         c_p4 = "संग्रह: <strong>स्लेट · सैंडस्टोन · मार्बल · लाइमस्टोन</strong>"
         c_fl = "<strong>मुख्यालय एवं अटेलियर:</strong> गोता, अहमदाबाद, गुजरात, भारत<br><strong>सीधा निर्यात डिस्पैच:</strong> मुंद्रा पोर्ट एवं जेएनपीटी पोर्ट, भारत"
-        c_fc = "निर्माता प्रत्यक्ष आर्किटेक्चरल विनिर्देश<br>व्हाट्सएप सीआरएम: +९१ ७७४२० ९०८६६"
+        c_fc = "निर्माता प्रत्यक्ष आर्किटेक्चरल विनिर्देश<br>व्हाट्सएप हेल्पलाइन: +९१ ७७४२० ९०८६६ / +९१ ९७८४४ ५२९९८"
     elif lang == "gu":
         c_brand = "સ્ટોન ટેક એટેલિયર"
         c_sub = "આર્કિટેક્ચરલ નેચરલ સ્ટોન અને વિનિયર ડિવિઝન · સ્થાપના ૨૦૧૮"
@@ -954,7 +984,7 @@ body {{
         c_p3 = "વજન: <strong>~૧.૫૦ કિગ્રા / ચોરસ મીટર (અલ્ટ્રા-લાઇટ)</strong>"
         c_p4 = "સંગ્રહ: <strong>સ્લેટ · સેન્ડસ્ટોન · માર્બલ · લાઇમસ્ટોન</strong>"
         c_fl = "<strong>મુખ્યાલય અને એટેલિયર:</strong> ગોતા, અમદાવાદ, ગુજરાત, ભારત<br><strong>સીધું નિકાસ ડિસ્પેચ:</strong> મુંદ્રા પોર્ટ અને JNPT પોર્ટ, ભારત"
-        c_fc = "ઉત્પાદક તરફથી સીધા આર્કિટેક્ચરલ વિશિષ્ટતાઓ<br>વ્હોટ્સએપ CRM: +૯૧ ૭૭૪૨૦ ૯૦૮૬૬"
+        c_fc = "ઉત્પાદક તરફથી સીધા આર્કિટેક્ચરલ વિશિષ્ટતાઓ<br>વ્હોટ્સએપ હેલ્પલાઇન: +૯૧ ૭૭૪૨૦ ૯૦૮૬૬ / +૯૧ ૯૭૮૪૪ ૫૨૯૯૮"
     else:
         c_brand = "STONE TECH ATELIER"
         c_sub = "ARCHITECTURAL NATURAL STONE & CLADDING DIVISION · ESTD 2018"
@@ -966,7 +996,7 @@ body {{
         c_p3 = "WEIGHT: <strong>~1.50 kg / m² (Ultra-Light)</strong>"
         c_p4 = "COLLECTIONS: <strong>Slate · Sandstone · Marble · Limestone</strong>"
         c_fl = "<strong>HEADQUARTERS & ATELIER:</strong> Gota, Ahmedabad, Gujarat, India<br><strong>DIRECT EXPORT DISPATCH:</strong> Mundra Port & JNPT Port, India"
-        c_fc = "MANUFACTURER DIRECT ARCHITECTURAL SPECIFICATION<br>WHATSAPP CRM: +91 77420 90866"
+        c_fc = "MANUFACTURER DIRECT ARCHITECTURAL SPECIFICATION<br>WHATSAPP CRM: +91 77420 90866 / +91 97844 52998"
 
     html_parts.append(f"""
 <div class="page cover-page">
@@ -1056,6 +1086,16 @@ body {{
         ab_hdr = f"ARCHITECTURAL SPECIFICATION GUIDE · <strong>PAGE 02 OF {total_pages}</strong>"
         foot_mid = "EXPERIENCE CENTER: GOTA, AHMEDABAD · SEAPORT DISPATCH: MUNDRA & JNPT"
 
+    if lang == "hi":
+        foot_brand = f"{c_brand} · आर्किटेक्चरल स्टोन फैब्रिकेशन"
+        foot_contact = "WWW.STONETECH.IN · +९१ ७७४२० ९०८६६ / +९१ ९७८४४ ५२९९८"
+    elif lang == "gu":
+        foot_brand = f"{c_brand} · આર્કિટેક્ચરલ સ્ટોન ફેબ્રિકેશન"
+        foot_contact = "WWW.STONETECH.IN · +૯૧ ૭૭૪૨૦ ૯૦૮૬૬ / +૯૧ ૯૭૮૪૪ ૫૨૯૯૮"
+    else:
+        foot_brand = f"{c_brand} · ARCHITECTURAL STONE FABRICATION"
+        foot_contact = "WWW.STONETECH.IN · +91 77420 90866 / +91 97844 52998"
+
     html_parts.append(f"""
 <div class="page about-page">
   <div class="prod-header">
@@ -1094,9 +1134,9 @@ body {{
   </div>
 
   <div class="prod-footer">
-    <div>{c_brand} · ARCHITECTURAL STONE FABRICATION</div>
+    <div>{foot_brand}</div>
     <div class="prod-footer-center">{foot_mid}</div>
-    <div>WWW.STONETECH.IN · +91 77420 90866</div>
+    <div>{foot_contact}</div>
   </div>
 </div>
 """)
@@ -1216,29 +1256,29 @@ body {{
 
             if lang == "hi":
                 p_div_tag = "अल्ट्रा-थिन प्राकृतिक पत्थर विनियर"
-                p_direct = "फैक्ट्री डायरेक्ट: <strong>+९१ ७७४२० ९०८६६</strong> · WWW.STONETECH.IN"
+                p_direct = "फैक्ट्री डायरेक्ट: <strong>+९१ ७७४२० ९०८६६ / +९१ ९७८४४ ५२९९८</strong> · WWW.STONETECH.IN"
                 p_code_lbl = f"आइटम कोड: {code_str}"
-                s_dim = f"मानक आयाम: <strong>{p['sizes']}</strong>"
+                s_dim = f"मानक आयाम: <strong>{localize_sizes(p['sizes'], lang)}</strong>"
                 s_wt = "शीट का वजन: <strong>~१.५० किग्रा / वर्गमीटर (~४.५ किग्रा / शीट)</strong>"
                 s_thk = "कुल मोटाई: <strong>१.५ – २.० मिमी (अल्ट्रा-थिन फ्लेक्सिबल)</strong>"
                 s_use = "मुख्य उपयोग: <strong>घुमावदार दीवारें, फसाड, फर्नीचर, दरवाजे</strong>"
                 s_sub = "आधार संरचना: <strong>फाइबरग्लास एवं थर्मोसेटिंग रेजिन</strong>"
-                s_adh = "चिपकाने की विधि: <strong>PU / MS पॉलीमर डायरेक्ट बॉन्ड</strong>"
+                s_adh = "चिपकाने की विधि: <strong>पॉलीयूरेथेन (PU) / MS पॉलीमर डायरेक्ट बॉन्ड</strong>"
                 p_pg = f"पेज {to_indic(f'{curr_page:02d}', lang)} / {to_indic(total_pages, lang)}"
             elif lang == "gu":
                 p_div_tag = "અલ્ટ્રા-થિન કુદરતી પથ્થર વિનિયર"
-                p_direct = "ફેક્ટરી ડાયરેક્ટ: <strong>+૯૧ ૭૭૪૨૦ ૯૦૮૬૬</strong> · WWW.STONETECH.IN"
+                p_direct = "ફેક્ટરી ડાયરેક્ટ: <strong>+૯૧ ૭૭૪૨૦ ૯૦૮૬૬ / +૯૧ ૯૭૮૪૪ ૫૨૯૯૮</strong> · WWW.STONETECH.IN"
                 p_code_lbl = f"આઇટમ કોડ: {code_str}"
-                s_dim = f"પ્રમાણભૂત પરિમાણો: <strong>{p['sizes']}</strong>"
+                s_dim = f"પ્રમાણભૂત પરિમાણો: <strong>{localize_sizes(p['sizes'], lang)}</strong>"
                 s_wt = "શીટનું વજન: <strong>~૧.૫૦ કિગ્રા / ચોરસ મીટર (~૪.૫ કિગ્રા / શીટ)</strong>"
                 s_thk = "કુલ જાડાઈ: <strong>૧.૫ – ૨.૦ મીમી (અલ્ટ્રા-થિન ફ્લેક્સિબલ)</strong>"
                 s_use = "મુખ્ય ઉપયોગો: <strong>વળાંકવાળી દીવાલો, ફેસાડ, ફર્નિચર, દરવાજા</strong>"
                 s_sub = "આધાર સામગ્રી: <strong>ફાઇબરગ્લાસ અને થર્મોસેટિંગ રેઝિન</strong>"
-                s_adh = "ચોંટાડવાની રીત: <strong>PU / MS પોલિમર ડાયરેક્ટ બોન્ડ</strong>"
+                s_adh = "ચોંટાડવાની રીત: <strong>પોલીયુરેથીન (PU) / MS પોલિમર ડાયરેક્ટ બોન્ડ</strong>"
                 p_pg = f"પેજ {to_indic(f'{curr_page:02d}', lang)} / {to_indic(total_pages, lang)}"
             else:
                 p_div_tag = "ULTRA-THIN NATURAL STONE VENEER"
-                p_direct = "FACTORY DIRECT: <strong>+91 77420 90866</strong> · WWW.STONETECH.IN"
+                p_direct = "FACTORY DIRECT: <strong>+91 77420 90866 / +91 97844 52998</strong> · WWW.STONETECH.IN"
                 p_code_lbl = f"ITEM CODE: {code_str}"
                 s_dim = f"Standard Dimensions: <strong>{p['sizes']}</strong>"
                 s_wt = "Sheet Weight: <strong>~1.50 kg / m² (~4.5 kg / sheet)</strong>"
@@ -1247,6 +1287,8 @@ body {{
                 s_sub = "Substrate Backing: <strong>Fiberglass & Thermosetting Resin</strong>"
                 s_adh = "Adhesion Method: <strong>PU / MS Polymer Direct Bond</strong>"
                 p_pg = f"PAGE {curr_page:02d} OF {total_pages}"
+
+            foot_brand = f"{c_brand} · आर्किटेक्चरल स्टोन फैब्रिकेशन" if lang == "hi" else (f"{c_brand} · આર્કિટેક્ચરલ સ્ટોન ફેબ્રિકેશન" if lang == "gu" else f"{c_brand} · ARCHITECTURAL STONE FABRICATION")
 
             html_parts.append(f"""
 <div class="page product-page">
@@ -1284,7 +1326,7 @@ body {{
   </div>
 
   <div class="prod-footer">
-    <div>{c_brand} · ARCHITECTURAL STONE FABRICATION</div>
+    <div>{foot_brand}</div>
     <div class="prod-footer-center">{foot_mid}</div>
     <div>{p_pg}</div>
   </div>
@@ -1353,9 +1395,9 @@ body {{
   </div>
 
   <div class="prod-footer">
-    <div>{c_brand} · ARCHITECTURAL STONE FABRICATION</div>
+    <div>{foot_brand}</div>
     <div class="prod-footer-center">{foot_mid}</div>
-    <div>WWW.STONETECH.IN · +91 77420 90866</div>
+    <div>{foot_contact}</div>
   </div>
 </div>
 """)
@@ -1368,6 +1410,7 @@ body {{
         m_th1 = "इंजीनियरिंग पैरामीटर"
         m_th2 = "विनिर्दिष्ट मान / सीमा"
         m_th3 = "परीक्षण विधि / आर्किटेक्चरल प्रभाव"
+        m_std = "मानक: <strong>ASTM / EN १२०५७ प्रमाणित</strong><br>सत्यापित: <strong>संस्करण २०२६ – २०२७</strong>"
         m_r1 = ("कुल कंपोजिट मोटाई", "१.५० मिमी से २.०० मिमी (±०.२ मिमी टॉलरेंस)", "डायरेक्ट पील लेयर + फाइबरग्लास प्रबलित आधार")
         m_r2 = ("द्रव्यमान / घनत्व", "१.४५ से १.६५ किग्रा / वर्गमीटर (~४.५ किग्रा प्रति शीट)", "२० मिमी ग्रेनाइट की तुलना में ९७% कम भार")
         m_r3 = ("मानक उत्पादन आकार", "१२२०×२४४० मिमी · १२२०×२८०० मिमी · १२२०×३०५० मिमी", "कस्टम कटिंग आकार भी उपलब्ध")
@@ -1377,8 +1420,13 @@ body {{
         m_r7 = ("नमी अवशोषण क्षमता", "रेजिन बैक पर < ०.२०% जल अवशोषण", "पूर्णतः जल-अभेद्य रेजिन परत")
         m_r8 = ("मानक निर्यात पैकेजिंग", "प्रति ISPM-15 धूमीकृत लकड़ी के क्रेट में ५० शीट्स", "सुरक्षात्मक PE फोम शीट के साथ पैक")
         b_dept = "आर्किटेक्चरल नेचुरल स्टोन एवं विनियर मैन्युफैक्चरिंग डिवीजन"
+        b_exp_center = "<strong>अटेलियर एवं एक्सपीरियंस सेंटर:</strong> ई-०२, ग्राउंड फ्लोर, एसजी बिजनेस हब, गोता, अहमदाबाद, गुजरात — ३८००६०, भारत"
+        b_direct_desk = "<strong>सीधी फैक्ट्री डेस्क:</strong> +९१ ७७४२० ९०८६६ / +९१ ९७८४४ ५२९९८ · <strong>आधिकारिक वेबसाइट:</strong> www.stonetech.in"
         b_port = "सीधा कंटेनर सीपोर्ट डिस्पैच:<br><strong>मुंद्रा पोर्ट (INMUN) एवं जेएनपीटी पोर्ट (INNSA)</strong>"
-        b_wa = "त्वरित व्हाट्सएप सीआरएम कोटेशन एवं प्रोजेक्ट पूछताछ:"
+        b_wa = "त्वरित व्हाट्सएप सीआरएम कोटेशन एवं पूछताछ:"
+        b_foot_phone = "+९१ ७७४२० ९०८६६ / +९१ ९७८४४ ५२९९८"
+        b_foot_left = f"{c_brand} · आर्किटेक्चरल स्टोन फैब्रिकेशन डिवीजन"
+        b_foot_mid = "WWW.STONETECH.IN · सर्वाधिकार सुरक्षित © २०२६"
         b_fin = f"पेज {to_indic('106', lang)} / {to_indic('106', lang)} · अंतिम पृष्ठ"
     elif lang == "gu":
         m_t1 = "ટેકનિકલ એન્જિનિયરિંગ માસ્ટર સ્પેસિફિકેશન"
@@ -1386,6 +1434,7 @@ body {{
         m_th1 = "એન્જિનિયરિંગ પેરામીટર"
         m_th2 = "નિયત મૂલ્ય / શ્રેણી"
         m_th3 = "પરીક્ષણ પદ્ધતિ / આર્કિટેક્ચરલ પ્રભાવ"
+        m_std = "ધોરણો: <strong>ASTM / EN ૧૨૦૫૭ સુસંગત</strong><br>પ્રમાણિત: <strong>આવૃત્તિ ૨૦૨૬ – ૨૦૨૭</strong>"
         m_r1 = ("કુલ જાડાઈ", "૧.૫૦ મીમી થી ૨.૦૦ મીમી (±૦.૨ મીમી સહિષ્ણુતા)", "ડાયરેક્ટ પીલ સ્તર + ફાઇબરગ્લાસ આધાર")
         m_r2 = ("ચોરસ મીટર દીઠ વજન", "૧.૪૫ થી ૧.૬૫ કિગ્રા / ચો.મી. (~૪.૫ કિગ્રા પ્રતિ શીટ)", "૨૦ મીમી ગ્રેનાઈટ કરતા ૯૭% હળવું")
         m_r3 = ("પ્રમાણભૂત ઉત્પાદન સાઇઝ", "૧૨૨૦×૨૪૪૦ મીમી · ૧૨૨૦×૨૮૦૦ મીમી · ૧૨૨૦×૩૦૫૦ મીમી", "કસ્ટમ કટિંગ સાઇઝ પણ ઉપલબ્ધ")
@@ -1395,8 +1444,13 @@ body {{
         m_r7 = ("ભેજ શોષણ ક્ષમતા", "રેઝિન બેકિંગ પર < ૦.૨૦% જળ શોષણ", "સંપૂર્ણપણે અભેદ્ય રેઝિન સ્તર")
         m_r8 = ("પ્રમાણભૂત નિકાસ પેકેજિંગ", "ISPM-15 હીટ-ટ્રીટેડ લાકડાના ક્રેટ દીઠ ૫૦ શીટ્સ", "રક્ષણાત્મક PE ફોમ શીટ સાથે પેક")
         b_dept = "આર્કિટેક્ચરલ નેચરલ સ્ટોન અને વિનિયર મેન્યુફેક્ચરિંગ ડિવિઝન"
+        b_exp_center = "<strong>એટેલિયર અને એક્સપિરિયન્સ સેન્ટર:</strong> E-02, ગ્રાઉન્ડ ફ્લોર, SG બિઝનેસ હબ, ગોતા, અમદાવાદ, ગુજરાત — 380060, ભારત"
+        b_direct_desk = "<strong>સીધી ફેક્ટરી ડેસ્ક:</strong> +૯૧ ૭૭૪૨૦ ૯૦૮૬૬ / +૯૧ ૯૭૮૪૪ ૫૨૯૯૮ · <strong>સત્તાવાર વેબસાઇટ:</strong> www.stonetech.in"
         b_port = "સીધું કન્ટેનર સીપોર્ટ ડિસ્પેચ:<br><strong>મુંદ્રા પોર્ટ (INMUN) અને JNPT પોર્ટ (INNSA)</strong>"
-        b_wa = "ત્વરિત વ્હોટ્સએપ CRM ક્વોટેશન અને પ્રોજેક્ટ પૂછપરછ:"
+        b_wa = "ત્વરિત વ્હોટ્સએપ CRM ક્વોટેશન અને પૂછપરછ:"
+        b_foot_phone = "+૯૧ ૭૭૪૨૦ ૯૦૮૬૬ / +૯૧ ૯૭૮૪૪ ૫૨૯૯૮"
+        b_foot_left = f"{c_brand} · આર્કિટેક્ચરલ સ્ટોન ફેબ્રિકેશન ડિવિઝન"
+        b_foot_mid = "WWW.STONETECH.IN · સર્વાધિકાર સુરક્ષિત © ૨૦૨૬"
         b_fin = f"પેજ {to_indic('106', lang)} / {to_indic('106', lang)} · અંતિમ પૃષ્ઠ"
     else:
         m_t1 = "TECHNICAL ENGINEERING MASTER SPECIFICATION"
@@ -1404,6 +1458,7 @@ body {{
         m_th1 = "ENGINEERING PARAMETER"
         m_th2 = "SPECIFIED VALUE / RANGE"
         m_th3 = "TEST METHOD / ARCHITECTURAL IMPACT"
+        m_std = "STANDARDS: <strong>ASTM / EN 12057 COMPLIANT</strong><br>VERIFIED: <strong>EDITION 2026 – 2027</strong>"
         m_r1 = ("Total Composite Thickness", "1.50 mm to 2.00 mm (±0.2 mm tolerance)", "Direct peel layer + fiberglass reinforced backing")
         m_r2 = ("Areal Mass / Density", "1.45 to 1.65 kg / m² (~4.5 kg per 1220×2440 mm sheet)", "97% structural dead-weight reduction vs 20mm granite")
         m_r3 = ("Standard Production Sizes", "1220×2440 mm · 1220×2800 mm · 1220×3050 mm", "Custom cut-to-order architectural panels available")
@@ -1413,8 +1468,13 @@ body {{
         m_r7 = ("Moisture Absorption Substrate", "< 0.20% water absorption on resin backing", "Completely impervious resin backing layer")
         m_r8 = ("Standard Export Packaging", "50 sheets per fumigated ISPM-15 export wooden crate", "Interleaved with protective PE foam sheets")
         b_dept = "Architectural Natural Stone & Ultra-Thin Veneer Manufacturing Division"
+        b_exp_center = "<strong>Atelier & Experience Center:</strong> E-02, Ground Floor, SG Business Hub, Gota, Ahmedabad, Gujarat — 380060, India"
+        b_direct_desk = "<strong>Direct Factory Desk:</strong> +91 77420 90866 / +91 97844 52998 · <strong>Official Portal:</strong> www.stonetech.in"
         b_port = "DIRECT CONTAINER SEAPORT DISPATCH:<br><strong>Mundra Port (INMUN) & JNPT Port (INNSA)</strong>"
         b_wa = "Instant WhatsApp CRM Quotations & Project Inquiries:"
+        b_foot_phone = "+91 77420 90866 / +91 97844 52998"
+        b_foot_left = f"{c_brand} · ARCHITECTURAL STONE FABRICATION DIVISION"
+        b_foot_mid = "WWW.STONETECH.IN · ALL RIGHTS RESERVED © 2026"
         b_fin = "PAGE 106 OF 106 · FINAL PAGE"
 
     html_parts.append(f"""
@@ -1424,9 +1484,8 @@ body {{
       <div style="color: #fbbf24; font-size: 8.5pt; font-weight: 800; letter-spacing: 2px;">{m_t1}</div>
       <div style="color: #ffffff; font-size: 15pt; font-weight: 900; margin-top: 1mm;">{m_t2}</div>
     </div>
-    <div style="text-align: right; font-size: 7.5pt; color: #94a3b8;">
-      STANDARDS: <strong>ASTM / EN 12057 COMPLIANT</strong><br>
-      VERIFIED: <strong>EDITION 2026 – 2027</strong>
+    <div style="text-align: right; font-size: 7.5pt; color: #94a3b8; line-height: 1.5;">
+      {m_std}
     </div>
   </div>
 
@@ -1488,20 +1547,20 @@ body {{
       <div class="back-contact-details">
         <h3>{c_brand}</h3>
         <div>{b_dept}</div>
-        <div><strong>Atelier & Experience Center:</strong> Gota, Ahmedabad, Gujarat — 382481, India</div>
-        <div><strong>Direct Factory Desk:</strong> +91 77420 90866 · <strong>Official Portal:</strong> www.stonetech.in</div>
+        <div>{b_exp_center}</div>
+        <div>{b_direct_desk}</div>
       </div>
     </div>
     <div class="back-contact-right">
       <div>{b_port}</div>
       <div style="margin-top: 1.5mm;">{b_wa}</div>
-      <div style="color: #fbbf24; font-size: 9pt; font-weight: 800;">+91 77420 90866</div>
+      <div style="color: #fbbf24; font-size: 8.5pt; font-weight: 800;">{b_foot_phone}</div>
     </div>
   </div>
 
   <div style="display: flex; justify-content: space-between; border-top: 1px solid rgba(217, 119, 6, 0.4); padding-top: 2mm; font-size: 6.8pt; color: #94a3b8;">
-    <div>{c_brand} · ARCHITECTURAL STONE FABRICATION DIVISION</div>
-    <div>WWW.STONETECH.IN · ALL RIGHTS RESERVED © 2026</div>
+    <div>{b_foot_left}</div>
+    <div>{b_foot_mid}</div>
     <div>{b_fin}</div>
   </div>
 </div>
