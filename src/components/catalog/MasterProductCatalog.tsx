@@ -36,6 +36,7 @@ import {
   FileDown,
   X,
   ChevronDown,
+  ChevronUp,
   ChevronLeft,
   ChevronRight,
   ArrowRight,
@@ -144,7 +145,6 @@ export function MasterProductCatalog({
     setSearchQuery("");
     setSelectedCategory("all");
     setSelectedSubFilter("all");
-    setDisplayLimit(27);
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = 0;
     }
@@ -154,7 +154,6 @@ export function MasterProductCatalog({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedSubFilter, setSelectedSubFilter] = useState("all");
-  const [displayLimit, setDisplayLimit] = useState(27);
   const [lightboxItem, setLightboxItem] = useState<CatalogItem | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -359,30 +358,12 @@ export function MasterProductCatalog({
     });
   }, [currentDataset, selectedCategory, selectedSubFilter, searchQuery]);
 
-  // Reset display limit and scroll position when filter criteria changes
+  // Reset scroll position when filter criteria changes
   useEffect(() => {
-    setDisplayLimit(27);
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = 0;
     }
   }, [currentTab, selectedCategory, selectedSubFilter, searchQuery]);
-
-  // Infinite scroll loader inside the 9-item frame
-  const handleContainerScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const el = e.currentTarget;
-    if (el.scrollHeight - el.scrollTop - el.clientHeight < 250) {
-      setDisplayLimit((prev) => Math.min(prev + 18, filteredItems.length));
-    }
-  };
-
-  const scrollByPage = (direction: "up" | "down") => {
-    if (!scrollContainerRef.current) return;
-    const scrollAmount = scrollContainerRef.current.clientHeight * 0.85;
-    scrollContainerRef.current.scrollBy({
-      top: direction === "down" ? scrollAmount : -scrollAmount,
-      behavior: "smooth",
-    });
-  };
 
   const scrollToContainerTop = () => {
     if (scrollContainerRef.current) {
@@ -390,9 +371,7 @@ export function MasterProductCatalog({
     }
   };
 
-  const displayedItems = useMemo(() => {
-    return filteredItems.slice(0, displayLimit);
-  }, [filteredItems, displayLimit]);
+  const displayedItems = filteredItems;
 
   const handleSelectProductClick = (item: CatalogItem, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -1035,27 +1014,25 @@ export function MasterProductCatalog({
         </div>
       ) : (
         <div className="space-y-2.5">
-          {/* Squeezed Box Frame: 3 Columns x 3 Rows = Exactly 9 Items in View */}
+          {/* 2-Row 8-Product Catalog Box with Smooth In-Box Scroll */}
           <div
             ref={scrollContainerRef}
-            tabIndex={0}
-            onScroll={handleContainerScroll}
-            aria-label="Architectural Products 9-Grid Frame"
+            aria-label="Architectural Products 8-Item Frame"
             className={cn(
               "relative w-full rounded-2xl border border-border/80 bg-card/40 p-2 sm:p-3 shadow-inner",
-              "h-[560px] sm:h-[620px] md:h-[670px] lg:h-[700px]",
+              "h-[530px] sm:h-[560px] md:h-[620px] lg:h-[700px] xl:h-[780px]",
               "overflow-y-auto overscroll-y-auto",
-              "focus:outline-hidden focus:ring-1 focus:ring-primary/40",
               "[scrollbar-width:thin] scrollbar-thumb-muted-foreground/30 hover:scrollbar-thumb-muted-foreground/60",
               "[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-muted/30 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/50",
             )}
             style={{ overscrollBehaviorY: "auto" }}
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2.5 sm:gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
               {displayedItems.map((item) => (
                 <div
                   key={item.code}
                   onClick={() => setLightboxItem(item)}
+                  style={{ contentVisibility: "auto", containIntrinsicSize: "360px" }}
                   className="group relative flex flex-col overflow-hidden rounded-xl border border-border/70 bg-card hover:border-amber-500/60 hover:shadow-md transition-all duration-200 cursor-pointer"
                 >
                   {/* Squeezed Product Image Frame */}
@@ -1108,7 +1085,7 @@ export function MasterProductCatalog({
                   </div>
 
                   {/* Squeezed Product Info */}
-                  <div className="p-2.5 flex flex-col flex-1 justify-between gap-1.5">
+                  <div className="p-2 sm:p-2.5 flex flex-col flex-1 justify-between gap-1.5">
                     <div>
                       <h3 className="text-xs sm:text-sm font-bold text-foreground group-hover:text-amber-500 transition-colors line-clamp-1">
                         {item.name}
@@ -1150,50 +1127,44 @@ export function MasterProductCatalog({
           </div>
 
           {/* Crisp Action & Navigation Bar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 px-3 py-2 rounded-xl border border-border/60 bg-muted/30 text-xs">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-3 py-2 rounded-xl border border-border/60 bg-muted/20 text-xs">
             <div className="flex items-center gap-2 text-muted-foreground">
               <span className="font-semibold text-foreground">
-                Showing {Math.min(displayedItems.length, filteredItems.length)} of{" "}
-                {filteredItems.length} {tabMetadata.countLabel}
+                Showing {filteredItems.length} {tabMetadata.countLabel}
               </span>
               <span className="hidden md:inline text-[11px]">·</span>
               <span className="hidden md:inline text-[11px]">
-                3×3 Frame (9 in view) · Scroll box to explore all
+                2-Row Frame (8 visible) · Scroll box to explore all
               </span>
             </div>
 
-            <div className="flex items-center gap-1.5">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => scrollByPage("up")}
-                className="h-7 px-2 text-[11px] cursor-pointer"
-                title="Scroll Up"
-              >
-                <ChevronLeft className="h-3 w-3 mr-0.5" />
-                Prev 9
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => scrollByPage("down")}
-                className="h-7 px-2 text-[11px] cursor-pointer"
-                title="Scroll Down"
-              >
-                Next 9
-                <ChevronRight className="h-3 w-3 ml-0.5" />
-              </Button>
+            <div className="flex items-center gap-2">
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
                 onClick={scrollToContainerTop}
-                className="h-7 px-2 text-[11px] text-muted-foreground hover:text-foreground cursor-pointer"
-                title="Scroll to Top of Box"
+                className="h-7 px-2.5 text-[11px] text-muted-foreground hover:text-foreground cursor-pointer"
+                title="Scroll to Top of Catalog"
               >
+                <ChevronUp className="h-3.5 w-3.5 mr-1" />
                 Top
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const footer = document.querySelector("footer");
+                  if (footer) {
+                    footer.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
+                className="h-7 px-2.5 text-[11px] text-muted-foreground hover:text-foreground cursor-pointer"
+                title="Scroll past catalog to Footer"
+              >
+                <ChevronDown className="h-3.5 w-3.5 mr-1" />
+                Page Footer
               </Button>
             </div>
           </div>
