@@ -1,4 +1,6 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { initAndroidNotifications } from "@/lib/notifications/channels/android";
 import {
   LogOut,
   Search,
@@ -929,11 +931,17 @@ function UserMenu({
               <Languages className="h-3.5 w-3.5 text-primary" />
               <span>{t("common.language", "Language / भाषा")}</span>
             </div>
-            <div className="grid grid-cols-3 gap-1">
+            <div
+              className="grid grid-cols-3 gap-1 notranslate"
+              data-no-translate="true"
+              translate="no"
+            >
               {SUPPORTED_LANGUAGES.map((lang) => (
                 <button
                   key={lang.code}
                   type="button"
+                  data-no-translate="true"
+                  translate="no"
                   onClick={() => {
                     void i18n.changeLanguage(lang.code);
                     try {
@@ -944,7 +952,7 @@ function UserMenu({
                     }
                   }}
                   className={cn(
-                    "py-1 px-1.5 rounded text-[11px] font-bold text-center transition-all border",
+                    "py-1 px-1.5 rounded text-[11px] font-bold text-center transition-all border notranslate",
                     currentLang === lang.code
                       ? "bg-primary text-primary-foreground border-primary shadow-xs"
                       : "bg-surface-panel text-text-primary border-border-default hover:bg-surface-elevated",
@@ -971,7 +979,12 @@ function UserMenu({
 
 // App shell main layout
 export function AppShell({ children }: { children: ReactNode }) {
+  const qc = useQueryClient();
   const { t, i18n } = useTranslation();
+
+  useEffect(() => {
+    initAndroidNotifications();
+  }, []);
   const currentLang = (i18n.language?.substring(0, 2) || "en") as LangCode;
   const loc = useRouterState({
     select: (s) => ({ pathname: s.location.pathname, searchStr: s.location.searchStr || "" }),
@@ -1083,6 +1096,19 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   async function onSignOut() {
     try {
+      qc.clear();
+      if (typeof window !== "undefined") {
+        try {
+          Object.keys(window.localStorage || {}).forEach((k) => {
+            if (k.startsWith("stos_auth_verified_")) window.localStorage.removeItem(k);
+          });
+          Object.keys(window.sessionStorage || {}).forEach((k) => {
+            if (k.startsWith("stos_auth_verified_")) window.sessionStorage.removeItem(k);
+          });
+        } catch {
+          // ignore
+        }
+      }
       await supabase.auth.signOut();
     } finally {
       toast.success("Signed out");
@@ -1321,6 +1347,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                         <button
                           key={lang.code}
                           type="button"
+                          data-no-translate="true"
+                          translate="no"
                           onClick={() => {
                             void i18n.changeLanguage(lang.code);
                             try {
@@ -1332,7 +1360,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                             setMobileNavOpen(false);
                           }}
                           className={cn(
-                            "py-1.5 px-2 rounded-lg text-xs font-bold text-center transition-all border",
+                            "py-1.5 px-2 rounded-lg text-xs font-bold text-center transition-all border notranslate",
                             currentLang === lang.code
                               ? "bg-sidebar-primary text-sidebar-primary-foreground border-sidebar-primary shadow-sm"
                               : "bg-white/10 text-white border-white/20 hover:bg-white/20",

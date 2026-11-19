@@ -83,6 +83,7 @@ import rawGlassData from "@/data/glass-bricks-catalog.json";
 import rawClayData from "@/data/flexible-clay-catalog.json";
 import rawPebblesData from "@/data/stone-pebbles-catalog.json";
 import rawInstallsData from "@/data/installed-works-gallery.json";
+import { CATALOG_ITEMS_BY_CODE } from "@/lib/i18n/catalogue-items-i18n";
 
 export type ProductTab =
   | "cladding"
@@ -133,13 +134,16 @@ const LOCALIZED_CATALOG_STRINGS: Record<string, { hi: string; gu: string }> = {
   "Jumbo & Flat Pebbles": { hi: "जंबो एवं फ्लैट पेबल्स", gu: "જમ્બો અને ફ્લેટ કાંકરા" },
   "Mini Pebbles & Chips": { hi: "मिनी पेबल्स एवं चिप्स", gu: "મિની કાંકરા અને ચિપ્સ" },
   "Onyx Pebbles": { hi: "गोमेद (ओनिक्स) पेबल्स", gu: "ગોમેદ (ઓનિક્સ) કાંકરા" },
-  "Architectural 3D Textures": { hi: "आर्किटेक्चरल 3D टेक्सचर्स", gu: "આર્કિટેક્ચરલ 3D ટેક્સચર્સ" },
-  "Punch Traventino Series": { hi: "पंच ट्रैवर्टिनो सीरीज़", gu: "પંચ ટ્રેવર્ટીનો સિરીઝ" },
-  "Punch Slat Series": { hi: "पंच स्लेट सीरीज़", gu: "પંચ સ્લેટ સિરીઝ" },
-  "Stone Wall Cladding": { hi: "स्टोन वॉल क्लैडिंग", gu: "સ્ટોન વૉલ ક્લેડિંગ" },
+  "Architectural 3D Textures": {
+    hi: "वास्तुशिल्पीय ३D टेक्सचर्स",
+    gu: "વાસ્તુશિલ્પીય ૩D ટેક્સચર્સ",
+  },
+  "Punch Traventino Series": { hi: "पंच ट्रावरटाइन स्लैब्स", gu: "પંચ ટ્રાવર્ટાઇન સ્લેબ્સ" },
+  "Punch Slat Series": { hi: "पंच स्लेट स्लैब्स", gu: "પંચ સ્લેટ સ્લેબ્સ" },
+  "Stone Wall Cladding": { hi: "प्राकृतिक पाषाण क्लैडिंग", gu: "પ્રાકૃતિક પાષાણ ક્લેડિંગ" },
   "Stone Wall Mural Artwork": {
-    hi: "स्टोन वॉल म्यूरल कलाकृतियां",
-    gu: "સ્ટોન વૉલ મ્યુરલ આર્ટવર્ક",
+    hi: "पाषाण भित्ति शिल्प (म्यूरल)",
+    gu: "પાષાણ દિવાલ મ્યુરલ કલાકૃતિઓ",
   },
   "Horizontal Strip & Ledgestone Panels": {
     hi: "हॉरिजॉन्टल स्ट्रिप एवं लेजस्टोन पैनल्स",
@@ -203,37 +207,37 @@ const LOCALIZED_CATALOG_STRINGS: Record<string, { hi: string; gu: string }> = {
   "Natural Opalescent Silica": { hi: "प्राकृतिक ओपलेसेंट सिलिका", gu: "કુદરતી ઓપલેસેન્ટ સિલિકા" },
 
   // Glass Bricks Items & Refractions
-  Seaview: { hi: "सीव्यू (सागरीय तरंग)", gu: "સીવ્યૂ (દરિયાઈ મોજાં)" },
-  Sahara: { hi: "सहारा (मरुस्थलीय डिज़ाइन)", gu: "સહારા (રણ ડિઝાઈન)" },
-  "New Wave": { hi: "नई लहर (New Wave)", gu: "નવી લહેર (New Wave)" },
-  Bubbles: { hi: "बबल्स (जल बुलबुले)", gu: "બબલ્સ (પરપોટા ડિઝાઈન)" },
-  Diamond: { hi: "डायमंड (हीरा कट)", gu: "ડાયમંડ (હીરા કટ)" },
+  Seaview: { hi: "सागरीय तरंग सीव्यू", gu: "દરિયાઈ મોજાં સીવ્યૂ" },
+  Sahara: { hi: "सहारा मरुस्थलीय डिज़ाइन", gu: "સહારા રણ ડિઝાઈન" },
+  "New Wave": { hi: "नई लहर", gu: "નવી લહેર" },
+  Bubbles: { hi: "जल बुलबुले बबल्स", gu: "પરપોટા બબલ્સ ડિઝાઈન" },
+  Diamond: { hi: "हीरा कट डायमंड", gu: "હીરા કટ ડાયમંડ" },
   "Direct Clear": {
-    hi: "डायरेक्ट क्लियर (पूर्ण पारदर्शी)",
-    gu: "ડાયરેક્ટ ક્લિયર (સંપૂર્ણ પારદર્શક)",
+    hi: "सटीक पारदर्शी",
+    gu: "સંપૂર્ણ પારદર્શક",
   },
-  Misty: { hi: "मिस्टी (धुंधला पारभासी)", gu: "મિસ્ટી (ઝાંખું પારદર્શક)" },
-  Quadra: { hi: "क्वाड्रा (चौकोर ग्रिड)", gu: "ક્વાડ્રા (ચોરસ ગ્રીડ)" },
-  Mosaic: { hi: "मोज़ेक (घन बुनाई)", gu: "મોઝેઇક (ઘન વણાટ)" },
-  "Cross Reed": { hi: "क्रॉस रीड (दोहरी धारी)", gu: "ક્રોસ રીડ (બેવડી ધારી)" },
+  Misty: { hi: "मिस्टी धुंधला पारभासी", gu: "મિસ્ટી ઝાંખું પારદર્શક" },
+  Quadra: { hi: "क्वाड्रा चौकोर ग्रिड", gu: "ક્વાડ્રા ચોરસ ગ્રીડ" },
+  Mosaic: { hi: "मोज़ेक घन बुनाई", gu: "મોઝેઇક ઘન વણાટ" },
+  "Cross Reed": { hi: "क्रॉस रीड दोहरी धारी", gu: "ક્રોસ રીડ બેવડી ધારી" },
   "Clear Pattern": { hi: "पारदर्शी पैटर्न", gu: "પારદર્શક પેટર્ન" },
   Satin: { hi: "सैटिन फ्रॉस्टेड", gu: "સેટિન ફ્રોસ્ટેડ" },
-  "Amber Tinted": { hi: "एम्बर टिंटेड (पीताभ)", gu: "એમ્બર ટિન્ટેડ (સોનેરી પીળું)" },
-  "Cobalt Blue": { hi: "कोबाल्ट ब्लू (गहरा नीला)", gu: "કોબાલ્ટ બ્લુ (ઘેરો વાદળી)" },
-  "Emerald Green": { hi: "एमराल्ड ग्रीन (पन्ना हरा)", gu: "એમરાલ્ડ ગ્રીન (પન્ના લીલો)" },
-  "Smoky Bronze": { hi: "स्मोकी ब्रॉन्ज (धूमिल कांस्य)", gu: "સ્મોકી બ્રોન્ઝ (કાંસ્ય રંગ)" },
+  "Amber Tinted": { hi: "पीताभ एम्बर टिंटेड", gu: "સોનેરી અંબર ટિન્ટેડ" },
+  "Cobalt Blue": { hi: "गहरा कोबाल्ट नीला", gu: "ઘેરો કોબાલ્ટ વાદળી" },
+  "Emerald Green": { hi: "पन्ना हरा", gu: "પન્ના લીલો" },
+  "Smoky Bronze": { hi: "धूमिल कांस्य", gu: "કાંસ્ય રંગ" },
   "Crystal Series": { hi: "क्रिस्टल सीरीज़", gu: "ક્રિસ્ટલ સિરીઝ" },
   "Linear Wave": { hi: "रेखीय तरंग", gu: "રેખીય તરંગ" },
-  Arctic: { hi: "आर्कटिक (बर्फ बनावट)", gu: "આર્કટિક (બરફ બનાવટ)" },
+  Arctic: { hi: "आर्कटिक हिम बनावट", gu: "આર્કટિક હિમ બનાવટ" },
 
   // Flexible Clay Veneers
-  "Fluted Texture": { hi: "फ्लूटेड टेक्सचर (नालीदार)", gu: "ફ્લુટેડ ટેક્સચર (ખાંચાવાળું)" },
+  "Fluted Texture": { hi: "नालीदार फ्लूटेड टेक्सचर", gu: "ખાંચાવાળું ફ્લુટેડ ટેક્સચર" },
   "Hammerstone Texture": {
-    hi: "हैमरस्टोन टेक्सचर (हथौड़ा मार्बल)",
-    gu: "હેમરસ્ટોન ટેક્સચર (હથોડી શૈલી)",
+    hi: "हैमर्ड पाषाण टेक्सचर",
+    gu: "હેમર્ડ પાષાણ ટેક્સચર",
   },
-  "Ripple Texture": { hi: "रिपल टेक्सचर (तरंगित)", gu: "રિપલ ટેક્સચર (તરંગ આકાર)" },
-  "Weave Texture": { hi: "वीव टेक्सचर (बुनाई डिज़ाइन)", gu: "વીવ ટેક્સચર (વણાટ ભાત)" },
+  "Ripple Texture": { hi: "तरंगित रिपल टेक्सचर", gu: "તરંગિત રિપલ ટેક્સચર" },
+  "Weave Texture": { hi: "बुनाई वीव टेक्सचर", gu: "વણાટ વીવ ટેક્સચર" },
   "Linear Fluted Profile · 15mm Pitch": {
     hi: "लीनियर फ्लूटेड प्रोफाइल · १५ मिमी पिच",
     gu: "લીનિયર ફ્લુટેડ પ્રોફાઇલ · ૧૫ મીમી પિચ",
@@ -246,25 +250,25 @@ const LOCALIZED_CATALOG_STRINGS: Record<string, { hi: string; gu: string }> = {
   },
   "Punch Traventino": { hi: "पंच ट्रैवर्टिनो", gu: "પંચ ટ્રેવર્ટીનો" },
   "Punch Slat": { hi: "पंच स्लेट", gu: "પંચ સ્લેટ" },
-  Traventino: { hi: "ट्रैवर्टिनो", gu: "ટ્રેવર્ટીનો" },
+  Traventino: { hi: "ट्रावरटाइन", gu: "ટ્રાવર્ટાઇન" },
   "Split Face": { hi: "स्प्लिट फेस", gu: "સ્પ્લિટ ફેસ" },
   "Chiseled Stone": { hi: "छैनी तराशा पत्थर", gu: "ટાંકણે ઘડેલો પથ્થર" },
   "Linear Groove": { hi: "लीनियर ग्रूव्ज", gu: "લીનિયર ગ્રૂવ્સ" },
   "Fluted Texture Architectural Installation": {
-    hi: "फ्लूटेड टेक्सचर आर्किटेक्चरल स्थापना",
-    gu: "ફ્લુટેડ ટેક્સચર આર્કિટેક્ચરલ સ્થાપના",
+    hi: "फ्लूटेड टेक्सचर वास्तुशिल्पीय स्थापना",
+    gu: "ફ્લુટેડ ટેક્સચર વાસ્તુશિલ્પીય સ્થાપન",
   },
   "Hammerstone Texture Architectural Installation": {
-    hi: "हैमरस्टोन टेक्सचर आर्किटेक्चरल स्थापना",
-    gu: "હેમરસ્ટોન ટેક્સચર આર્કિટેક્ચરલ સ્થાપના",
+    hi: "हैमर्ड पाषाण वास्तुशिल्पीय स्थापना",
+    gu: "હેમર્ડ પાષાણ વાસ્તુશિલ્પીય સ્થાપન",
   },
   "Ripple Texture Architectural Installation": {
-    hi: "रिपल टेक्सचर आर्किटेक्चरल स्थापना",
-    gu: "રિપલ ટેક્સચર આર્કિટેક્ચરલ સ્થાપના",
+    hi: "रिपल टेक्सचर वास्तुशिल्पीय स्थापना",
+    gu: "રિપલ ટેક્સચર વાસ્તુશિલ્પીય સ્થાપન",
   },
   "Weave Texture Architectural Installation": {
-    hi: "वीव टेक्सचर आर्किटेक्चरल स्थापना",
-    gu: "વીવ ટેક્સચર આર્કિટેક્ચરલ સ્થાપના",
+    hi: "वीव टेक्सचर वास्तुशिल्पीय स्थापना",
+    gu: "વીવ ટેક્સચર વાસ્તુશિલ્પીય સ્થાપન",
   },
   "Live Executed": { hi: "लाइव स्थापित", gu: "લાઇવ સ્થાપિત" },
 
@@ -335,118 +339,167 @@ export function MasterProductCatalog({
 
   // Normalize data collections
   const currentDataset: CatalogItem[] = useMemo(() => {
+    const getLoc = (
+      entry: { hi: string; gu: string } | undefined,
+      currentLang: "en" | "hi" | "gu",
+    ): string | undefined => {
+      if (currentLang === "en" || !entry) return undefined;
+      return entry[currentLang];
+    };
+
     switch (currentTab) {
       case "stone-veneer":
-        return (rawVeneerData as Array<Record<string, unknown>>).map((v) => ({
-          id: String(v.code),
-          code: String(v.code),
-          name: localizeCatalogTerm(String(v.name), lang),
-          category: localizeCatalogTerm(String(v.series || "Natural Stone Veneer"), lang),
-          subCategory: localizeCatalogTerm(
-            v.translucent ? "Translucent (Backlit)" : "Natural Cleft",
-            lang,
-          ),
-          image: String(v.slabImage || v.image || ""),
-          price: typeof v.price === "number" ? v.price : 195,
-          unit: String(v.unit || "sq.ft"),
-          sizes: toIndicDigits(String(v.standardSizes || "1220 × 610 mm"), lang),
-          details: localizeCatalogTerm(
-            v.stoneType ? `Natural ${v.stoneType}` : String(v.series || ""),
-            lang,
-          ),
-          desc: String(
-            v.desc || "Ultra-thin flexible natural stone veneer sheet with fiberglass backing.",
-          ),
-          specs: [
-            {
-              label: "Dimensions",
-              val: toIndicDigits(String(v.standardSizes || "1220 × 610 mm"), lang),
-            },
-            { label: "Thickness", val: toIndicDigits(String(v.thickness || "1.5 – 2.0 mm"), lang) },
-            { label: "Weight", val: toIndicDigits(String(v.weight || "1.5 kg / sheet"), lang) },
-            { label: "Backing", val: "Fiberglass & Polyester Resin" },
-          ],
-        }));
+        return (rawVeneerData as Array<Record<string, unknown>>).map((v) => {
+          const code = String(v.code);
+          const loc = lang !== "en" ? CATALOG_ITEMS_BY_CODE[code] : undefined;
+          return {
+            id: code,
+            code: code,
+            name: getLoc(loc?.name, lang) || localizeCatalogTerm(String(v.name), lang),
+            category:
+              getLoc(loc?.category, lang) ||
+              localizeCatalogTerm(String(v.series || "Natural Stone Veneer"), lang),
+            subCategory: localizeCatalogTerm(
+              v.translucent ? "Translucent (Backlit)" : "Natural Cleft",
+              lang,
+            ),
+            image: String(v.slabImage || v.image || ""),
+            price: typeof v.price === "number" ? v.price : 195,
+            unit: String(v.unit || "sq.ft"),
+            sizes: toIndicDigits(String(v.standardSizes || "1220 × 610 mm"), lang),
+            details:
+              getLoc(loc?.details, lang) ||
+              localizeCatalogTerm(
+                v.stoneType ? `Natural ${v.stoneType}` : String(v.series || ""),
+                lang,
+              ),
+            desc: String(
+              v.desc || "Ultra-thin flexible natural stone veneer sheet with fiberglass backing.",
+            ),
+            specs: [
+              {
+                label: "Dimensions",
+                val: toIndicDigits(String(v.standardSizes || "1220 × 610 mm"), lang),
+              },
+              {
+                label: "Thickness",
+                val: toIndicDigits(String(v.thickness || "1.5 – 2.0 mm"), lang),
+              },
+              { label: "Weight", val: toIndicDigits(String(v.weight || "1.5 kg / sheet"), lang) },
+              { label: "Backing", val: "Fiberglass & Polyester Resin" },
+            ],
+          };
+        });
       case "glass-bricks":
-        return (rawGlassData as Array<Record<string, unknown>>).map((g) => ({
-          id: String(g.code),
-          code: String(g.code),
-          name: localizeCatalogTerm(String(g.name), lang),
-          category: localizeCatalogTerm(String(g.series || "Glass Bricks"), lang),
-          subCategory: localizeCatalogTerm(String(g.pattern || "Clear Pattern"), lang),
-          image: String(g.image || ""),
-          price: typeof g.price === "number" ? g.price : 420,
-          unit: String(g.unit || "pc"),
-          sizes: toIndicDigits(String(g.dimensions || "190 × 190 × 80 mm"), lang),
-          details: localizeCatalogTerm(String(g.finish || g.series || ""), lang),
-          desc: String(
-            g.desc ||
-              "Architectural optical-grade glass brick with precision geometric refraction.",
-          ),
-          specs: [
-            {
-              label: "Dimensions",
-              val: toIndicDigits(String(g.dimensions || "190 × 190 × 80 mm"), lang),
-            },
-            { label: "Weight", val: toIndicDigits(String(g.weight || "2.3 kg / pc"), lang) },
-            {
-              label: "Fire Resistance",
-              val: toIndicDigits(String(g.fireRating || "60 – 90 Minutes"), lang),
-            },
-            { label: "Sound Insulation", val: "Rw 40 dB" },
-          ],
-        }));
+        return (rawGlassData as Array<Record<string, unknown>>).map((g) => {
+          const code = String(g.code);
+          const loc = lang !== "en" ? CATALOG_ITEMS_BY_CODE[code] : undefined;
+          return {
+            id: code,
+            code: code,
+            name: getLoc(loc?.name, lang) || localizeCatalogTerm(String(g.name), lang),
+            category:
+              getLoc(loc?.category, lang) ||
+              localizeCatalogTerm(String(g.series || "Glass Bricks"), lang),
+            subCategory: localizeCatalogTerm(String(g.pattern || "Clear Pattern"), lang),
+            image: String(g.image || ""),
+            price: typeof g.price === "number" ? g.price : 420,
+            unit: String(g.unit || "pc"),
+            sizes: toIndicDigits(String(g.dimensions || "190 × 190 × 80 mm"), lang),
+            details:
+              getLoc(loc?.details, lang) ||
+              localizeCatalogTerm(String(g.finish || g.series || ""), lang),
+            desc: String(
+              g.desc ||
+                "Architectural optical-grade glass brick with precision geometric refraction.",
+            ),
+            specs: [
+              {
+                label: "Dimensions",
+                val: toIndicDigits(String(g.dimensions || "190 × 190 × 80 mm"), lang),
+              },
+              { label: "Weight", val: toIndicDigits(String(g.weight || "2.3 kg / pc"), lang) },
+              {
+                label: "Fire Resistance",
+                val: toIndicDigits(String(g.fireRating || "60 – 90 Minutes"), lang),
+              },
+              { label: "Sound Insulation", val: "Rw 40 dB" },
+            ],
+          };
+        });
       case "clay-veneers":
-        return (rawClayData as Array<Record<string, unknown>>).map((c) => ({
-          id: String(c.code),
-          code: String(c.code),
-          name: localizeCatalogTerm(String(c.rawName || c.name), lang),
-          category: localizeCatalogTerm(String(c.series || "Clay Veneer"), lang),
-          subCategory: localizeCatalogTerm(String(c.profile || "3D Relief"), lang),
-          image: String(c.image || ""),
-          sceneImage: c.sceneImage ? String(c.sceneImage) : undefined,
-          price: typeof c.price === "number" ? c.price : 220,
-          unit: String(c.unit || "sq.ft"),
-          sizes: toIndicDigits(String(c.standardSizes || "1200 × 2400 mm"), lang),
-          details: localizeCatalogTerm(String(c.profile || c.series || ""), lang),
-          desc: String(
-            c.desc ||
-              "Flexible modified mineral clay architectural veneer for curved and exterior elevations.",
-          ),
-          specs: [
-            {
-              label: "Dimensions",
-              val: toIndicDigits(String(c.standardSizes || "1200 × 2400 mm"), lang),
-            },
-            { label: "Thickness", val: toIndicDigits(String(c.thickness || "2.5 – 3.5 mm"), lang) },
-            { label: "Weight", val: toIndicDigits(String(c.weight || "3.8 kg / m²"), lang) },
-            { label: "Fire Rating", val: String(c.fire || "Class A Non-Combustible") },
-          ],
-        }));
+        return (rawClayData as Array<Record<string, unknown>>).map((c) => {
+          const code = String(c.code);
+          const loc = lang !== "en" ? CATALOG_ITEMS_BY_CODE[code] : undefined;
+          return {
+            id: code,
+            code: code,
+            name: getLoc(loc?.name, lang) || localizeCatalogTerm(String(c.rawName || c.name), lang),
+            category:
+              getLoc(loc?.category, lang) ||
+              localizeCatalogTerm(String(c.series || "Clay Veneer"), lang),
+            subCategory: localizeCatalogTerm(String(c.profile || "3D Relief"), lang),
+            image: String(c.image || ""),
+            sceneImage: c.sceneImage ? String(c.sceneImage) : undefined,
+            price: typeof c.price === "number" ? c.price : 220,
+            unit: String(c.unit || "sq.ft"),
+            sizes: toIndicDigits(String(c.standardSizes || "1200 × 2400 mm"), lang),
+            details:
+              getLoc(loc?.details, lang) ||
+              localizeCatalogTerm(String(c.profile || c.series || ""), lang),
+            desc: String(
+              c.desc ||
+                "Flexible modified mineral clay architectural veneer for curved and exterior elevations.",
+            ),
+            specs: [
+              {
+                label: "Dimensions",
+                val: toIndicDigits(String(c.standardSizes || "1200 × 2400 mm"), lang),
+              },
+              {
+                label: "Thickness",
+                val: toIndicDigits(String(c.thickness || "2.5 – 3.5 mm"), lang),
+              },
+              { label: "Weight", val: toIndicDigits(String(c.weight || "3.8 kg / m²"), lang) },
+              { label: "Fire Rating", val: String(c.fire || "Class A Non-Combustible") },
+            ],
+          };
+        });
       case "pebbles":
-        return (rawPebblesData as Array<Record<string, unknown>>).map((p) => ({
-          id: String(p.code),
-          code: String(p.code),
-          name: localizeCatalogTerm(String(p.name), lang),
-          category: localizeCatalogTerm(String(p.category || "Stone Pebbles"), lang),
-          subCategory: localizeCatalogTerm(String(p.finish || "Natural"), lang),
-          image: String(p.image || ""),
-          price: typeof p.price === "number" ? p.price : 38,
-          unit: String(p.unit || "kg"),
-          sizes: toIndicDigits(String(p.sizes || "20-40 mm"), lang),
-          details: localizeCatalogTerm(String(p.mineral || ""), lang),
-          desc: String(
-            p.desc ||
-              "Curated architectural stone pebbles and semi-precious decorative aggregates.",
-          ),
-          specs: [
-            { label: "Available Sizes", val: toIndicDigits(String(p.sizes || ""), lang) },
-            { label: "Mineral Family", val: localizeCatalogTerm(String(p.mineral || ""), lang) },
-            { label: "Color Tone", val: String(p.color || "") },
-            { label: "Hardness", val: String(p.hardness || "") },
-            { label: "Packaging", val: String(p.packaging || "") },
-          ],
-        }));
+        return (rawPebblesData as Array<Record<string, unknown>>).map((p) => {
+          const code = String(p.code);
+          const loc = lang !== "en" ? CATALOG_ITEMS_BY_CODE[code] : undefined;
+          return {
+            id: code,
+            code: code,
+            name: getLoc(loc?.name, lang) || localizeCatalogTerm(String(p.name), lang),
+            category:
+              getLoc(loc?.category, lang) ||
+              localizeCatalogTerm(String(p.category || "Stone Pebbles"), lang),
+            subCategory: localizeCatalogTerm(String(p.finish || "Natural"), lang),
+            image: String(p.image || ""),
+            price: typeof p.price === "number" ? p.price : 38,
+            unit: String(p.unit || "kg"),
+            sizes: toIndicDigits(String(p.sizes || "20-40 mm"), lang),
+            details:
+              getLoc(loc?.details, lang) || localizeCatalogTerm(String(p.mineral || ""), lang),
+            desc: String(
+              p.desc ||
+                "Curated architectural stone pebbles and semi-precious decorative aggregates.",
+            ),
+            specs: [
+              { label: "Available Sizes", val: toIndicDigits(String(p.sizes || ""), lang) },
+              {
+                label: "Mineral Family",
+                val:
+                  getLoc(loc?.details, lang) || localizeCatalogTerm(String(p.mineral || ""), lang),
+              },
+              { label: "Color Tone", val: String(p.color || "") },
+              { label: "Hardness", val: String(p.hardness || "") },
+              { label: "Packaging", val: String(p.packaging || "") },
+            ],
+          };
+        });
       case "installations":
         return (rawInstallsData as Array<Record<string, unknown>>).map((ins) => ({
           id: String(ins.id),
@@ -477,17 +530,25 @@ export function MasterProductCatalog({
       default:
         return (rawCladdingData as Array<Record<string, unknown>>).map((c) => {
           const imgs = Array.isArray(c.images) ? (c.images as string[]) : [];
+          const code = String(c.code || c.id);
+          const loc = lang !== "en" ? CATALOG_ITEMS_BY_CODE[code] : undefined;
           return {
             id: String(c.id),
-            code: String(c.id),
-            name: localizeCatalogTerm(String(c.name || ""), lang),
-            category: localizeCatalogTerm(String(c.category || "Stone Wall Cladding"), lang),
-            subCategory: localizeCatalogTerm(String(c.stoneType || "Sandstone"), lang),
+            code: code,
+            name: getLoc(loc?.name, lang) || localizeCatalogTerm(String(c.name || ""), lang),
+            category:
+              getLoc(loc?.category, lang) ||
+              localizeCatalogTerm(String(c.category || "Stone Wall Cladding"), lang),
+            subCategory:
+              getLoc(loc?.details, lang) ||
+              localizeCatalogTerm(String(c.stoneType || "Sandstone"), lang),
             image: String(imgs[0] || c.image || ""),
             price: typeof c.price === "number" ? c.price : 240,
             unit: "sq.ft",
             sizes: toIndicDigits("600 × 300 mm / Modular", lang),
-            details: localizeCatalogTerm(String(c.stoneType || "Natural Stone"), lang),
+            details:
+              getLoc(loc?.details, lang) ||
+              localizeCatalogTerm(String(c.stoneType || "Natural Stone"), lang),
             desc: String(
               c.description ||
                 "Precision CNC architectural natural stone wall cladding relief panel.",
@@ -495,9 +556,16 @@ export function MasterProductCatalog({
             specs: [
               {
                 label: "Stone Type",
-                val: localizeCatalogTerm(String(c.stoneType || "Natural Stone"), lang),
+                val:
+                  getLoc(loc?.details, lang) ||
+                  localizeCatalogTerm(String(c.stoneType || "Natural Stone"), lang),
               },
-              { label: "Category", val: localizeCatalogTerm(String(c.category || ""), lang) },
+              {
+                label: "Category",
+                val:
+                  getLoc(loc?.category, lang) ||
+                  localizeCatalogTerm(String(c.category || ""), lang),
+              },
               { label: "Surface Finish", val: String(c.finish || "CNC Carved / Natural Cleft") },
             ],
           };
@@ -603,9 +671,9 @@ export function MasterProductCatalog({
     cladding: {
       title:
         lang === "gu"
-          ? "કુદરતી સ્ટોન ક્લેડિંગ અને આર્કિટેક્ચરલ મોઝેઇક"
+          ? "કુદરતી પાષાણ દીવાલ ક્લેડિંગ અને વાસ્તુશિલ્પીય મોઝેક"
           : lang === "hi"
-            ? "प्राकृतिक स्टोन क्लैडिंग एवं आर्किटेक्चरल मोज़ेक"
+            ? "प्राकृतिक पाषाण दीवार क्लैडिंग एवं वास्तुशिल्पीय मोज़ेक"
             : "NATURAL STONE WALL CLADDING & ARCHITECTURAL MOSAICS",
       countLabel: lang === "gu" ? "પેટર્ન્સ" : lang === "hi" ? "पैटर्न्स" : "Patterns",
       dropdown1Placeholder:
@@ -622,9 +690,9 @@ export function MasterProductCatalog({
     "stone-veneer": {
       title:
         lang === "gu"
-          ? "અલ્ટ્રા-થિન ફ્લેક્સિબલ નેચરલ સ્ટોન વિનિયર"
+          ? "અત્યંત પાતળી કુદરતી સ્ટોન વિનિયર"
           : lang === "hi"
-            ? "अल्ट्रा-थिन फ्लेक्सिबल प्राकृतिक स्टोन विनियर"
+            ? "अत्यंत पतली प्राकृतिक स्टोन विनियर"
             : "ULTRA-THIN FLEXIBLE NATURAL STONE VENEERS",
       countLabel: lang === "gu" ? "જાતો" : lang === "hi" ? "किस्में" : "Varieties",
       dropdown1Placeholder:
@@ -641,9 +709,9 @@ export function MasterProductCatalog({
     "glass-bricks": {
       title:
         lang === "gu"
-          ? "આર્કિટેક્ચરલ નક્કર અને પોલી કાચની ઈંટો"
+          ? "વાસ્તુશિલ્પીય નક્કર અને પોલી કાચની ઈંટો"
           : lang === "hi"
-            ? "आर्किटेक्चरल ठोस एवं खोखली कांच की ईंटें"
+            ? "वास्तुशिल्पीय ठोस एवं खोखली कांच की ईंटें"
             : "ARCHITECTURAL SOLID & HOLLOW GLASS BRICKS",
       countLabel: lang === "gu" ? "ડિઝાઇન્સ" : lang === "hi" ? "डिज़ाइन्स" : "Designs",
       dropdown1Placeholder:
@@ -660,9 +728,9 @@ export function MasterProductCatalog({
     "clay-veneers": {
       title:
         lang === "gu"
-          ? "ફ્લેક્સિબલ ક્લે વિનિયર્સ અને 3D આર્કિટેક્ચરલ ટેક્સચર્સ"
+          ? "અત્યંત પાતળી લચીલી ક્લે વિનિયર્સ અને 3D વાસ્તુશિલ્પીય ટેક્સચર્સ"
           : lang === "hi"
-            ? "फ्लेक्सिबल क्ले विनियर्स एवं 3D आर्किटेक्चरल टेक्सचर्स"
+            ? "अत्यंत पतली लचीली क्ले विनियर एवं 3D वास्तुशिल्पीय टेक्सचर्स"
             : "FLEXIBLE CLAY VENEERS & 3D ARCHITECTURAL TEXTURES",
       countLabel: lang === "gu" ? "ટેક્સચર્સ" : lang === "hi" ? "टेक्सचर्स" : "Textures",
       dropdown1Placeholder:
@@ -671,17 +739,17 @@ export function MasterProductCatalog({
         lang === "gu" ? "બધી પ્રોફાઇલ્સ" : lang === "hi" ? "सभी प्रोफाइल्स" : "All Profiles",
       searchPlaceholder:
         lang === "gu"
-          ? "૪૦ ફ્લેક્સિબલ ક્લે ટેક્સચર્સ શોધો..."
+          ? "૪૦ લચીલી ક્લે ટેક્સચર્સ શોધો..."
           : lang === "hi"
-            ? "४० फ्लेक्सिबल क्ले टेक्सचर्स खोजें..."
+            ? "४० लचीली क्ले टेक्सचर्स खोजें..."
             : "Search 40 flexible clay textures, fluted, travertino...",
     },
     pebbles: {
       title:
         lang === "gu"
-          ? "કુદરતી સ્ટોન પેબલ્સ અને અર્ધ-કિંમતી કાંકરા"
+          ? "વાસ્તુશિલ્પીય કુદરતી પાષાણ કાંકરા અને અર્ધ-કિંમતી સંગ્રહ"
           : lang === "hi"
-            ? "प्राकृतिक स्टोन पेबल्स एवं अर्ध-कीमती कंकड़"
+            ? "वास्तुशिल्पीय प्राकृतिक पाषाण कंकड़ (पेबल्स) एवं अर्ध-कीमती संग्रह"
             : "NATURAL STONE PEBBLES & SEMI-PRECIOUS AGGREGATES",
       countLabel: lang === "gu" ? "જાતો" : lang === "hi" ? "किस्में" : "Varieties",
       dropdown1Placeholder:
@@ -690,9 +758,9 @@ export function MasterProductCatalog({
         lang === "gu" ? "બધા ફિનિશ" : lang === "hi" ? "सभी फिनिश" : "All Finishes",
       searchPlaceholder:
         lang === "gu"
-          ? "૭૫ સ્ટોન પેબલ્સ, રોઝ ક્વાર્ટ્ઝ, ઓનિક્સ શોધો..."
+          ? "૭૫ પાષાણ કાંકરા, રોઝ ક્વાર્ટ્ઝ, ઓનિક્સ શોધો..."
           : lang === "hi"
-            ? "७५ स्टोन पेबल्स, रोज़ क्वार्ट्ज़, ओनिक्स खोजें..."
+            ? "७५ पाषाण कंकड़, रोज़ क्वार्ट्ज़, ओनिक्स खोजें..."
             : "Search 75 stone pebbles, rose quartz, onyx, river black...",
     },
     installations: {
@@ -843,9 +911,9 @@ export function MasterProductCatalog({
           <Layers className="h-4 w-4" />
           <span>
             {lang === "gu"
-              ? "કુદરતી સ્ટોન ક્લેડિંગ (૨૭૫)"
+              ? "કુદરતી પાષાણ ક્લેડિંગ (૨૭૫)"
               : lang === "hi"
-                ? "प्राकृतिक स्टोन क्लैडिंग (२७५)"
+                ? "प्राकृतिक पाषाण क्लैडिंग (२७५)"
                 : "Natural Stone Cladding (275)"}
           </span>
         </button>
@@ -863,9 +931,9 @@ export function MasterProductCatalog({
           <Sparkles className="h-4 w-4 text-amber-500" />
           <span>
             {lang === "gu"
-              ? "સ્ટોન વિનિયર (૯૮)"
+              ? "અત્યંત પાતળી સ્ટોન વિનિયર (૯૮)"
               : lang === "hi"
-                ? "स्टोन विनियर (९८)"
+                ? "अत्यंत पतली स्टोन विनियर (९८)"
                 : "Stone Veneer (98)"}
           </span>
         </button>
@@ -903,9 +971,9 @@ export function MasterProductCatalog({
           <Compass className="h-4 w-4 text-orange-500" />
           <span>
             {lang === "gu"
-              ? "ક્લે વિનિયર્સ (૪૦)"
+              ? "અત્યંત પાતળી લચીલી ક્લે વિનિયર્સ (૪૦)"
               : lang === "hi"
-                ? "फ्लेक्सिबल क्ले विनियर्स (४०)"
+                ? "अत्यंत पतली लचीली क्ले विनियर्स (४०)"
                 : "Clay Veneers (40)"}
           </span>
         </button>
@@ -923,9 +991,9 @@ export function MasterProductCatalog({
           <CircleDot className="h-4 w-4 text-amber-500" />
           <span>
             {lang === "gu"
-              ? "સ્ટોન પેબલ્સ (૭૫)"
+              ? "પાષાણ કાંકરા (૭૫)"
               : lang === "hi"
-                ? "स्टोन पेबल्स एवं कंकड़ (७५)"
+                ? "पाषाण कंकड़ (पेबल्स) (७५)"
                 : "Stone Pebbles (75)"}
           </span>
         </button>
@@ -945,7 +1013,7 @@ export function MasterProductCatalog({
             {lang === "gu"
               ? "લાઇવ સ્થાપિત કાર્યો"
               : lang === "hi"
-                ? "लाइव स्थापित कार्य"
+                ? "लाइव निष्पादित कार्य"
                 : "Live Installed Works"}
           </span>
         </button>
@@ -1084,9 +1152,9 @@ export function MasterProductCatalog({
             <DropdownMenuContent align="end" className="w-[330px] sm:w-[380px] p-2.5 space-y-2.5">
               <DropdownMenuLabel className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                 {lang === "gu"
-                  ? "સ્ટોન ટેક એટેલિયર ૨૦૨૬ આર્કિટેક્ચરલ કેટલોગ્સ"
+                  ? "સ્ટોન ટેક એટેલિયર ૨૦૨૬ વાસ્તુશિલ્પીય કેટલોગ્સ"
                   : lang === "hi"
-                    ? "स्टोन टेक एटेलियर २०२६ आर्किटेक्चरल कैटलॉग"
+                    ? "स्टोन टेक एटेलियर २०२६ वास्तुशिल्पीय कैटलॉग"
                     : "Stone Tech Atelier 2026 Architectural Catalogues"}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
@@ -1159,9 +1227,9 @@ export function MasterProductCatalog({
                   <span className="font-semibold text-xs text-foreground flex items-center gap-1.5">
                     <Sparkles className="h-3.5 w-3.5 text-amber-600" />
                     {lang === "gu"
-                      ? "અલ્ટ્રા-થિન ફ્લેક્સિબલ સ્ટોન વિનિયર (૧૦૬ પાન)"
+                      ? "અત્યંત પાતળી કુદરતી સ્ટોન વિનિયર (૧૦૬ પાન)"
                       : lang === "hi"
-                        ? "अल्ट्रा-थिन लचीला स्टोन विनियर (१०६ पृष्ठ)"
+                        ? "अत्यंत पतली प्राकृतिक स्टोन विनियर (१०६ पृष्ठ)"
                         : "Ultra-Thin Stone Veneer (106 Pgs)"}
                   </span>
                   <Badge
@@ -1217,9 +1285,9 @@ export function MasterProductCatalog({
                   <span className="font-semibold text-xs text-foreground flex items-center gap-1.5">
                     <Gem className="h-3.5 w-3.5 text-sky-600" />
                     {lang === "gu"
-                      ? "આર્કિટેક્ચરલ નક્કર અને પોલી કાચની ઈંટો (૬૭ ડિઝાઇન્સ)"
+                      ? "વાસ્તુશિલ્પીય નક્કર અને પોલી કાચની ઈંટો (૬૭ ડિઝાઇન્સ)"
                       : lang === "hi"
-                        ? "आर्किटेक्चरल ठोस एवं खोखली कांच की ईंटें (६७ डिज़ाइन)"
+                        ? "वास्तुशिल्पीय ठोस एवं खोखली कांच की ईंटें (६७ डिज़ाइन)"
                         : "Architectural Glass Bricks (67 Designs)"}
                   </span>
                   <Badge
@@ -1343,9 +1411,9 @@ export function MasterProductCatalog({
                   <span className="font-semibold text-xs text-foreground flex items-center gap-1.5">
                     <Compass className="h-3.5 w-3.5 text-orange-600" />
                     {lang === "gu"
-                      ? "ફ્લેક્સિબલ ક્લે વિનિયર્સ (૩૭ પાન)"
+                      ? "અત્યંત પાતળી લચીલી ક્લે વિનિયર્સ (૩૭ પાન)"
                       : lang === "hi"
-                        ? "फ्लेक्सिबल क्ले विनियर्स (३७ पृष्ठ)"
+                        ? "अत्यंत पतली लचीली क्ले विनियर्स (३७ पृष्ठ)"
                         : "Flexible Clay Veneers (37 Pgs)"}
                   </span>
                   <Badge
@@ -1405,9 +1473,9 @@ export function MasterProductCatalog({
                   <span className="font-semibold text-xs text-foreground flex items-center gap-1.5">
                     <CircleDot className="h-3.5 w-3.5 text-amber-500" />
                     {lang === "gu"
-                      ? "કુદરતી પથ્થરના કાંકરા અને અર્ધ-કિંમતી સંગ્રહ (૨૩ પાન)"
+                      ? "વાસ્તુશિલ્પીય કુદરતી પાષાણ કાંકરા અને અર્ધ-કિંમતી સંગ્રહ (૨૩ પાન)"
                       : lang === "hi"
-                        ? "प्राकृतिक पत्थर के कंकड़ (पेबल्स) एवं अर्ध-कीमती पाषाण (२३ पृष्ठ)"
+                        ? "वास्तुशिल्पीय प्राकृतिक पाषाण कंकड़ (पेबल्स) एवं अर्ध-कीमती संग्रह (२३ पृष्ठ)"
                         : "Stone Pebbles & Aggregates (23 Pgs)"}
                   </span>
                   <Badge
@@ -1538,11 +1606,10 @@ export function MasterProductCatalog({
                 <div
                   key={item.code}
                   onClick={() => setLightboxItem(item)}
-                  style={{ contentVisibility: "auto", containIntrinsicSize: "360px" }}
                   className="group relative flex flex-col overflow-hidden rounded-xl border border-border/70 bg-card hover:border-amber-500/60 hover:shadow-md transition-all duration-200 cursor-pointer"
                 >
                   {/* Squeezed Product Image Frame */}
-                  <div className="relative aspect-square w-full overflow-hidden bg-slate-950/80">
+                  <div className="relative aspect-square w-full overflow-hidden bg-neutral-100 dark:bg-neutral-900">
                     <img
                       src={item.image}
                       alt={item.name}

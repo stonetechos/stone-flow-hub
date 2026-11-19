@@ -409,9 +409,9 @@ function HomePage() {
   useEffect(() => {
     if (typeof document !== "undefined") {
       if (currentLang === "hi") {
-        document.title = "स्टोन टेक - आर्किटेक्चरल नेचुरल स्टोन अटेलियर एवं वॉल क्लैडिंग";
+        document.title = "स्टोन टेक - वास्तुशिल्पीय प्राकृतिक पाषाण एटेलियर एवं वॉल क्लैडिंग";
       } else if (currentLang === "gu") {
-        document.title = "સ્ટોન ટેક - આર્કિટેક્ચરલ નેચરલ સ્ટોન એટેલિયર અને વોલ ક્લેડિંગ";
+        document.title = "સ્ટોન ટેક - વાસ્તુશિલ્પીય પ્રાકૃતિક પાષાણ એટેલિયર અને વોલ ક્લેડિંગ";
       } else {
         document.title = "Stone Tech - Architectural Natural Stone Atelier & Wall Cladding";
       }
@@ -1835,9 +1835,9 @@ function HomePage() {
                                 </div>
                                 <span className="text-[10px] text-muted-foreground">
                                   {currentLang === "hi"
-                                    ? "वास्तुशिल्प एलिवेशन या सीएडी ड्राइंग"
+                                    ? "वास्तुशिल्पीय एलिवेशन या सीएडी ड्राइंग"
                                     : currentLang === "gu"
-                                      ? "આર્કિટેક્ચરલ એલિવેશન અથવા સીએડી ડ્રોઇંગ"
+                                      ? "વાસ્તુશિલ્પીય એલિવેશન અથવા સીએડી ડ્રોઇંગ"
                                       : "Architectural elevation or CAD drawing"}
                                 </span>
                               </div>

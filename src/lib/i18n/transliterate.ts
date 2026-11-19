@@ -1290,6 +1290,7 @@ function transliterateTokenGu(token: string): string {
   const lower = clean.toLowerCase();
 
   if (shouldPreserveCode(clean, lower)) return clean;
+  if (lower === "english") return "English";
   if (lower === "pdf") return "PDF";
   if (lower === "3d") return "૩D";
   if (lower === "cnc") return "CNC";
@@ -1302,6 +1303,11 @@ function transliterateTokenGu(token: string): string {
   if (lower === "bricks" || lower === "brick") return "ઈંટો";
   if (lower === "varieties" || lower === "variety") return "જાતો";
   if (lower === "collections" || lower === "collection") return "સંગ્રહ";
+  if (lower === "architect") return "વાસ્તુકાર";
+  if (lower === "architects") return "વાસ્તુકારો";
+  if (lower === "architectural") return "વાસ્તુશિલ્પીય";
+  if (lower === "architecture") return "વાસ્તુકળા";
+  if (lower === "pebbles" || lower === "pebble") return "કાંકરા";
 
   if (GUJARATI_DICT[lower]) return GUJARATI_DICT[lower];
 
@@ -1327,6 +1333,7 @@ function transliterateTokenHi(token: string): string {
   const lower = clean.toLowerCase();
 
   if (shouldPreserveCode(clean, lower)) return clean;
+  if (lower === "english") return "English";
   if (lower === "pdf") return "PDF";
   if (lower === "3d") return "३D";
   if (lower === "cnc") return "CNC";
@@ -1339,6 +1346,11 @@ function transliterateTokenHi(token: string): string {
   if (lower === "bricks" || lower === "brick") return "ईंटें";
   if (lower === "varieties" || lower === "variety") return "किस्में";
   if (lower === "collections" || lower === "collection") return "संग्रह";
+  if (lower === "architect") return "वास्तुकार";
+  if (lower === "architects") return "वास्तुकार";
+  if (lower === "architectural") return "वास्तुशिल्पीय";
+  if (lower === "architecture") return "वास्तुकला";
+  if (lower === "pebbles" || lower === "pebble") return "कंकड़";
 
   if (HINDI_DICT[lower]) return HINDI_DICT[lower];
 

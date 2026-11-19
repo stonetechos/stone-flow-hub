@@ -86,6 +86,28 @@ export function NotificationBanner() {
     }
   };
 
+  const resolveSafeLink = (linkPath?: string | null): string => {
+    if (!linkPath) return "/dashboard";
+    let target = linkPath.trim();
+    if (target === "/money-flow/customer-payments") target = "/payments";
+    if (!isAdmin && !isSuperAdmin) {
+      const restrictedPrefixes = [
+        "/liabilities",
+        "/business-expenses",
+        "/ledger",
+        "/vendor-payments",
+        "/personal-transfers",
+        "/purchase-ledger",
+        "/purchase-invoices",
+        "/admin",
+      ];
+      if (restrictedPrefixes.some((p) => target.startsWith(p))) {
+        return "/dashboard";
+      }
+    }
+    return target;
+  };
+
   const handleAction = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (activeBanner.actionType === "notify_customer_whatsapp" && activeBanner.actionData) {
@@ -114,14 +136,16 @@ export function NotificationBanner() {
     }
 
     if (activeBanner.linkPath) {
-      void nav({ to: activeBanner.linkPath as never });
+      const safe = resolveSafeLink(activeBanner.linkPath);
+      void nav({ to: safe as never });
       setActiveBanner(null);
     }
   };
 
   const handleBannerClick = () => {
     if (activeBanner.linkPath) {
-      void nav({ to: activeBanner.linkPath as never });
+      const safe = resolveSafeLink(activeBanner.linkPath);
+      void nav({ to: safe as never });
       setActiveBanner(null);
     }
   };

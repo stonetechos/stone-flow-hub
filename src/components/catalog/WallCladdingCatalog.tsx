@@ -69,6 +69,19 @@ import { useWebsiteCatalog, type CatalogProduct } from "@/lib/catalog/catalog-st
 import { useSiteSettingsValue } from "@/lib/site-settings/use-site-settings";
 import { transliterateName } from "@/lib/i18n/transliterate";
 import { toIndicDigits } from "@/lib/format";
+import { CATALOG_ITEMS_BY_CODE } from "@/lib/i18n/catalogue-items-i18n";
+
+function getCladdingName(
+  item: { code?: string; id?: string; name: string },
+  lang: "en" | "hi" | "gu",
+): string {
+  if (lang === "en") return item.name;
+  const code = item.code || item.id;
+  if (code && CATALOG_ITEMS_BY_CODE[code]?.name?.[lang]) {
+    return CATALOG_ITEMS_BY_CODE[code].name[lang];
+  }
+  return transliterateName(item.name, lang);
+}
 
 export type WallCladdingItem = CatalogProduct;
 
@@ -115,7 +128,7 @@ const CATALOG_TEXTS = {
     } as Record<string, string>,
   },
   hi: {
-    heading: "नेचुरल स्टोन वॉल क्लैडिंग एवं आर्किटेक्चरल मोज़ेक",
+    heading: "प्राकृतिक पाषाण क्लैडिंग एवं वास्तुशिल्पीय मोज़ेक",
     patternsCount: "पैटर्न्स",
     allCollections: "सभी संग्रह",
     allStones: "सभी पत्थर",
@@ -128,13 +141,13 @@ const CATALOG_TEXTS = {
     cataloguesBtn: "कैटलॉग डाउनलोड (PDF)",
     veneerBtn: "स्टोन विनियर (१०६ पेज)",
     claddingBtn: "वॉल क्लैडिंग (७१ पेज)",
-    veneerTitle: "अल्ट्रा-थिन स्टोन विनियर (१०६ पेज)",
+    veneerTitle: "अत्यंत पतली स्टोन विनियर (१०६ पेज)",
     veneerDesc: "९८ फ्लेक्सिबल असली पत्थर पैटर्न्स · स्लेट, सैंडस्टोन, मार्बल एवं लाइमस्टोन",
-    claddingTitle: "नेचुरल स्टोन वॉल क्लैडिंग (७१ पेज)",
+    claddingTitle: "प्राकृतिक पाषाण वॉल क्लैडिंग (७१ पेज)",
     claddingDesc: "२७५ सटीक सीएनसी ३D रिलीफ, म्यूरल्स एवं स्प्लिटफेस लेजर्स",
-    glassBricksTitle: "आर्किटेक्चरल ग्लास ब्रिक्स",
-    solidGlass: "सॉलिड ग्लास (३४ पेज)",
-    hollowGlass: "हॉलो ग्लास (४९ पेज)",
+    glassBricksTitle: "वास्तुशिल्पीय कांच की ईंटें",
+    solidGlass: "ठोस कांच (३४ पेज)",
+    hollowGlass: "खोखली कांच (४९ पेज)",
     priceBtn: "मूल्य",
     specsBtn: "विशेषताएं",
     sqftUnit: "/ वर्गफ़ुट",
@@ -149,7 +162,7 @@ const CATALOG_TEXTS = {
     } as Record<string, string>,
   },
   gu: {
-    heading: "કુદરતી સ્ટોન વોલ ક્લેડિંગ અને આર્કિટેક્ચરલ મોઝેઇક",
+    heading: "કુદરતી સ્ટોન વોલ ક્લેડિંગ અને વાસ્તુશિલ્પીય મોઝેઇક",
     patternsCount: "પેટર્ન",
     allCollections: "બધા સંગ્રહ",
     allStones: "બધા પથ્થરો",
@@ -162,13 +175,13 @@ const CATALOG_TEXTS = {
     cataloguesBtn: "કેટલોગ ડાઉનલોડ (PDF)",
     veneerBtn: "સ્ટોન વિનિયર (૧૦૬ પેજ)",
     claddingBtn: "વોલ ક્લેડિંગ (૭૧ પેજ)",
-    veneerTitle: "અલ્ટ્રા-થિન સ્ટોન વિનિયર (૧૦૬ પેજ)",
+    veneerTitle: "અત્યંત પાતળી સ્ટોન વિનિયર (૧૦૬ પેજ)",
     veneerDesc: "૯૮ ફ્લેક્સિબલ અસલી પથ્થર પેટર્ન · સ્લેટ, સેન્ડસ્ટોન, માર્બલ અને લાઇમસ્ટોન",
-    claddingTitle: "નેચરલ સ્ટોન વોલ ક્લેડિંગ (૭૧ પેજ)",
+    claddingTitle: "કુદરતી પાષાણ વોલ ક્લેડિંગ (૭૧ પેજ)",
     claddingDesc: "૨૭૫ સચોટ CNC ૩D રિલીફ, મ્યુરલ્સ અને સ્પ્લિટફેસ લેજર્સ",
-    glassBricksTitle: "આર્કિટેક્ચરલ ગ્લાસ બ્રિક્સ",
-    solidGlass: "સોલિડ ગ્લાસ (૩૪ પેજ)",
-    hollowGlass: "હોલો ગ્લાસ (૪૯ પેજ)",
+    glassBricksTitle: "વાસ્તુશિલ્પીય કાચની ઈંટો",
+    solidGlass: "નક્કર કાચ (૩૪ પેજ)",
+    hollowGlass: "પોલી કાચ (૪૯ પેજ)",
     priceBtn: "કિંમત",
     specsBtn: "વિગતો",
     sqftUnit: "/ ચો.ફૂટ",
@@ -887,12 +900,12 @@ export function WallCladdingCatalog({
                       containIntrinsicSize: idx >= INITIAL_BATCH ? "auto 120px" : undefined,
                     }}
                     className="group relative aspect-square rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer bg-stone-900/95 dark:bg-black border border-border/60 hover:border-amber-500/50 shadow-2xs hover:shadow-md transition-all duration-300 flex items-center justify-center p-1 sm:p-2"
-                    title={transliterateName(item.name, lang)}
+                    title={getCladdingName(item, lang)}
                   >
                     {/* Media Image — Complete uncropped panel with NO zooming on hover */}
                     <img
                       src={item.image}
-                      alt={transliterateName(item.name, lang)}
+                      alt={getCladdingName(item, lang)}
                       loading="lazy"
                       decoding="async"
                       className="h-full w-full object-contain drop-shadow-sm select-none transition-all duration-300"
@@ -910,7 +923,7 @@ export function WallCladdingCatalog({
                     <div className="absolute inset-0 bg-black/65 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-between p-2 text-white z-10">
                       <div className="flex items-center justify-between text-[10px]">
                         <span className="font-semibold truncate max-w-[85%] drop-shadow-xs">
-                          {transliterateName(item.name, lang)}
+                          {getCladdingName(item, lang)}
                         </span>
                         <Eye className="h-3 w-3 shrink-0 opacity-80" />
                       </div>
@@ -1094,7 +1107,7 @@ export function WallCladdingCatalog({
 
                       <div>
                         <DialogTitle className="text-lg font-bold leading-snug">
-                          {transliterateName(lightboxTarget.name, lang)}
+                          {getCladdingName(lightboxTarget, lang)}
                         </DialogTitle>
                         <div className="flex items-baseline gap-1.5 mt-1">
                           <span className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">
@@ -1129,7 +1142,7 @@ export function WallCladdingCatalog({
                         {lang === "hi"
                           ? `प्रीमियम प्राकृतिक ${transliterateName(lightboxTarget.stoneType, lang)} वास्तुशिल्प पैनल। बाहरी एलिवेशन, बाउंड्री फसाड और लक्जरी आंतरिक दीवारों के लिए विशेष रूप से निर्मित।`
                           : lang === "gu"
-                            ? `પ્રીમિયમ કુદરતી ${transliterateName(lightboxTarget.stoneType, lang)} આર્કિટેક્ચરલ પેનલ. બાહ્ય એલિવેશન, બાઉન્ડ્રી ફેસાડ અને લક્ઝરી આંતરિક દિવાલો માટે ખાસ નિર્મિત.`
+                            ? `પ્રીમિયમ કુદરતી ${transliterateName(lightboxTarget.stoneType, lang)} વાસ્તુશિલ્પીય પેનલ. બાહ્ય એલિવેશન, બાઉન્ડ્રી ફેસાડ અને લક્ઝરી આંતરિક દિવાલો માટે ખાસ નિર્મિત.`
                             : `Precision natural ${lightboxTarget.stoneType.toLowerCase()} architectural panel. Engineered for exterior elevations, boundary facades, and luxury interior feature walls.`}
                       </DialogDescription>
 
@@ -1205,9 +1218,9 @@ export function WallCladdingCatalog({
                             onSelectPattern(lightboxTarget, price);
                             toast.success(
                               lang === "hi"
-                                ? `आपके अनुमान के लिए "${transliterateName(lightboxTarget.name, lang)}" चुना गया!`
+                                ? `आपके अनुमान के लिए "${getCladdingName(lightboxTarget, lang)}" चुना गया!`
                                 : lang === "gu"
-                                  ? `તમારા અંદાજ માટે "${transliterateName(lightboxTarget.name, lang)}" પસંદ કરાયું!`
+                                  ? `તમારા અંદાજ માટે "${getCladdingName(lightboxTarget, lang)}" પસંદ કરાયું!`
                                   : `Selected "${lightboxTarget.name}" for your estimate inquiry!`,
                             );
                           }}

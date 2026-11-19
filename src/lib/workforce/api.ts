@@ -332,6 +332,7 @@ export async function deleteEmployee(id: string): Promise<void> {
 export async function getCurrentEmployee(): Promise<Employee | null> {
   const { data: auth } = await supabase.auth.getUser();
   const uid = auth.user?.id;
+  const email = auth.user?.email;
   if (!uid) return null;
   const { data, error } = await supabase
     .from("employees")
@@ -339,7 +340,27 @@ export async function getCurrentEmployee(): Promise<Employee | null> {
     .eq("user_id", uid)
     .maybeSingle();
   if (error) throw new AppError(mapDbError(error));
-  return data ? enrichEmployee(data) : null;
+  if (data) return enrichEmployee(data);
+
+  // Fallback: match by email if user_id is not yet linked (e.g. Vijay Dave)
+  if (email) {
+    const { data: byEmail, error: emailErr } = await supabase
+      .from("employees")
+      .select("*")
+      .ilike("email", email.trim())
+      .maybeSingle();
+    if (!emailErr && byEmail) {
+      // Auto-link user_id in background so subsequent lookups resolve instantly
+      try {
+        await supabase.from("employees").update({ user_id: uid }).eq("id", byEmail.id);
+      } catch {
+        /* ignore link error */
+      }
+      return enrichEmployee({ ...byEmail, user_id: uid });
+    }
+  }
+
+  return null;
 }
 
 // -------------- Designations --------------

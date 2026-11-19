@@ -6,6 +6,21 @@ import type { ChannelNotificationPayload, NotificationChannel } from "./types";
 let channelCreated = false;
 let actionListenerRegistered = false;
 
+function resolveSafeAndroidLink(rawPath?: string | null): string {
+  if (!rawPath || typeof rawPath !== "string") return "/dashboard";
+  let clean = rawPath.trim();
+  if (clean === "/money-flow/customer-payments") clean = "/payments";
+  return clean.startsWith("/") ? clean : `/${clean}`;
+}
+
+export function initAndroidNotifications(): void {
+  if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== "android") {
+    return;
+  }
+  ensureActionListener();
+  void ensureAndroidChannel();
+}
+
 function ensureActionListener(): void {
   if (
     actionListenerRegistered ||
@@ -17,8 +32,14 @@ function ensureActionListener(): void {
   try {
     void LocalNotifications.addListener("localNotificationActionPerformed", (action) => {
       const linkPath = action.notification?.extra?.linkPath;
-      if (linkPath && typeof window !== "undefined") {
-        window.location.href = linkPath;
+      const safePath = resolveSafeAndroidLink(linkPath);
+      if (typeof window !== "undefined") {
+        try {
+          window.history.pushState(null, "", safePath);
+          window.dispatchEvent(new PopStateEvent("popstate"));
+        } catch {
+          window.location.hash = safePath;
+        }
       }
     });
     actionListenerRegistered = true;

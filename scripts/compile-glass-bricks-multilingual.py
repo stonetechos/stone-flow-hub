@@ -55,7 +55,7 @@ def get_chrome_executable():
 def get_hollow_translations(lang):
     if lang == "hi":
         return {
-            "title": "वास्तुकला खोखली कांच की ईंटें",
+            "title": "वास्तुशिल्पीय खोखली कांच की ईंटें",
             "subtitle": "प्रकाश पारगमन, ऊष्मारोधी एवं ध्वनि-नियंत्रण कांच श्रृंखला",
             "edition": "२०२६ – २०२७ मास्टर विनिर्देश कैटलॉग",
             "tagline1": "द्वि-कक्षीय आंशिक वैक्यूम सीलबंद कांच के ब्लॉक्स · ४०–४२ dB ध्वनिरोधक ढाल · U-मान ~१.५ W/m²K",
@@ -87,15 +87,15 @@ def get_hollow_translations(lang):
             "label_pack": "पैकिंग",
             "label_trans": "प्रकाश पारगम्यता",
             "label_uval": "ऊष्मारोधक U-मान",
-            "type_desc": "वास्तुकला खोखली कांच की ईंट",
+            "type_desc": "वास्तुशिल्पीय खोखली कांच की ईंट",
         }
     elif lang == "gu":
         return {
-            "title": "આર્કિટેક્ચરલ પોલી કાચની ઈંટો",
+            "title": "વાસ્તુશિલ્પીય પોલી કાચની ઈંટો",
             "subtitle": "પ્રકાશ સંચરણ, ઉષ્મારોધક અને ધ્વનિ-નિયંત્રણ કાચ શ્રેણી",
             "edition": "૨૦૨૬ – ૨૦૨૭ માસ્ટર સ્પેસિફિકેશન કેટલોગ",
             "tagline1": "ડબલ-કેવિટી આંશિક વેક્યુમ સીલબંધ કાચના બ્લોક્સ · ૪૦–૪૨ dB અવાજ નિયંત્રણ · U-વેલ્યુ ~૧.૫ W/m²K",
-            "tagline2": "સમુદ્રી તરંગ, રિબ્ડ, પ્રિઝ્મેટિક અને રંગીન કાચની પ્રીમિયમ આર્કિટેક્ચરલ સિસ્ટમ્સ",
+            "tagline2": "સમુદ્રી તરંગ, રિબ્ડ, પ્રિઝ્મેટિક અને રંગીન કાચની પ્રીમિયમ વાસ્તુશિલ્પીય સિસ્ટમ્સ",
             "division": "પોલી કાચની ઈંટો ડિવિઝન",
             "p1_num": "૦૧. ઉષ્મારોધક કોર",
             "p1_head": "વેક્યુમ ઇન્સ્યુલેશન",
@@ -123,7 +123,7 @@ def get_hollow_translations(lang):
             "label_pack": "પેકિંગ",
             "label_trans": "પ્રકાશ પારગમ્યતા",
             "label_uval": "ઉષ્મારોધક U-વેલ્યુ",
-            "type_desc": "આર્કિટેક્ચરલ પોલી કાચની ઈંટ",
+            "type_desc": "વાસ્તુશિલ્પીય પોલી કાચની ઈંટ",
         }
     return {
         "title": "ARCHITECTURAL HOLLOW GLASS BRICKS",
@@ -168,6 +168,7 @@ def generate_hollow_html(lang="en"):
     parts = []
     T = get_hollow_translations(lang)
 
+    brand_text = "STONE TECH ATELIER" if lang == "en" else "स्टोन टेक एटेलियर" if lang == "hi" else "સ્ટોન ટેક એટેલિયર"
     doc_title = f"Stone Tech Atelier — {T['title']} {T['edition']}"
 
     parts.append(f"""<!DOCTYPE html>
@@ -192,8 +193,8 @@ def generate_hollow_html(lang="en"):
       <div class="cover-medallion">
         <img src="file://{hgb.EMBLEM_PATH}">
       </div>
-      <div class="cover-brand">STONE TECH ATELIER</div>
-      <div class="cover-atelier">{T['division']} · SYSTEM ENGINEERED IN INDIA</div>
+      <div class="cover-brand">{brand_text}</div>
+      <div class="cover-atelier">{T['division']} · {"SYSTEM ENGINEERED IN INDIA" if lang == "en" else "भारत में सिस्टम इंजीनियर्ड" if lang == "hi" else "ભારતમાં સિસ્ટમ એન્જિનિયર્ડ"}</div>
       <div class="cover-line"></div>
     </div>
     
@@ -230,7 +231,7 @@ def generate_hollow_html(lang="en"):
     
     <div class="cover-footer">
       <div>FACTORY & ATELIER: <strong>STONE TECH PRIVATE LIMITED</strong> · AHMEDABAD, GUJARAT, INDIA</div>
-      <div>DIRECT SALES & ARCHITECTURAL ORDERS: <strong>+91 77420 90866 / +91 97844 52998</strong> · <strong>WWW.STONETECH.IN</strong></div>
+      <div>DIRECT SALES & ARCHITECTURAL ORDERS: <strong>+91 97844 52998 / +91 77420 90866</strong> · <strong>WWW.STONETECH.IN</strong></div>
       <div>DISPATCH: <strong>MUNDRA / JNPT PORTS</strong></div>
     </div>
   </div>
@@ -252,7 +253,7 @@ def generate_hollow_html(lang="en"):
         </div>
       </div>
       <div class="prod-header-right" style="color:#94a3b8;">
-        DIRECT FACTORY ORDERS: <strong style="color:#fbbf24;">+91 77420 90866 / +91 97844 52998</strong> · <strong style="color:#38bdf8;">WWW.STONETECH.IN</strong>
+        DIRECT FACTORY ORDERS: <strong style="color:#fbbf24;">+91 97844 52998 / +91 77420 90866</strong> · <strong style="color:#38bdf8;">WWW.STONETECH.IN</strong>
       </div>
     </div>
 
@@ -283,7 +284,7 @@ def generate_hollow_html(lang="en"):
     <div class="prod-footer" style="border-color:#334155;color:#94a3b8;">
       <div class="prod-footer-brand"><strong>STONE TECH ATELIER</strong> · ARCHITECTURAL SPECIFICATION CATALOGUE 2026-2027</div>
       <div class="prod-footer-page" style="color:#fbbf24;">{COMMON_I18N['page_x_of_y'][lang](2, total_pages, lang)}</div>
-      <div class="prod-footer-addr">AHMEDABAD EXPERIENCE CENTER · DIRECT ENQUIRIES: +91 77420 90866 / +91 97844 52998</div>
+      <div class="prod-footer-addr">AHMEDABAD EXPERIENCE CENTER · DIRECT ENQUIRIES: +91 97844 52998 / +91 77420 90866</div>
     </div>
   </div>
 </div>
@@ -311,7 +312,7 @@ def generate_hollow_html(lang="en"):
       </div>
     </div>
     <div class="prod-header-right">
-      TECHNICAL ASSISTANCE: <strong>+91 77420 90866 / +91 97844 52998</strong> · <strong>WWW.STONETECH.IN</strong>
+      TECHNICAL ASSISTANCE: <strong>+91 97844 52998 / +91 77420 90866</strong> · <strong>WWW.STONETECH.IN</strong>
     </div>
   </div>
 
@@ -373,7 +374,7 @@ def generate_hollow_html(lang="en"):
   <div class="prod-footer">
     <div class="prod-footer-brand"><strong>STONE TECH ATELIER</strong> · ARCHITECTURAL SPECIFICATION CATALOGUE 2026-2027</div>
     <div class="prod-footer-page">{COMMON_I18N['page_x_of_y'][lang](curr_page, total_pages, lang)}</div>
-    <div class="prod-footer-addr">AHMEDABAD EXPERIENCE CENTER · DIRECT ENQUIRIES: +91 77420 90866 / +91 97844 52998</div>
+    <div class="prod-footer-addr">AHMEDABAD EXPERIENCE CENTER · DIRECT ENQUIRIES: +91 97844 52998 / +91 77420 90866</div>
   </div>
 </div>
 """)
@@ -405,7 +406,7 @@ def generate_hollow_html(lang="en"):
         <div style="background:#1e293b;border:1px solid #334155;border-radius:2mm;padding:3mm;">
           <strong style="color:#ffffff;">STONE TECH ATELIER · EXPERIENCE CENTER</strong><br>
           {studio_addr}<br>
-          <strong>Hotline:</strong> +91 77420 90866 / +91 97844 52998<br>
+          <strong>Hotline:</strong> +91 97844 52998 / +91 77420 90866<br>
           <strong>Email:</strong> info@stonetech.in · <strong>Website:</strong> www.stonetech.in
         </div>
         <div style="background:#1e293b;border:1px solid #334155;border-radius:2mm;padding:3mm;">
@@ -418,9 +419,9 @@ def generate_hollow_html(lang="en"):
     </div>
 
     <div class="prod-footer" style="border-color:#334155;color:#94a3b8;">
-      <div class="prod-footer-brand"><strong>STONE TECH ATELIER</strong> · ARCHITECTURAL SPECIFICATION CATALOGUE 2026-2027</div>
+      <div class="prod-footer-brand"><strong>{brand_text}</strong> · {"ARCHITECTURAL SPECIFICATION CATALOGUE 2026-2027" if lang == "en" else "वास्तुशिल्पीय विनिर्देश कैटलॉग २०२६-२०२७" if lang == "hi" else "વાસ્તુશિલ્પીય વિશિષ્ટતા કેટલોગ ૨૦૨૬-૨૦૨૭"}</div>
       <div class="prod-footer-page" style="color:#fbbf24;">{COMMON_I18N['page_x_of_y'][lang](curr_page, total_pages, lang)}</div>
-      <div class="prod-footer-addr">AHMEDABAD EXPERIENCE CENTER · DIRECT ENQUIRIES: +91 77420 90866 / +91 97844 52998</div>
+      <div class="prod-footer-addr">{"AHMEDABAD EXPERIENCE CENTER · DIRECT ENQUIRIES: +91 97844 52998 / +91 77420 90866" if lang == "en" else "अहमदाबाद एक्सपीरियंस सेंटर · प्रत्यक्ष फैक्टरी पूछताछ: +91 97844 52998 / +91 77420 90866" if lang == "hi" else "અમદાવાદ એક્સપિરિયન્સ સેન્ટર · સીધી ફેક્ટરી પૂછપરછ: +91 97844 52998 / +91 77420 90866"}</div>
     </div>
   </div>
 </div>
@@ -471,6 +472,18 @@ def build_hollow_pdf(lang="en"):
         master_2026 = os.path.join(REPO_DIR, "public/catalogues/StoneTech_Glass_Bricks_Catalogue_2026.pdf")
         shutil.copyfile(out_path, master_2026)
         print("Mirrored to master default: StoneTech_Glass_Bricks_Catalogue_2026.pdf")
+        user_dl_master = os.path.expanduser("~/Downloads/StoneTech_Glass_Bricks_Catalogue_2026.pdf")
+        try:
+            shutil.copyfile(out_path, user_dl_master)
+        except Exception:
+            pass
+
+    user_dl = os.path.expanduser(f"~/Downloads/{out_name}")
+    try:
+        shutil.copyfile(out_path, user_dl)
+        print(f"Mirrored to user downloads: {user_dl}")
+    except Exception as e:
+        print(f"Warning mirroring to downloads: {e}")
 
     return out_path
 
@@ -492,7 +505,7 @@ def build_solid_pdf(lang="en"):
     if lang == "hi":
         html_content = html_content.replace(
             "ARCHITECTURAL SOLID GLASS BRICKS",
-            "वास्तुकला ठोस कांच की ईंटें"
+            "वास्तुशिल्पीय ठोस कांच की ईंटें"
         ).replace(
             "OPTICAL CLARITY & HIGH LOAD-BEARING SERIES",
             "ऑप्टिकल शुद्धता, उच्च दबाव क्षमता एवं अग्नि-प्रतिरोधी ठोस कांच श्रृंखला"
@@ -554,7 +567,7 @@ def build_solid_pdf(lang="en"):
     elif lang == "gu":
         html_content = html_content.replace(
             "ARCHITECTURAL SOLID GLASS BRICKS",
-            "આર્કિટેક્ચરલ નક્કર કાચની ઈંટો"
+            "વાસ્તુશિલ્પીય નક્કર કાચની ઈંટો"
         ).replace(
             "OPTICAL CLARITY & HIGH LOAD-BEARING SERIES",
             "ઓપ્ટિકલ શુદ્ધતા, ઉચ્ચ દબાણ ક્ષમતા અને અગ્નિ-પ્રતિરોધક નક્કર કાચ શ્રેણી"
@@ -617,6 +630,16 @@ def build_solid_pdf(lang="en"):
     # Correct phone numbers
     html_content = html_content.replace("+91 97844 52118", "+91 97844 52998")
     html_content = html_content.replace("+919784452118", "+91 97844 52998")
+    html_content = html_content.replace("+91 97844 52998 / +91 77420 90866", "+91 97844 52998 / +91 77420 90866")
+    html_content = html_content.replace("+91 97844 52998 / +91 77420 90866", "+91 97844 52998 / +91 77420 90866")
+    if lang == "hi":
+        html_content = html_content.replace("DIRECT FACTORY ENQUIRIES", "प्रत्यक्ष फैक्टरी पूछताछ")
+        html_content = html_content.replace("DIRECT ENQUIRIES", "प्रत्यक्ष पूछताछ")
+        html_content = html_content.replace("FACTORY DIRECT ORDERS", "प्रत्यक्ष फैक्टरी ऑर्डर")
+    elif lang == "gu":
+        html_content = html_content.replace("DIRECT FACTORY ENQUIRIES", "સીધી ફેક્ટરી પૂછપરછ")
+        html_content = html_content.replace("DIRECT ENQUIRIES", "સીધી પૂછપરછ")
+        html_content = html_content.replace("FACTORY DIRECT ORDERS", "સીધા ફેક્ટરી ઓર્ડર")
 
     html_file = f"/tmp/solid_glass_{lang}.html"
     with open(html_file, "w", encoding="utf-8") as f:
@@ -650,6 +673,18 @@ def build_solid_pdf(lang="en"):
         master_2026 = os.path.join(REPO_DIR, "public/catalogues/StoneTech_Solid_Glass_Bricks_Catalogue_2026.pdf")
         shutil.copyfile(out_path, master_2026)
         print("Mirrored to master default: StoneTech_Solid_Glass_Bricks_Catalogue_2026.pdf")
+        user_dl_master = os.path.expanduser("~/Downloads/StoneTech_Solid_Glass_Bricks_Catalogue_2026.pdf")
+        try:
+            shutil.copyfile(out_path, user_dl_master)
+        except Exception:
+            pass
+
+    user_dl = os.path.expanduser(f"~/Downloads/{out_name}")
+    try:
+        shutil.copyfile(out_path, user_dl)
+        print(f"Mirrored to user downloads: {user_dl}")
+    except Exception as e:
+        print(f"Warning mirroring to downloads: {e}")
 
     return out_path
 

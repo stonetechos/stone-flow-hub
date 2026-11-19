@@ -60,6 +60,8 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import rawGlassData from "@/data/glass-bricks-catalog.json";
+import { CATALOG_ITEMS_BY_CODE } from "@/lib/i18n/catalogue-items-i18n";
+import { toIndicDigits } from "@/lib/format";
 
 export interface GlassBrickItem {
   id: string;
@@ -137,16 +139,16 @@ const TEXTS = {
     resetFilters: "Reset Filters",
   },
   hi: {
-    heading: "आर्किटेक्चरल ग्लास ब्रिक्स एवं क्रिस्टल चिनाई",
+    heading: "वास्तुशिल्पीय कांच की ईंटें एवं क्रिस्टल चिनाई",
     patternsCount: "पैटर्न्स",
     allSeries: "सभी सीरीज़",
-    hollowSeries: "हॉलो ग्लास ब्रिक्स (३८)",
-    solidSeries: "सॉलिड क्रिस्टल ब्रिक्स (२९)",
+    hollowSeries: "खोखली कांच की ईंटें (३८)",
+    solidSeries: "ठोस क्रिस्टल कांच ईंटें (२९)",
     searchPlaceholder: "६७ ग्लास ब्रिक्स पैटर्न्स, माप या विशेषताएं खोजें...",
     cataloguesBtn: "कैटलॉग डाउनलोड (PDF)",
     downloadPdf: "आधिकारिक कैटलॉग डाउनलोड करें",
-    solidPdf: "सॉलिड क्रिस्टल ब्रिक्स (३६ पेज)",
-    hollowPdf: "हॉलो ग्लास ब्रिक्स (४७ पेज)",
+    solidPdf: "ठोस क्रिस्टल कांच ईंटें (३६ पेज)",
+    hollowPdf: "खोखली कांच की ईंटें (४७ पेज)",
     sortBy: "क्रमबद्ध करें",
     sortDefault: "डिफ़ॉल्ट क्रम",
     sortName: "नाम (A–Z)",
@@ -172,16 +174,16 @@ const TEXTS = {
     resetFilters: "फ़िल्टर रीसेट करें",
   },
   gu: {
-    heading: "આર્કિટેક્ચરલ ગ્લાસ બ્રિક્સ અને ક્રિસ્ટલ મેસનરી",
+    heading: "વાસ્તુશિલ્પીય કાચની ઈંટો અને ક્રિસ્ટલ ચણતર",
     patternsCount: "પેટર્ન",
     allSeries: "બધી સિરીઝ",
-    hollowSeries: "હોલો ગ્લાસ બ્રિક્સ (૩૮)",
-    solidSeries: "સોલિડ ક્રિસ્ટલ બ્રિક્સ (૨૯)",
+    hollowSeries: "પોલી કાચની ઈંટો (૩૮)",
+    solidSeries: "નક્કર ક્રિસ્ટલ કાચ ઈંટો (૨૯)",
     searchPlaceholder: "૬૭ ગ્લાસ બ્રિક્સ પેટર્ન, માપ અથવા વિશેષતાઓ શોધો...",
     cataloguesBtn: "કેટલોગ ડાઉનલોડ (PDF)",
     downloadPdf: "સત્તાવાર કેટલોગ ડાઉનલોડ કરો",
-    solidPdf: "સોલિડ ક્રિસ્ટલ બ્રિક્સ (૩૬ પેજ)",
-    hollowPdf: "હોલો ગ્લાસ બ્રિક્સ (૪૭ પેજ)",
+    solidPdf: "નક્કર ક્રિસ્ટલ કાચ ઈંટો (૩૬ પેજ)",
+    hollowPdf: "પોલી કાચની ઈંટો (૪૭ પેજ)",
     sortBy: "ક્રમબદ્ધ કરો",
     sortDefault: "ડિફૉલ્ટ ક્રમ",
     sortName: "નામ (A–Z)",
@@ -232,14 +234,23 @@ export function GlassBricksCatalog({
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
+  const getBrickName = (item: GlassBrickItem) => {
+    if (lang !== "en" && CATALOG_ITEMS_BY_CODE[item.code]?.name?.[lang]) {
+      return CATALOG_ITEMS_BY_CODE[item.code].name[lang];
+    }
+    return item.name;
+  };
+
   // Filtered & Sorted items
   const filteredItems = useMemo(() => {
     const q = search.trim().toLowerCase();
     const items = GLASS_PRODUCTS.filter((item) => {
       if (selectedSeries !== "all" && item.series !== selectedSeries) return false;
       if (!q) return true;
+      const localizedName = getBrickName(item).toLowerCase();
       return (
         item.name.toLowerCase().includes(q) ||
+        localizedName.includes(q) ||
         item.code.toLowerCase().includes(q) ||
         item.type.toLowerCase().includes(q) ||
         item.collection.toLowerCase().includes(q) ||
@@ -508,7 +519,17 @@ export function GlassBricksCatalog({
                 {/* Top Badge: Series Tag */}
                 <div className="absolute top-2 left-2 z-10 flex items-center gap-1">
                   <Badge className="bg-black/75 hover:bg-black/90 backdrop-blur-md text-[10px] text-cyan-300 border-white/20 font-semibold px-2 py-0.5">
-                    {item.series === "Solid Glass Bricks" ? "Solid Crystal" : "Hollow Block"}
+                    {item.series === "Solid Glass Bricks"
+                      ? lang === "gu"
+                        ? "નક્કર કાચ"
+                        : lang === "hi"
+                          ? "ठोस कांच"
+                          : "Solid Crystal"
+                      : lang === "gu"
+                        ? "પોલી કાચ"
+                        : lang === "hi"
+                          ? "खोखली कांच"
+                          : "Hollow Block"}
                   </Badge>
                 </div>
 
@@ -517,15 +538,15 @@ export function GlassBricksCatalog({
                   <div className="flex items-start justify-between gap-1">
                     <div className="min-w-0">
                       <p className="text-xs sm:text-sm font-bold truncate text-white">
-                        {item.name}
+                        {getBrickName(item)}
                       </p>
                       <p className="text-[10px] text-cyan-200 truncate font-mono">
-                        {item.code} · {item.standardSizes}
+                        {item.code} · {toIndicDigits(item.standardSizes, lang)}
                       </p>
                     </div>
                     <div className="shrink-0 text-right">
                       <p className="text-xs font-black text-cyan-300">
-                        ₹{item.price}/{item.unit}
+                        ₹{toIndicDigits(String(item.price), lang)}/{item.unit}
                       </p>
                     </div>
                   </div>
@@ -677,7 +698,7 @@ export function GlassBricksCatalog({
                       </Badge>
                     </div>
                     <DialogTitle className="text-xl sm:text-2xl font-black text-foreground">
-                      {lightboxTarget.name}
+                      {getBrickName(lightboxTarget)}
                     </DialogTitle>
                     <DialogDescription className="text-xs text-muted-foreground mt-1">
                       {lightboxTarget.desc}

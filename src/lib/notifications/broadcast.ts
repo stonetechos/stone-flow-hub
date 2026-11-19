@@ -269,7 +269,7 @@ export function notifyAdminPaymentReceived(payment: {
     title: "Payment Received",
     body: `Received ${formatInr(payment.amount)} in ${methodLabel}${customerPart}${invoicePart}.`,
     entityType: "receipt",
-    linkPath: "/money-flow/customer-payments",
+    linkPath: "/payments",
     targetRole: "all",
   });
 }

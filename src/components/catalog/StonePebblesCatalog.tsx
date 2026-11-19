@@ -64,6 +64,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import rawCatalogData from "@/data/stone-pebbles-catalog.json";
+import { CATALOG_ITEMS_BY_CODE } from "@/lib/i18n/catalogue-items-i18n";
 
 export interface StonePebbleItem {
   id: string;
@@ -130,7 +131,7 @@ const TEXTS = {
     resetFilters: "Reset Filters",
   },
   hi: {
-    heading: "प्राकृतिक स्टोन पेबल्स एवं सेमी-प्रेशियस एग्रीगेट्स",
+    heading: "प्राकृतिक पाषाण कंकड़ (पेबल्स) एवं अर्ध-कीमती खनिज संग्रह",
     subheading:
       "७५ चयनित प्राकृतिक नदी पत्थर, पारभासी गोमेद, कीमती अकीक, विशाल बोल्डर एवं माइक्रो-चिप्स।",
     patternsCount: "प्रकार",
@@ -162,9 +163,9 @@ const TEXTS = {
     resetFilters: "फ़िल्टर रीसेट करें",
   },
   gu: {
-    heading: "કુદરતી સ્ટોન પેબલ્સ અને સેમી-પ્રેશિયસ એગ્રીગેટ્સ",
+    heading: "કુદરતી પથ્થરના કાંકરા (પેબલ્સ) અને અર્ધ-કિંમતી ખનિજ સંગ્રહ",
     subheading:
-      "૭૫ પસંદ કરેલા નદીના પથ્થરો, ઓનિક્સ, અકીક, વિશાળ પથ્થરો અને આર્કિટેક્ચરલ માઇક્રો-ચિપ્સ.",
+      "૭૫ પસંદ કરેલા નદીના કાંકરા, ઓનિક્સ, અકીક, વિશાળ બોલ્ડર્સ અને વાસ્તુશિલ્પીય માઇક્રો-ચિપ્સ.",
     patternsCount: "પ્રકારો",
     allCategories: "બધા સંગ્રહ (૭૫)",
     searchPlaceholder: "૭૫ સ્ટોન પેબલ્સ, રોઝ ક્વાર્ટ્ઝ, ઓનિક્સ, રિવર બ્લેક શોધો...",
@@ -215,10 +216,24 @@ export function StonePebblesCatalog({
 
   const loaderRef = useRef<HTMLDivElement>(null);
 
+  // Localized items
+  const localizedItems = useMemo(() => {
+    return PEBBLES_DATA.map((p) => {
+      const loc = lang !== "en" ? CATALOG_ITEMS_BY_CODE[p.code] : undefined;
+      const localizedName = (lang !== "en" && loc?.name?.[lang]) || p.name;
+      const localizedCat = (lang !== "en" && loc?.category?.[lang]) || p.category;
+      return {
+        ...p,
+        name: localizedName,
+        category: localizedCat,
+      };
+    });
+  }, [lang]);
+
   // Derive dynamic category pills with counts
   const categoriesList = useMemo(() => {
     const map = new Map<string, number>();
-    for (const item of PEBBLES_DATA) {
+    for (const item of localizedItems) {
       map.set(item.category, (map.get(item.category) || 0) + 1);
     }
     return Array.from(map.entries()).map(([cat, count]) => ({
@@ -226,11 +241,11 @@ export function StonePebblesCatalog({
       label: `${cat} (${count})`,
       count,
     }));
-  }, []);
+  }, [localizedItems]);
 
   // Filter and sort items
   const filteredItems = useMemo(() => {
-    const result = PEBBLES_DATA.filter((item) => {
+    const result = localizedItems.filter((item) => {
       if (selectedCategory !== "all" && item.category !== selectedCategory) {
         return false;
       }
@@ -260,7 +275,7 @@ export function StonePebblesCatalog({
     }
 
     return result;
-  }, [selectedCategory, search, sortBy]);
+  }, [selectedCategory, search, sortBy, localizedItems]);
 
   const displayedItems = useMemo(() => {
     return filteredItems.slice(0, visibleCount);

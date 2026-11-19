@@ -13,7 +13,7 @@ import { AppError, mapDbError } from "@/lib/errors";
 import { type ProjectCostingDiary } from "@/lib/projects/costing-diary";
 
 export interface SalespersonScorecard {
-  key: "rishi" | "raman" | "unassigned";
+  key: "vijay" | "rishi" | "raman" | "unassigned";
   name: string;
   avatarColor: string;
   dealsCount: number;
@@ -47,7 +47,7 @@ export interface CompanyProfitabilityOverview {
     projectId: string;
     projectName: string;
     customerName: string;
-    salesperson: "rishi" | "raman" | "unassigned";
+    salesperson: "vijay" | "rishi" | "raman" | "unassigned";
     quotedValue: number;
     invoicedValue: number;
     moneyCollected: number;
@@ -60,9 +60,14 @@ export interface CompanyProfitabilityOverview {
 }
 
 export const SALESPEOPLE_CONFIG = {
+  vijay: {
+    name: "Vijay Dave",
+    avatarColor: "bg-teal-600 text-white",
+    defaultTarget: 50_00_000, // ₹50 Lakhs Sales Target for this financial year through marketing
+  },
   rishi: {
     name: "Rishi Rai",
-    avatarColor: "bg-teal-600 text-white",
+    avatarColor: "bg-emerald-600 text-white",
     defaultTarget: 25_00_000, // ₹25 Lakhs
   },
   raman: {
@@ -80,6 +85,7 @@ export const SALESPEOPLE_CONFIG = {
 export async function getCompanyProfitabilityAndTargets(customTargets?: {
   rishi?: number;
   raman?: number;
+  vijay?: number;
 }): Promise<CompanyProfitabilityOverview> {
   const db = getDb();
 
@@ -123,11 +129,12 @@ export async function getCompanyProfitabilityAndTargets(customTargets?: {
 
   const rishiTarget = customTargets?.rishi ?? SALESPEOPLE_CONFIG.rishi.defaultTarget;
   const ramanTarget = customTargets?.raman ?? SALESPEOPLE_CONFIG.raman.defaultTarget;
+  const vijayTarget = customTargets?.vijay ?? SALESPEOPLE_CONFIG.vijay.defaultTarget;
   const companyTargetProfit = rishiTarget + ramanTarget;
 
   // Initialize aggregators
   const scorecardMap: Record<
-    "rishi" | "raman" | "unassigned",
+    "vijay" | "rishi" | "raman" | "unassigned",
     {
       dealsCount: number;
       invoicedRevenue: number;
@@ -139,6 +146,16 @@ export async function getCompanyProfitabilityAndTargets(customTargets?: {
       potentialProfit: number;
     }
   > = {
+    vijay: {
+      dealsCount: 0,
+      invoicedRevenue: 0,
+      moneyCollected: 0,
+      totalCosts: 0,
+      netProfit: 0,
+      totalSqft: 0,
+      activeQuotesCount: 0,
+      potentialProfit: 0,
+    },
     rishi: {
       dealsCount: 0,
       invoicedRevenue: 0,
@@ -194,8 +211,9 @@ export async function getCompanyProfitabilityAndTargets(customTargets?: {
         "",
     ).toLowerCase();
 
-    let spKey: "rishi" | "raman" | "unassigned" = "unassigned";
-    if (rawSp.includes("rishi")) spKey = "rishi";
+    let spKey: "vijay" | "rishi" | "raman" | "unassigned" = "unassigned";
+    if (rawSp.includes("vijay")) spKey = "vijay";
+    else if (rawSp.includes("rishi")) spKey = "rishi";
     else if (rawSp.includes("raman")) spKey = "raman";
 
     // Quotes for this project (exclude declined or expired quotes)
@@ -281,61 +299,68 @@ export async function getCompanyProfitabilityAndTargets(customTargets?: {
   }
 
   // Compile final scorecards
-  const salespeople: SalespersonScorecard[] = (["rishi", "raman", "unassigned"] as const).map(
-    (key) => {
-      const data = scorecardMap[key];
-      const target = key === "rishi" ? rishiTarget : key === "raman" ? ramanTarget : 0;
-
-      const marginPct =
-        data.moneyCollected > 0
-          ? (data.netProfit / data.moneyCollected) * 100
-          : data.invoicedRevenue > 0
-            ? (data.netProfit / data.invoicedRevenue) * 100
+  const salespeople: SalespersonScorecard[] = (
+    ["vijay", "rishi", "raman", "unassigned"] as const
+  ).map((key) => {
+    const data = scorecardMap[key];
+    const target =
+      key === "vijay"
+        ? vijayTarget
+        : key === "rishi"
+          ? rishiTarget
+          : key === "raman"
+            ? ramanTarget
             : 0;
 
-      const avgProfitPerDeal = data.dealsCount > 0 ? data.netProfit / data.dealsCount : 50_000;
-      const avgDealSqft = data.dealsCount > 0 ? Math.round(data.totalSqft / data.dealsCount) : 450;
+    const marginPct =
+      data.moneyCollected > 0
+        ? (data.netProfit / data.moneyCollected) * 100
+        : data.invoicedRevenue > 0
+          ? (data.netProfit / data.invoicedRevenue) * 100
+          : 0;
 
-      const targetGap = Math.max(0, target - data.netProfit);
-      const targetProgressPct = target > 0 ? Math.min(100, (data.netProfit / target) * 100) : 0;
+    const avgProfitPerDeal = data.dealsCount > 0 ? data.netProfit / data.dealsCount : 50_000;
+    const avgDealSqft = data.dealsCount > 0 ? Math.round(data.totalSqft / data.dealsCount) : 450;
 
-      // Generate Smart Coaching Suggestion
-      let coachingSuggestion = "";
-      if (key !== "unassigned") {
-        if (targetGap === 0) {
-          coachingSuggestion = `🎉 Congratulations! Target of ₹${(target / 100000).toFixed(1)} Lakhs achieved with ₹${Math.round(data.netProfit - target).toLocaleString("en-IN")} surplus profit! Keep up the momentum on high-margin natural stone orders.`;
-        } else {
-          const effectiveAvgProfit = Math.max(25_000, avgProfitPerDeal);
-          const dealsNeeded = Math.ceil(targetGap / effectiveAvgProfit);
-          const totalSqftNeeded = Math.round(dealsNeeded * avgDealSqft);
-          const weeklyDeals = Math.max(1, Math.ceil(dealsNeeded / 4));
-          const weeklySqft = Math.round(totalSqftNeeded / 4);
+    const targetGap = Math.max(0, target - data.netProfit);
+    const targetProgressPct = target > 0 ? Math.min(100, (data.netProfit / target) * 100) : 0;
 
-          coachingSuggestion = `💡 Based on your average profit of ₹${Math.round(effectiveAvgProfit).toLocaleString("en-IN")} per deal: To bridge the remaining ₹${Math.round(targetGap).toLocaleString("en-IN")} gap to your ₹${(target / 100000).toFixed(0)}L target, you need approximately ${dealsNeeded} more closed client deals (~${weeklyDeals} deals/week) amounting to ${totalSqftNeeded.toLocaleString("en-IN")} sq.ft (~${weeklySqft.toLocaleString("en-IN")} sq.ft/week). Focus on following up your ${data.activeQuotesCount} pending quotes.`;
-        }
+    // Generate Smart Coaching Suggestion
+    let coachingSuggestion = "";
+    if (key !== "unassigned") {
+      if (targetGap === 0) {
+        coachingSuggestion = `🎉 Congratulations! Target of ₹${(target / 100000).toFixed(1)} Lakhs achieved with ₹${Math.round(data.netProfit - target).toLocaleString("en-IN")} surplus profit! Keep up the momentum on high-margin natural stone orders.`;
+      } else {
+        const effectiveAvgProfit = Math.max(25_000, avgProfitPerDeal);
+        const dealsNeeded = Math.ceil(targetGap / effectiveAvgProfit);
+        const totalSqftNeeded = Math.round(dealsNeeded * avgDealSqft);
+        const weeklyDeals = Math.max(1, Math.ceil(dealsNeeded / 4));
+        const weeklySqft = Math.round(totalSqftNeeded / 4);
+
+        coachingSuggestion = `💡 Based on your average profit of ₹${Math.round(effectiveAvgProfit).toLocaleString("en-IN")} per deal: To bridge the remaining ₹${Math.round(targetGap).toLocaleString("en-IN")} gap to your ₹${(target / 100000).toFixed(0)}L target, you need approximately ${dealsNeeded} more closed client deals (~${weeklyDeals} deals/week) amounting to ${totalSqftNeeded.toLocaleString("en-IN")} sq.ft (~${weeklySqft.toLocaleString("en-IN")} sq.ft/week). Focus on following up your ${data.activeQuotesCount} pending quotes.`;
       }
+    }
 
-      return {
-        key,
-        name: SALESPEOPLE_CONFIG[key].name,
-        avatarColor: SALESPEOPLE_CONFIG[key].avatarColor,
-        dealsCount: data.dealsCount,
-        invoicedRevenue: data.invoicedRevenue,
-        moneyCollected: data.moneyCollected,
-        totalCosts: data.totalCosts,
-        netProfit: data.netProfit,
-        profitMarginPct: marginPct,
-        avgProfitPerDeal,
-        avgDealSqft,
-        targetProfit: target,
-        targetProgressPct,
-        targetGap,
-        coachingSuggestion,
-        activeCrmQuotesCount: data.activeQuotesCount,
-        pipelinePotentialProfit: data.potentialProfit,
-      };
-    },
-  );
+    return {
+      key,
+      name: SALESPEOPLE_CONFIG[key].name,
+      avatarColor: SALESPEOPLE_CONFIG[key].avatarColor,
+      dealsCount: data.dealsCount,
+      invoicedRevenue: data.invoicedRevenue,
+      moneyCollected: data.moneyCollected,
+      totalCosts: data.totalCosts,
+      netProfit: data.netProfit,
+      profitMarginPct: marginPct,
+      avgProfitPerDeal,
+      avgDealSqft,
+      targetProfit: target,
+      targetProgressPct,
+      targetGap,
+      coachingSuggestion,
+      activeCrmQuotesCount: data.activeQuotesCount,
+      pipelinePotentialProfit: data.potentialProfit,
+    };
+  });
 
   const totalDeals = salespeople.reduce((s, sp) => s + sp.dealsCount, 0);
   const totalInvoiced = salespeople.reduce((s, sp) => s + sp.invoicedRevenue, 0);

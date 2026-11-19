@@ -60,6 +60,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import rawClayData from "@/data/flexible-clay-catalog.json";
+import { CATALOG_ITEMS_BY_CODE } from "@/lib/i18n/catalogue-items-i18n";
 
 export interface FlexibleClayItem {
   id: string;
@@ -68,7 +69,7 @@ export interface FlexibleClayItem {
   name: string;
   rawName: string;
   slug: string;
-  series: "Architectural 3D Textures" | "Punch Traventino Series" | "Punch Slat Series";
+  series: "Architectural 3D Textures" | "Punch Traventino Series" | "Punch Slat Series" | string;
   category: string;
   profile: string;
   image: string;
@@ -131,12 +132,12 @@ const TEXTS = {
     resetFilters: "Reset Filters",
   },
   hi: {
-    heading: "फ्लेक्सिबल क्ले विनियर एवं ३D आर्किटेक्चरल टेक्सचर्स",
+    heading: "अत्यंत पतली लचीली क्ले विनियर एवं ३D वास्तुशिल्पीय टेक्सचर्स",
     patternsCount: "पैटर्न्स",
     allSeries: "सभी संग्रह",
-    texturesSeries: "३D आर्किटेक्चरल टेक्सचर्स (१८)",
-    traventinoSeries: "पंच ट्रावेन्टिनो स्लैब्स (१०)",
-    slatSeries: "पंच स्लैट स्लैब्स (१२)",
+    texturesSeries: "३D वास्तुशिल्पीय टेक्सचर्स (१८)",
+    traventinoSeries: "पंच ट्रावरटाइन स्लैब्स (१०)",
+    slatSeries: "पंच स्लेट स्लैब्स (१२)",
     searchPlaceholder: "४० फ्लेक्सिबल क्ले पैटर्न्स, फ्लूटेड, ट्रावेन्टिनो खोजें...",
     cataloguesBtn: "कैटलॉग डाउनलोड (PDF)",
     downloadPdf: "मास्टर कैटलॉग डाउनलोड करें",
@@ -165,11 +166,11 @@ const TEXTS = {
     resetFilters: "फ़िल्टर रीसेट करें",
   },
   gu: {
-    heading: "ફ્લેક્સિબલ ક્લે વિનિયર અને ૩D આર્કિટેક્ચરલ ટેક્સચર",
+    heading: "અત્યંત પાતળી લચીલી ક્લે વિનિયર અને ૩D વાસ્તુશિલ્પીય ટેક્સચર",
     patternsCount: "પેટર્ન",
     allSeries: "બધા સંગ્રહ",
-    texturesSeries: "૩D આર્કિટેક્ચરલ ટેક્સચર (૧૮)",
-    traventinoSeries: "પંચ ત્રાવેન્ટિનો સ્લેબ્સ (૧૦)",
+    texturesSeries: "૩D વાસ્તુશિલ્પીય ટેક્સચર (૧૮)",
+    traventinoSeries: "પંચ ટ્રાવર્ટાઇન સ્લેબ્સ (૧૦)",
     slatSeries: "પંચ સ્લેટ સ્લેબ્સ (૧૨)",
     searchPlaceholder: "૪૦ ફ્લેક્સિબલ ક્લે પેટર્ન, ફ્લુટેડ, ત્રાવેન્ટિનો શોધો...",
     cataloguesBtn: "કેટલોગ ડાઉનલોડ (PDF)",
@@ -224,10 +225,24 @@ export function FlexibleClayCatalog({
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
+  // Localized items
+  const localizedItems = useMemo(() => {
+    return CLAY_PRODUCTS.map((p) => {
+      const loc = lang !== "en" ? CATALOG_ITEMS_BY_CODE[p.code] : undefined;
+      const localizedName = (lang !== "en" && loc?.name?.[lang]) || p.name;
+      const localizedSeries = (lang !== "en" && loc?.category?.[lang]) || p.series;
+      return {
+        ...p,
+        name: localizedName,
+        series: localizedSeries,
+      };
+    });
+  }, [lang]);
+
   // Filtered & Sorted items
   const filteredItems = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const items = CLAY_PRODUCTS.filter((item) => {
+    const items = localizedItems.filter((item) => {
       if (selectedSeries !== "all" && item.series !== selectedSeries) return false;
       if (!q) return true;
       return (
@@ -249,7 +264,7 @@ export function FlexibleClayCatalog({
       return [...items].sort((a, b) => b.price - a.price);
     }
     return items;
-  }, [search, selectedSeries, sortBy]);
+  }, [search, selectedSeries, sortBy, localizedItems]);
 
   // Infinite scroll
   useEffect(() => {

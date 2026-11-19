@@ -50,6 +50,7 @@ function ProfitabilityDashboard() {
   if (!q.data) return null;
 
   const data: CompanyProfitabilityOverview = q.data;
+  const vijay = data.salespeople.find((s) => s.key === "vijay");
   const rishi = data.salespeople.find((s) => s.key === "rishi");
   const raman = data.salespeople.find((s) => s.key === "raman");
 
@@ -167,7 +168,8 @@ function ProfitabilityDashboard() {
           </span>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-3">
+          {vijay && <SalespersonCard scorecard={vijay} />}
           {rishi && <SalespersonCard scorecard={rishi} />}
           {raman && <SalespersonCard scorecard={raman} />}
         </div>
@@ -201,6 +203,18 @@ function ProfitabilityDashboard() {
                 )}
               >
                 All People
+              </button>
+              <button
+                type="button"
+                onClick={() => setSalespersonFilter("vijay")}
+                className={cn(
+                  "px-2.5 py-1 rounded-md font-medium transition-all",
+                  salespersonFilter === "vijay"
+                    ? "bg-teal-700 text-white shadow-2xs font-bold"
+                    : "text-slate-600",
+                )}
+              >
+                Vijay
               </button>
               <button
                 type="button"

@@ -17,7 +17,7 @@ import { indicAutoTranslate } from "./auto-translator";
 
 export const SUPPORTED_LANGUAGES = [
   { code: "en", label: "English", nativeLabel: "English", short: "EN" },
-  { code: "hi", label: "Hindi", nativeLabel: "हिन्दी", short: "हिं" },
+  { code: "hi", label: "Hindi", nativeLabel: "हिंदी", short: "हिं" },
   { code: "gu", label: "Gujarati", nativeLabel: "ગુજરાતી", short: "ગુ" },
 ] as const;
 

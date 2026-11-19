@@ -137,10 +137,13 @@ export const INDIC_DICTIONARY: Record<string, { hi: string; gu: string }> = {
   "Solid Glass Bricks": { hi: "ठोस कांच की ईंटें", gu: "નક્કર કાચની ઈંટો" },
   "Solid Glass": { hi: "ठोस कांच", gu: "નક્કર કાચ" },
   "Hollow Glass": { hi: "खोखली कांच", gu: "પોલી કાચ" },
-  "Architectural Glass Bricks": { hi: "आर्किटेक्चरल कांच की ईंटें", gu: "આર્કિટેક્ચરલ કાચની ઈંટો" },
+  "Architectural Glass Bricks": {
+    hi: "वास्तुशिल्पीय कांच की ईंटें",
+    gu: "વાસ્તુશિલ્પીય કાચની ઈંટો",
+  },
   "Architectural Solid & Hollow Glass Bricks": {
-    hi: "आर्किटेक्चरल ठोस एवं खोखली कांच की ईंटें",
-    gu: "આર્કિટેક્ચરલ નક્કર અને પોલી કાચની ઈંટો",
+    hi: "वास्तुशिल्पीय ठोस एवं खोखली कांच की ईंटें",
+    gu: "વાસ્તુશિલ્પીય નક્કર અને પોલી કાચની ઈંટો",
   },
   "Solid Glass (34 Pgs)": { hi: "ठोस कांच (३४ पृष्ठ)", gu: "નક્કર કાચ (૩૪ પાન)" },
   "Hollow Glass (49 Pgs)": { hi: "खोखली कांच (४९ पृष्ठ)", gu: "પોલી કાચ (૪૯ પાન)" },
@@ -165,21 +168,21 @@ export const INDIC_DICTIONARY: Record<string, { hi: string; gu: string }> = {
     gu: "નેચરલ સ્ટોન ક્લેડિંગ (૭૧ પાન)",
   },
   "Ultra-Thin Stone Veneer": {
-    hi: "अल्ट्रा-थिन स्टोन विनियर",
-    gu: "અલ્ટ્રા-થિન સ્ટોન વિનિયર",
+    hi: "अत्यंत पतली स्टोन विनियर",
+    gu: "અત્યંત પાતળી સ્ટોન વિનિયર",
   },
   "Natural Stone Wall Cladding": {
-    hi: "प्राकृतिक स्टोन वॉल क्लैडिंग",
-    gu: "કુદરતી સ્ટોન વૉલ ક્લેડિંગ",
+    hi: "प्राकृतिक पाषाण क्लैडिंग",
+    gu: "પ્રાકૃતિક પાષાણ ક્લેડિંગ",
   },
   "Ultra-Thin Stone Veneer (106 Pgs)": {
-    hi: "अल्ट्रा-थिन स्टोन विनियर (१०६ पृष्ठ)",
-    gu: "અલ્ટ્રા-થિન સ્ટોન વિનિયર (૧૦૬ પાન)",
+    hi: "अत्यंत पतली स्टोन विनियर (१०६ पृष्ठ)",
+    gu: "અત્યંત પાતળી સ્ટોન વિનિયર (૧૦૬ પાન)",
   },
   "Catalogues (PDF)": { hi: "कैटलॉग डाउनलोड (PDF)", gu: "કેટલોગ ડાઉનલોડ (PDF)" },
   "Stone Tech Atelier 2026 Architectural Catalogues": {
-    hi: "स्टोन टेक एटेलियर २०२६ वास्तुकला कैटलॉग लाइब्रेरी",
-    gu: "સ્ટોન ટેક એટેલિયર ૨૦૨૬ આર્કિટેક્ચરલ કેટલોગ લાઈબ્રેરી",
+    hi: "स्टोन टेक एटेलियर २०२६ वास्तुशिल्पीय कैटलॉग लाइब्रेरी",
+    gu: "સ્ટોન ટેક એટેલિયર ૨૦૨૬ વાસ્તુશિલ્પીય કેટલોગ લાઈબ્રેરી",
   },
   "Semi-Precious Agates": { hi: "अर्ध-कीमती अगेट पाषाण", gu: "અર્ધ-કિંમતી અગેટ પથ્થર" },
   "Landscape & River": { hi: "लैंडस्केप एवं नदी के कंकड़", gu: "લેન્ડસ્કેપ અને નદીના કાંકરા" },
@@ -192,11 +195,14 @@ export const INDIC_DICTIONARY: Record<string, { hi: string; gu: string }> = {
     hi: "सूक्ष्म (मिनी) कंकड़ एवं चिप्स",
     gu: "નાના (મિની) કાંકરા અને ચિપ્સ",
   },
-  "Architectural 3D Textures": { hi: "आर्किटेक्चरल ३D टेक्सचर्स", gu: "આર્કિટેક્ચરલ ૩D ટેક્સચર્સ" },
-  "Punch Travertino Series": { hi: "पंच्ड ट्रैवर्टीन श्रृंखला", gu: "પંચ્ડ ટ્રેવર્ટીન શ્રેણી" },
-  "Punch Slate Series": { hi: "पंच्ड स्लेट श्रृंखला", gu: "પંચ્ડ સ્લેટ શ્રેણી" },
-  "Live Executed": { hi: "लाइव स्थापित", gu: "લાઇવ સ્થાપિત" },
-  "Live Installed Works": { hi: "लाइव स्थापित कार्य", gu: "લાઇવ સ્થાપિત કાર્યો" },
+  "Architectural 3D Textures": {
+    hi: "वास्तुशिल्पीय ३D टेक्सचर्स",
+    gu: "વાસ્તુશિલ્પીય ૩D ટેક્સચર્સ",
+  },
+  "Punch Travertino Series": { hi: "पंच ट्रावरटाइन स्लैब्स", gu: "પંચ ટ્રાવર્ટાઇન સ્લેબ્સ" },
+  "Punch Slate Series": { hi: "पंच स्लेट स्लैब्स", gu: "પંચ સ્લેટ સ્લેબ્સ" },
+  "Live Executed": { hi: "वास्तविक प्रतिष्ठापित", gu: "વાસ્તવિક સ્થાપિત" },
+  "Live Installed Works": { hi: "वास्तविक प्रतिष्ठापित कार्य", gu: "વાસ્તવિક સ્થાપિત કાર્યો" },
   "Rose Quartz": { hi: "रोज़ क्वार्ट्ज (गुलाबी स्फटिक)", gu: "રોઝ ક્વાર્ટ્ઝ (ગુલાબી સ્ફટિક)" },
   "Crystal Quartz": {
     hi: "क्रिस्टल क्वार्ट्ज (पारदर्शी स्फटिक)",
@@ -206,30 +212,30 @@ export const INDIC_DICTIONARY: Record<string, { hi: string; gu: string }> = {
     hi: "अफ्रीकन एमेथिस्ट (जामुनिया स्फटिक)",
     gu: "આફ્રિકન એમેથિસ્ટ (જાંબુડિયો સ્ફટિક)",
   },
-  "Red Carnelian": { hi: "लाल कार्नेलियन (अकीक)", gu: "લાલ કાર્નેલિયન (અકીક)" },
+  "Red Carnelian": { hi: "लाल कॉर्नेलियन (अकीक)", gu: "લાલ કાર્નેલિયન (અકીક)" },
   "Lapis Lazuli": { hi: "लापिस लाजुली (लाजवर्द)", gu: "લાપિસ લાઝુલી (લાજવર્દ)" },
-  "Tiger Stone": { hi: "टाइगर आई (बाघ-नेत्र स्फटिक)", gu: "ટાઇગર આઇ (વાઘ-આંખ સ્ફટિક)" },
+  "Tiger Stone": { hi: "टाइगर स्टोन (गोमेदक)", gu: "ટાઇગર સ્ટોન (ગોમેદક)" },
   Labradorite: { hi: "लैब्राडोराइट (इंद्रधनुषी पाषाण)", gu: "લેબ્રાડોરાઇટ (મેઘધનુષી પથ્થર)" },
-  "White Rainbow": { hi: "व्हाइट रेनबो (दूधिया पाषाण)", gu: "વ્હાઇટ રેઈનબો (દૂધિયો પથ્થર)" },
+  "White Rainbow": { hi: "धवल इंद्रधनुषी स्फटिक", gu: "ધવલ મેઘધનુષી સ્ફટિક" },
   "Fluted Texture": { hi: "फ्लूटेड टेक्सचर", gu: "ફ્લુટેડ ટેક્સચર" },
   "Hammerstone Texture": { hi: "हैमरस्टोन टेक्सचर", gu: "હેમરસ્ટોન ટેક્સચર" },
   "Ripple Texture": { hi: "रिपल टेक्सचर", gu: "રીપલ ટેક્સચર" },
   "Weave Texture": { hi: "वीव टेक्सचर", gu: "વીવ ટેક્સચર" },
   "Fluted Texture Architectural Installation": {
-    hi: "फ्लूटेड टेक्सचर आर्किटेक्चरल स्थापना",
-    gu: "ફ્લુટેડ ટેક્સચર આર્કિટેક્ચરલ સ્થાપના",
+    hi: "फ्लूटेड टेक्सचर वास्तुशिल्पीय स्थापना",
+    gu: "ફ્લુટેડ ટેક્સચર વાસ્તુશિલ્પીય સ્થાપના",
   },
   "Hammerstone Texture Architectural Installation": {
-    hi: "हैमरस्टोन टेक्सचर आर्किटेक्चरल स्थापना",
-    gu: "હેમરસ્ટોન ટેક્સચર આર્કિટેક્ચરલ સ્થાપના",
+    hi: "हैमरस्टोन टेक्सचर वास्तुशिल्पीय स्थापना",
+    gu: "હેમરસ્ટોન ટેક્સચર વાસ્તુશિલ્પીય સ્થાપના",
   },
   "Ripple Texture Architectural Installation": {
-    hi: "रिपल टेक्सचर आर्किटेक्चरल स्थापना",
-    gu: "રિપલ ટેક્સચર આર્કિટેક્ચરલ સ્થાપના",
+    hi: "रिपल टेक्सचर वास्तुशिल्पीय स्थापना",
+    gu: "રિપલ ટેક્સચર વાસ્તુશિલ્પીય સ્થાપના",
   },
   "Weave Texture Architectural Installation": {
-    hi: "वीव टेक्सचर आर्किटेक्चरल स्थापना",
-    gu: "વીવ ટેક્સચર આર્કિટેક્ચરલ સ્થાપના",
+    hi: "वीव टेक्सचर वास्तुशिल्पीय स्थापना",
+    gu: "વીવ ટેક્સચર વાસ્તુશિલ્પીય સ્થાપના",
   },
   "Horizontal Strip & Ledgestone Panels": {
     hi: "हॉरिजॉन्टल स्ट्रिप एवं लेजस्टोन पैनल्स",
@@ -1391,6 +1397,14 @@ export const INDIC_WORD_LEXICON: Record<string, { hi: string; gu: string }> = {
   overdue: { hi: "अतिदेय", gu: "બાકી" },
   collections: { hi: "संग्रह", gu: "સંગ્રહ" },
   collection: { hi: "संग्रह", gu: "સંગ્રહ" },
+  architect: { hi: "वास्तुकार", gu: "વાસ્તુકાર" },
+  architects: { hi: "वास्तुकार", gu: "વાસ્તુકારો" },
+  architectural: { hi: "वास्तुशिल्पीय", gu: "વાસ્તુશિલ્પીય" },
+  architecture: { hi: "वास्तुकला", gu: "વાસ્તુકળા" },
+  "ultra thin": { hi: "अत्यंत पतली", gu: "અત્યંત પાતળી" },
+  "ultra-thin": { hi: "अत्यंत पतली", gu: "અત્યંત પાતળી" },
+  "semi precious": { hi: "अर्ध-कीमती", gu: "અર્ધ-કિંમતી" },
+  "semi-precious": { hi: "अर्ध-कीमती", gu: "અર્ધ-કિંમતી" },
   glass: { hi: "कांच", gu: "કાચ" },
   hollow: { hi: "खोखली", gu: "પોલી" },
   solid: { hi: "ठोस", gu: "નક્કર" },
@@ -1582,6 +1596,11 @@ export function autoTranslate(text: string, targetLang?: string): string {
 
   const trimmed = text.trim();
   if (!trimmed) return text;
+
+  // Language names must remain in their dedicated script identity:
+  if (trimmed.toLowerCase() === "english") return "English";
+  if (trimmed.toLowerCase() === "hindi") return isGu ? "હિન્દી" : "हिंदी";
+  if (trimmed.toLowerCase() === "gujarati") return isHi ? "गुजराती" : "ગુજરાતી";
 
   // 1. Direct dictionary match
   if (INDIC_DICTIONARY[trimmed]) {

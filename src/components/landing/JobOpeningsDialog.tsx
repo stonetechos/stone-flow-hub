@@ -99,9 +99,9 @@ export function JobOpeningsDialog({ trigger }: JobOpeningsDialogProps) {
                 </DialogTitle>
                 <DialogDescription className="text-xs text-muted-foreground mt-0.5">
                   {lang === "hi"
-                    ? "स्टोन टेक आर्किटेक्चरल स्टोन एटलियर — गोता, अहमदाबाद"
+                    ? "स्टोन टेक वास्तुशिल्पीय पाषाण एटेलियर — गोता, अहमदाबाद"
                     : lang === "gu"
-                      ? "સ્ટોન ટેક આર્કિટેક્ચરલ સ્ટોન એટલિયર — ગોતા, અમદાવાદ"
+                      ? "સ્ટોન ટેક વાસ્તુશિલ્પીય પાષાણ એટેલિયર — ગોતા, અમદાવાદ"
                       : "Stone Tech Architectural Stone Atelier — Gota, Ahmedabad"}
                 </DialogDescription>
               </div>

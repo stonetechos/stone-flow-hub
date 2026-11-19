@@ -163,6 +163,7 @@ export function ProfitTargetDashboardCard() {
   if (q.error || !q.data) return null;
 
   const data: CompanyProfitabilityOverview = q.data;
+  const vijay = data.salespeople.find((s) => s.key === "vijay");
   const rishi = data.salespeople.find((s) => s.key === "rishi");
   const raman = data.salespeople.find((s) => s.key === "raman");
 
@@ -259,7 +260,56 @@ export function ProfitTargetDashboardCard() {
         </div>
 
         {/* Side-by-Side Salesperson Mini Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-0.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-0.5">
+          {/* Vijay Dave */}
+          {vijay && (
+            <div className="rounded-xl border border-teal-500/25 bg-card/60 p-3 space-y-2 hover:border-teal-500/40 transition-colors">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-600 text-white font-black text-xs">
+                    VD
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-foreground">
+                      {transliterateName("Vijay Dave", lang)}
+                    </h4>
+                    <p className="text-[10px] text-muted-foreground">{t.target}: ₹50.0 Lakhs</p>
+                  </div>
+                </div>
+                <Badge
+                  variant="secondary"
+                  className="bg-teal-500/15 text-teal-700 dark:text-teal-300 font-bold text-[10px]"
+                >
+                  {toIndicDigits(Math.round(vijay.targetProgressPct), lang)}% {t.goal}
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-2 gap-1.5 text-xs">
+                <div>
+                  <span className="text-[10px] text-muted-foreground block">{t.profitEarned}</span>
+                  <span className="font-bold text-teal-600 dark:text-teal-400 tabular-nums">
+                    {formatInr(vijay.netProfit, lang)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-muted-foreground block">{t.cashCollected}</span>
+                  <span className="font-bold text-foreground tabular-nums">
+                    {formatInr(vijay.moneyCollected, lang)}
+                  </span>
+                </div>
+              </div>
+
+              {vijay.coachingSuggestion && (
+                <div className="text-[11px] text-muted-foreground bg-muted/40 rounded-lg p-2 flex items-start gap-1.5 leading-snug">
+                  <Sparkles className="h-3.5 w-3.5 text-teal-600 shrink-0 mt-0.5" />
+                  <span className="line-clamp-2">
+                    {localizeCoachingSuggestion(vijay.coachingSuggestion, lang)}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Rishi Rai */}
           {rishi && (
             <div className="rounded-xl border border-primary/25 bg-card/60 p-3 space-y-2 hover:border-primary/40 transition-colors">

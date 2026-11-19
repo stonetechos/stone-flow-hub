@@ -96,10 +96,28 @@ function DashboardPage() {
   const roles = useRoles();
   const { processedInsights } = useExecutiveInsights({ enabled: true });
 
+  const profileQ = useQuery({
+    queryKey: ["me", "profile", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user!.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+    staleTime: 10 * 60_000,
+  });
+
   const isSalesStaff =
     !roles.isAdmin &&
     !roles.isSuperAdmin &&
-    (roles.hasRole("sales") || roles.roles.includes("sales"));
+    (roles.hasRole("sales") ||
+      roles.roles.includes("sales") ||
+      user?.email?.toLowerCase().includes("vijay") ||
+      Boolean(profileQ.data?.full_name?.toLowerCase().includes("vijay")));
   const [activeTab, setActiveTab] = useState<DashboardViewTab>("operations");
   const [opsSubTab, setOpsSubTab] = useState<"fulfilment" | "money" | "sales">(() =>
     isSalesStaff ? "sales" : "fulfilment",
@@ -146,22 +164,6 @@ function DashboardPage() {
     staleTime: 30_000,
     placeholderData: (previousData) => previousData,
   });
-  const profileQ = useQuery({
-    queryKey: ["me", "profile", user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("full_name")
-        .eq("id", user!.id)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id,
-    staleTime: 10 * 60_000,
-    placeholderData: (previousData) => previousData,
-  });
-
   const toggleTask = useMutation({
     mutationFn: ({ id, done }: { id: string; done: boolean }) =>
       updateTaskStatus(id, done ? "completed" : "pending"),
@@ -2210,7 +2212,11 @@ function displayName(
     if (first.toLowerCase() !== "there" && first.toLowerCase() !== "admin") return first;
   }
   if (user.email) {
-    const cleaned = user.email.split("@")[0].replace(/[0-9]+$/, "");
+    const emailPrefix = user.email.split("@")[0].toLowerCase();
+    if (emailPrefix.includes("vijay")) return "Vijay";
+    if (emailPrefix.includes("rishi")) return "Rishi";
+    if (emailPrefix.includes("raman")) return "Raman";
+    const cleaned = emailPrefix.replace(/[0-9]+$/, "");
     const raw = cleaned.split(/[._\-\s]+/)[0];
     if (raw && !["admin", "user", "owner", "stos", "info", "there"].includes(raw.toLowerCase())) {
       return raw.charAt(0).toUpperCase() + raw.slice(1);

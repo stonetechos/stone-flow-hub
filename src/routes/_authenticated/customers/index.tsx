@@ -108,9 +108,11 @@ import {
   listCustomers,
   updateCustomer,
   updateCustomerCrmStatus,
+  updateCustomerSalesperson,
   logCustomerContact,
   type CustomerRow,
 } from "@/lib/customers/api";
+import { type CustomerSalespersonKey } from "@/lib/customers/crm-status";
 import {
   CUSTOMER_TYPES,
   SPACE_TYPES,
@@ -1387,7 +1389,7 @@ function CustomerFormDialog({
   voiceExtractedData?: ParsedVoiceCustomer | null;
   onClearVoiceExtracted?: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const [form, setForm] = useState<CustomerCreateInput>(emptyForm);
   const [contacts, setContacts] = useState<CustomerContactInput[]>([]);
@@ -1395,6 +1397,9 @@ function CustomerFormDialog({
     JSON.stringify({ form: emptyForm(), contacts: [] }),
   );
   const [nameReflectionMode, setNameReflectionMode] = useState<NameReflectionMode>("smart");
+  const [selectedSalesperson, setSelectedSalesperson] = useState<CustomerSalespersonKey | null>(
+    null,
+  );
   const dirty = JSON.stringify({ form, contacts }) !== baseline;
 
   useEffect(() => {
@@ -1458,6 +1463,7 @@ function CustomerFormDialog({
       setBaseline(JSON.stringify({ form: next, contacts: [] }));
       setNameReflectionMode("smart");
     }
+    setSelectedSalesperson(null);
   }, [open, editing, voiceExtractedData]);
 
   const addEmptyContact = () => {
@@ -1478,6 +1484,12 @@ function CustomerFormDialog({
     onSuccess: (row) => {
       toast.success(editing ? "Customer updated" : `Customer ${row.customer_code} created`);
       if (!editing) {
+        if (selectedSalesperson) {
+          void updateCustomerSalesperson({
+            customerId: row.id,
+            salesperson: selectedSalesperson,
+          });
+        }
         seedPickerCache(qc, "customer", row);
         void dispatchSystemNotification({
           scope: "broadcast",
@@ -1772,7 +1784,7 @@ function CustomerFormDialog({
               </Select>
             </Field>
 
-            {editing && (
+            {editing ? (
               <div className="md:col-span-2 rounded-lg border border-cyan-200 bg-cyan-50/60 p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                 <div>
                   <label className="text-xs font-semibold text-slate-900 flex items-center gap-1.5">
@@ -1791,6 +1803,42 @@ function CustomerFormDialog({
                   size="default"
                   variant="button"
                 />
+              </div>
+            ) : (
+              <div className="md:col-span-2 rounded-lg border border-teal-200 bg-teal-50/60 p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                <div>
+                  <label className="text-xs font-semibold text-slate-900 flex items-center gap-1.5">
+                    <UserCheck className="h-3.5 w-3.5 text-teal-700" />
+                    <span>Assigned Salesperson</span>
+                  </label>
+                  <p className="text-[11px] text-muted-foreground">
+                    Assign this customer account to Vijay, Rishi or Raman
+                  </p>
+                </div>
+                <Select
+                  value={selectedSalesperson ?? "unassigned"}
+                  onValueChange={(val) =>
+                    setSelectedSalesperson(
+                      val === "unassigned" ? null : (val as CustomerSalespersonKey),
+                    )
+                  }
+                >
+                  <SelectTrigger className="h-8 w-48 text-xs bg-white">
+                    <SelectValue placeholder="Select salesperson" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unassigned">Unassigned</SelectItem>
+                    <SelectItem value="vijay">
+                      👤 {transliterateName("Vijay Dave", i18n.language)}
+                    </SelectItem>
+                    <SelectItem value="rishi">
+                      👤 {transliterateName("Rishi Rai", i18n.language)}
+                    </SelectItem>
+                    <SelectItem value="raman">
+                      👤 {transliterateName("Raman Pupneja", i18n.language)}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             )}
 

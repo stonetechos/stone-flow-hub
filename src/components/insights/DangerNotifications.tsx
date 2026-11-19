@@ -7,6 +7,7 @@ import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { AlertCircle, ArrowRight, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useExecutiveInsights } from "@/hooks/useExecutiveInsights";
+import { useRoles } from "@/hooks/use-roles";
 import { useInsightLifecycle, type InsightWithLifecycle } from "@/lib/insights/state/hooks";
 import { resolveTone } from "@/lib/ui/tones";
 import { playNotificationSound, triggerNotificationVibration } from "@/lib/notifications/sound";
@@ -351,6 +352,7 @@ export function DangerNotifications() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isDashboard =
     pathname === "/" || pathname === "/dashboard" || pathname.startsWith("/dashboards");
+  const { isAdmin, isSuperAdmin } = useRoles();
   const { processedInsights } = useExecutiveInsights({ enabled: isDashboard });
   const { withLifecycle, setStatus } = useInsightLifecycle(processedInsights);
   const [dismissedKeys, setDismissedKeys] = useState<Set<string>>(() => getDismissedSet());
@@ -361,6 +363,23 @@ export function DangerNotifications() {
     return withLifecycle.filter((insight) => {
       if (resolveTone(insight.tone) !== "danger") return false;
       if (insight.confidence < HIGH_CONFIDENCE_MIN) return false;
+
+      // Restrict executive financial/administrative alerts from regular staff to prevent navigation errors
+      if (!isAdmin && !isSuperAdmin) {
+        if (
+          insight.source.startsWith("finance.") ||
+          insight.source.startsWith("admin.") ||
+          insight.action?.href?.startsWith("/liabilities") ||
+          insight.action?.href?.startsWith("/business-expenses") ||
+          insight.action?.href?.startsWith("/ledger") ||
+          insight.action?.href?.startsWith("/vendor-payments") ||
+          insight.action?.href?.startsWith("/personal-transfers") ||
+          insight.action?.href?.startsWith("/admin")
+        ) {
+          return false;
+        }
+      }
+
       if (
         insight.entity?.type === "dispatch" ||
         insight.id.includes("dispatch") ||
@@ -382,7 +401,7 @@ export function DangerNotifications() {
 
       return true;
     });
-  }, [withLifecycle, dismissedKeys]);
+  }, [withLifecycle, dismissedKeys, isAdmin, isSuperAdmin]);
 
   const alertedIdsRef = useRef<Set<string>>(new Set());
   useEffect(() => {
@@ -412,7 +431,24 @@ export function DangerNotifications() {
     setStatus(insight, "acknowledged");
 
     if (insight.action?.href) {
-      void navigate({ to: insight.action.href as never });
+      let target = insight.action.href;
+      if (target === "/money-flow/customer-payments") target = "/payments";
+      if (!isAdmin && !isSuperAdmin) {
+        const restricted = [
+          "/liabilities",
+          "/business-expenses",
+          "/ledger",
+          "/vendor-payments",
+          "/personal-transfers",
+          "/purchase-ledger",
+          "/purchase-invoices",
+          "/admin",
+        ];
+        if (restricted.some((p) => target.startsWith(p))) {
+          target = "/dashboard";
+        }
+      }
+      void navigate({ to: target as never });
     }
   };
 

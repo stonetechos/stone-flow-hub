@@ -63,6 +63,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import rawVeneerData from "@/data/stone-veneer-catalog.json";
+import { CATALOG_ITEMS_BY_CODE } from "@/lib/i18n/catalogue-items-i18n";
 
 export interface StoneVeneerItem {
   id: string;
@@ -135,7 +136,7 @@ const TEXTS = {
     resetFilters: "Reset Filters",
   },
   hi: {
-    heading: "अल्ट्रा-थिन फ्लेक्सिबल नेचुरल स्टोन विनियर",
+    heading: "अत्यंत पतली लचीली प्राकृतिक स्टोन विनियर",
     patternsCount: "पैटर्न्स",
     allCollections: "सभी संग्रह",
     searchPlaceholder: "९८ स्टोन विनियर पैटर्न्स, रंग या संग्रह खोजें...",
@@ -168,7 +169,7 @@ const TEXTS = {
     resetFilters: "फ़िल्टर रीसेट करें",
   },
   gu: {
-    heading: "અલ્ટ્રા-થિન ફ્લેક્સિબલ કુદરતી સ્ટોન વિનિયર",
+    heading: "અત્યંત પાતળી લચીલી કુદરતી સ્ટોન વિનિયર",
     patternsCount: "પેટર્ન",
     allCollections: "બધા સંગ્રહ",
     searchPlaceholder: "૯૮ સ્ટોન વિનિયર પેટર્ન, રંગ અથવા સંગ્રહ શોધો...",
@@ -226,16 +227,30 @@ export function StoneVeneerCatalog({
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
+  // Localized items
+  const localizedItems = useMemo(() => {
+    return VENEER_PRODUCTS.map((p) => {
+      const loc = lang !== "en" ? CATALOG_ITEMS_BY_CODE[p.code] : undefined;
+      const localizedName = (lang !== "en" && loc?.name?.[lang]) || p.name;
+      const localizedCol = (lang !== "en" && loc?.category?.[lang]) || p.collection;
+      return {
+        ...p,
+        name: localizedName,
+        collection: localizedCol,
+      };
+    });
+  }, [lang]);
+
   // Collections extraction
   const collections = useMemo(() => {
-    const list = Array.from(new Set(VENEER_PRODUCTS.map((p) => p.collection)));
+    const list = Array.from(new Set(localizedItems.map((p) => p.collection)));
     return ["all", ...list];
-  }, []);
+  }, [localizedItems]);
 
   // Filtered & Sorted items
   const filteredItems = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const items = VENEER_PRODUCTS.filter((item) => {
+    const items = localizedItems.filter((item) => {
       if (selectedCollection !== "all" && item.collection !== selectedCollection) return false;
       if (!q) return true;
       return (
@@ -258,7 +273,7 @@ export function StoneVeneerCatalog({
       return [...items].sort((a, b) => b.price - a.price);
     }
     return items;
-  }, [search, selectedCollection, sortBy]);
+  }, [search, selectedCollection, sortBy, localizedItems]);
 
   // Infinite scroll
   useEffect(() => {
