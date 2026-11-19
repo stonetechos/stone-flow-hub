@@ -123,6 +123,7 @@ const LOCALIZED_CATALOG_STRINGS: Record<string, { hi: string; gu: string }> = {
   "Glass Bricks": { hi: "कांच की ईंटें", gu: "કાચની ઈંટો" },
   "Clay Veneers": { hi: "फ्लेक्सिबल क्ले विनियर्स", gu: "ક્લે વિનિયર્સ" },
   "Stone Pebbles": { hi: "स्टोन पेबल्स एवं कंकड़", gu: "સ્ટોન પેબલ્સ" },
+  "few of our works": { hi: "हमारे कुछ कार्य", gu: "અમારા કેટલાક કાર્યો" },
   "A few of more works": { hi: "हमारे कुछ और कार्य", gu: "અમારા કેટલાક વધુ કાર્યો" },
   "Live Installed Works": { hi: "हमारे कुछ और कार्य", gu: "અમારા કેટલાક વધુ કાર્યો" },
 
@@ -768,10 +769,10 @@ export function MasterProductCatalog({
     installations: {
       title:
         lang === "gu"
-          ? "અમારા કેટલાક વધુ કાર્યો"
+          ? "અમારા કેટલાક કાર્યો"
           : lang === "hi"
-            ? "हमारे कुछ और कार्य"
-            : "A FEW OF MORE WORKS",
+            ? "हमारे कुछ कार्य"
+            : "FEW OF OUR WORKS",
       countLabel: lang === "gu" ? "પ્રોજેક્ટ્સ" : lang === "hi" ? "प्रोजेक्ट्स" : "Projects",
       dropdown1Placeholder:
         lang === "gu" ? "બધી શ્રેણીઓ" : lang === "hi" ? "सभी श्रेणियां" : "All Categories",
@@ -1013,15 +1014,15 @@ export function MasterProductCatalog({
           <Camera className="h-4 w-4 text-emerald-500" />
           <span>
             {lang === "gu"
-              ? "અમારા કેટલાક વધુ કાર્યો"
+              ? "અમારા કેટલાક કાર્યો"
               : lang === "hi"
-                ? "हमारे कुछ और कार्य"
-                : "A few of more works"}
+                ? "हमारे कुछ कार्य"
+                : "few of our works"}
           </span>
         </button>
       </div>
 
-      {/* 1b. LIVE INSTAGRAM FEED OVER "A FEW OF MORE WORKS" (WHEN INSTALLATIONS ACTIVE) */}
+      {/* 1b. LIVE INSTAGRAM FEED OVER "FEW OF OUR WORKS" (WHEN INSTALLATIONS ACTIVE) */}
       {currentTab === "installations" && (
         <div className="pt-1 pb-3 animate-in fade-in duration-300">
           <StoneGalleryFeed onSelectProduct={onSelectProduct} />
