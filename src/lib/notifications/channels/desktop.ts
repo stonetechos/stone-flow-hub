@@ -23,40 +23,67 @@ export const desktopChannel: NotificationChannel = {
       description: payload.body ?? undefined,
     });
 
-    // 4. OS-level browser notification banner if permission is granted
+    // 4. OS-level notification banner (Mobile status bar shade via Service Worker or Desktop Notification)
     if (
       typeof window !== "undefined" &&
       "Notification" in window &&
       Notification.permission === "granted"
     ) {
-      try {
-        const formattedTitle = payload.title.startsWith("STOS")
-          ? payload.title
-          : `STOS · ${payload.title}`;
-        const n = new Notification(formattedTitle, {
-          body: payload.body ?? undefined,
-          icon: "/favicon.ico",
-          badge: "/favicon.ico",
-          tag: payload.entityId || `stos-${Date.now()}`,
-        });
-        n.onclick = () => {
-          try {
-            window.focus();
-          } catch {
-            // ignore window focus restriction
-          }
-          if (payload.linkPath) {
-            if (window.location.pathname === payload.linkPath) {
-              n.close();
-              return;
-            }
-            window.location.assign(payload.linkPath);
-          }
-          n.close();
-        };
-      } catch {
-        // Ignored if browser restricts notifications outside user gestures
+      const formattedTitle = payload.title.startsWith("STOS")
+        ? payload.title
+        : `STOS · ${payload.title}`;
+
+      const notifOptions: NotificationOptions = {
+        body: payload.body ?? undefined,
+        icon: "/icons/icon-192.png",
+        badge: "/icons/icon-192.png",
+        tag: payload.entityId || `stos-${Date.now()}`,
+        data: {
+          url: payload.linkPath || "/dashboard",
+        },
+      };
+
+      // In Android Chrome / Samsung Internet / PWA, new Notification() throws:
+      // "Illegal constructor. Use ServiceWorkerRegistration.showNotification() instead."
+      // We prioritize serviceWorker.ready so the native notification shade banner fires on mobile.
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.ready
+          .then((reg) => {
+            void reg.showNotification(formattedTitle, notifOptions);
+          })
+          .catch(() => {
+            triggerDesktopNotificationFallback(formattedTitle, notifOptions, payload.linkPath);
+          });
+      } else {
+        triggerDesktopNotificationFallback(formattedTitle, notifOptions, payload.linkPath);
       }
     }
   },
 };
+
+function triggerDesktopNotificationFallback(
+  title: string,
+  options: NotificationOptions,
+  linkPath?: string | null,
+) {
+  try {
+    const n = new Notification(title, options);
+    n.onclick = () => {
+      try {
+        window.focus();
+      } catch {
+        // ignore window focus restriction
+      }
+      if (linkPath) {
+        if (window.location.pathname === linkPath) {
+          n.close();
+          return;
+        }
+        window.location.assign(linkPath);
+      }
+      n.close();
+    };
+  } catch {
+    // Ignored if browser restricts notifications
+  }
+}

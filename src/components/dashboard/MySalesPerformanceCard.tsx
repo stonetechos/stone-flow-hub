@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -18,10 +18,30 @@ import {
   CheckCircle2,
   AlertCircle,
   RefreshCw,
+  Target,
+  CheckSquare,
+  BellRing,
+  Sparkles,
+  Calendar,
+  Award,
+  Compass,
+  Zap,
+  Flame,
+  CheckCircle,
+  Circle,
+  Trash2,
+  ArrowUpRight,
+  Send,
+  Building,
+  Layers,
+  MapPin,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Progress } from "@/components/ui/progress";
 import { formatInr, formatDate, toIndicDigits } from "@/lib/format";
 import { transliterateName } from "@/lib/i18n/transliterate";
 import { openWhatsappToContact } from "@/lib/whatsapp";
@@ -31,6 +51,13 @@ interface MySalesPerformanceCardProps {
   userId?: string;
   userName?: string;
   userEmail?: string;
+}
+
+interface CustomReminder {
+  id: string;
+  text: string;
+  priority: "high" | "normal";
+  createdAt: string;
 }
 
 interface SalesLead {
@@ -93,15 +120,137 @@ interface SalesOrderWork {
   }>;
 }
 
+// 7 Daily Core Tasks for Sales & Marketing Role
+const DEFAULT_DAILY_TASKS = [
+  {
+    id: "leads_sweep",
+    title: "Morning CRM Sweep",
+    desc: "Check new website leads & WhatsApp enquiries; respond within 30 mins",
+    kraWeight: "15%",
+    tag: "Lead Gen",
+  },
+  {
+    id: "architect_outreach",
+    title: "Architect & Designer Outreach",
+    desc: "Share Stone Veneer, Pebbles & Cladding catalogues with 3 new architects",
+    kraWeight: "20%",
+    tag: "Marketing",
+  },
+  {
+    id: "samples_dispatch",
+    title: "Sample Box Tracking",
+    desc: "Confirm dispatched sample deliveries & follow up on client material selection",
+    kraWeight: "15%",
+    tag: "Samples",
+  },
+  {
+    id: "quotes_followup",
+    title: "Quotation Follow-ups",
+    desc: "Call/WhatsApp clients with pending estimates submitted >24 hours",
+    kraWeight: "20%",
+    tag: "Sales",
+  },
+  {
+    id: "site_measurements",
+    title: "Site Visit / Measurements",
+    desc: "Coordinate site inspections, contractor drawings & physical dimensions",
+    kraWeight: "10%",
+    tag: "Field",
+  },
+  {
+    id: "dispatch_sync",
+    title: "Factory & Dispatch Sync",
+    desc: "Check packing readiness of in-production orders with the dispatch team",
+    kraWeight: "10%",
+    tag: "Fulfilment",
+  },
+  {
+    id: "balance_collection",
+    title: "Payment Balance Recovery",
+    desc: "Follow up on 50% order advances & pre-dispatch balance dues",
+    kraWeight: "10%",
+    tag: "Collections",
+  },
+];
+
 export function MySalesPerformanceCard({
   userId,
   userName = "Vijay Dave",
   userEmail = "vijaydave3476@gmail.com",
 }: MySalesPerformanceCardProps) {
   const { t, i18n } = useTranslation();
-  const [activeSubTab, setActiveSubTab] = useState<"leads" | "quotes" | "works" | "collections">(
-    "leads",
-  );
+  const [activeSubTab, setActiveSubTab] = useState<
+    "target" | "checklist" | "reminders" | "leads" | "quotes" | "works" | "collections"
+  >("target");
+
+  // Date and Persistence Keys
+  const todayStr = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const checklistStorageKey = `stos_daily_checklist_${userEmail}_${todayStr}`;
+  const remindersStorageKey = `stos_custom_reminders_${userEmail}`;
+
+  // 1. Checklist State
+  const [checkedTasks, setCheckedTasks] = useState<Record<string, boolean>>(() => {
+    if (typeof window === "undefined") return {};
+    try {
+      const raw = localStorage.getItem(checklistStorageKey);
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  const toggleTask = (taskId: string) => {
+    setCheckedTasks((prev) => {
+      const next = { ...prev, [taskId]: !prev[taskId] };
+      try {
+        localStorage.setItem(checklistStorageKey, JSON.stringify(next));
+      } catch {
+        // Ignore
+      }
+      return next;
+    });
+  };
+
+  // 2. Custom Reminders State
+  const [customReminders, setCustomReminders] = useState<CustomReminder[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const raw = localStorage.getItem(remindersStorageKey);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [newReminderText, setNewReminderText] = useState("");
+
+  const addCustomReminder = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newReminderText.trim()) return;
+    const reminder: CustomReminder = {
+      id: `rem-${Date.now()}`,
+      text: newReminderText.trim(),
+      priority: "normal",
+      createdAt: new Date().toISOString(),
+    };
+    const updated = [reminder, ...customReminders];
+    setCustomReminders(updated);
+    setNewReminderText("");
+    try {
+      localStorage.setItem(remindersStorageKey, JSON.stringify(updated));
+    } catch {
+      // Ignore
+    }
+  };
+
+  const removeCustomReminder = (id: string) => {
+    const updated = customReminders.filter((r) => r.id !== id);
+    setCustomReminders(updated);
+    try {
+      localStorage.setItem(remindersStorageKey, JSON.stringify(updated));
+    } catch {
+      // Ignore
+    }
+  };
 
   // 1. Fetch My Leads & CRM Inquiries
   const leadsQ = useQuery<SalesLead[]>({
@@ -121,20 +270,7 @@ export function MySalesPerformanceCard({
       }
 
       const { data, error } = await q;
-      if (error) {
-        // Fallback: if no assigned leads yet, fetch recent active leads for sales desk
-        const { data: allData } = await supabase
-          .from("enquiries")
-          .select(
-            `id, enquiry_no, stage, priority, requirement, budget_inr, created_at,
-             customer:customers!enquiries_customer_id_fkey(id, name, primary_phone, whatsapp, city)`,
-          )
-          .order("created_at", { ascending: false })
-          .limit(30);
-        return (allData ?? []) as unknown as SalesLead[];
-      }
-      // If user has zero assigned yet, show latest pipeline so dashboard is never empty
-      if (!data || data.length === 0) {
+      if (error || !data || data.length === 0) {
         const { data: allData } = await supabase
           .from("enquiries")
           .select(
@@ -240,11 +376,33 @@ export function MySalesPerformanceCard({
     (o) => o.status === "confirmed" || o.status === "in_production" || o.status === "ready_to_ship",
   ).length;
 
+  // Vijay Dave's FY 2026-27 Sales Target: ₹50,00,000 (Fifty Lakhs)
+  const SALES_TARGET_INR = 50_00_000;
+  const achievedTargetVal = confirmedOrdersVal;
+  const remainingTargetVal = Math.max(0, SALES_TARGET_INR - achievedTargetVal);
+  const targetAchievedPct = Math.min(100, Math.round((achievedTargetVal / SALES_TARGET_INR) * 100));
+
+  // Run rates required
+  const monthlyRunRate = Math.round(SALES_TARGET_INR / 12); // ~4.16L / month
+  const weeklyRunRate = Math.round(SALES_TARGET_INR / 52); // ~1.04L / week
+
+  // Checklist score
+  const completedTaskCount = DEFAULT_DAILY_TASKS.filter((t) => checkedTasks[t.id]).length;
+  const checklistScorePct = Math.round((completedTaskCount / DEFAULT_DAILY_TASKS.length) * 100);
+
   const handleWhatsappLead = (lead: SalesLead) => {
     const phone = lead.customer?.whatsapp || lead.customer?.primary_phone;
     if (!phone) return;
     const custName = lead.customer?.name || "Sir/Madam";
     const msg = `Namaste ${custName} ji, greeting from Stone Tech! Following up on your stone enquiry (${lead.enquiry_no}). How may I assist you with the material selection and samples? Warm regards, ${userName} (Stone Tech)`;
+    openWhatsappToContact(phone, msg);
+  };
+
+  const handleWhatsappQuote = (quote: SalesQuote) => {
+    const phone = quote.customer?.whatsapp || quote.customer?.primary_phone;
+    if (!phone) return;
+    const custName = quote.customer?.name || "Sir/Madam";
+    const msg = `Namaste ${custName} ji, greeting from Stone Tech! Following up on your quotation (${quote.quote_no}) of ${formatInr(quote.total)}. Would you like us to arrange physical samples or schedule site measurements? Warm regards, ${userName} (Stone Tech)`;
     openWhatsappToContact(phone, msg);
   };
 
@@ -268,15 +426,15 @@ export function MySalesPerformanceCard({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-display text-base sm:text-lg font-bold tracking-tight text-white">
-                  {transliterateName(userName, i18n.language)}'s Sales Performance &amp; Order Radar
+                  {transliterateName(userName, i18n.language)}'s Sales KRA &amp; Performance Hub
                 </h3>
                 <Badge className="bg-teal-500/20 text-teal-300 border-teal-400/30 text-[10px] uppercase font-bold">
-                  Sales Officer
+                  Sales &amp; Marketing
                 </Badge>
               </div>
               <p className="text-xs text-slate-300 mt-0.5">
-                Real-time tracking of assigned leads, active quotations, order fulfilment &amp;
-                customer collections.
+                Target: ₹50 Lakhs (FY 2026-27) • Daily KRA Checklist • Client Pipeline &amp;
+                Collections
               </p>
             </div>
           </div>
@@ -306,7 +464,7 @@ export function MySalesPerformanceCard({
           </div>
         </div>
 
-        {/* 4 Sales KPI Pulse Tiles */}
+        {/* 4 Core Sales KPI Pulse Tiles */}
         <div className="mt-4 grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
           {/* 1. Active Leads */}
           <div className="rounded-xl bg-white/5 border border-white/10 p-3 backdrop-blur-xs">
@@ -367,6 +525,50 @@ export function MySalesPerformanceCard({
         <div className="flex items-center gap-1">
           <button
             type="button"
+            onClick={() => setActiveSubTab("target")}
+            className={cn(
+              "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
+              activeSubTab === "target"
+                ? "bg-white dark:bg-slate-800 text-teal-800 dark:text-teal-200 shadow-xs border border-border/60"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <Target className="h-3.5 w-3.5 text-rose-500" />
+            <span>₹50L Target &amp; Strategy</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveSubTab("checklist")}
+            className={cn(
+              "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
+              activeSubTab === "checklist"
+                ? "bg-white dark:bg-slate-800 text-teal-800 dark:text-teal-200 shadow-xs border border-border/60"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <CheckSquare className="h-3.5 w-3.5 text-emerald-600" />
+            <span>
+              Daily KRA Checklist ({completedTaskCount}/{DEFAULT_DAILY_TASKS.length})
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveSubTab("reminders")}
+            className={cn(
+              "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
+              activeSubTab === "reminders"
+                ? "bg-white dark:bg-slate-800 text-teal-800 dark:text-teal-200 shadow-xs border border-border/60"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <BellRing className="h-3.5 w-3.5 text-amber-500" />
+            <span>Reminders</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveSubTab("leads")}
             className={cn(
               "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
@@ -376,7 +578,7 @@ export function MySalesPerformanceCard({
             )}
           >
             <Users className="h-3.5 w-3.5" />
-            <span>My Leads ({leads.length})</span>
+            <span>Leads ({leads.length})</span>
           </button>
 
           <button
@@ -390,7 +592,7 @@ export function MySalesPerformanceCard({
             )}
           >
             <FileCheck className="h-3.5 w-3.5" />
-            <span>My Quotes ({quotes.length})</span>
+            <span>Quotes ({quotes.length})</span>
           </button>
 
           <button
@@ -404,7 +606,7 @@ export function MySalesPerformanceCard({
             )}
           >
             <Truck className="h-3.5 w-3.5" />
-            <span>Order Works &amp; Dispatch ({orders.length})</span>
+            <span>Works &amp; Dispatch ({orders.length})</span>
           </button>
 
           <button
@@ -418,18 +620,444 @@ export function MySalesPerformanceCard({
             )}
           >
             <IndianRupee className="h-3.5 w-3.5" />
-            <span>Collections &amp; Recovery</span>
+            <span>Collections</span>
           </button>
         </div>
 
         <div className="hidden sm:flex items-center gap-2 text-[11px] text-muted-foreground font-medium">
-          <span>Logged in as: {userName}</span>
+          <span>{transliterateName(userName, i18n.language)}</span>
         </div>
       </div>
 
       {/* Content Area */}
       <div className="p-3 sm:p-4">
-        {/* SUBTAB 1: My Leads */}
+        {/* SUBTAB 0: TARGET & STRATEGY (Vijay's ₹50 Lakh Sales Goal) */}
+        {activeSubTab === "target" && (
+          <div className="space-y-4">
+            {/* Target Banner Card */}
+            <div className="p-4 rounded-xl border border-teal-200 bg-linear-to-br from-teal-50/80 via-white to-emerald-50/80 dark:from-teal-950/30 dark:via-slate-900 dark:to-emerald-950/30">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-rose-100 text-rose-600 dark:bg-rose-950 dark:text-rose-400">
+                      <Target className="h-3.5 w-3.5" />
+                    </span>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                      FY 2026-27 Sales Target: ₹50,00,000 (₹50 Lakhs)
+                    </h4>
+                    <Badge className="bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-950 dark:text-rose-300 text-[10px]">
+                      Mandatory KRA
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Assigned marketing &amp; sales goal for {userName}. Tracked across confirmed
+                    orders, quotations won, and client payment settlements.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <div className="text-xs text-muted-foreground font-medium">
+                      Remaining Target
+                    </div>
+                    <div className="text-lg font-black text-rose-600 dark:text-rose-400 font-display">
+                      {formatInr(remainingTargetVal)}
+                    </div>
+                  </div>
+                  <div className="h-10 w-px bg-border/70 hidden sm:block" />
+                  <div className="text-right">
+                    <div className="text-xs text-muted-foreground font-medium">Target Progress</div>
+                    <div className="text-lg font-black text-teal-700 dark:text-teal-400 font-display">
+                      {targetAchievedPct}%
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Progress Indicator */}
+              <div className="mt-3 space-y-1">
+                <div className="flex items-center justify-between text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                  <span>Achieved: {formatInr(achievedTargetVal)}</span>
+                  <span>Goal: {formatInr(SALES_TARGET_INR)}</span>
+                </div>
+                <Progress value={Math.max(2, targetAchievedPct)} className="h-2.5 bg-slate-200" />
+              </div>
+
+              {/* Run Rates Bar */}
+              <div className="mt-3.5 grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-3 border-t border-teal-200/60 dark:border-teal-900/40 text-xs">
+                <div className="flex items-center gap-2 p-2 rounded-lg bg-white/70 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800">
+                  <Calendar className="h-4 w-4 text-teal-600 shrink-0" />
+                  <div>
+                    <div className="text-[10px] text-muted-foreground">Monthly Run Rate</div>
+                    <div className="font-bold text-slate-900 dark:text-white">
+                      {formatInr(monthlyRunRate)} / month
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 p-2 rounded-lg bg-white/70 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800">
+                  <Zap className="h-4 w-4 text-amber-500 shrink-0" />
+                  <div>
+                    <div className="text-[10px] text-muted-foreground">Weekly Run Rate</div>
+                    <div className="font-bold text-slate-900 dark:text-white">
+                      {formatInr(weeklyRunRate)} / week
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 p-2 rounded-lg bg-white/70 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800">
+                  <Flame className="h-4 w-4 text-rose-500 shrink-0" />
+                  <div>
+                    <div className="text-[10px] text-muted-foreground">Current Active Pipeline</div>
+                    <div className="font-bold text-slate-900 dark:text-white">
+                      {formatInr(quotePipelineVal)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Strategic Action Blueprint: How to Achieve ₹50L Target */}
+            <div className="p-4 rounded-xl border border-slate-200 bg-white dark:bg-slate-900 space-y-3">
+              <div className="flex items-center gap-2">
+                <Compass className="h-4 w-4 text-indigo-600" />
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                  Strategy Blueprint: How Vijay Can Achieve the ₹50L Target
+                </h4>
+              </div>
+
+              {/* 3 Deal Volume Mathematical Scenarios */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="p-3 rounded-lg border border-teal-200 bg-teal-50/50 dark:bg-teal-950/30">
+                  <Badge className="bg-teal-600 text-white text-[10px]">Primary Route</Badge>
+                  <div className="mt-2 font-display font-black text-sm text-slate-900 dark:text-white">
+                    33 Projects @ ₹1.50 Lakhs
+                  </div>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-1">
+                    Mid-size residential bungalows, stone veneer feature walls, exterior cladding
+                    &amp; pebbles.
+                  </p>
+                  <div className="mt-2 text-[10px] font-semibold text-teal-800 dark:text-teal-300">
+                    Target: ~3 deals closed per month
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-lg border border-indigo-200 bg-indigo-50/50 dark:bg-indigo-950/30">
+                  <Badge className="bg-indigo-600 text-white text-[10px]">
+                    Commercial &amp; Facades
+                  </Badge>
+                  <div className="mt-2 font-display font-black text-sm text-slate-900 dark:text-white">
+                    17 Projects @ ₹3.00 Lakhs
+                  </div>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-1">
+                    Large villa elevations, commercial showrooms, hotel lobbies &amp; boundary
+                    walls.
+                  </p>
+                  <div className="mt-2 text-[10px] font-semibold text-indigo-800 dark:text-indigo-300">
+                    Target: ~1.5 deals closed per month
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-lg border border-amber-200 bg-amber-50/50 dark:bg-amber-950/30">
+                  <Badge className="bg-amber-600 text-white text-[10px]">
+                    High Velocity Retail
+                  </Badge>
+                  <div className="mt-2 font-display font-black text-sm text-slate-900 dark:text-white">
+                    50 Projects @ ₹1.00 Lakh
+                  </div>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-1">
+                    Quick-turnaround landscaping pebbles, flexible stone veneer sheets, TV unit
+                    backdrops.
+                  </p>
+                  <div className="mt-2 text-[10px] font-semibold text-amber-800 dark:text-amber-300">
+                    Target: ~4 deals closed per month
+                  </div>
+                </div>
+              </div>
+
+              {/* 4 Execution Pillars */}
+              <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
+                <div className="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-100 bg-slate-50 dark:bg-slate-800/50">
+                  <div className="h-6 w-6 rounded-full bg-teal-100 text-teal-800 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                    1
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-slate-900 dark:text-white">
+                      Architect &amp; Interior Designer Network
+                    </h5>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      Share the digital stone veneer &amp; pebble catalogues with 10–12 active
+                      design studios weekly. Provide physical sample boxes.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-100 bg-slate-50 dark:bg-slate-800/50">
+                  <div className="h-6 w-6 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                    2
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-slate-900 dark:text-white">
+                      24-Hour Quotation Turnaround
+                    </h5>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      Generate transparent estimates on STOS within 24 hours of receiving site
+                      dimensions or drawings to beat competitors.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-100 bg-slate-50 dark:bg-slate-800/50">
+                  <div className="h-6 w-6 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                    3
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-slate-900 dark:text-white">
+                      Rapid Sample Swatches to Site
+                    </h5>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      Clients finalize 3x faster once they touch stone textures. Deliver sample
+                      swatches within 48 hours of enquiry.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-100 bg-slate-50 dark:bg-slate-800/50">
+                  <div className="h-6 w-6 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                    4
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-slate-900 dark:text-white">
+                      Strict 50% Advance &amp; Dispatch Cadence
+                    </h5>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      Lock in deal with 50% booking advance before factory processing, and confirm
+                      balance receipt before truck dispatch.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SUBTAB 1: DAILY KRA CHECKLIST */}
+        {activeSubTab === "checklist" && (
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/60 dark:bg-emerald-950/30">
+              <div>
+                <div className="flex items-center gap-2">
+                  <CheckSquare className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                    Daily Role KRA Checklist — {formatDate(todayStr)}
+                  </h4>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Complete your daily operational tasks to maintain 100% KRA compliance.
+                  Auto-persisted for today.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <div className="text-[10px] uppercase font-bold text-muted-foreground">
+                    Today's Score
+                  </div>
+                  <div className="text-lg font-black text-emerald-700 dark:text-emerald-400 font-display">
+                    {checklistScorePct}%
+                  </div>
+                </div>
+                <div className="h-8 w-8 rounded-full bg-emerald-100 dark:bg-emerald-900/60 flex items-center justify-center text-emerald-700 dark:text-emerald-300 font-bold text-xs">
+                  {completedTaskCount}/{DEFAULT_DAILY_TASKS.length}
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              {DEFAULT_DAILY_TASKS.map((task) => {
+                const isChecked = !!checkedTasks[task.id];
+                return (
+                  <div
+                    key={task.id}
+                    onClick={() => toggleTask(task.id)}
+                    className={cn(
+                      "flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer select-none",
+                      isChecked
+                        ? "border-emerald-300 bg-emerald-50/40 dark:bg-emerald-950/20"
+                        : "border-border/80 bg-card hover:bg-accent/40",
+                    )}
+                  >
+                    <Checkbox
+                      checked={isChecked}
+                      onCheckedChange={() => toggleTask(task.id)}
+                      className="mt-0.5 h-4 w-4 shrink-0"
+                    />
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span
+                          className={cn(
+                            "text-xs sm:text-sm font-bold",
+                            isChecked
+                              ? "text-slate-500 line-through dark:text-slate-400"
+                              : "text-slate-900 dark:text-white",
+                          )}
+                        >
+                          {task.title}
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] font-semibold bg-slate-100 dark:bg-slate-800"
+                        >
+                          {task.tag}
+                        </Badge>
+                        <span className="text-[10px] text-muted-foreground font-medium">
+                          Weight: {task.kraWeight}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5">{task.desc}</p>
+                    </div>
+
+                    {isChecked && (
+                      <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
+                        Done ✓
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* SUBTAB 2: PERSONALIZED REMINDERS */}
+        {activeSubTab === "reminders" && (
+          <div className="space-y-4">
+            {/* Quick Action Reminders Generated From Live Data */}
+            <div className="space-y-2">
+              <h5 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                Priority System Reminders
+              </h5>
+
+              {/* Overdue Quotes Reminders */}
+              {quotes
+                .filter((q) => q.status === "draft" || q.status === "sent")
+                .slice(0, 3)
+                .map((quote) => (
+                  <div
+                    key={`rem-q-${quote.id}`}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 rounded-xl border border-amber-200 bg-amber-50/50 dark:bg-amber-950/20"
+                  >
+                    <div className="flex items-start gap-2.5 min-w-0">
+                      <Clock className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                      <div>
+                        <div className="text-xs font-bold text-amber-950 dark:text-amber-200">
+                          Follow up on Quote {quote.quote_no} for {quote.customer?.name || "Client"}
+                        </div>
+                        <div className="text-[11px] text-amber-800 dark:text-amber-300">
+                          Amount: {formatInr(quote.total)} • Sent on {formatDate(quote.issue_date)}
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleWhatsappQuote(quote)}
+                      className="h-7 text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-300 gap-1 self-end sm:self-auto"
+                    >
+                      <MessageCircle className="h-3 w-3 text-emerald-600" />
+                      <span>WhatsApp Follow-up</span>
+                    </Button>
+                  </div>
+                ))}
+
+              {/* Pending Lead Reminders */}
+              {leads
+                .filter((l) => l.stage === "new" || l.stage === "qualified")
+                .slice(0, 3)
+                .map((lead) => (
+                  <div
+                    key={`rem-l-${lead.id}`}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 rounded-xl border border-teal-200 bg-teal-50/50 dark:bg-teal-950/20"
+                  >
+                    <div className="flex items-start gap-2.5 min-w-0">
+                      <Sparkles className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                      <div>
+                        <div className="text-xs font-bold text-teal-950 dark:text-teal-200">
+                          Fresh Lead {lead.enquiry_no} • {lead.customer?.name || "Client"}
+                        </div>
+                        <div className="text-[11px] text-teal-800 dark:text-teal-300">
+                          {lead.requirement || "Stone requirement details pending"} • Received{" "}
+                          {formatDate(lead.created_at)}
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleWhatsappLead(lead)}
+                      className="h-7 text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-300 gap-1 self-end sm:self-auto"
+                    >
+                      <MessageCircle className="h-3 w-3 text-emerald-600" />
+                      <span>Call &amp; Message</span>
+                    </Button>
+                  </div>
+                ))}
+            </div>
+
+            {/* Custom Notes / Reminders */}
+            <div className="pt-2 border-t border-border/70 space-y-3">
+              <h5 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                My Personal Reminders ({customReminders.length})
+              </h5>
+
+              <form onSubmit={addCustomReminder} className="flex items-center gap-2">
+                <Input
+                  value={newReminderText}
+                  onChange={(e) => setNewReminderText(e.target.value)}
+                  placeholder="e.g. Call Ar. Mehta at 3 PM regarding Stone Veneer swatches..."
+                  className="h-8 text-xs flex-1"
+                />
+                <Button
+                  type="submit"
+                  size="sm"
+                  className="h-8 text-xs bg-teal-600 text-white gap-1"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Add Reminder</span>
+                </Button>
+              </form>
+
+              {customReminders.length > 0 && (
+                <div className="space-y-1.5">
+                  {customReminders.map((rem) => (
+                    <div
+                      key={rem.id}
+                      className="flex items-center justify-between gap-2 p-2.5 rounded-lg border border-border/80 bg-card text-xs"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Circle className="h-3 w-3 text-teal-600 shrink-0" />
+                        <span className="truncate">{rem.text}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeCustomReminder(rem.id)}
+                        className="text-muted-foreground hover:text-rose-600 p-1 rounded-md"
+                        title="Delete reminder"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* SUBTAB 3: My Leads */}
         {activeSubTab === "leads" && (
           <div className="space-y-2.5">
             {leads.length === 0 ? (
@@ -514,7 +1142,7 @@ export function MySalesPerformanceCard({
           </div>
         )}
 
-        {/* SUBTAB 2: My Quotes */}
+        {/* SUBTAB 4: My Quotes */}
         {activeSubTab === "quotes" && (
           <div className="space-y-2.5">
             {quotes.length === 0 ? (
@@ -576,7 +1204,7 @@ export function MySalesPerformanceCard({
           </div>
         )}
 
-        {/* SUBTAB 3: Order Works & Fulfilment */}
+        {/* SUBTAB 5: Order Works & Fulfilment */}
         {activeSubTab === "works" && (
           <div className="space-y-2.5">
             {orders.length === 0 ? (
@@ -647,7 +1275,7 @@ export function MySalesPerformanceCard({
           </div>
         )}
 
-        {/* SUBTAB 4: Collections & Recovery on My Orders */}
+        {/* SUBTAB 6: Collections & Recovery on My Orders */}
         {activeSubTab === "collections" && (
           <div className="space-y-2.5">
             {orders.length === 0 ? (

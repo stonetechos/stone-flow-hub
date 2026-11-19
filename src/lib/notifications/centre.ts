@@ -53,22 +53,60 @@ interface NotificationRow {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- generic .from<Database>() has no entry for "notifications" until then; this is the one seam that absorbs it.
 const notificationsTable = () => (supabase as any).from("notifications");
 
+function getParkedAlerts(): CentreNotification[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem("stos_parked_notifications_v1");
+    if (!raw) return [];
+    const list = JSON.parse(raw) as Array<{
+      id: string;
+      source: string;
+      title: string;
+      why?: string;
+      actionHref?: string;
+      dismissedAt: string;
+      readAt?: string;
+    }>;
+    return list.map((item) => ({
+      id: `parked-${item.id}`,
+      tier: "important" as const,
+      title: item.title,
+      body: item.why || "Parked notification from insights desk",
+      entityType: "insight",
+      entityId: item.id,
+      linkPath: item.actionHref || "/dashboard",
+      readAt: item.readAt || null,
+      createdAt: item.dismissedAt,
+    }));
+  } catch {
+    return [];
+  }
+}
+
 /**
  * Lists notifications visible to the current user (their own targeted rows
  * plus every broadcast row — see the migration's RLS policy), newest first.
+ * Merges persisted parked alerts so dismissed critical items can be reviewed and acted upon.
  */
 export async function listNotifications(limit = 100): Promise<CentreNotification[]> {
+  const parked = getParkedAlerts();
+
   const { data, error } = await notificationsTable()
     .select("id, tier, title, body, entity_type, entity_id, link_path, read_at, created_at")
     .order("created_at", { ascending: false })
     .limit(limit);
 
   if (error) {
-    if (isMissingTableError(error)) return [];
-    throw error;
+    if (isMissingTableError(error)) return parked.slice(0, limit);
+    return parked.slice(0, limit);
   }
 
-  return ((data ?? []) as NotificationRow[]).map(mapRow);
+  const serverItems = ((data ?? []) as NotificationRow[]).map(mapRow);
+  const combined = [...serverItems, ...parked].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
+
+  return combined.slice(0, limit);
 }
 
 function mapRow(row: NotificationRow): CentreNotification {
@@ -86,6 +124,23 @@ function mapRow(row: NotificationRow): CentreNotification {
 }
 
 export async function markNotificationRead(id: string): Promise<void> {
+  if (id.startsWith("parked-")) {
+    try {
+      const raw = localStorage.getItem("stos_parked_notifications_v1");
+      if (raw) {
+        const list = JSON.parse(raw) as Array<Record<string, unknown>>;
+        const targetId = id.replace("parked-", "");
+        const updated = list.map((x) =>
+          x.id === targetId ? { ...x, readAt: new Date().toISOString() } : x,
+        );
+        localStorage.setItem("stos_parked_notifications_v1", JSON.stringify(updated));
+      }
+    } catch {
+      // Ignore storage error
+    }
+    return;
+  }
+
   const { error } = await notificationsTable()
     .update({ read_at: new Date().toISOString() })
     .eq("id", id)
@@ -95,9 +150,31 @@ export async function markNotificationRead(id: string): Promise<void> {
 
 export async function markAllNotificationsRead(ids: string[]): Promise<void> {
   if (ids.length === 0) return;
+
+  const parkedIds = ids.filter((id) => id.startsWith("parked-"));
+  const serverIds = ids.filter((id) => !id.startsWith("parked-"));
+
+  if (parkedIds.length > 0) {
+    try {
+      const raw = localStorage.getItem("stos_parked_notifications_v1");
+      if (raw) {
+        const list = JSON.parse(raw) as Array<Record<string, unknown>>;
+        const cleanParkedIds = new Set(parkedIds.map((id) => id.replace("parked-", "")));
+        const updated = list.map((x) =>
+          cleanParkedIds.has(x.id as string) ? { ...x, readAt: new Date().toISOString() } : x,
+        );
+        localStorage.setItem("stos_parked_notifications_v1", JSON.stringify(updated));
+      }
+    } catch {
+      // Ignore
+    }
+  }
+
+  if (serverIds.length === 0) return;
+
   const { error } = await notificationsTable()
     .update({ read_at: new Date().toISOString() })
-    .in("id", ids)
+    .in("id", serverIds)
     .is("read_at", null);
   if (error && !isMissingTableError(error)) throw error;
 }

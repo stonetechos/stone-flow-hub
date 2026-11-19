@@ -15,12 +15,24 @@ import { cn } from "@/lib/utils";
 const HIGH_CONFIDENCE_MIN = 0.9;
 const SWIPE_THRESHOLD = 50;
 const AUTO_DISMISS_MS = 14_000;
-const SESSION_STORAGE_KEY = "stos_dismissed_danger_insights";
+const LOCAL_STORAGE_KEY = "stos_dismissed_danger_insights_v2";
+export const PARKED_ALERTS_STORAGE_KEY = "stos_parked_notifications_v1";
 
-function getDismissedSessionSet(): Set<string> {
+export interface ParkedAlertItem {
+  id: string;
+  source: string;
+  title: string;
+  why?: string;
+  actionHref?: string;
+  actionLabel?: string;
+  dismissedAt: string;
+  readAt?: string;
+}
+
+function getDismissedSet(): Set<string> {
   if (typeof window === "undefined") return new Set();
   try {
-    const raw = sessionStorage.getItem(SESSION_STORAGE_KEY);
+    const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
     return raw ? new Set(JSON.parse(raw)) : new Set();
   } catch {
     return new Set();
@@ -30,9 +42,36 @@ function getDismissedSessionSet(): Set<string> {
 function persistDismissedKey(key: string) {
   if (typeof window === "undefined") return;
   try {
-    const set = getDismissedSessionSet();
+    const set = getDismissedSet();
     set.add(key);
-    sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(Array.from(set)));
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(Array.from(set)));
+  } catch {
+    // Ignore storage errors
+  }
+}
+
+export function parkAlertInStorage(insight: InsightWithLifecycle) {
+  if (typeof window === "undefined") return;
+  try {
+    const key = `${insight.source}:${insight.id}`;
+    const raw = localStorage.getItem(PARKED_ALERTS_STORAGE_KEY);
+    const list: ParkedAlertItem[] = raw ? JSON.parse(raw) : [];
+    // Only add if not already parked
+    if (!list.some((item) => item.id === key)) {
+      list.unshift({
+        id: key,
+        source: insight.source,
+        title: insight.title,
+        why: insight.why,
+        actionHref: insight.action?.href,
+        actionLabel: insight.action?.label,
+        dismissedAt: new Date().toISOString(),
+      });
+      // Keep last 50 parked alerts
+      localStorage.setItem(PARKED_ALERTS_STORAGE_KEY, JSON.stringify(list.slice(0, 50)));
+      // Dispatch custom event so NotificationsBell / NotificationsPage can update immediately
+      window.dispatchEvent(new CustomEvent("stos:parked-notifications-updated"));
+    }
   } catch {
     // Ignore storage errors
   }
@@ -314,7 +353,7 @@ export function DangerNotifications() {
     pathname === "/" || pathname === "/dashboard" || pathname.startsWith("/dashboards");
   const { processedInsights } = useExecutiveInsights({ enabled: isDashboard });
   const { withLifecycle, setStatus } = useInsightLifecycle(processedInsights);
-  const [dismissedKeys, setDismissedKeys] = useState<Set<string>>(() => getDismissedSessionSet());
+  const [dismissedKeys, setDismissedKeys] = useState<Set<string>>(() => getDismissedSet());
   const navigate = useNavigate();
 
   // Filter for active, un-dismissed danger insights
@@ -360,6 +399,7 @@ export function DangerNotifications() {
   const handleDismiss = (insight: InsightWithLifecycle) => {
     const key = `${insight.source}:${insight.id}`;
     persistDismissedKey(key);
+    parkAlertInStorage(insight);
     setDismissedKeys((prev) => new Set(prev).add(key));
     setStatus(insight, "dismissed");
   };
@@ -367,6 +407,7 @@ export function DangerNotifications() {
   const handleAct = (insight: InsightWithLifecycle) => {
     const key = `${insight.source}:${insight.id}`;
     persistDismissedKey(key);
+    parkAlertInStorage(insight);
     setDismissedKeys((prev) => new Set(prev).add(key));
     setStatus(insight, "acknowledged");
 

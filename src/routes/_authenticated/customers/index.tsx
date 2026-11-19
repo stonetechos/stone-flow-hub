@@ -827,6 +827,9 @@ function CustomersPage() {
                     <SelectItem value="all">
                       {t("customers.filter.allAssignees", "All assignees")}
                     </SelectItem>
+                    <SelectItem value="vijay">
+                      👤 {transliterateName("Vijay Dave", i18n.language)}
+                    </SelectItem>
                     <SelectItem value="rishi">
                       👤 {transliterateName("Rishi Rai", i18n.language)}
                     </SelectItem>
@@ -1777,7 +1780,7 @@ function CustomerFormDialog({
                     <span>Assigned Salesperson</span>
                   </label>
                   <p className="text-[11px] text-muted-foreground">
-                    Assign this customer account to Rishi or Raman
+                    Assign this customer account to Vijay, Rishi or Raman
                   </p>
                 </div>
                 <CustomerAssigneeSelect
