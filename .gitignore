@@ -38,3 +38,6 @@ dist-capacitor
 
 # Supabase CLI temp
 supabase/.temp/
+
+# Large raw catalog source files
+public/catalogues/flexible-clay-sources/
