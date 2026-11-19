@@ -678,9 +678,8 @@ export function MasterProductCatalog({
   const handleSelectProductClick = (item: CatalogItem, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     setLightboxItem(null);
-    const desc = `${item.name} (${item.code}) - ${item.category} [${item.sizes || "Standard"}] ${
-      item.price ? `@ ₹${item.price}/${item.unit}` : ""
-    }`;
+    const desc =
+      `${item.name} (${item.code}) - ${item.category} [${item.sizes || "Standard"}]`.trim();
     if (onSelectProduct) {
       onSelectProduct(desc);
     } else {
@@ -1667,20 +1666,19 @@ export function MasterProductCatalog({
                         {item.details}
                       </p>
                       <div className="flex items-center justify-between text-[11px]">
-                        {item.price ? (
-                          <span className="text-white font-bold">
-                            ₹{toIndicDigits(String(item.price), lang)}/
-                            {item.unit ? localizeCatalogTerm(item.unit, lang) : ""}
-                          </span>
-                        ) : (
-                          <span className="text-white font-bold">
-                            {lang === "gu"
-                              ? "ચકાસાયેલ પોર્ટફોલિયો"
+                        <span className="text-white font-bold">
+                          {currentTab === "installations"
+                            ? lang === "gu"
+                              ? "લાઇવ સ્થાપિત"
                               : lang === "hi"
-                                ? "सत्यापित पोर्टफोलियो"
-                                : "Verified Portfolio"}
-                          </span>
-                        )}
+                                ? "लाइव स्थापित"
+                                : "Live Executed"
+                            : lang === "gu"
+                              ? "સત્યાપિત સંગ્રહ"
+                              : lang === "hi"
+                                ? "सत्यापित संग्रह"
+                                : "Verified Atelier Collection"}
+                        </span>
                         <span className="flex items-center gap-0.5 text-[10px] text-amber-400 font-semibold">
                           <Eye className="h-3 w-3" />{" "}
                           {lang === "gu" ? "વિગતો" : lang === "hi" ? "विवरण" : "Details"}
@@ -1707,24 +1705,19 @@ export function MasterProductCatalog({
                     </div>
 
                     <div className="pt-1.5 border-t border-border/40 flex items-center justify-between gap-1">
-                      {item.price ? (
-                        <div>
-                          <span className="text-xs font-bold text-foreground">
-                            ₹{toIndicDigits(String(item.price), lang)}
-                          </span>
-                          <span className="text-[9px] text-muted-foreground">
-                            /{item.unit ? localizeCatalogTerm(item.unit, lang) : ""}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
-                          {lang === "gu"
+                      <span className="text-[10px] font-semibold text-muted-foreground">
+                        {currentTab === "installations"
+                          ? lang === "gu"
                             ? "લાઇવ સ્થાપિત"
                             : lang === "hi"
                               ? "लाइव स्थापित"
-                              : "Live Executed"}
-                        </span>
-                      )}
+                              : "Live Executed"
+                          : lang === "gu"
+                            ? "વિનંતી પર ભાવ"
+                            : lang === "hi"
+                              ? "अनुरोध पर मूल्य"
+                              : "Price on Request"}
+                      </span>
                       <Button
                         type="button"
                         size="sm"
@@ -1858,34 +1851,31 @@ export function MasterProductCatalog({
                 </div>
 
                 <div className="pt-4 border-t border-border/60 space-y-3">
-                  {lightboxItem.price ? (
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <span className="text-xs text-muted-foreground block">
-                          {lang === "gu"
-                            ? "ડાયરેક્ટ ફેક્ટરી દર"
-                            : lang === "hi"
-                              ? "डायरेक्ट फैक्ट्री दर"
-                              : "Direct Factory Benchmark"}
-                        </span>
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-2xl font-black text-foreground">
-                            ₹{toIndicDigits(String(lightboxItem.price), lang)}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            /{lightboxItem.unit ? localizeCatalogTerm(lightboxItem.unit, lang) : ""}
-                          </span>
-                        </div>
-                      </div>
-                      <span className="rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-2.5 py-1 text-[10px] font-bold">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-xs text-muted-foreground block">
                         {lang === "gu"
-                          ? "ડિસ્પેચ માટે તૈયાર"
+                          ? "વાસ્તુશિલ્પીય ભાવ પરામર્શ"
                           : lang === "hi"
-                            ? "डिस्पैच हेतु तैयार"
-                            : "Ready to Ship"}
+                            ? "वास्तुशिल्पीय मूल्य परामर्श"
+                            : "Architectural Pricing"}
+                      </span>
+                      <span className="text-base font-bold text-foreground">
+                        {lang === "gu"
+                          ? "પ્રોજેક્ટ વિનંતી પર ઉપલબ્ધ"
+                          : lang === "hi"
+                            ? "प्रोजेक्ट अनुरोध पर उपलब्ध"
+                            : "Price on Project Request"}
                       </span>
                     </div>
-                  ) : null}
+                    <span className="rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-2.5 py-1 text-[10px] font-bold">
+                      {lang === "gu"
+                        ? "મોકલવા માટે તૈયાર"
+                        : lang === "hi"
+                          ? "भेजने के लिए तैयार"
+                          : "Ready to Ship"}
+                    </span>
+                  </div>
 
                   <div className="flex gap-2">
                     <Button

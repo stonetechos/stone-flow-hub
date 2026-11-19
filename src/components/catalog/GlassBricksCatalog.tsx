@@ -301,7 +301,7 @@ export function GlassBricksCatalog({
   const handleEstimateClick = (item: GlassBrickItem) => {
     setLightboxTarget(null);
     if (onSelectProduct) {
-      onSelectProduct(`${item.name} (${item.code}) - ${item.series} @ ₹${item.price}/${item.unit}`);
+      onSelectProduct(`${item.name} (${item.code}) - ${item.series}`);
     }
   };
 
@@ -404,8 +404,6 @@ export function GlassBricksCatalog({
             <SelectContent align="end">
               <SelectItem value="index">{t.sortDefault}</SelectItem>
               <SelectItem value="name">{t.sortName}</SelectItem>
-              <SelectItem value="price-asc">{t.sortPriceAsc}</SelectItem>
-              <SelectItem value="price-desc">{t.sortPriceDesc}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -545,8 +543,8 @@ export function GlassBricksCatalog({
                       </p>
                     </div>
                     <div className="shrink-0 text-right">
-                      <p className="text-xs font-black text-cyan-300">
-                        ₹{toIndicDigits(String(item.price), lang)}/{item.unit}
+                      <p className="text-[11px] font-bold text-cyan-300">
+                        {lang === "gu" ? "વિનંતી પર" : lang === "hi" ? "अनुरोध पर" : "On Request"}
                       </p>
                     </div>
                   </div>
@@ -709,13 +707,18 @@ export function GlassBricksCatalog({
                   <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-between">
                     <div>
                       <p className="text-[11px] font-bold text-cyan-700 dark:text-cyan-400 uppercase tracking-wider">
-                        {t.quarryRate}
+                        {lang === "gu"
+                          ? "વાસ્તુશિલ્પીય ભાવ પરામર્શ"
+                          : lang === "hi"
+                            ? "वास्तुशिल्पीय मूल्य परामर्श"
+                            : "Architectural Pricing"}
                       </p>
-                      <p className="text-lg font-black text-foreground">
-                        ₹{lightboxTarget.price}{" "}
-                        <span className="text-xs font-normal text-muted-foreground">
-                          /{lightboxTarget.unit}
-                        </span>
+                      <p className="text-base font-bold text-foreground">
+                        {lang === "gu"
+                          ? "વિનંતી પર ભાવ ઉપલબ્ધ"
+                          : lang === "hi"
+                            ? "अनुरोध पर मूल्य उपलब्ध"
+                            : "Price on Request"}
                       </p>
                     </div>
                     <Badge variant="secondary" className="text-xs font-semibold">

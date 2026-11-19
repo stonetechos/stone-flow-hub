@@ -141,7 +141,7 @@ export const LANDING_UI_TRANSLATIONS = {
     showcase: {
       sectionTitle: "Architectural Products & Live Executed Works",
       sectionSubtitle:
-        "Explore our verified stone catalogue with transparent factory rates attached, or view live Instagram installation feeds from our luxury villa, hotel & mandir projects.",
+        "Explore our verified architectural stone collection and bespoke finishes, or view live Instagram installation feeds from our luxury villa, hotel & mandir projects.",
       productsTab: "Natural Stone Products & Catalogue",
       claddingTab: "Natural Stone Cladding",
       veneerTab: "Stone Veneer (98)",
@@ -371,7 +371,7 @@ export const LANDING_UI_TRANSLATIONS = {
     showcase: {
       sectionTitle: "वास्तुशिल्पीय उत्पाद एवं लाइव निष्पादित कार्य",
       sectionSubtitle:
-        "पारदर्शी फैक्ट्री दरों के साथ हमारे सत्यापित पाषाण कैटलॉग को देखें, या हमारे विला, होटल और मंदिर प्रोजेक्ट्स के लाइव इंस्टाग्राम इंस्टॉलेशन फीड्स देखें।",
+        "हमारे सत्यापित वास्तुशिल्पीय पाषाण संग्रह एवं विशिष्ट फिनिश का अवलोकन करें, या हमारे विला, होटल और मंदिर प्रोजेक्ट्स के लाइव इंस्टाग्राम इंस्टॉलेशन फीड्स देखें।",
       productsTab: "प्राकृतिक पाषाण उत्पाद एवं कैटलॉग",
       claddingTab: "प्राकृतिक पाषाण दीवार क्लैडिंग",
       veneerTab: "अत्यंत पतली स्टोन विनियर (९८)",
@@ -601,7 +601,7 @@ export const LANDING_UI_TRANSLATIONS = {
     showcase: {
       sectionTitle: "વાસ્તુશિલ્પીય ઉત્પાદનો અને લાઇવ સ્થાપિત કાર્યો",
       sectionSubtitle:
-        "પારદર્શક ફેક્ટરી દરો સાથે અમારા પ્રમાણિત પાષાણ કેટલોગનું અન્વેષણ કરો, અથવા અમારા વિલા, હોટેલ અને મંદિર પ્રોજેક્ટ્સમાંથી લાઇવ ઇન્સ્ટાગ્રામ ફીડ્સ જુઓ.",
+        "અમારા પ્રમાણિત વાસ્તુશિલ્પીય પાષાણ સંગ્રહ અને વિશેષ ફિનિશનું અન્વેષણ કરો, અથવા અમારા વિલા, હોટેલ અને મંદિર પ્રોજેક્ટ્સમાંથી લાઇવ ઇન્સ્ટાગ્રામ ફીડ્સ જુઓ.",
       productsTab: "કુદરતી પાષાણ ઉત્પાદનો અને કેટલોગ",
       claddingTab: "કુદરતી પાષાણ દીવાલ ક્લેડિંગ",
       veneerTab: "અત્યંત પાતળી સ્ટોન વિનિયર (૯૮)",

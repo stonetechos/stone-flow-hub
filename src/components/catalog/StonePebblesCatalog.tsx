@@ -298,7 +298,7 @@ export function StonePebblesCatalog({
   const handleSelectProduct = (item: StonePebbleItem, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     setLightboxTarget(null);
-    const desc = `${item.name} (${item.code}) - ${item.category} [Sizes: ${item.sizes}] @ ₹${item.price}/${item.unit}`;
+    const desc = `${item.name} (${item.code}) - ${item.category} [Sizes: ${item.sizes}]`;
     if (onSelectProduct) {
       onSelectProduct(desc);
     } else {
@@ -406,12 +406,6 @@ export function StonePebblesCatalog({
                 <SelectItem value="name" className="text-xs">
                   {t.sortName}
                 </SelectItem>
-                <SelectItem value="price-asc" className="text-xs">
-                  {t.sortPriceAsc}
-                </SelectItem>
-                <SelectItem value="price-desc" className="text-xs">
-                  {t.sortPriceDesc}
-                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -514,7 +508,11 @@ export function StonePebblesCatalog({
                   </p>
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-white font-bold">
-                      ₹{item.price}/{item.unit}
+                      {lang === "gu"
+                        ? "વિનંતી પર ભાવ"
+                        : lang === "hi"
+                          ? "अनुरोध पर मूल्य"
+                          : "Price on Request"}
                     </span>
                     <span className="flex items-center gap-1 text-[11px] text-amber-400 font-semibold">
                       <Eye className="h-3.5 w-3.5" /> Quick View
@@ -539,8 +537,13 @@ export function StonePebblesCatalog({
 
                 <div className="pt-2 border-t border-border/40 flex items-center justify-between">
                   <div>
-                    <span className="text-xs font-bold text-foreground">₹{item.price}</span>
-                    <span className="text-[10px] text-muted-foreground">/{item.unit}</span>
+                    <span className="text-xs font-semibold text-muted-foreground">
+                      {lang === "gu"
+                        ? "વિનંતી પર ભાવ"
+                        : lang === "hi"
+                          ? "अनुरोध पर मूल्य"
+                          : "Price on Request"}
+                    </span>
                   </div>
                   <Button
                     type="button"
@@ -672,15 +675,20 @@ export function StonePebblesCatalog({
                 <div className="pt-4 border-t border-border/60 space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="text-xs text-muted-foreground block">{t.quarryRate}</span>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-2xl font-black text-foreground">
-                          ₹{lightboxTarget.price}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          /{lightboxTarget.unit}
-                        </span>
-                      </div>
+                      <span className="text-xs text-muted-foreground block">
+                        {lang === "gu"
+                          ? "વાસ્તુશિલ્પીય ભાવ પરામર્શ"
+                          : lang === "hi"
+                            ? "वास्तुशिल्पीय मूल्य परामर्श"
+                            : "Architectural Pricing"}
+                      </span>
+                      <span className="text-base font-bold text-foreground">
+                        {lang === "gu"
+                          ? "વિનંતી પર ભાવ ઉપલબ્ધ"
+                          : lang === "hi"
+                            ? "अनुरोध पर मूल्य उपलब्ध"
+                            : "Price on Request"}
+                      </span>
                     </div>
                     <span className="rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-2.5 py-1 text-[10px] font-bold">
                       {t.inStock}

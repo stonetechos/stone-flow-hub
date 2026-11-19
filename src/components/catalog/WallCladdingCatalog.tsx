@@ -929,12 +929,22 @@ export function WallCladdingCatalog({
                       </div>
 
                       <div className="flex items-center justify-between text-[11px] font-bold">
-                        <span className="flex items-baseline gap-1 text-emerald-400">
-                          <span>
-                            {price.currency} {toIndicDigits(price.price, lang)}
+                        {isSuperAdmin ? (
+                          <span className="flex items-baseline gap-1 text-emerald-400">
+                            <span>
+                              {price.currency} {toIndicDigits(price.price, lang)}
+                            </span>
+                            <span className="text-[9px] text-white/70">{t.sqftUnit}</span>
                           </span>
-                          <span className="text-[9px] text-white/70">{t.sqftUnit}</span>
-                        </span>
+                        ) : (
+                          <span className="text-[10px] text-emerald-400 font-semibold">
+                            {lang === "gu"
+                              ? "વિનંતી પર ભાવ"
+                              : lang === "hi"
+                                ? "अनुरोध पर मूल्य"
+                                : "Price on Request"}
+                          </span>
+                        )}
 
                         <div className="flex items-center gap-1">
                           {isSuperAdmin && (
@@ -1110,15 +1120,27 @@ export function WallCladdingCatalog({
                           {getCladdingName(lightboxTarget, lang)}
                         </DialogTitle>
                         <div className="flex items-baseline gap-1.5 mt-1">
-                          <span className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">
-                            {price.currency} {toIndicDigits(price.price, lang)}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {price.unit === "sq.ft" ? t.sqftUnit : `/ ${price.unit}`}
-                          </span>
-                          {price.mrp && (
-                            <span className="text-xs text-muted-foreground line-through ml-1">
-                              {price.currency} {toIndicDigits(price.mrp, lang)}
+                          {isSuperAdmin ? (
+                            <>
+                              <span className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">
+                                {price.currency} {toIndicDigits(price.price, lang)}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {price.unit === "sq.ft" ? t.sqftUnit : `/ ${price.unit}`}
+                              </span>
+                              {price.mrp && (
+                                <span className="text-xs text-muted-foreground line-through ml-1">
+                                  {price.currency} {toIndicDigits(price.mrp, lang)}
+                                </span>
+                              )}
+                            </>
+                          ) : (
+                            <span className="text-base font-bold text-foreground">
+                              {lang === "gu"
+                                ? "વિનંતી પર ભાવ ઉપલબ્ધ"
+                                : lang === "hi"
+                                  ? "अनुरोध पर मूल्य उपलब्ध"
+                                  : "Price on Request"}
                             </span>
                           )}
                           {isSuperAdmin && (
