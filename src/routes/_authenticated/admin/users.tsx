@@ -95,6 +95,7 @@ import {
   setUserActive,
   resetUserPassword,
   syncOrganizationDataServerFn,
+  confirmUserEmailServerFn,
   type AdminUserRow,
   type AdminUserStatus,
 } from "@/lib/admin/users.functions";
@@ -206,6 +207,7 @@ function UsersAdminPage() {
   const deleteFn = useServerFn(deleteAuthUser);
   const setActiveFn = useServerFn(setUserActive);
   const resetPasswordFn = useServerFn(resetUserPassword);
+  const confirmEmailFn = useServerFn(confirmUserEmailServerFn);
 
   // Identity + roles come from the app's existing auth/permission hooks
   // rather than a bespoke render-time `supabase.auth.getUser()` call. The
@@ -493,6 +495,15 @@ function UsersAdminPage() {
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
+  const confirmEmail = useMutation({
+    mutationFn: (userId: string) => confirmEmailFn({ data: { user_id: userId } }),
+    onSuccess: (res) => {
+      toast.success(`Email marked confirmed for ${res?.email || "user"}`);
+      invalidate();
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | AdminUserStatus>("all");
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -641,6 +652,7 @@ function UsersAdminPage() {
                       onSetActive={(isActive) => setActive.mutate({ userId: u.id, isActive })}
                       onDelete={() => setConfirmDelete(u)}
                       onSetNewPassword={() => setPasswordResetTarget(u)}
+                      onConfirmEmail={() => confirmEmail.mutate(u.id)}
                       busy={busy}
                       // Per-row lifecycle guard: without it, repeated clicks
                       // on "Resend invitation" / "Deactivate" fired duplicate
@@ -1355,6 +1367,7 @@ function UserRowView({
   onSetActive,
   onDelete,
   onSetNewPassword,
+  onConfirmEmail,
   busy,
   lifecycleBusy,
   renaming,
@@ -1371,6 +1384,7 @@ function UserRowView({
   onSetActive: (isActive: boolean) => void;
   onDelete: () => void;
   onSetNewPassword: () => void;
+  onConfirmEmail?: () => void;
   busy: boolean;
   lifecycleBusy: boolean;
   renaming: boolean;
@@ -1464,9 +1478,16 @@ function UserRowView({
       </td>
       <td className="px-4 py-3 text-muted-foreground">{user.email ?? "—"}</td>
       <td className="px-4 py-3">
-        <Badge variant={statusVariant(user.status)}>
-          {t(`status.${user.status}`, STATUS_LABEL[user.status])}
-        </Badge>
+        <div className="flex flex-col gap-1 items-start">
+          <Badge variant={statusVariant(user.status)}>
+            {t(`status.${user.status}`, STATUS_LABEL[user.status])}
+          </Badge>
+          {!user.email_confirmed_at && (
+            <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+              Unconfirmed
+            </span>
+          )}
+        </div>
       </td>
       <td className="px-4 py-3">
         {user.roles.length === 0 ? (
@@ -1562,6 +1583,16 @@ function UserRowView({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>{t("admin.lifecycle", "Lifecycle")}</DropdownMenuLabel>
+              {!user.email_confirmed_at && onConfirmEmail && (
+                <DropdownMenuItem
+                  onClick={onConfirmEmail}
+                  disabled={lifecycleBusy}
+                  className="text-emerald-700 dark:text-emerald-400 font-semibold cursor-pointer"
+                >
+                  <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-600" />
+                  Confirm email address
+                </DropdownMenuItem>
+              )}
               {pendingInvite ? (
                 <>
                   <DropdownMenuItem onClick={onCopyInvite} disabled={!user.email || lifecycleBusy}>

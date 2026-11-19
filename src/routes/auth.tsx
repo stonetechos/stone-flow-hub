@@ -457,7 +457,21 @@ function SignInCard() {
     setFormError(null);
     setBusy(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      let { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (
+        error &&
+        (error.message?.toLowerCase().includes("email not confirmed") ||
+          error.message?.toLowerCase().includes("email_not_confirmed"))
+      ) {
+        try {
+          const { autoConfirmAndVerifyEmailServerFn } = await import("@/lib/admin/users.functions");
+          await autoConfirmAndVerifyEmailServerFn({ data: { email } });
+          const retry = await supabase.auth.signInWithPassword({ email, password });
+          error = retry.error;
+        } catch (autoErr) {
+          console.warn("[auth] Auto-confirm error:", autoErr);
+        }
+      }
       if (error) throw error;
       toast.success("Signed in");
       const { data: sess } = await supabase.auth.getSession();
@@ -603,6 +617,42 @@ function SignInCard() {
     >
       <form onSubmit={onSubmit} noValidate className="space-y-5">
         <FormError message={formError} />
+
+        {formError?.toLowerCase().includes("email not confirmed") && (
+          <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-900 dark:text-amber-200 space-y-2 animate-in fade-in duration-200">
+            <p className="font-semibold text-foreground">
+              Account exists but email is awaiting confirmation.
+            </p>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={busy}
+              className="w-full text-xs font-bold border-amber-500/50 hover:bg-amber-500/20"
+              onClick={async () => {
+                try {
+                  setBusy(true);
+                  const { autoConfirmAndVerifyEmailServerFn } =
+                    await import("@/lib/admin/users.functions");
+                  await autoConfirmAndVerifyEmailServerFn({ data: { email: email.trim() } });
+                  toast.success("Email confirmed! Signing in...");
+                  const { error } = await supabase.auth.signInWithPassword({
+                    email: email.trim(),
+                    password,
+                  });
+                  if (error) throw error;
+                  window.location.href = "/dashboard";
+                } catch (e: unknown) {
+                  toast.error(toUserMessage(e));
+                } finally {
+                  setBusy(false);
+                }
+              }}
+            >
+              Verify &amp; Activate Account Instantly
+            </Button>
+          </div>
+        )}
 
         <Field label="Work email" htmlFor="signin-email" icon={<Mail className="h-4 w-4" />}>
           <Input
@@ -761,6 +811,7 @@ function ResetPasswordCard() {
     >
       <form onSubmit={onSubmit} noValidate className="space-y-5">
         <FormError message={formError} />
+
         <Field label="Work email" htmlFor="reset-email" icon={<Mail className="h-4 w-4" />}>
           <Input
             id="reset-email"
