@@ -55,7 +55,7 @@ interface InstalledWorksGalleryProps {
 
 const TEXTS = {
   en: {
-    heading: "few of our works",
+    heading: "Few of Our Works",
     projectsCount: "Executed Projects",
     allCategories: "All Projects",
     claddingCategory: "Stone Cladding",

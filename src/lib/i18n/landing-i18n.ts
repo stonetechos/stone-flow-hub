@@ -148,7 +148,7 @@ export const LANDING_UI_TRANSLATIONS = {
       glassBricksTab: "Glass Bricks (67)",
       clayVeneersTab: "Clay Veneers (40)",
       pebblesTab: "Stone Pebbles (75)",
-      installationsTab: "few of our works",
+      installationsTab: "Few of Our Works",
       portfolioBadge: "The Architectural Atelier Portfolio",
       directMine: "Direct Mine Sourcing · Sub-Millimeter Tolerances",
       title: "Curated Natural Stone Collections",

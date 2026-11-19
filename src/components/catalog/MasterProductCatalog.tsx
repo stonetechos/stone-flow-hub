@@ -123,6 +123,7 @@ const LOCALIZED_CATALOG_STRINGS: Record<string, { hi: string; gu: string }> = {
   "Glass Bricks": { hi: "कांच की ईंटें", gu: "કાચની ઈંટો" },
   "Clay Veneers": { hi: "फ्लेक्सिबल क्ले विनियर्स", gu: "ક્લે વિનિયર્સ" },
   "Stone Pebbles": { hi: "स्टोन पेबल्स एवं कंकड़", gu: "સ્ટોન પેબલ્સ" },
+  "Few of Our Works": { hi: "हमारे कुछ कार्य", gu: "અમારા કેટલાક કાર્યો" },
   "few of our works": { hi: "हमारे कुछ कार्य", gu: "અમારા કેટલાક કાર્યો" },
   "A few of more works": { hi: "हमारे कुछ और कार्य", gu: "અમારા કેટલાક વધુ કાર્યો" },
   "Live Installed Works": { hi: "हमारे कुछ और कार्य", gu: "અમારા કેટલાક વધુ કાર્યો" },
@@ -294,6 +295,36 @@ function localizeCatalogTerm(term: string | null | undefined, lang: "en" | "hi" 
     }
   }
   return term;
+}
+
+function getTirangaLangBtnClass(btnLang: "en" | "hi" | "gu", activeLang: string) {
+  const isActive = activeLang === btnLang;
+  if (btnLang === "en") {
+    return cn(
+      "flex-1 text-center py-1.5 px-2 text-[11px] font-bold rounded-md transition-all cursor-pointer border",
+      "bg-[#FF9933] hover:bg-[#F28500] text-white border-[#E68524] shadow-xs",
+      isActive
+        ? "ring-2 ring-amber-500 ring-offset-1 font-extrabold shadow-sm scale-[1.02]"
+        : "opacity-95 hover:opacity-100",
+    );
+  }
+  if (btnLang === "hi") {
+    return cn(
+      "flex-1 text-center py-1.5 px-2 text-[11px] font-bold rounded-md transition-all cursor-pointer border",
+      "bg-white dark:bg-stone-100 hover:bg-stone-50 text-slate-950 border-slate-300 dark:border-slate-400 shadow-xs",
+      isActive
+        ? "ring-2 ring-slate-500 ring-offset-1 font-extrabold shadow-sm scale-[1.02]"
+        : "opacity-95 hover:opacity-100",
+    );
+  }
+  // gu (Indian Green)
+  return cn(
+    "flex-1 text-center py-1.5 px-2 text-[11px] font-bold rounded-md transition-all cursor-pointer border",
+    "bg-[#138808] hover:bg-[#0E6C06] text-white border-[#0E6C06] shadow-xs",
+    isActive
+      ? "ring-2 ring-emerald-500 ring-offset-1 font-extrabold shadow-sm scale-[1.02]"
+      : "opacity-95 hover:opacity-100",
+  );
 }
 
 export interface MasterProductCatalogProps {
@@ -1005,19 +1036,24 @@ export function MasterProductCatalog({
           type="button"
           onClick={() => handleTabChange("installations")}
           className={cn(
-            "flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
+            "relative flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 whitespace-nowrap cursor-pointer border overflow-hidden",
+            "animate-works-glow",
             currentTab === "installations"
-              ? "bg-primary text-primary-foreground shadow-xs"
-              : "text-muted-foreground hover:text-foreground",
+              ? "bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.5)]"
+              : "bg-gradient-to-r from-emerald-500/15 via-teal-500/20 to-emerald-500/15 border-emerald-500/40 text-emerald-800 dark:text-emerald-300 hover:text-emerald-950 dark:hover:text-emerald-100",
           )}
         >
-          <Camera className="h-4 w-4 text-emerald-500" />
-          <span>
+          <span className="relative flex h-2 w-2 shrink-0">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+          </span>
+          <Camera className="h-4 w-4 text-emerald-500 dark:text-emerald-400 shrink-0" />
+          <span className="tracking-wide">
             {lang === "gu"
               ? "અમારા કેટલાક કાર્યો"
               : lang === "hi"
                 ? "हमारे कुछ कार्य"
-                : "few of our works"}
+                : "Few of Our Works"}
           </span>
         </button>
       </div>
@@ -1191,40 +1227,42 @@ export function MasterProductCatalog({
                         : "275 Patterns"}
                   </Badge>
                 </div>
-                <div className="flex items-center gap-1.5 pt-1">
+
+                <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground pt-0.5">
+                  <span className="flex items-center gap-1">
+                    <Download className="h-3 w-3 text-emerald-600" />
+                    <span>
+                      {lang === "gu"
+                        ? "સંપૂર્ણ ક્લેડિંગ કેટલોગ (૭૧ પાન)"
+                        : lang === "hi"
+                          ? "संपूर्ण क्लैडिंग कैटलॉग (७१ पृष्ठ)"
+                          : "Complete Cladding Catalogue (71 Pgs)"}
+                    </span>
+                  </span>
+                  <span className="text-[10px] font-mono font-semibold text-foreground/80">
+                    14.2 MB
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-1.5 pt-0.5">
                   <a
                     href="/catalogues/StoneTech_NaturalStone_WallCl_Options_English.pdf"
                     download="StoneTech_NaturalStone_WallCl_Options_English.pdf"
-                    className={cn(
-                      "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
-                      activeLangCode === "en"
-                        ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
-                        : "bg-background/80 hover:bg-accent border-border text-foreground",
-                    )}
+                    className={getTirangaLangBtnClass("en", activeLangCode)}
                   >
                     English
                   </a>
                   <a
                     href="/catalogues/StoneTech_NaturalStone_WallCl_Options_Hindi.pdf"
                     download="StoneTech_NaturalStone_WallCl_Options_Hindi.pdf"
-                    className={cn(
-                      "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
-                      activeLangCode === "hi"
-                        ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
-                        : "bg-background/80 hover:bg-accent border-border text-foreground",
-                    )}
+                    className={getTirangaLangBtnClass("hi", activeLangCode)}
                   >
                     हिंदी
                   </a>
                   <a
                     href="/catalogues/StoneTech_NaturalStone_WallCl_Options_Gujarati.pdf"
                     download="StoneTech_NaturalStone_WallCl_Options_Gujarati.pdf"
-                    className={cn(
-                      "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
-                      activeLangCode === "gu"
-                        ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
-                        : "bg-background/80 hover:bg-accent border-border text-foreground",
-                    )}
+                    className={getTirangaLangBtnClass("gu", activeLangCode)}
                   >
                     ગુજરાતી
                   </a>
@@ -1249,40 +1287,42 @@ export function MasterProductCatalog({
                     {lang === "gu" ? "૯૮ જાતો" : lang === "hi" ? "९૮ किस्में" : "98 Varieties"}
                   </Badge>
                 </div>
-                <div className="flex items-center gap-1.5 pt-1">
+
+                <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground pt-0.5">
+                  <span className="flex items-center gap-1">
+                    <Download className="h-3 w-3 text-amber-600" />
+                    <span>
+                      {lang === "gu"
+                        ? "સ્ટોન વિનિયર કેટલોગ (૧૦૬ પાન)"
+                        : lang === "hi"
+                          ? "स्टोन विनियर कैटलॉग (१०६ पृष्ठ)"
+                          : "Stone Veneer Catalogue (106 Pgs)"}
+                    </span>
+                  </span>
+                  <span className="text-[10px] font-mono font-semibold text-foreground/80">
+                    15.4 MB
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-1.5 pt-0.5">
                   <a
                     href="/catalogues/StoneTech_Stone_Veneer_Catalogue_English.pdf"
                     download="StoneTech_Stone_Veneer_Catalogue_English.pdf"
-                    className={cn(
-                      "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
-                      activeLangCode === "en"
-                        ? "bg-amber-600 text-white border-amber-600 shadow-xs"
-                        : "bg-background/80 hover:bg-accent border-border text-foreground",
-                    )}
+                    className={getTirangaLangBtnClass("en", activeLangCode)}
                   >
                     English
                   </a>
                   <a
                     href="/catalogues/StoneTech_Stone_Veneer_Catalogue_Hindi.pdf"
                     download="StoneTech_Stone_Veneer_Catalogue_Hindi.pdf"
-                    className={cn(
-                      "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
-                      activeLangCode === "hi"
-                        ? "bg-amber-600 text-white border-amber-600 shadow-xs"
-                        : "bg-background/80 hover:bg-accent border-border text-foreground",
-                    )}
+                    className={getTirangaLangBtnClass("hi", activeLangCode)}
                   >
                     हिंदी
                   </a>
                   <a
                     href="/catalogues/StoneTech_Stone_Veneer_Catalogue_Gujarati.pdf"
                     download="StoneTech_Stone_Veneer_Catalogue_Gujarati.pdf"
-                    className={cn(
-                      "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
-                      activeLangCode === "gu"
-                        ? "bg-amber-600 text-white border-amber-600 shadow-xs"
-                        : "bg-background/80 hover:bg-accent border-border text-foreground",
-                    )}
+                    className={getTirangaLangBtnClass("gu", activeLangCode)}
                   >
                     ગુજરાતી
                   </a>
@@ -1325,36 +1365,21 @@ export function MasterProductCatalog({
                     <a
                       href="/catalogues/StoneTech_Solid_Glass_Bricks_Catalogue_English.pdf"
                       download="StoneTech_Solid_Glass_Bricks_Catalogue_English.pdf"
-                      className={cn(
-                        "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
-                        activeLangCode === "en"
-                          ? "bg-sky-600 text-white border-sky-600 shadow-xs"
-                          : "bg-background/80 hover:bg-accent border-border text-foreground",
-                      )}
+                      className={getTirangaLangBtnClass("en", activeLangCode)}
                     >
                       English
                     </a>
                     <a
                       href="/catalogues/StoneTech_Solid_Glass_Bricks_Catalogue_Hindi.pdf"
                       download="StoneTech_Solid_Glass_Bricks_Catalogue_Hindi.pdf"
-                      className={cn(
-                        "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
-                        activeLangCode === "hi"
-                          ? "bg-sky-600 text-white border-sky-600 shadow-xs"
-                          : "bg-background/80 hover:bg-accent border-border text-foreground",
-                      )}
+                      className={getTirangaLangBtnClass("hi", activeLangCode)}
                     >
                       हिंदी
                     </a>
                     <a
                       href="/catalogues/StoneTech_Solid_Glass_Bricks_Catalogue_Gujarati.pdf"
                       download="StoneTech_Solid_Glass_Bricks_Catalogue_Gujarati.pdf"
-                      className={cn(
-                        "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
-                        activeLangCode === "gu"
-                          ? "bg-sky-600 text-white border-sky-600 shadow-xs"
-                          : "bg-background/80 hover:bg-accent border-border text-foreground",
-                      )}
+                      className={getTirangaLangBtnClass("gu", activeLangCode)}
                     >
                       ગુજરાતી
                     </a>
@@ -1378,36 +1403,21 @@ export function MasterProductCatalog({
                     <a
                       href="/catalogues/StoneTech_Glass_Bricks_Catalogue_English.pdf"
                       download="StoneTech_Glass_Bricks_Catalogue_English.pdf"
-                      className={cn(
-                        "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
-                        activeLangCode === "en"
-                          ? "bg-sky-600 text-white border-sky-600 shadow-xs"
-                          : "bg-background/80 hover:bg-accent border-border text-foreground",
-                      )}
+                      className={getTirangaLangBtnClass("en", activeLangCode)}
                     >
                       English
                     </a>
                     <a
                       href="/catalogues/StoneTech_Glass_Bricks_Catalogue_Hindi.pdf"
                       download="StoneTech_Glass_Bricks_Catalogue_Hindi.pdf"
-                      className={cn(
-                        "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
-                        activeLangCode === "hi"
-                          ? "bg-sky-600 text-white border-sky-600 shadow-xs"
-                          : "bg-background/80 hover:bg-accent border-border text-foreground",
-                      )}
+                      className={getTirangaLangBtnClass("hi", activeLangCode)}
                     >
                       हिंदी
                     </a>
                     <a
                       href="/catalogues/StoneTech_Glass_Bricks_Catalogue_Gujarati.pdf"
                       download="StoneTech_Glass_Bricks_Catalogue_Gujarati.pdf"
-                      className={cn(
-                        "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
-                        activeLangCode === "gu"
-                          ? "bg-sky-600 text-white border-sky-600 shadow-xs"
-                          : "bg-background/80 hover:bg-accent border-border text-foreground",
-                      )}
+                      className={getTirangaLangBtnClass("gu", activeLangCode)}
                     >
                       ગુજરાતી
                     </a>
@@ -1437,40 +1447,42 @@ export function MasterProductCatalog({
                         : "40 Textures"}
                   </Badge>
                 </div>
-                <div className="flex items-center gap-1.5 pt-1">
+
+                <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground pt-0.5">
+                  <span className="flex items-center gap-1">
+                    <Download className="h-3 w-3 text-orange-600" />
+                    <span>
+                      {lang === "gu"
+                        ? "ક્લે વિનિયર્સ કેટલોગ (૩૭ પાન)"
+                        : lang === "hi"
+                          ? "क्ले विनियर्स कैटलॉग (३७ पृष्ठ)"
+                          : "Clay Veneers Catalogue (37 Pgs)"}
+                    </span>
+                  </span>
+                  <span className="text-[10px] font-mono font-semibold text-foreground/80">
+                    11.2 MB
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-1.5 pt-0.5">
                   <a
                     href="/catalogues/StoneTech_Flexible_Clay_Veneers_Catalogue_English.pdf"
                     download="StoneTech_Flexible_Clay_Veneers_Catalogue_English.pdf"
-                    className={cn(
-                      "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
-                      activeLangCode === "en"
-                        ? "bg-orange-600 text-white border-orange-600 shadow-xs"
-                        : "bg-background/80 hover:bg-accent border-border text-foreground",
-                    )}
+                    className={getTirangaLangBtnClass("en", activeLangCode)}
                   >
                     English
                   </a>
                   <a
                     href="/catalogues/StoneTech_Flexible_Clay_Veneers_Catalogue_Hindi.pdf"
                     download="StoneTech_Flexible_Clay_Veneers_Catalogue_Hindi.pdf"
-                    className={cn(
-                      "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
-                      activeLangCode === "hi"
-                        ? "bg-orange-600 text-white border-orange-600 shadow-xs"
-                        : "bg-background/80 hover:bg-accent border-border text-foreground",
-                    )}
+                    className={getTirangaLangBtnClass("hi", activeLangCode)}
                   >
                     हिंदी
                   </a>
                   <a
                     href="/catalogues/StoneTech_Flexible_Clay_Veneers_Catalogue_Gujarati.pdf"
                     download="StoneTech_Flexible_Clay_Veneers_Catalogue_Gujarati.pdf"
-                    className={cn(
-                      "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
-                      activeLangCode === "gu"
-                        ? "bg-orange-600 text-white border-orange-600 shadow-xs"
-                        : "bg-background/80 hover:bg-accent border-border text-foreground",
-                    )}
+                    className={getTirangaLangBtnClass("gu", activeLangCode)}
                   >
                     ગુજરાતી
                   </a>
@@ -1495,40 +1507,42 @@ export function MasterProductCatalog({
                     {lang === "gu" ? "૭૫ જાતો" : lang === "hi" ? "૭૫ किस्में" : "75 Varieties"}
                   </Badge>
                 </div>
-                <div className="flex items-center gap-1.5 pt-1">
+
+                <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground pt-0.5">
+                  <span className="flex items-center gap-1">
+                    <Download className="h-3 w-3 text-amber-600" />
+                    <span>
+                      {lang === "gu"
+                        ? "સ્ટોન પેબલ્સ કેટલોગ (૨૩ પાન)"
+                        : lang === "hi"
+                          ? "स्टोन पेबल्स कैटलॉग (२३ पृष्ठ)"
+                          : "Stone Pebbles Catalogue (23 Pgs)"}
+                    </span>
+                  </span>
+                  <span className="text-[10px] font-mono font-semibold text-foreground/80">
+                    16.2 MB
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-1.5 pt-0.5">
                   <a
                     href="/catalogues/StoneTech_Stone_Pebbles_Catalogue_English.pdf"
                     download="StoneTech_Stone_Pebbles_Catalogue_English.pdf"
-                    className={cn(
-                      "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
-                      activeLangCode === "en"
-                        ? "bg-amber-600 text-white border-amber-600 shadow-xs"
-                        : "bg-background/80 hover:bg-accent border-border text-foreground",
-                    )}
+                    className={getTirangaLangBtnClass("en", activeLangCode)}
                   >
                     English
                   </a>
                   <a
                     href="/catalogues/StoneTech_Stone_Pebbles_Catalogue_Hindi.pdf"
                     download="StoneTech_Stone_Pebbles_Catalogue_Hindi.pdf"
-                    className={cn(
-                      "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
-                      activeLangCode === "hi"
-                        ? "bg-amber-600 text-white border-amber-600 shadow-xs"
-                        : "bg-background/80 hover:bg-accent border-border text-foreground",
-                    )}
+                    className={getTirangaLangBtnClass("hi", activeLangCode)}
                   >
                     हिंदी
                   </a>
                   <a
                     href="/catalogues/StoneTech_Stone_Pebbles_Catalogue_Gujarati.pdf"
                     download="StoneTech_Stone_Pebbles_Catalogue_Gujarati.pdf"
-                    className={cn(
-                      "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
-                      activeLangCode === "gu"
-                        ? "bg-amber-600 text-white border-amber-600 shadow-xs"
-                        : "bg-background/80 hover:bg-accent border-border text-foreground",
-                    )}
+                    className={getTirangaLangBtnClass("gu", activeLangCode)}
                   >
                     ગુજરાતી
                   </a>

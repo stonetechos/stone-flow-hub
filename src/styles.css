@@ -1679,6 +1679,28 @@ input[type="number"] {
   animation: badge-glow-bounce 1.8s ease-in-out infinite;
 }
 
+/* Softly illuminating animated tab for executed architectural works */
+@keyframes works-tab-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 10px rgba(16, 185, 129, 0.3),
+      inset 0 0 8px rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.5);
+  }
+  50% {
+    box-shadow:
+      0 0 22px rgba(16, 185, 129, 0.65),
+      0 0 32px rgba(20, 184, 166, 0.3),
+      inset 0 0 14px rgba(16, 185, 129, 0.3);
+    border-color: rgba(16, 185, 129, 0.95);
+  }
+}
+
+.animate-works-glow {
+  animation: works-tab-glow 2.6s ease-in-out infinite;
+}
+
 /* Hide Sparkles icon universally across the entire application and website */
 .lucide-sparkles,
 svg[data-icon="sparkles"] {
