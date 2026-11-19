@@ -15,7 +15,7 @@ import {
   prepareCustomerExternalRef,
   stripMissingCustomerColumns,
 } from "./normalize";
-import type { CustomerResponseStatus } from "./crm-status";
+import type { CustomerResponseStatus, CustomerSalespersonKey } from "./crm-status";
 
 export type CustomerRow = DbTable<"customers">;
 
@@ -683,7 +683,7 @@ export async function updateCustomerCrmStatus(
 
 export async function updateCustomerSalesperson(input: {
   customerId: string;
-  salesperson: "rishi" | "raman" | null;
+  salesperson: CustomerSalespersonKey | null;
 }): Promise<CustomerRow> {
   try {
     const { updateCustomerSalespersonServerFn } = await import("./customers.functions");
@@ -713,7 +713,9 @@ export async function updateCustomerSalesperson(input: {
         ? "Rishi Rai"
         : input.salesperson === "raman"
           ? "Raman Pupneja"
-          : null;
+          : input.salesperson === "vijay"
+            ? "Vijay Dave"
+            : null;
 
     const updatedWf = {
       ...currentWf,

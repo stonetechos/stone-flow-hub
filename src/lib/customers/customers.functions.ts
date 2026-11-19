@@ -847,7 +847,7 @@ export const logCustomerContactServerFn = createServerFn({ method: "POST" })
 
 const updateCustomerSalespersonInput = z.object({
   customerId: z.string().uuid(),
-  salesperson: z.enum(["rishi", "raman"]).nullable(),
+  salesperson: z.enum(["rishi", "raman", "vijay"]).nullable(),
 });
 
 export const updateCustomerSalespersonServerFn = createServerFn({ method: "POST" })
@@ -872,7 +872,9 @@ export const updateCustomerSalespersonServerFn = createServerFn({ method: "POST"
         ? "Rishi Rai"
         : data.salesperson === "raman"
           ? "Raman Pupneja"
-          : null;
+          : data.salesperson === "vijay"
+            ? "Vijay Dave"
+            : null;
 
     const updatedWf: Record<string, unknown> = {
       ...currentWf,

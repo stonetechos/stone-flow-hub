@@ -40,9 +40,17 @@ export const desktopChannel: NotificationChannel = {
           tag: payload.entityId || `stos-${Date.now()}`,
         });
         n.onclick = () => {
-          window.focus();
+          try {
+            window.focus();
+          } catch {
+            // ignore window focus restriction
+          }
           if (payload.linkPath) {
-            window.location.href = payload.linkPath;
+            if (window.location.pathname === payload.linkPath) {
+              n.close();
+              return;
+            }
+            window.location.assign(payload.linkPath);
           }
           n.close();
         };

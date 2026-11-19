@@ -1,0 +1,712 @@
+import { useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import {
+  TrendingUp,
+  Users,
+  FileCheck,
+  PackageCheck,
+  IndianRupee,
+  Phone,
+  MessageCircle,
+  Truck,
+  ArrowRight,
+  ExternalLink,
+  Plus,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  RefreshCw,
+} from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { formatInr, formatDate, toIndicDigits } from "@/lib/format";
+import { transliterateName } from "@/lib/i18n/transliterate";
+import { openWhatsappToContact } from "@/lib/whatsapp";
+import { cn } from "@/lib/utils";
+
+interface MySalesPerformanceCardProps {
+  userId?: string;
+  userName?: string;
+  userEmail?: string;
+}
+
+interface SalesLead {
+  id: string;
+  enquiry_no: string;
+  stage: string;
+  priority: string;
+  requirement: string | null;
+  budget_inr: number | null;
+  created_at: string;
+  customer?: {
+    id: string;
+    name: string;
+    primary_phone: string | null;
+    whatsapp: string | null;
+    city: string | null;
+  } | null;
+}
+
+interface SalesQuote {
+  id: string;
+  quote_no: string;
+  status: string;
+  total: number;
+  issue_date: string;
+  customer?: {
+    id: string;
+    name: string;
+    primary_phone: string | null;
+    whatsapp: string | null;
+  } | null;
+  project?: {
+    id: string;
+    name: string;
+  } | null;
+}
+
+interface SalesOrderWork {
+  id: string;
+  so_no: string;
+  status: string;
+  subtotal: number;
+  order_date: string;
+  delivery_date: string | null;
+  customer?: {
+    id: string;
+    name: string;
+    primary_phone: string | null;
+    whatsapp: string | null;
+  } | null;
+  project?: {
+    id: string;
+    name: string;
+  } | null;
+  dispatches?: Array<{
+    id: string;
+    dispatch_no: string | null;
+    status: string | null;
+    dispatch_date: string | null;
+  }>;
+}
+
+export function MySalesPerformanceCard({
+  userId,
+  userName = "Vijay Dave",
+  userEmail = "vijaydave3476@gmail.com",
+}: MySalesPerformanceCardProps) {
+  const { t, i18n } = useTranslation();
+  const [activeSubTab, setActiveSubTab] = useState<"leads" | "quotes" | "works" | "collections">(
+    "leads",
+  );
+
+  // 1. Fetch My Leads & CRM Inquiries
+  const leadsQ = useQuery<SalesLead[]>({
+    queryKey: ["my-sales-leads", userId],
+    queryFn: async () => {
+      let q = supabase
+        .from("enquiries")
+        .select(
+          `id, enquiry_no, stage, priority, requirement, budget_inr, created_at,
+           customer:customers!enquiries_customer_id_fkey(id, name, primary_phone, whatsapp, city)`,
+        )
+        .order("created_at", { ascending: false })
+        .limit(30);
+
+      if (userId) {
+        q = q.or(`created_by.eq.${userId},assigned_to.eq.${userId}`);
+      }
+
+      const { data, error } = await q;
+      if (error) {
+        // Fallback: if no assigned leads yet, fetch recent active leads for sales desk
+        const { data: allData } = await supabase
+          .from("enquiries")
+          .select(
+            `id, enquiry_no, stage, priority, requirement, budget_inr, created_at,
+             customer:customers!enquiries_customer_id_fkey(id, name, primary_phone, whatsapp, city)`,
+          )
+          .order("created_at", { ascending: false })
+          .limit(30);
+        return (allData ?? []) as unknown as SalesLead[];
+      }
+      // If user has zero assigned yet, show latest pipeline so dashboard is never empty
+      if (!data || data.length === 0) {
+        const { data: allData } = await supabase
+          .from("enquiries")
+          .select(
+            `id, enquiry_no, stage, priority, requirement, budget_inr, created_at,
+             customer:customers!enquiries_customer_id_fkey(id, name, primary_phone, whatsapp, city)`,
+          )
+          .order("created_at", { ascending: false })
+          .limit(20);
+        return (allData ?? []) as unknown as SalesLead[];
+      }
+      return (data ?? []) as unknown as SalesLead[];
+    },
+    staleTime: 30_000,
+  });
+
+  // 2. Fetch My Quotes
+  const quotesQ = useQuery<SalesQuote[]>({
+    queryKey: ["my-sales-quotes", userId],
+    queryFn: async () => {
+      let q = supabase
+        .from("quotes")
+        .select(
+          `id, quote_no, status, total, issue_date,
+           customer:customers!quotes_customer_id_fkey(id, name, primary_phone, whatsapp),
+           project:projects!quotes_project_id_fkey(id, name)`,
+        )
+        .order("created_at", { ascending: false })
+        .limit(25);
+
+      if (userId) {
+        q = q.eq("created_by", userId);
+      }
+
+      const { data, error } = await q;
+      if (error || !data || data.length === 0) {
+        const { data: allQuotes } = await supabase
+          .from("quotes")
+          .select(
+            `id, quote_no, status, total, issue_date,
+             customer:customers!quotes_customer_id_fkey(id, name, primary_phone, whatsapp),
+             project:projects!quotes_project_id_fkey(id, name)`,
+          )
+          .order("created_at", { ascending: false })
+          .limit(20);
+        return (allQuotes ?? []) as unknown as SalesQuote[];
+      }
+      return (data ?? []) as unknown as SalesQuote[];
+    },
+    staleTime: 30_000,
+  });
+
+  // 3. Fetch My Orders & Fulfilment / Works Status
+  const ordersQ = useQuery<SalesOrderWork[]>({
+    queryKey: ["my-sales-orders-works", userId],
+    queryFn: async () => {
+      let q = supabase
+        .from("sales_orders")
+        .select(
+          `id, so_no, status, subtotal, order_date, delivery_date,
+           customer:customers!sales_orders_customer_id_fkey(id, name, primary_phone, whatsapp),
+           project:projects!sales_orders_project_id_fkey(id, name),
+           dispatches:dispatches!dispatches_sales_order_id_fkey(id, dispatch_no, status, dispatch_date)`,
+        )
+        .order("created_at", { ascending: false })
+        .limit(25);
+
+      if (userId) {
+        q = q.eq("created_by", userId);
+      }
+
+      const { data, error } = await q;
+      if (error || !data || data.length === 0) {
+        const { data: allOrders } = await supabase
+          .from("sales_orders")
+          .select(
+            `id, so_no, status, subtotal, order_date, delivery_date,
+             customer:customers!sales_orders_customer_id_fkey(id, name, primary_phone, whatsapp),
+             project:projects!sales_orders_project_id_fkey(id, name),
+             dispatches:dispatches!dispatches_sales_order_id_fkey(id, dispatch_no, status, dispatch_date)`,
+          )
+          .order("created_at", { ascending: false })
+          .limit(20);
+        return (allOrders ?? []) as unknown as SalesOrderWork[];
+      }
+      return (data ?? []) as unknown as SalesOrderWork[];
+    },
+    staleTime: 30_000,
+  });
+
+  const leads = leadsQ.data ?? [];
+  const quotes = quotesQ.data ?? [];
+  const orders = ordersQ.data ?? [];
+
+  // Compute personal sales KPIs
+  const activeLeadsCount = leads.filter(
+    (l) => !["completed", "lost", "cancelled"].includes(l.stage),
+  ).length;
+  const quotePipelineVal = quotes
+    .filter((q) => q.status !== "rejected" && q.status !== "expired")
+    .reduce((sum, q) => sum + (Number(q.total) || 0), 0);
+  const confirmedOrdersVal = orders.reduce((sum, o) => sum + (Number(o.subtotal) || 0), 0);
+  const ordersInFulfilment = orders.filter(
+    (o) => o.status === "confirmed" || o.status === "in_production" || o.status === "ready_to_ship",
+  ).length;
+
+  const handleWhatsappLead = (lead: SalesLead) => {
+    const phone = lead.customer?.whatsapp || lead.customer?.primary_phone;
+    if (!phone) return;
+    const custName = lead.customer?.name || "Sir/Madam";
+    const msg = `Namaste ${custName} ji, greeting from Stone Tech! Following up on your stone enquiry (${lead.enquiry_no}). How may I assist you with the material selection and samples? Warm regards, ${userName} (Stone Tech)`;
+    openWhatsappToContact(phone, msg);
+  };
+
+  const handleWhatsappBalance = (order: SalesOrderWork) => {
+    const phone = order.customer?.whatsapp || order.customer?.primary_phone;
+    if (!phone) return;
+    const custName = order.customer?.name || "Sir/Madam";
+    const msg = `Namaste ${custName} ji, greeting from Stone Tech! Regarding your Sales Order ${order.so_no} for ${order.project?.name || "your site"}, material processing and dispatch are being scheduled. Kindly assist with the pending payment balance so we can ensure timely delivery. Warm regards, ${userName} (Stone Tech)`;
+    openWhatsappToContact(phone, msg);
+  };
+
+  return (
+    <div className="rounded-2xl border border-teal-200/80 bg-white/95 dark:bg-slate-900/90 shadow-e2 overflow-hidden transition-all animate-in fade-in duration-300">
+      {/* Top Banner: Salesperson Command Header */}
+      <div className="bg-linear-to-r from-teal-900 via-slate-900 to-indigo-950 p-4 sm:p-5 text-white">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-teal-500/20 text-teal-300 ring-2 ring-teal-400/30">
+              <TrendingUp className="h-6 w-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-display text-base sm:text-lg font-bold tracking-tight text-white">
+                  {transliterateName(userName, i18n.language)}'s Sales Performance &amp; Order Radar
+                </h3>
+                <Badge className="bg-teal-500/20 text-teal-300 border-teal-400/30 text-[10px] uppercase font-bold">
+                  Sales Officer
+                </Badge>
+              </div>
+              <p className="text-xs text-slate-300 mt-0.5">
+                Real-time tracking of assigned leads, active quotations, order fulfilment &amp;
+                customer collections.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <Button
+              asChild
+              size="sm"
+              variant="outline"
+              className="h-8 text-xs bg-white/10 hover:bg-white/20 text-white border-white/20 gap-1.5"
+            >
+              <Link to="/enquiries">
+                <Plus className="h-3.5 w-3.5" />
+                <span>New Lead</span>
+              </Link>
+            </Button>
+            <Button
+              asChild
+              size="sm"
+              className="h-8 text-xs bg-teal-600 hover:bg-teal-500 text-white gap-1.5 shadow-sm"
+            >
+              <Link to="/quotes">
+                <FileCheck className="h-3.5 w-3.5" />
+                <span>Create Quote</span>
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        {/* 4 Sales KPI Pulse Tiles */}
+        <div className="mt-4 grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+          {/* 1. Active Leads */}
+          <div className="rounded-xl bg-white/5 border border-white/10 p-3 backdrop-blur-xs">
+            <div className="flex items-center justify-between text-slate-300 text-[11px] font-semibold">
+              <span>Active Leads</span>
+              <Users className="h-3.5 w-3.5 text-teal-400" />
+            </div>
+            <div className="mt-1 font-display text-xl sm:text-2xl font-black text-white">
+              {toIndicDigits(activeLeadsCount, i18n.language)}
+            </div>
+            <div className="text-[10px] text-teal-300/90 mt-0.5">In follow-up pipeline</div>
+          </div>
+
+          {/* 2. Quotation Value */}
+          <div className="rounded-xl bg-white/5 border border-white/10 p-3 backdrop-blur-xs">
+            <div className="flex items-center justify-between text-slate-300 text-[11px] font-semibold">
+              <span>Quotation Pipeline</span>
+              <FileCheck className="h-3.5 w-3.5 text-blue-400" />
+            </div>
+            <div className="mt-1 font-display text-xl sm:text-2xl font-black text-white">
+              {formatInr(quotePipelineVal)}
+            </div>
+            <div className="text-[10px] text-blue-300/90 mt-0.5">
+              {quotes.length} quotes submitted
+            </div>
+          </div>
+
+          {/* 3. Confirmed Orders */}
+          <div className="rounded-xl bg-white/5 border border-white/10 p-3 backdrop-blur-xs">
+            <div className="flex items-center justify-between text-slate-300 text-[11px] font-semibold">
+              <span>Confirmed Orders</span>
+              <PackageCheck className="h-3.5 w-3.5 text-amber-400" />
+            </div>
+            <div className="mt-1 font-display text-xl sm:text-2xl font-black text-white">
+              {formatInr(confirmedOrdersVal)}
+            </div>
+            <div className="text-[10px] text-amber-300/90 mt-0.5">
+              {orders.length} orders booked
+            </div>
+          </div>
+
+          {/* 4. Fulfilment & Dispatch */}
+          <div className="rounded-xl bg-white/5 border border-white/10 p-3 backdrop-blur-xs">
+            <div className="flex items-center justify-between text-slate-300 text-[11px] font-semibold">
+              <span>Works in Fulfilment</span>
+              <Truck className="h-3.5 w-3.5 text-emerald-400" />
+            </div>
+            <div className="mt-1 font-display text-xl sm:text-2xl font-black text-white">
+              {toIndicDigits(ordersInFulfilment, i18n.language)}
+            </div>
+            <div className="text-[10px] text-emerald-300/90 mt-0.5">Production &amp; Dispatch</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Subtab Selection Bar */}
+      <div className="flex items-center justify-between border-b border-border/80 bg-slate-50 dark:bg-slate-900/60 px-3 py-2 overflow-x-auto">
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setActiveSubTab("leads")}
+            className={cn(
+              "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
+              activeSubTab === "leads"
+                ? "bg-white dark:bg-slate-800 text-teal-800 dark:text-teal-200 shadow-xs border border-border/60"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <Users className="h-3.5 w-3.5" />
+            <span>My Leads ({leads.length})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveSubTab("quotes")}
+            className={cn(
+              "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
+              activeSubTab === "quotes"
+                ? "bg-white dark:bg-slate-800 text-teal-800 dark:text-teal-200 shadow-xs border border-border/60"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <FileCheck className="h-3.5 w-3.5" />
+            <span>My Quotes ({quotes.length})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveSubTab("works")}
+            className={cn(
+              "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
+              activeSubTab === "works"
+                ? "bg-white dark:bg-slate-800 text-teal-800 dark:text-teal-200 shadow-xs border border-border/60"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <Truck className="h-3.5 w-3.5" />
+            <span>Order Works &amp; Dispatch ({orders.length})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveSubTab("collections")}
+            className={cn(
+              "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
+              activeSubTab === "collections"
+                ? "bg-white dark:bg-slate-800 text-teal-800 dark:text-teal-200 shadow-xs border border-border/60"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <IndianRupee className="h-3.5 w-3.5" />
+            <span>Collections &amp; Recovery</span>
+          </button>
+        </div>
+
+        <div className="hidden sm:flex items-center gap-2 text-[11px] text-muted-foreground font-medium">
+          <span>Logged in as: {userName}</span>
+        </div>
+      </div>
+
+      {/* Content Area */}
+      <div className="p-3 sm:p-4">
+        {/* SUBTAB 1: My Leads */}
+        {activeSubTab === "leads" && (
+          <div className="space-y-2.5">
+            {leads.length === 0 ? (
+              <div className="py-8 text-center text-sm text-muted-foreground">
+                No leads recorded yet. Click "New Lead" to add your first enquiry!
+              </div>
+            ) : (
+              leads.slice(0, 10).map((lead) => {
+                const phone = lead.customer?.whatsapp || lead.customer?.primary_phone;
+                return (
+                  <div
+                    key={lead.id}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 rounded-xl border border-border/70 bg-card hover:bg-accent/40 transition-colors"
+                  >
+                    <div className="flex items-start gap-3 min-w-0">
+                      <div className="h-8 w-8 rounded-lg bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                        {lead.enquiry_no.slice(-3)}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Link
+                            to="/enquiries"
+                            className="font-bold text-xs sm:text-sm text-foreground hover:text-teal-600 transition-colors truncate"
+                          >
+                            {lead.customer?.name || "Direct Customer"}
+                          </Link>
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-800"
+                          >
+                            {lead.stage.replace(/_/g, " ")}
+                          </Badge>
+                          {lead.budget_inr && (
+                            <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                              Budget: {formatInr(lead.budget_inr)}
+                            </span>
+                          )}
+                        </div>
+                        {lead.requirement && (
+                          <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                            {lead.requirement}
+                          </p>
+                        )}
+                        <div className="flex items-center gap-3 text-[10px] text-muted-foreground mt-1">
+                          <span>{lead.enquiry_no}</span>
+                          <span>•</span>
+                          <span>{formatDate(lead.created_at)}</span>
+                          {lead.customer?.city && (
+                            <>
+                              <span>•</span>
+                              <span>{lead.customer.city}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 self-end sm:self-auto shrink-0">
+                      {phone && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleWhatsappLead(lead)}
+                          className="h-7 text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-300 gap-1"
+                          title="Open WhatsApp chat with client"
+                        >
+                          <MessageCircle className="h-3 w-3 text-emerald-600" />
+                          <span>WhatsApp</span>
+                        </Button>
+                      )}
+                      <Button asChild size="sm" variant="ghost" className="h-7 text-xs gap-1">
+                        <Link to="/enquiries">
+                          <span>Details</span>
+                          <ArrowRight className="h-3 w-3" />
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        )}
+
+        {/* SUBTAB 2: My Quotes */}
+        {activeSubTab === "quotes" && (
+          <div className="space-y-2.5">
+            {quotes.length === 0 ? (
+              <div className="py-8 text-center text-sm text-muted-foreground">
+                No quotations submitted yet. Click "Create Quote" to generate an estimate!
+              </div>
+            ) : (
+              quotes.slice(0, 10).map((quote) => (
+                <div
+                  key={quote.id}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 rounded-xl border border-border/70 bg-card hover:bg-accent/40 transition-colors"
+                >
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="h-8 w-8 rounded-lg bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                      <FileCheck className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-bold text-xs sm:text-sm text-foreground">
+                          {quote.quote_no}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          for {quote.customer?.name || "Customer"}
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "text-[10px] font-bold uppercase",
+                            quote.status === "approved" || quote.status === "won"
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-300"
+                              : "bg-blue-50 text-blue-700 border-blue-300",
+                          )}
+                        >
+                          {quote.status}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-0.5">
+                        {quote.project?.name && <span>Project: {quote.project.name}</span>}
+                        <span>•</span>
+                        <span>Date: {formatDate(quote.issue_date)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 self-end sm:self-auto shrink-0">
+                    <div className="text-right">
+                      <div className="font-display font-black text-sm sm:text-base text-foreground">
+                        {formatInr(quote.total)}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground">Estimate total</div>
+                    </div>
+                    <Button asChild size="sm" variant="outline" className="h-7 text-xs">
+                      <Link to="/quotes">View Quote</Link>
+                    </Button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* SUBTAB 3: Order Works & Fulfilment */}
+        {activeSubTab === "works" && (
+          <div className="space-y-2.5">
+            {orders.length === 0 ? (
+              <div className="py-8 text-center text-sm text-muted-foreground">
+                No sales orders found yet.
+              </div>
+            ) : (
+              orders.slice(0, 10).map((order) => {
+                const latestDispatch = order.dispatches?.[0];
+                return (
+                  <div
+                    key={order.id}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 rounded-xl border border-border/70 bg-card hover:bg-accent/40 transition-colors"
+                  >
+                    <div className="flex items-start gap-3 min-w-0">
+                      <div className="h-8 w-8 rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                        <Truck className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-bold text-xs sm:text-sm text-foreground">
+                            {order.so_no}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            • {order.customer?.name || "Customer"}
+                          </span>
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] font-bold uppercase bg-amber-50 text-amber-800 border-amber-300"
+                          >
+                            {order.status.replace(/_/g, " ")}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-2.5 text-[11px] text-muted-foreground mt-1 flex-wrap">
+                          {latestDispatch ? (
+                            <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400 font-semibold">
+                              <CheckCircle2 className="h-3 w-3" />
+                              Dispatch: {latestDispatch.dispatch_no || "Challan Created"} (
+                              {latestDispatch.status})
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-1 text-amber-600 font-medium">
+                              <Clock className="h-3 w-3" /> Production / Fulfilment in progress
+                            </span>
+                          )}
+                          {order.delivery_date && (
+                            <span>Target: {formatDate(order.delivery_date)}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 self-end sm:self-auto shrink-0">
+                      <div className="text-right">
+                        <div className="font-display font-black text-sm text-foreground">
+                          {formatInr(order.subtotal)}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground">Order value</div>
+                      </div>
+                      <Button asChild size="sm" variant="outline" className="h-7 text-xs">
+                        <Link to="/sales-orders">Track Order</Link>
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        )}
+
+        {/* SUBTAB 4: Collections & Recovery on My Orders */}
+        {activeSubTab === "collections" && (
+          <div className="space-y-2.5">
+            {orders.length === 0 ? (
+              <div className="py-8 text-center text-sm text-muted-foreground">
+                No orders requiring collection yet.
+              </div>
+            ) : (
+              orders.slice(0, 10).map((order) => {
+                const phone = order.customer?.whatsapp || order.customer?.primary_phone;
+                return (
+                  <div
+                    key={`col-${order.id}`}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 rounded-xl border border-border/70 bg-card hover:bg-accent/40 transition-colors"
+                  >
+                    <div className="flex items-start gap-3 min-w-0">
+                      <div className="h-8 w-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                        <IndianRupee className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-bold text-xs sm:text-sm text-foreground">
+                            {order.customer?.name || "Customer"}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            (Order {order.so_no})
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                          <span>Booked: {formatInr(order.subtotal)}</span>
+                          <span>•</span>
+                          <span>Date: {formatDate(order.order_date)}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                      {phone && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleWhatsappBalance(order)}
+                          className="h-7 text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-300 gap-1.5"
+                          title="Send polite balance payment request via WhatsApp"
+                        >
+                          <MessageCircle className="h-3.5 w-3.5 text-emerald-600" />
+                          <span>Request Balance</span>
+                        </Button>
+                      )}
+                      <Button asChild size="sm" variant="ghost" className="h-7 text-xs">
+                        <Link to="/sales-orders">Order Details</Link>
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

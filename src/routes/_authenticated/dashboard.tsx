@@ -25,7 +25,7 @@ import { transliterateName } from "@/lib/i18n/transliterate";
 import { autoTranslate } from "@/lib/i18n/auto-translator";
 import { greetingFor, getNocturnalQuip, isNocturnalHour } from "@/lib/dashboard/greeting";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRoles } from "@/hooks/use-roles";
 import { useExecutiveInsights } from "@/hooks/useExecutiveInsights";
 import type { ProcessedInsight } from "@/lib/insights/quality/pipeline";
@@ -69,6 +69,7 @@ import {
 } from "@/components/dashboard/zoho/ZohoDashboardHeader";
 import { AnnouncementsView, HelpView } from "@/components/dashboard/zoho/ZohoAuxiliaryViews";
 import { WebsiteLeadsDashboardCard } from "@/components/dashboard/WebsiteLeadsDashboardCard";
+import { MySalesPerformanceCard } from "@/components/dashboard/MySalesPerformanceCard";
 import { VendorDeliveryPromptCard } from "@/components/dashboard/VendorDeliveryPromptCard";
 import { useVendorDeliveryPrompts } from "@/lib/vendors/delivery-prompts";
 import { DueLiabilitiesPromptCard } from "@/components/dashboard/DueLiabilitiesPromptCard";
@@ -95,9 +96,21 @@ function DashboardPage() {
   const roles = useRoles();
   const { processedInsights } = useExecutiveInsights({ enabled: true });
 
+  const isSalesStaff =
+    !roles.isAdmin &&
+    !roles.isSuperAdmin &&
+    (roles.hasRole("sales") || roles.roles.includes("sales"));
   const [activeTab, setActiveTab] = useState<DashboardViewTab>("operations");
-  const [opsSubTab, setOpsSubTab] = useState<"fulfilment" | "money" | "sales">("fulfilment");
+  const [opsSubTab, setOpsSubTab] = useState<"fulfilment" | "money" | "sales">(() =>
+    isSalesStaff ? "sales" : "fulfilment",
+  );
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  useEffect(() => {
+    if (isSalesStaff) {
+      setOpsSubTab("sales");
+    }
+  }, [isSalesStaff]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -156,16 +169,8 @@ function DashboardPage() {
   });
 
   const profileName = profileQ.data?.full_name?.trim();
-  let rawName = profileName ? profileName.split(" ")[0] : displayName(user);
-  if (
-    !rawName ||
-    rawName.toLowerCase() === "there" ||
-    rawName.toLowerCase() === "admin" ||
-    rawName.toLowerCase() === "user"
-  ) {
-    rawName = "Rishi";
-  }
-  const name = transliterateName(rawName, i18n.language);
+  const rawName = profileName ? profileName.split(" ")[0] : displayName(user);
+  const name = rawName ? transliterateName(rawName, i18n.language) : "";
   const now = new Date();
   const greeting = greetingFor(now, t);
   const nocturnalQuip = getNocturnalQuip(now, i18n.language);
@@ -369,6 +374,11 @@ function DashboardPage() {
                   {/* TAB 3: Sales & Pipeline */}
                   {opsSubTab === "sales" && (
                     <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
+                      <MySalesPerformanceCard
+                        userId={user?.id}
+                        userName={profileQ.data?.full_name || rawName || "Vijay Dave"}
+                        userEmail={user?.email || "vijaydave3476@gmail.com"}
+                      />
                       <WebsiteLeadsDashboardCard />
                       <SalesCommandCentre kpis={kpisQ.data} />
                       <OperationalRadar
@@ -451,11 +461,13 @@ function ExecutiveHero({
           <h1 className="mt-1 sm:mt-2 font-display text-lg sm:text-2xl lg:text-[28px] font-black tracking-tight text-engraved-title leading-snug break-words">
             {isNocturnal ? (
               <>
-                {greeting} {name && name.toLowerCase() !== "there" ? `${name} ` : "Rishi "}🦉
+                {greeting}
+                {name && name.toLowerCase() !== "there" ? ` ${name} ` : " "}🦉
               </>
             ) : (
               <>
-                {greeting}, {name && name.toLowerCase() !== "there" ? name : "Rishi"}.
+                {greeting}
+                {name && name.toLowerCase() !== "there" ? `, ${name}` : ""}.
               </>
             )}
           </h1>
@@ -1580,11 +1592,13 @@ function ShellLoading({
         <h1 className="mt-2 font-display text-2xl font-black text-engraved-title">
           {isNocturnal ? (
             <>
-              {greeting} {name && name.toLowerCase() !== "there" ? `${name} ` : "Rishi "}🦉
+              {greeting}
+              {name && name.toLowerCase() !== "there" ? ` ${name} ` : " "}🦉
             </>
           ) : (
             <>
-              {greeting}, {name && name.toLowerCase() !== "there" ? name : "Rishi"}.
+              {greeting}
+              {name && name.toLowerCase() !== "there" ? `, ${name}` : ""}.
             </>
           )}
         </h1>
@@ -2188,7 +2202,7 @@ function buildSuggestions(
 function displayName(
   user: { user_metadata?: Record<string, unknown>; email?: string | null } | null,
 ): string {
-  if (!user) return "Rishi";
+  if (!user) return "";
   const meta = (user.user_metadata ?? {}) as Record<string, unknown>;
   const full = (meta.full_name ?? meta.name) as string | undefined;
   if (full && typeof full === "string" && full.trim()) {
@@ -2196,12 +2210,13 @@ function displayName(
     if (first.toLowerCase() !== "there" && first.toLowerCase() !== "admin") return first;
   }
   if (user.email) {
-    const raw = user.email.split("@")[0].split(/[._\-\s]+/)[0];
+    const cleaned = user.email.split("@")[0].replace(/[0-9]+$/, "");
+    const raw = cleaned.split(/[._\-\s]+/)[0];
     if (raw && !["admin", "user", "owner", "stos", "info", "there"].includes(raw.toLowerCase())) {
       return raw.charAt(0).toUpperCase() + raw.slice(1);
     }
   }
-  return "Rishi";
+  return "";
 }
 
 function formatMoney(n: number, lang?: string): string {

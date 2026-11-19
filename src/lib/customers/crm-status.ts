@@ -222,7 +222,7 @@ export const CALL_OUTCOMES = [
   { value: "not_interested", label: "Not interested / Budget mismatch" },
 ] as const;
 
-export type CustomerSalespersonKey = "rishi" | "raman";
+export type CustomerSalespersonKey = "rishi" | "raman" | "vijay";
 
 export interface CustomerSalespersonConfig {
   key: CustomerSalespersonKey;
@@ -250,6 +250,14 @@ export const CUSTOMER_SALESPEOPLE: Record<CustomerSalespersonKey, CustomerSalesp
     badgeTone: "bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100",
     avatarTone: "bg-amber-600 text-white",
   },
+  vijay: {
+    key: "vijay",
+    label: "Vijay Dave",
+    shortName: "Vijay",
+    email: "vijaydave3476@gmail.com",
+    badgeTone: "bg-teal-50 text-teal-900 border-teal-300 hover:bg-teal-100",
+    avatarTone: "bg-teal-600 text-white",
+  },
 };
 
 export function getCustomerSalesperson(
@@ -273,6 +281,7 @@ export function getCustomerSalesperson(
 
   if (raw.includes("raman")) return "raman";
   if (raw.includes("rishi")) return "rishi";
+  if (raw.includes("vijay")) return "vijay";
   return null;
 }
 

@@ -51,6 +51,7 @@ import { qk } from "@/lib/query-keys";
 import { formatRelative, toIndicDigits } from "@/lib/format";
 import { transliterateName } from "@/lib/i18n/transliterate";
 import { autoTranslate } from "@/lib/i18n/auto-translator";
+import { useRoles } from "@/hooks/use-roles";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -500,9 +501,30 @@ function bucketFor(n: CentreNotification, now: Date): "today" | "yesterday" | "e
 
 export function NotificationsBell() {
   const qc = useQueryClient();
+  const roles = useRoles();
   const { i18n } = useTranslation();
   const lang = (i18n.language?.substring(0, 2) || "en") as "en" | "hi" | "gu";
   const t = NOTIF_TEXTS[lang] || NOTIF_TEXTS.en;
+
+  const resolveSafeLink = (linkPath: string | null | undefined): string => {
+    if (!linkPath) return "/dashboard";
+    if (!roles.isAdmin && !roles.isSuperAdmin) {
+      const restrictedPrefixes = [
+        "/liabilities",
+        "/business-expenses",
+        "/ledger",
+        "/vendor-payments",
+        "/personal-transfers",
+        "/purchase-ledger",
+        "/purchase-invoices",
+        "/admin",
+      ];
+      if (restrictedPrefixes.some((p) => linkPath.startsWith(p))) {
+        return "/dashboard";
+      }
+    }
+    return linkPath;
+  };
 
   const { data: items = [] } = useQuery({
     queryKey: qk.notifications.all,
@@ -558,14 +580,18 @@ export function NotificationsBell() {
     qc.setQueryData<CentreNotification[]>(qk.notifications.all, (prev) =>
       (prev ?? []).map((n) => (n.readAt ? n : { ...n, readAt: new Date().toISOString() })),
     );
-    void markAllNotificationsRead(ids);
+    markAllNotificationsRead(ids).catch((err) => {
+      console.warn("[notifications] Failed to mark all read:", err);
+    });
   };
 
   const markOne = (id: string): void => {
     qc.setQueryData<CentreNotification[]>(qk.notifications.all, (prev) =>
       (prev ?? []).map((n) => (n.id === id ? { ...n, readAt: new Date().toISOString() } : n)),
     );
-    void markNotificationRead(id);
+    markNotificationRead(id).catch((err) => {
+      console.warn("[notifications] Failed to mark read:", err);
+    });
   };
 
   return (
@@ -675,7 +701,7 @@ export function NotificationsBell() {
                 filtered.map((n) => (
                   <Link
                     key={n.id}
-                    to={n.linkPath ?? "/dashboard"}
+                    to={resolveSafeLink(n.linkPath)}
                     className="block border-b border-border-subtle px-3.5 py-3 transition-colors hover:bg-surface-card-hover"
                     onClick={() => markOne(n.id)}
                   >

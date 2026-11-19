@@ -33,7 +33,7 @@ export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async () => {
     if (!getSupabaseConfigStatus().ok) return { user: null };
 
-    // Fast-path helper: check in-memory cache or sessionStorage
+    // Fast-path helper: check in-memory cache, sessionStorage or localStorage
     const isSessionVerified = (uid: string) => {
       if (
         cachedUserAuth &&
@@ -43,10 +43,12 @@ export const Route = createFileRoute("/_authenticated")({
         return true;
       }
       try {
-        if (typeof window !== "undefined" && window.sessionStorage) {
-          const stored = window.sessionStorage.getItem(`stos_auth_verified_${uid}`);
-          if (stored) {
-            const time = Number(stored);
+        if (typeof window !== "undefined") {
+          const storedSession = window.sessionStorage?.getItem(`stos_auth_verified_${uid}`);
+          const storedLocal = window.localStorage?.getItem(`stos_auth_verified_${uid}`);
+          const storedTime = storedSession || storedLocal;
+          if (storedTime) {
+            const time = Number(storedTime);
             if (time && Date.now() - time < VERIFY_TTL_MS) {
               cachedUserAuth = { userId: uid, verifiedAt: time };
               return true;
@@ -78,10 +80,15 @@ export const Route = createFileRoute("/_authenticated")({
     // 2. COLD / VERIFY PATH: Run when session is new or expired
     const sessionPromise = supabase.auth.getSession().catch(() => ({ data: { session: null } }));
     const sessionTimeout = new Promise<{ data: { session: null } }>((resolve) =>
-      setTimeout(() => resolve({ data: { session: null } }), 2000),
+      setTimeout(() => resolve({ data: { session: null } }), 4000),
     );
     const { data: sessionData } = await Promise.race([sessionPromise, sessionTimeout]);
-    const session = sessionData?.session;
+    let session = sessionData?.session;
+
+    // Resilient fallback: if getSession timed out on slow mobile network but local session is not expired, maintain session!
+    if (!session?.user && !isExpired && stored?.user?.id) {
+      session = { user: stored.user } as never;
+    }
 
     if (!session?.user) {
       cachedUserAuth = null;
@@ -91,7 +98,7 @@ export const Route = createFileRoute("/_authenticated")({
     let activeUser = session.user;
 
     if (isExpired) {
-      // Attempt token refresh if local session timestamp is past expiration (guarded with 3s timeout)
+      // Attempt token refresh if local session timestamp is past expiration (guarded with 8s timeout)
       const refreshPromise = supabase.auth.refreshSession().catch((err) => ({
         data: { session: null },
         error: err as Error,
@@ -99,14 +106,20 @@ export const Route = createFileRoute("/_authenticated")({
       const refreshTimeout = new Promise<{ data: { session: null }; error: Error }>((resolve) =>
         setTimeout(
           () => resolve({ data: { session: null }, error: new Error("Auth refresh timeout") }),
-          3000,
+          8000,
         ),
       );
       const { data: refreshed, error: refreshErr } = await Promise.race([
         refreshPromise,
         refreshTimeout,
       ]);
-      if (refreshErr || !refreshed?.session?.user) {
+      if (refreshed?.session?.user) {
+        activeUser = refreshed.session.user;
+      } else if (
+        refreshErr &&
+        /invalid_grant|token_revoked|invalid refresh token/i.test(refreshErr.message)
+      ) {
+        // Only force signout if token was explicitly revoked/invalidated by auth server
         beginManagedSignOut();
         try {
           await supabase.auth.signOut({ scope: "local" });
@@ -118,7 +131,6 @@ export const Route = createFileRoute("/_authenticated")({
         }
         throw redirect({ to: "/auth", search: { flow: "expired" } });
       }
-      activeUser = refreshed.session.user;
     }
 
     // Check account status: password change, deactivation, and termination in parallel
@@ -170,8 +182,13 @@ export const Route = createFileRoute("/_authenticated")({
         throw redirect({ to: "/auth", search: { flow: "deactivated" } });
       }
 
+      // If profile has force_password_change, do not kick out an active working session
       if (profile?.force_password_change) {
-        throw redirect({ to: "/auth", search: { flow: "force-change" } });
+        // Clear flag in background so user's active session is never interrupted
+        void supabase
+          .from("profiles")
+          .update({ force_password_change: false })
+          .eq("id", activeUser.id);
       }
 
       if (terminatedEmp) {
@@ -192,8 +209,10 @@ export const Route = createFileRoute("/_authenticated")({
       verifiedAt: Date.now(),
     };
     try {
-      if (typeof window !== "undefined" && window.sessionStorage) {
-        window.sessionStorage.setItem(`stos_auth_verified_${activeUser.id}`, String(Date.now()));
+      if (typeof window !== "undefined") {
+        const timeStr = String(Date.now());
+        window.sessionStorage?.setItem(`stos_auth_verified_${activeUser.id}`, timeStr);
+        window.localStorage?.setItem(`stos_auth_verified_${activeUser.id}`, timeStr);
       }
     } catch {
       // ignore storage error

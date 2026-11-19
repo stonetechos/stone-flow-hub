@@ -94,7 +94,7 @@ export function CustomerAssigneeSelect({
             title={
               config
                 ? `Assigned to ${transliterateName(config.label, i18n.language)}. Click to reassign.`
-                : "Unassigned. Click to assign to Rishi or Raman."
+                : "Unassigned. Click to assign to Vijay, Rishi or Raman."
             }
           >
             {mutation.isPending ? (
@@ -133,7 +133,7 @@ export function CustomerAssigneeSelect({
             title={
               config
                 ? `Assigned to ${transliterateName(config.label, i18n.language)}. Click to reassign.`
-                : "Unassigned. Click to assign to Rishi or Raman."
+                : "Unassigned. Click to assign to Vijay, Rishi or Raman."
             }
           >
             {mutation.isPending ? (
