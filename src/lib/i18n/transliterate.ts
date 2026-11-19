@@ -1290,6 +1290,19 @@ function transliterateTokenGu(token: string): string {
   const lower = clean.toLowerCase();
 
   if (shouldPreserveCode(clean, lower)) return clean;
+  if (lower === "pdf") return "PDF";
+  if (lower === "3d") return "૩D";
+  if (lower === "cnc") return "CNC";
+  if (lower === "cad") return "CAD";
+  if (lower === "live") return "લાઇવ";
+  if (lower === "pgs" || lower === "pages") return "પાન";
+  if (lower === "glass") return "કાચ";
+  if (lower === "hollow") return "પોલી";
+  if (lower === "solid") return "નક્કર";
+  if (lower === "bricks" || lower === "brick") return "ઈંટો";
+  if (lower === "varieties" || lower === "variety") return "જાતો";
+  if (lower === "collections" || lower === "collection") return "સંગ્રહ";
+
   if (GUJARATI_DICT[lower]) return GUJARATI_DICT[lower];
 
   for (const sfx of Object.keys(GUJARATI_SUFFIXES)) {
@@ -1314,6 +1327,19 @@ function transliterateTokenHi(token: string): string {
   const lower = clean.toLowerCase();
 
   if (shouldPreserveCode(clean, lower)) return clean;
+  if (lower === "pdf") return "PDF";
+  if (lower === "3d") return "३D";
+  if (lower === "cnc") return "CNC";
+  if (lower === "cad") return "CAD";
+  if (lower === "live") return "लाइव";
+  if (lower === "pgs" || lower === "pages") return "पृष्ठ";
+  if (lower === "glass") return "कांच";
+  if (lower === "hollow") return "खोखली";
+  if (lower === "solid") return "ठोस";
+  if (lower === "bricks" || lower === "brick") return "ईंटें";
+  if (lower === "varieties" || lower === "variety") return "किस्में";
+  if (lower === "collections" || lower === "collection") return "संग्रह";
+
   if (HINDI_DICT[lower]) return HINDI_DICT[lower];
 
   for (const sfx of Object.keys(HINDI_SUFFIXES)) {

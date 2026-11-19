@@ -97,13 +97,13 @@ def generate_html(lang="en"):
     # -------------------------------------------------------------------------
     cover_title1 = (
         "ARCHITECTURAL FLEXIBLE CLAY VENEERS" if lang == "en"
-        else "आर्किटेक्चरल फ्लेक्सिबल क्ले विनियर्स" if lang == "hi"
-        else "આર્કિટેક્ચરલ ફ્લેક્સિબલ ક્લે વિનિયર્સ"
+        else "फ्लेक्सिबल क्ले विनियर्स (लचीली मृत्तिका शीट्स)" if lang == "hi"
+        else "આર્કિટેક્ચરલ ફ્લેક્સિબલ ક્લે વિનિયર્સ (લચીલી માટી શીટ્સ)"
     )
     cover_title2 = (
         "MODIFIED CLAY MATERIAL (MCM) · ULTRA-THIN BENDING STONE SERIES" if lang == "en"
-        else "मॉडिफाइड क्ले मटेरियल (MCM) · अल्ट्रा-थिन बेंडिंग स्टोन सीरीज" if lang == "hi"
-        else "મોડિફાઇડ ક્લે મટિરિયલ (MCM) · અલ્ટ્રા-થિન બેન્ડિંગ સ્ટોન સિરીઝ"
+        else "संशोधित क्ले सामग्री (MCM) · अल्ट्रा-थिन बेंडिंग स्टोन श्रृंखला" if lang == "hi"
+        else "મોડિફાઇડ ક્લે મટિરિયલ (MCM) · અલ્ટ્રા-થિન બેન્ડિંગ સ્ટોન શ્રેણી"
     )
     cover_edition = (
         "2026 – 2027 MASTER SPECIFICATION CATALOGUE" if lang == "en"

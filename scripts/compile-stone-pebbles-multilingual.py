@@ -97,16 +97,16 @@ def generate_html(lang="en"):
     c_title = (
         "NATURAL STONE PEBBLES<br><span>&amp; SEMI-PRECIOUS AGGREGATES</span>"
         if lang == "en"
-        else "नेचुरल स्टोन पेबल्स<br><span>एवं सेमी-प्रेशियस एग्रीगेट्स</span>"
+        else "प्राकृतिक पत्थर के कंकड़ (पेबल्स)<br><span>एवं अर्ध-कीमती पाषाण संग्रह</span>"
         if lang == "hi"
-        else "નેચરલ સ્ટોન પેબલ્સ<br><span>અને સેમી-પ્રેશિયસ એગ્રીગેટ્સ</span>"
+        else "કુદરતી પથ્થરના કાંકરા (પેબલ્સ)<br><span>અને અર્ધ-કિંમતી પથ્થર સંગ્રહ</span>"
     )
     c_sub = (
         "Curated Natural River Stones, Crystalline Onyx Pebbles, Exotic Agate Aggregates, Monumental Jumbo Boulders, Flat Stepping Discs &amp; Precision Architectural Micro-Chips"
         if lang == "en"
-        else "क्यूरेटेड नेचुरल रिवर स्टोन्स, क्रिस्टलीय गोमेद पेबल्स, एग्जॉटिक एगेट एग्रीगेट्स, जंबो बोल्डर्स एवं आर्किटेक्चरल माइक्रो-चिप्स"
+        else "प्राकृतिक नदी के कंकड़, क्रिस्टलीय गोमेद (ओनिक्स) पेबल्स, दुर्लभ अगेट पाषाण, विशाल जंबो बोल्डर्स, चपटे पाषाण डिस्क एवं सूक्ष्म वास्तुकला चिप्स"
         if lang == "hi"
-        else "ક્યુરેટેડ નેચરલ રિવર સ્ટોન્સ, સ્ફટિકીય ગોમેદ પેબલ્સ, એક્ઝોટિક એગેટ એગ્રીગેટ્સ, જમ્બો બોલ્ડર્સ અને આર્કિટેક્ચરલ માઇક્રો-ચિપ્સ"
+        else "કુદરતી નદીના કાંકરા, સ્ફટિકીય ગોમેદ (ઓનિક્સ) પેબલ્સ, અર્ધ-કિંમતી અગેટ પથ્થરો, વિશાળ જમ્બો બોલ્ડર્સ અને આર્કિટેક્ચરલ માઇક્રો-ચિપ્સ"
     )
     pill1 = f"{to_indic(75, lang)} Curated Varieties" if lang == "en" else f"{to_indic(75, lang)} क्यूरेटेड किस्में" if lang == "hi" else f"{to_indic(75, lang)} ક્યુરેટેડ વેરાઇટીઝ"
     pill2 = "Micro-Chips to 180mm Boulders" if lang == "en" else f"माइक्रो-चिप्स से {to_indic(180, lang)} मिमी बोल्डर्स" if lang == "hi" else f"માઇક્રો-ચિપ્સથી {to_indic(180, lang)} મીમી બોલ્ડર્સ"
