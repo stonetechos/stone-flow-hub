@@ -1426,7 +1426,7 @@ body {{
         m_r7 = ("नमी अवशोषण क्षमता", "रेजिन बैक पर < ०.२०% जल अवशोषण", "पूर्णतः जल-अभेद्य रेजिन परत")
         m_r8 = ("मानक निर्यात पैकेजिंग", "प्रति ISPM-15 धूमीकृत लकड़ी के क्रेट में ५० शीट्स", "सुरक्षात्मक PE फोम शीट के साथ पैक")
         b_dept = "वास्तुशिल्पीय प्राकृतिक पाषाण एवं अत्यंत पतली विनियर निर्माण डिवीजन"
-        b_exp_center = "<strong>अटेलियर एवं एक्सपीरियंस सेंटर:</strong> ई-०२, ग्राउंड फ्लोर, एसजी बिजनेस हब, गोता, अहमदाबाद, गुजरात — ३८००६०, भारत"
+        b_exp_center = "<strong>एक्सपीरियंस सेंटर:</strong> ई-०२, ग्राउंड फ्लोर, एसजी बिजनेस हब, गोता, अहमदाबाद, गुजरात — ३८००६०, भारत"
         b_direct_desk = "<strong>सीधी फैक्ट्री डेस्क:</strong> +९१ ९७८४४ ५२९९८ / +९१ ७७४२० ९०८६६ · <strong>आधिकारिक वेबसाइट:</strong> www.stonetech.in"
         b_port = "सीधा कंटेनर सीपोर्ट डिस्पैच:<br><strong>मुंद्रा पोर्ट (INMUN) एवं जेएनपीटी पोर्ट (INNSA)</strong>"
         b_wa = "त्वरित व्हाट्सएप सीआरएम कोटेशन एवं पूछताछ:"
@@ -1450,7 +1450,7 @@ body {{
         m_r7 = ("ભેજ શોષણ ક્ષમતા", "રેઝિન બેકિંગ પર < ૦.૨૦% જળ શોષણ", "સંપૂર્ણપણે અભેદ્ય રેઝિન સ્તર")
         m_r8 = ("પ્રમાણભૂત નિકાસ પેકેજિંગ", "ISPM-15 હીટ-ટ્રીટેડ લાકડાના ક્રેટ દીઠ ૫૦ શીટ્સ", "રક્ષણાત્મક PE ફોમ શીટ સાથે પેક")
         b_dept = "વાસ્તુશિલ્પીય કુદરતી પથ્થર અને અત્યંત પાતળી વિનિયર ઉત્પાદન ડિવિઝન"
-        b_exp_center = "<strong>એટેલિયર અને એક્સપિરિયન્સ સેન્ટર:</strong> E-02, ગ્રાઉન્ડ ફ્લોર, SG બિઝનેસ હબ, ગોતા, અમદાવાદ, ગુજરાત — 380060, ભારત"
+        b_exp_center = "<strong>એક્સપિરિયન્સ સેન્ટર:</strong> E-02, ગ્રાઉન્ડ ફ્લોર, SG બિઝનેસ હબ, ગોતા, અમદાવાદ, ગુજરાત — 380060, ભારત"
         b_direct_desk = "<strong>સીધી ફેક્ટરી ડેસ્ક:</strong> +૯૧ ૭૭૪૨૦ ૯૦૮૬૬ / +૯૧ ૯૭૮૪૪ ૫૨૯૯૮ · <strong>સત્તાવાર વેબસાઇટ:</strong> www.stonetech.in"
         b_port = "સીધું કન્ટેનર સીપોર્ટ ડિસ્પેચ:<br><strong>મુંદ્રા પોર્ટ (INMUN) અને JNPT પોર્ટ (INNSA)</strong>"
         b_wa = "ત્વરિત વ્હોટ્સએપ CRM ક્વોટેશન અને પૂછપરછ:"
@@ -1474,7 +1474,7 @@ body {{
         m_r7 = ("Moisture Absorption Substrate", "< 0.20% water absorption on resin backing", "Completely impervious resin backing layer")
         m_r8 = ("Standard Export Packaging", "50 sheets per fumigated ISPM-15 export wooden crate", "Interleaved with protective PE foam sheets")
         b_dept = "Architectural Natural Stone & Ultra-Thin Veneer Manufacturing Division"
-        b_exp_center = "<strong>Atelier & Experience Center:</strong> E-02, Ground Floor, SG Business Hub, Gota, Ahmedabad, Gujarat — 380060, India"
+        b_exp_center = "<strong>Experience Center:</strong> E-02, Ground Floor, SG Business Hub, Gota, Ahmedabad, Gujarat — 380060, India"
         b_direct_desk = "<strong>Direct Factory Desk:</strong> +91 97844 52998 / +91 77420 90866 · <strong>Official Portal:</strong> www.stonetech.in"
         b_port = "DIRECT CONTAINER SEAPORT DISPATCH:<br><strong>Mundra Port (INMUN) & JNPT Port (INNSA)</strong>"
         b_wa = "Instant WhatsApp CRM Quotations & Project Inquiries:"

@@ -138,9 +138,9 @@ COMMON_I18N = {
         "gu": "સ્ટોન ટેક એટેલિયર · વાસ્તુશિલ્પીય વિશિષ્ટતા કેટલોગ ૨૦૨૬-૨૦૨૭",
     },
     "experience_center_title": {
-        "en": "VISIT OUR EXPERIENCE CENTER & ARCHITECTURAL STUDIOS",
-        "hi": "हमारे एक्सपीरियंस सेंटर एवं वास्तुशिल्पीय स्टूडियो पर पधारें",
-        "gu": "અમારા એક્સપિરિયન્સ સેન્ટર અને વાસ્તુશિલ્પીય સ્ટુડિયોની મુલાકાત લો",
+        "en": "VISIT OUR EXPERIENCE CENTER",
+        "hi": "हमारे एक्सपीरियंस सेंटर पर पधारें",
+        "gu": "અમારા એક્સપિરિયન્સ સેન્ટરની મુલાકાત લો",
     },
     "experience_center_address": {
         "en": "E-02, Ground Floor, SG Business Hub, Vasant Nagar, Gota, Ahmedabad, Gujarat 380060",

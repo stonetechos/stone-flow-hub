@@ -418,6 +418,30 @@ function HomePage() {
     }
   }, [currentLang]);
 
+  // Deep-link / WhatsApp share listener for catalogues section
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handleHash = () => {
+      const h = window.location.hash.toLowerCase();
+      if (
+        h === "#catalogues" ||
+        h === "#download-catalogues" ||
+        h === "#catalogue" ||
+        h === "#pdf-catalogues"
+      ) {
+        setTimeout(() => {
+          const el = document.getElementById("download-catalogues");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }, 150);
+      }
+    };
+    handleHash();
+    window.addEventListener("hashchange", handleHash);
+    return () => window.removeEventListener("hashchange", handleHash);
+  }, []);
+
   // Form states (2-Step Continuation 1/2 and 2/2)
   const [formStep, setFormStep] = useState<1 | 2>(1);
   const [showcaseTab, setShowcaseTab] = useState<ProductTab>("cladding");
@@ -2264,7 +2288,11 @@ function HomePage() {
           </div>
 
           {/* TOP-RIGHT CATALOGUE PDF DOWNLOAD CONTROL (ABOVE THE BOX) */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 -mb-4">
+          <div
+            id="download-catalogues"
+            className="relative z-30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-2 sm:mb-3 pt-1 scroll-mt-28"
+          >
+            <div id="catalogues" className="scroll-mt-28" />
             <div className="hidden sm:flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               <span className="flex h-2 w-2 relative">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -2279,7 +2307,7 @@ function HomePage() {
               </span>
             </div>
 
-            <div className="w-full sm:w-auto flex justify-end">
+            <div className="w-full sm:w-auto flex items-center justify-end">
               <DownloadCataloguesDropdown />
             </div>
           </div>

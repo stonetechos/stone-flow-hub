@@ -1846,7 +1846,7 @@ def generate_html():
 
     <div class="studio-grid">
       <div class="studio-card">
-        <div class="studio-card-title">VISIT OUR EXPERIENCE CENTER &amp; ARCHITECTURAL STUDIOS</div>
+        <div class="studio-card-title">VISIT OUR EXPERIENCE CENTER</div>
         <div class="studio-card-body">
           <strong>STONE TECH ATELIER · EXPERIENCE CENTER</strong><br>
           E-02, Ground Floor, SG Business Hub, Vasant Nagar, Gota, Ahmedabad, Gujarat 380060<br>
