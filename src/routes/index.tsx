@@ -72,6 +72,7 @@ import { GlassBricksCatalog } from "@/components/catalog/GlassBricksCatalog";
 import { FlexibleClayCatalog } from "@/components/catalog/FlexibleClayCatalog";
 import { StonePebblesCatalog } from "@/components/catalog/StonePebblesCatalog";
 import { MasterProductCatalog, type ProductTab } from "@/components/catalog/MasterProductCatalog";
+import { DownloadCataloguesDropdown } from "@/components/catalog/DownloadCataloguesDropdown";
 import { InstalledWorksGallery } from "@/components/catalog/InstalledWorksGallery";
 import { ContactCenter } from "@/components/landing/ContactCenter";
 import { JobOpeningsDialog } from "@/components/landing/JobOpeningsDialog";
@@ -2262,7 +2263,28 @@ function HomePage() {
             </p>
           </div>
 
-          {/* MASTER ARCHITECTURAL PRODUCT DISPLAY WITH INTEGRATED TABS & DYNAMIC DROPDOWNS */}
+          {/* TOP-RIGHT CATALOGUE PDF DOWNLOAD CONTROL (ABOVE THE BOX) */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 -mb-4">
+            <div className="hidden sm:flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <span className="flex h-2 w-2 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              </span>
+              <span>
+                {currentLang === "gu"
+                  ? "વાસ્તુશિલ્પીય કેટલોગ્સ અને સ્પેસિફિકેશન્સ"
+                  : currentLang === "hi"
+                    ? "वास्तुशिल्पीय कैटलॉग एवं विनिर्देश"
+                    : "Architectural Catalogues & Specifications"}
+              </span>
+            </div>
+
+            <div className="w-full sm:w-auto flex justify-end">
+              <DownloadCataloguesDropdown />
+            </div>
+          </div>
+
+          {/* MASTER ARCHITECTURAL PRODUCT DISPLAY WITH INTEGRATED TABS */}
           <MasterProductCatalog
             activeTab={showcaseTab}
             onTabChange={(tab) => setShowcaseTab(tab)}
