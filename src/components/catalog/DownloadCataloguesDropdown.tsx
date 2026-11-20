@@ -175,7 +175,7 @@ export function DownloadCataloguesDropdown({
       </Button>
 
       {/* Main Download PDF Dropdown */}
-      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+      <DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
         <DropdownMenuTrigger asChild>
           <Button
             size="sm"
@@ -206,7 +206,13 @@ export function DownloadCataloguesDropdown({
 
         <DropdownMenuContent
           align={align}
-          className="w-[340px] sm:w-[420px] max-h-[85vh] overflow-y-auto p-3 space-y-2.5 z-50 rounded-2xl shadow-xl border-border/80"
+          collisionPadding={16}
+          sideOffset={8}
+          className="w-[340px] sm:w-[420px] overflow-y-auto p-3 space-y-2.5 z-50 rounded-2xl shadow-2xl border-border/80 overscroll-contain touch-pan-y [scrollbar-width:thin] [scrollbar-color:rgba(156,163,175,0.4)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/50 [&::-webkit-scrollbar-thumb]:rounded-full"
+          style={{
+            maxHeight:
+              "min(480px, calc(100vh - 160px), calc(var(--radix-dropdown-menu-content-available-height, 480px) - 20px))",
+          }}
         >
           {/* WhatsApp Direct Share Banner */}
           <div className="rounded-xl border border-emerald-500/40 bg-linear-to-r from-emerald-500/10 via-teal-500/10 to-emerald-500/5 p-2.5 flex items-center justify-between gap-2 shadow-2xs">
@@ -261,16 +267,24 @@ export function DownloadCataloguesDropdown({
             </div>
           </div>
           <div className="space-y-0.5 px-1 pt-0.5">
-            <DropdownMenuLabel className="p-0 text-xs font-bold uppercase tracking-wider text-foreground flex items-center justify-between">
-              <span>
+            <DropdownMenuLabel className="p-0 text-xs font-bold text-foreground flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <BookOpen className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
                 {lang === "gu"
-                  ? "વાસ્તુશિલ્પીય કેટલોગ્સ (PDF)"
+                  ? "વાસ્તુશિલ્પીય કેટલોગ્સ (PDF · ૬ સંગ્રહ)"
                   : lang === "hi"
-                    ? "वास्तुशिल्पीय कैटलॉग (PDF)"
-                    : "Architectural Catalogues (PDF)"}
+                    ? "वास्तुशिल्पीय कैटलॉग (PDF · ६ संग्रह)"
+                    : "Architectural Catalogues (PDF · 6 Collections)"}
               </span>
-              <span className="text-[10px] font-normal text-muted-foreground lowercase">
-                {lang === "gu" ? "ભાષા પસંદ કરો" : lang === "hi" ? "भाषा चुनें" : "select language"}
+              <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-1.5 py-0.5 rounded-md flex items-center gap-0.5">
+                <span>↓</span>
+                <span>
+                  {lang === "gu"
+                    ? "સ્ક્રોલ કરો"
+                    : lang === "hi"
+                      ? "स्क्रॉल करें"
+                      : "Scroll to view all"}
+                </span>
               </span>
             </DropdownMenuLabel>
             <p className="text-[11px] text-muted-foreground">
@@ -690,6 +704,18 @@ export function DownloadCataloguesDropdown({
                 ગુજરાતી
               </a>
             </div>
+          </div>
+
+          {/* End of Catalogues Footer indicator */}
+          <div className="pt-1.5 pb-0.5 text-center text-[10px] font-medium text-muted-foreground/80 flex items-center justify-center gap-1 border-t border-border/40">
+            <Check className="h-3 w-3 text-emerald-500" />
+            <span>
+              {lang === "gu"
+                ? "તમામ ૬ વાસ્તુશિલ્પીય કેટલોગ્સ ઉપલબ્ધ છે"
+                : lang === "hi"
+                  ? "सभी ६ वास्तुशिल्पीय कैटलॉग उपलब्ध हैं"
+                  : "All 6 Architectural Catalogues Listed"}
+            </span>
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
