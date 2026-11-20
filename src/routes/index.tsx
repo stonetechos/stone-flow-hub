@@ -2255,7 +2255,9 @@ function HomePage() {
             </h2>
             <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
               {isEn
-                ? cmsContent.showcaseSectionSubtitle || texts.showcase.sectionSubtitle
+                ? (cmsContent.showcaseSectionSubtitle || texts.showcase.sectionSubtitle)
+                    .replace(/with transparent factory rates attached,?\s*/gi, "")
+                    .replace(/with transparent factory rates,?\s*/gi, "")
                 : texts.showcase.sectionSubtitle}
             </p>
           </div>

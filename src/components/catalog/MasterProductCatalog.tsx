@@ -30,10 +30,6 @@ import {
   Compass,
   CircleDot,
   Camera,
-  Search,
-  Download,
-  BookOpen,
-  FileDown,
   X,
   ChevronDown,
   ChevronUp,
@@ -45,10 +41,8 @@ import {
   Check,
   Share2,
   ExternalLink,
-  RotateCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -57,21 +51,6 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { toIndicDigits } from "@/lib/format";
@@ -362,36 +341,6 @@ function localizeCatalogTerm(term: string | null | undefined, lang: "en" | "hi" 
   return term;
 }
 
-function getTirangaLangBtnClass(btnLang: "en" | "hi" | "gu", activeLang: string) {
-  const isActive = activeLang === btnLang;
-  if (btnLang === "en") {
-    return cn(
-      "flex-1 text-center py-1.5 px-2 text-[11px] font-bold rounded-md transition-all cursor-pointer border",
-      "bg-[#FF9933] hover:bg-[#F28500] text-white border-[#E68524] shadow-xs",
-      isActive
-        ? "ring-2 ring-amber-500 ring-offset-1 font-extrabold shadow-sm scale-[1.02]"
-        : "opacity-95 hover:opacity-100",
-    );
-  }
-  if (btnLang === "hi") {
-    return cn(
-      "flex-1 text-center py-1.5 px-2 text-[11px] font-bold rounded-md transition-all cursor-pointer border",
-      "bg-white dark:bg-stone-100 hover:bg-stone-50 text-slate-950 border-slate-300 dark:border-slate-400 shadow-xs",
-      isActive
-        ? "ring-2 ring-slate-500 ring-offset-1 font-extrabold shadow-sm scale-[1.02]"
-        : "opacity-95 hover:opacity-100",
-    );
-  }
-  // gu (Indian Green)
-  return cn(
-    "flex-1 text-center py-1.5 px-2 text-[11px] font-bold rounded-md transition-all cursor-pointer border",
-    "bg-[#138808] hover:bg-[#0E6C06] text-white border-[#0E6C06] shadow-xs",
-    isActive
-      ? "ring-2 ring-emerald-500 ring-offset-1 font-extrabold shadow-sm scale-[1.02]"
-      : "opacity-95 hover:opacity-100",
-  );
-}
-
 export interface MasterProductCatalogProps {
   activeTab?: ProductTab;
   onTabChange?: (tab: ProductTab) => void;
@@ -416,9 +365,6 @@ export function MasterProductCatalog({
   useEffect(() => {
     if (externalActiveTab && externalActiveTab !== selectedTab) {
       setSelectedTab(externalActiveTab);
-      setSelectedCategory("all");
-      setSelectedSubFilter("all");
-      setSearchQuery("");
       if (scrollContainerRef.current) {
         scrollContainerRef.current.scrollTop = 0;
       }
@@ -430,19 +376,11 @@ export function MasterProductCatalog({
   const handleTabChange = (tab: ProductTab) => {
     setSelectedTab(tab);
     onTabChange?.(tab);
-    // Reset filters on tab switch
-    setSearchQuery("");
-    setSelectedCategory("all");
-    setSelectedSubFilter("all");
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = 0;
     }
   };
 
-  // Filter states
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedSubFilter, setSelectedSubFilter] = useState("all");
   const [lightboxItem, setLightboxItem] = useState<CatalogItem | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -712,73 +650,22 @@ export function MasterProductCatalog({
     }
   }, [currentTab, lang]);
 
-  // Derive dynamic Category options (Dropdown 1) with counts
-  const categoryOptions = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const item of currentDataset) {
-      if (item.category) {
-        map.set(item.category, (map.get(item.category) || 0) + 1);
-      }
-    }
-    return Array.from(map.entries()).map(([cat, count]) => ({
-      key: cat,
-      label: `${localizeCatalogTerm(cat, lang)} (${toIndicDigits(String(count), lang)})`,
-      count,
-    }));
-  }, [currentDataset, lang]);
+  // Items displayed in the active tab (clean, complete collection without cluttered sub-filters)
+  const displayedItems = currentDataset;
+  const filteredItems = currentDataset;
 
-  // Derive dynamic Secondary options (Dropdown 2: Geology / Finish / Profile) with counts
-  const subFilterOptions = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const item of currentDataset) {
-      if (item.subCategory) {
-        map.set(item.subCategory, (map.get(item.subCategory) || 0) + 1);
-      }
-    }
-    return Array.from(map.entries()).map(([sub, count]) => ({
-      key: sub,
-      label: `${localizeCatalogTerm(sub, lang)} (${toIndicDigits(String(count), lang)})`,
-      count,
-    }));
-  }, [currentDataset, lang]);
-
-  // Filter items based on active criteria
-  const filteredItems = useMemo(() => {
-    return currentDataset.filter((item) => {
-      if (selectedCategory !== "all" && item.category !== selectedCategory) {
-        return false;
-      }
-      if (selectedSubFilter !== "all" && item.subCategory !== selectedSubFilter) {
-        return false;
-      }
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        return (
-          item.name.toLowerCase().includes(q) ||
-          item.code.toLowerCase().includes(q) ||
-          item.category.toLowerCase().includes(q) ||
-          (item.subCategory && item.subCategory.toLowerCase().includes(q)) ||
-          (item.details && item.details.toLowerCase().includes(q))
-        );
-      }
-      return true;
-    });
-  }, [currentDataset, selectedCategory, selectedSubFilter, searchQuery]);
-
-  // Reset scroll position when filter criteria changes
+  // Reset scroll position when active tab changes
   useEffect(() => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = 0;
     }
-  }, [currentTab, selectedCategory, selectedSubFilter, searchQuery]);
+  }, [currentTab]);
 
   const scrollToContainerTop = () => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
-
-  const displayedItems = filteredItems;
 
   const handleSelectProductClick = (item: CatalogItem, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -804,247 +691,27 @@ export function MasterProductCatalog({
     }
   };
 
-  // Heading texts & dropdown placeholders per tab
+  // Count label metadata per tab for the bottom status bar
   const tabMetadata = {
     cladding: {
-      title:
-        lang === "gu"
-          ? "કુદરતી પાષાણ દીવાલ ક્લેડિંગ અને વાસ્તુશિલ્પીય મોઝેક"
-          : lang === "hi"
-            ? "प्राकृतिक पाषाण दीवार क्लैडिंग एवं वास्तुशिल्पीय मोज़ेक"
-            : "NATURAL STONE WALL CLADDING & ARCHITECTURAL MOSAICS",
       countLabel: lang === "gu" ? "પેટર્ન્સ" : lang === "hi" ? "पैटर्न्स" : "Patterns",
-      dropdown1Placeholder:
-        lang === "gu" ? "બધા સંગ્રહ" : lang === "hi" ? "सभी संग्रह" : "All Collections",
-      dropdown2Placeholder:
-        lang === "gu" ? "બધા પથ્થર" : lang === "hi" ? "सभी पत्थर" : "All Stones",
-      searchPlaceholder:
-        lang === "gu"
-          ? "૨૭૫ ક્લેડિંગ પેટર્ન્સ શોધો..."
-          : lang === "hi"
-            ? "२७५ क्लैडिंग पैटर्न्स खोजें..."
-            : "Search 275 cladding patterns...",
     },
     "stone-veneer": {
-      title:
-        lang === "gu"
-          ? "અત્યંત પાતળી કુદરતી સ્ટોન વિનિયર"
-          : lang === "hi"
-            ? "अत्यंत पतली प्राकृतिक स्टोन विनियर"
-            : "ULTRA-THIN FLEXIBLE NATURAL STONE VENEERS",
       countLabel: lang === "gu" ? "જાતો" : lang === "hi" ? "किस्में" : "Varieties",
-      dropdown1Placeholder:
-        lang === "gu" ? "બધા સંગ્રહ" : lang === "hi" ? "सभी संग्रह" : "All Collections",
-      dropdown2Placeholder:
-        lang === "gu" ? "બધા પથ્થર" : lang === "hi" ? "सभी पत्थर" : "All Stones",
-      searchPlaceholder:
-        lang === "gu"
-          ? "૯૮ સ્ટોન વિનિયર્સ શોધો..."
-          : lang === "hi"
-            ? "९८ स्टोन विनियर्स खोजें..."
-            : "Search 98 stone veneers, slate, marble...",
     },
     "glass-bricks": {
-      title:
-        lang === "gu"
-          ? "વાસ્તુશિલ્પીય નક્કર અને પોલી કાચની ઈંટો"
-          : lang === "hi"
-            ? "वास्तुशिल्पीय ठोस एवं खोखली कांच की ईंटें"
-            : "ARCHITECTURAL SOLID & HOLLOW GLASS BRICKS",
       countLabel: lang === "gu" ? "ડિઝાઇન્સ" : lang === "hi" ? "डिज़ाइन्स" : "Designs",
-      dropdown1Placeholder:
-        lang === "gu" ? "બધા પ્રકાર" : lang === "hi" ? "सभी प्रकार" : "All Types",
-      dropdown2Placeholder:
-        lang === "gu" ? "બધી પ્રોફાઇલ્સ" : lang === "hi" ? "सभी प्रोफाइल्स" : "All Profiles",
-      searchPlaceholder:
-        lang === "gu"
-          ? "૬૭ કાચની ઈંટો, વેવ, બબલ શોધો..."
-          : lang === "hi"
-            ? "६७ कांच की ईंटें, वेव, बबल खोजें..."
-            : "Search 67 glass bricks, wave, bubble, tinted...",
     },
     "clay-veneers": {
-      title:
-        lang === "gu"
-          ? "અત્યંત પાતળી લચીલી ક્લે વિનિયર્સ અને 3D વાસ્તુશિલ્પીય ટેક્સચર્સ"
-          : lang === "hi"
-            ? "अत्यंत पतली लचीली क्ले विनियर एवं 3D वास्तुशिल्पीय टेक्सचर्स"
-            : "FLEXIBLE CLAY VENEERS & 3D ARCHITECTURAL TEXTURES",
       countLabel: lang === "gu" ? "ટેક્સચર્સ" : lang === "hi" ? "टेक्सचर्स" : "Textures",
-      dropdown1Placeholder:
-        lang === "gu" ? "બધા સંગ્રહ" : lang === "hi" ? "सभी संग्रह" : "All Collections",
-      dropdown2Placeholder:
-        lang === "gu" ? "બધી પ્રોફાઇલ્સ" : lang === "hi" ? "सभी प्रोफाइल्स" : "All Profiles",
-      searchPlaceholder:
-        lang === "gu"
-          ? "૪૦ લચીલી ક્લે ટેક્સચર્સ શોધો..."
-          : lang === "hi"
-            ? "४० लचीली क्ले टेक्सचर्स खोजें..."
-            : "Search 40 flexible clay textures, fluted, travertino...",
     },
     pebbles: {
-      title:
-        lang === "gu"
-          ? "વાસ્તુશિલ્પીય કુદરતી પાષાણ કાંકરા અને અર્ધ-કિંમતી સંગ્રહ"
-          : lang === "hi"
-            ? "वास्तुशिल्पीय प्राकृतिक पाषाण कंकड़ (पेबल्स) एवं अर्ध-कीमती संग्रह"
-            : "NATURAL STONE PEBBLES & SEMI-PRECIOUS AGGREGATES",
       countLabel: lang === "gu" ? "જાતો" : lang === "hi" ? "किस्में" : "Varieties",
-      dropdown1Placeholder:
-        lang === "gu" ? "બધા સંગ્રહ" : lang === "hi" ? "सभी संग्रह" : "All Collections",
-      dropdown2Placeholder:
-        lang === "gu" ? "બધા ફિનિશ" : lang === "hi" ? "सभी फिनिश" : "All Finishes",
-      searchPlaceholder:
-        lang === "gu"
-          ? "૭૫ પાષાણ કાંકરા, રોઝ ક્વાર્ટ્ઝ, ઓનિક્સ શોધો..."
-          : lang === "hi"
-            ? "७५ पाषाण कंकड़, रोज़ क्वार्ट्ज़, ओनिक्स खोजें..."
-            : "Search 75 stone pebbles, rose quartz, onyx, river black...",
     },
     installations: {
-      title:
-        lang === "gu"
-          ? "અમારા કેટલાક કાર્યો"
-          : lang === "hi"
-            ? "हमारे कुछ कार्य"
-            : "FEW OF OUR WORKS",
       countLabel: lang === "gu" ? "પ્રોજેક્ટ્સ" : lang === "hi" ? "प्रोजेक्ट्स" : "Projects",
-      dropdown1Placeholder:
-        lang === "gu" ? "બધી શ્રેણીઓ" : lang === "hi" ? "सभी श्रेणियां" : "All Categories",
-      dropdown2Placeholder:
-        lang === "gu" ? "બધા સ્થળો" : lang === "hi" ? "सभी स्थान" : "All Locations",
-      searchPlaceholder:
-        lang === "gu"
-          ? "સ્થાપિત કાર્યો, વિલા, હોટેલ્સ શોધો..."
-          : lang === "hi"
-            ? "स्थापित कार्य, विला, होटल्स खोजें..."
-            : "Search executed projects, villas, hotels, temples...",
     },
   }[currentTab];
-
-  const isHi = lang.startsWith("hi");
-  const isGu = lang.startsWith("gu");
-  const activeLangCode: "en" | "hi" | "gu" = isHi ? "hi" : isGu ? "gu" : "en";
-
-  const activeTabPdf = useMemo(() => {
-    switch (currentTab) {
-      case "stone-veneer":
-        return {
-          label:
-            lang === "gu"
-              ? "વિનિયર (106 Pgs)"
-              : lang === "hi"
-                ? "विनियर (106 Pgs)"
-                : "Stone Veneer (106 Pgs)",
-          url: isHi
-            ? "/catalogues/StoneTech_Stone_Veneer_Catalogue_Hindi.pdf"
-            : isGu
-              ? "/catalogues/StoneTech_Stone_Veneer_Catalogue_Gujarati.pdf"
-              : "/catalogues/StoneTech_Stone_Veneer_Catalogue_2026.pdf",
-          filename: isHi
-            ? "StoneTech_Stone_Veneer_Catalogue_Hindi.pdf"
-            : isGu
-              ? "StoneTech_Stone_Veneer_Catalogue_Gujarati.pdf"
-              : "StoneTech_Stone_Veneer_Catalogue_2026.pdf",
-        };
-      case "glass-bricks":
-        return {
-          label:
-            lang === "gu"
-              ? "ગ્લાસ બ્રિક્સ (67 ડિઝાઇન્સ)"
-              : lang === "hi"
-                ? "ग्लास ब्रिक्स (67 डिज़ाइन्स)"
-                : "Glass Bricks (67 Designs)",
-          url: isHi
-            ? "/catalogues/StoneTech_Solid_Glass_Bricks_Catalogue_Hindi.pdf"
-            : isGu
-              ? "/catalogues/StoneTech_Solid_Glass_Bricks_Catalogue_Gujarati.pdf"
-              : "/catalogues/StoneTech_Solid_Glass_Bricks_Catalogue_English.pdf",
-          filename: isHi
-            ? "StoneTech_Solid_Glass_Bricks_Catalogue_Hindi.pdf"
-            : isGu
-              ? "StoneTech_Solid_Glass_Bricks_Catalogue_Gujarati.pdf"
-              : "StoneTech_Solid_Glass_Bricks_Catalogue_English.pdf",
-        };
-      case "clay-veneers":
-        return {
-          label:
-            lang === "gu"
-              ? "ક્લે વિનિયર્સ (37 Pgs)"
-              : lang === "hi"
-                ? "क्ले विनियर्स (37 Pgs)"
-                : "Clay Veneers (37 Pgs)",
-          url: isHi
-            ? "/catalogues/StoneTech_Flexible_Clay_Veneers_Catalogue_Hindi.pdf"
-            : isGu
-              ? "/catalogues/StoneTech_Flexible_Clay_Veneers_Catalogue_Gujarati.pdf"
-              : "/catalogues/StoneTech_Flexible_Clay_Veneers_Catalogue_English.pdf",
-          filename: isHi
-            ? "StoneTech_Flexible_Clay_Veneers_Catalogue_Hindi.pdf"
-            : isGu
-              ? "StoneTech_Flexible_Clay_Veneers_Catalogue_Gujarati.pdf"
-              : "StoneTech_Flexible_Clay_Veneers_Catalogue_English.pdf",
-        };
-      case "pebbles":
-        return {
-          label:
-            lang === "gu"
-              ? "સ્ટોન પેબલ્સ (23 Pgs)"
-              : lang === "hi"
-                ? "स्टोन पेबल्स (23 Pgs)"
-                : "Stone Pebbles (23 Pgs)",
-          url: isHi
-            ? "/catalogues/StoneTech_Stone_Pebbles_Catalogue_Hindi.pdf"
-            : isGu
-              ? "/catalogues/StoneTech_Stone_Pebbles_Catalogue_Gujarati.pdf"
-              : "/catalogues/StoneTech_Stone_Pebbles_Catalogue_English.pdf",
-          filename: isHi
-            ? "StoneTech_Stone_Pebbles_Catalogue_Hindi.pdf"
-            : isGu
-              ? "StoneTech_Stone_Pebbles_Catalogue_Gujarati.pdf"
-              : "StoneTech_Stone_Pebbles_Catalogue_English.pdf",
-        };
-      case "installations":
-        return {
-          label:
-            lang === "gu"
-              ? "પોર્ટફોલિયો (PDF)"
-              : lang === "hi"
-                ? "पोर्टफोलियो (PDF)"
-                : "Portfolio (PDF)",
-          url: isHi
-            ? "/catalogues/StoneTech_NaturalStone_WallCl_Options_Hindi.pdf"
-            : isGu
-              ? "/catalogues/StoneTech_NaturalStone_WallCl_Options_Gujarati.pdf"
-              : "/catalogues/StoneTech_NaturalStone_WallCl_Options_English.pdf",
-          filename: isHi
-            ? "StoneTech_Portfolio_Hindi.pdf"
-            : isGu
-              ? "StoneTech_Portfolio_Gujarati.pdf"
-              : "StoneTech_Portfolio_English.pdf",
-        };
-      case "cladding":
-      default:
-        return {
-          label:
-            lang === "gu"
-              ? "વોલ ક્લેડિંગ (71 Pgs)"
-              : lang === "hi"
-                ? "वॉल क्लैडिंग (71 Pgs)"
-                : "Wall Cladding (71 Pgs)",
-          url: isHi
-            ? "/catalogues/StoneTech_NaturalStone_WallCl_Options_Hindi.pdf"
-            : isGu
-              ? "/catalogues/StoneTech_NaturalStone_WallCl_Options_Gujarati.pdf"
-              : "/catalogues/StoneTech_NaturalStone_WallCl_Options_English.pdf",
-          filename: isHi
-            ? "StoneTech_NaturalStone_WallCl_Options_Hindi.pdf"
-            : isGu
-              ? "StoneTech_NaturalStone_WallCl_Options_Gujarati.pdf"
-              : "StoneTech_NaturalStone_WallCl_Options_English.pdf",
-        };
-    }
-  }, [currentTab, isHi, isGu, lang]);
 
   return (
     <div
@@ -1188,560 +855,11 @@ export function MasterProductCatalog({
         </div>
       )}
 
-      {/* 2. DYNAMIC CONTROLS ROW: TITLE, 2 ADAPTIVE DROPDOWNS, SEARCH & 5-PDF MENU */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pt-1 border-t border-border/40">
-        {/* Title with live pulsating beacon */}
-        <div className="flex items-center gap-2">
-          <span className="flex h-2.5 w-2.5 relative shrink-0">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
-          </span>
-          <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
-            {tabMetadata.title}
-          </span>
-          <span className="text-[11px] text-muted-foreground font-semibold">
-            ({filteredItems.length} {tabMetadata.countLabel})
-          </span>
-        </div>
-
-        {/* Set of Dropdowns & Controls */}
-        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-          {/* Dropdown 1: Category / Collection */}
-          <Select
-            value={selectedCategory}
-            onValueChange={(val) => {
-              setSelectedCategory(val);
-            }}
-          >
-            <SelectTrigger className="h-8 text-xs bg-background/90 w-[150px] sm:w-[170px]">
-              <SelectValue placeholder={tabMetadata.dropdown1Placeholder}>
-                {selectedCategory === "all"
-                  ? `${tabMetadata.dropdown1Placeholder} (${toIndicDigits(String(currentDataset.length), lang)})`
-                  : categoryOptions.find((c) => c.key === selectedCategory)?.label ||
-                    selectedCategory}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all" className="text-xs">
-                {tabMetadata.dropdown1Placeholder} (
-                {toIndicDigits(String(currentDataset.length), lang)})
-              </SelectItem>
-              {categoryOptions.map((opt) => (
-                <SelectItem key={opt.key} value={opt.key} className="text-xs">
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Dropdown 2: Sub-filter (Geology / Finish / Profile) */}
-          <Select
-            value={selectedSubFilter}
-            onValueChange={(val) => {
-              setSelectedSubFilter(val);
-            }}
-          >
-            <SelectTrigger className="h-8 text-xs bg-background/90 w-[130px] sm:w-[150px] hidden sm:flex">
-              <SelectValue placeholder={tabMetadata.dropdown2Placeholder}>
-                {selectedSubFilter === "all"
-                  ? tabMetadata.dropdown2Placeholder
-                  : subFilterOptions.find((s) => s.key === selectedSubFilter)?.label ||
-                    selectedSubFilter}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all" className="text-xs">
-                {tabMetadata.dropdown2Placeholder}
-              </SelectItem>
-              {subFilterOptions.map((opt) => (
-                <SelectItem key={opt.key} value={opt.key} className="text-xs">
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Search Input */}
-          <div className="relative flex-1 sm:w-44 md:w-52">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder={tabMetadata.searchPlaceholder}
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-              }}
-              className="pl-8 h-8 text-xs bg-background/90"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery("")}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            )}
-          </div>
-
-          {/* Quick 1-Click Active Language PDF Download */}
-          <a
-            href={activeTabPdf.url}
-            download={activeTabPdf.filename}
-            className="inline-flex"
-            title={`Download ${activeTabPdf.label} (${activeLangCode.toUpperCase()})`}
-          >
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-8 px-2.5 text-xs text-amber-700 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/10 gap-1.5 cursor-pointer font-semibold shrink-0"
-            >
-              <Download className="h-3.5 w-3.5 text-amber-500" />
-              <span className="hidden md:inline font-medium">{activeTabPdf.label}</span>
-              <span className="md:hidden font-medium">PDF</span>
-              <Badge
-                variant="secondary"
-                className="text-[9px] px-1 py-0 h-3.5 uppercase font-mono font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300"
-              >
-                {activeLangCode}
-              </Badge>
-            </Button>
-          </a>
-
-          {/* Catalogues (PDF) Comprehensive Library Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-8 px-2.5 text-xs text-emerald-700 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 gap-1.5 cursor-pointer font-semibold shrink-0"
-              >
-                <BookOpen className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">
-                  {lang === "gu"
-                    ? "કેટલોગ ડાઉનલોડ (PDF)"
-                    : lang === "hi"
-                      ? "कैटलॉग डाउनलोड (PDF)"
-                      : "Catalogues (PDF)"}
-                </span>
-                <span className="sm:hidden">PDF</span>
-                <ChevronDown className="h-3 w-3 opacity-60" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[330px] sm:w-[380px] p-2.5 space-y-2.5">
-              <DropdownMenuLabel className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                {lang === "gu"
-                  ? "સ્ટોન ટેક એટેલિયર ૨૦૨૬ વાસ્તુશિલ્પીય કેટલોગ્સ"
-                  : lang === "hi"
-                    ? "स्टोन टेक एटेलियर २०२६ वास्तुशिल्पीय कैटलॉग"
-                    : "Stone Tech Atelier 2026 Architectural Catalogues"}
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-
-              {/* 1. Natural Stone Cladding Catalogue */}
-              <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-2 space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-xs text-foreground flex items-center gap-1.5">
-                    <Layers className="h-3.5 w-3.5 text-emerald-600" />
-                    {lang === "gu"
-                      ? "કુદરતી પથ્થર દીવાલ ક્લેડિંગ (૭૧ પાન)"
-                      : lang === "hi"
-                        ? "प्राकृतिक पत्थर दीवार क्लैडिंग (७१ पृष्ठ)"
-                        : "Natural Stone Cladding (71 Pgs)"}
-                  </span>
-                  <Badge
-                    variant="outline"
-                    className="text-[10px] px-1.5 py-0 h-4 border-emerald-500/40 text-emerald-700 dark:text-emerald-300"
-                  >
-                    {lang === "gu"
-                      ? "૨૭૫ પેટર્ન્સ"
-                      : lang === "hi"
-                        ? "२७५ पैटर्न्स"
-                        : "275 Patterns"}
-                  </Badge>
-                </div>
-
-                <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground pt-0.5">
-                  <span className="flex items-center gap-1">
-                    <Download className="h-3 w-3 text-emerald-600" />
-                    <span>
-                      {lang === "gu"
-                        ? "સંપૂર્ણ ક્લેડિંગ કેટલોગ (૭૧ પાન)"
-                        : lang === "hi"
-                          ? "संपूर्ण क्लैडिंग कैटलॉग (७१ पृष्ठ)"
-                          : "Complete Cladding Catalogue (71 Pgs)"}
-                    </span>
-                  </span>
-                  <span className="text-[10px] font-mono font-semibold text-foreground/80">
-                    14.2 MB
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-1.5 pt-0.5">
-                  <a
-                    href="/catalogues/StoneTech_NaturalStone_WallCl_Options_English.pdf"
-                    download="StoneTech_NaturalStone_WallCl_Options_English.pdf"
-                    className={getTirangaLangBtnClass("en", activeLangCode)}
-                  >
-                    English
-                  </a>
-                  <a
-                    href="/catalogues/StoneTech_NaturalStone_WallCl_Options_Hindi.pdf"
-                    download="StoneTech_NaturalStone_WallCl_Options_Hindi.pdf"
-                    className={getTirangaLangBtnClass("hi", activeLangCode)}
-                  >
-                    हिंदी
-                  </a>
-                  <a
-                    href="/catalogues/StoneTech_NaturalStone_WallCl_Options_Gujarati.pdf"
-                    download="StoneTech_NaturalStone_WallCl_Options_Gujarati.pdf"
-                    className={getTirangaLangBtnClass("gu", activeLangCode)}
-                  >
-                    ગુજરાતી
-                  </a>
-                </div>
-              </div>
-
-              {/* 2. Stone Veneer Catalogue */}
-              <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-2 space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-xs text-foreground flex items-center gap-1.5">
-                    <Sparkles className="h-3.5 w-3.5 text-amber-600" />
-                    {lang === "gu"
-                      ? "અત્યંત પાતળી કુદરતી સ્ટોન વિનિયર (૧૦૬ પાન)"
-                      : lang === "hi"
-                        ? "अत्यंत पतली प्राकृतिक स्टोन विनियर (१०६ पृष्ठ)"
-                        : "Ultra-Thin Stone Veneer (106 Pgs)"}
-                  </span>
-                  <Badge
-                    variant="outline"
-                    className="text-[10px] px-1.5 py-0 h-4 border-amber-500/40 text-amber-700 dark:text-amber-300"
-                  >
-                    {lang === "gu" ? "૯૮ જાતો" : lang === "hi" ? "९૮ किस्में" : "98 Varieties"}
-                  </Badge>
-                </div>
-
-                <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground pt-0.5">
-                  <span className="flex items-center gap-1">
-                    <Download className="h-3 w-3 text-amber-600" />
-                    <span>
-                      {lang === "gu"
-                        ? "સ્ટોન વિનિયર કેટલોગ (૧૦૬ પાન)"
-                        : lang === "hi"
-                          ? "स्टोन विनियर कैटलॉग (१०६ पृष्ठ)"
-                          : "Stone Veneer Catalogue (106 Pgs)"}
-                    </span>
-                  </span>
-                  <span className="text-[10px] font-mono font-semibold text-foreground/80">
-                    15.4 MB
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-1.5 pt-0.5">
-                  <a
-                    href="/catalogues/StoneTech_Stone_Veneer_Catalogue_English.pdf"
-                    download="StoneTech_Stone_Veneer_Catalogue_English.pdf"
-                    className={getTirangaLangBtnClass("en", activeLangCode)}
-                  >
-                    English
-                  </a>
-                  <a
-                    href="/catalogues/StoneTech_Stone_Veneer_Catalogue_Hindi.pdf"
-                    download="StoneTech_Stone_Veneer_Catalogue_Hindi.pdf"
-                    className={getTirangaLangBtnClass("hi", activeLangCode)}
-                  >
-                    हिंदी
-                  </a>
-                  <a
-                    href="/catalogues/StoneTech_Stone_Veneer_Catalogue_Gujarati.pdf"
-                    download="StoneTech_Stone_Veneer_Catalogue_Gujarati.pdf"
-                    className={getTirangaLangBtnClass("gu", activeLangCode)}
-                  >
-                    ગુજરાતી
-                  </a>
-                </div>
-              </div>
-
-              {/* 3. Glass Bricks Catalogues */}
-              <div className="rounded-lg border border-sky-500/20 bg-sky-500/5 p-2 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-xs text-foreground flex items-center gap-1.5">
-                    <Gem className="h-3.5 w-3.5 text-sky-600" />
-                    {lang === "gu"
-                      ? "વાસ્તુશિલ્પીય નક્કર અને પોલી કાચની ઈંટો (૬૭ ડિઝાઇન્સ)"
-                      : lang === "hi"
-                        ? "वास्तुशिल्पीय ठोस एवं खोखली कांच की ईंटें (६७ डिज़ाइन)"
-                        : "Architectural Glass Bricks (67 Designs)"}
-                  </span>
-                  <Badge
-                    variant="outline"
-                    className="text-[10px] px-1.5 py-0 h-4 border-sky-500/40 text-sky-700 dark:text-sky-300"
-                  >
-                    {lang === "gu" ? "૬૭ ડિઝાઇન્સ" : lang === "hi" ? "६७ डिज़ाइन" : "67 Designs"}
-                  </Badge>
-                </div>
-
-                {/* Solid Glass Bricks */}
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Download className="h-3 w-3 text-sky-600" />
-                      {lang === "gu"
-                        ? "નક્કર કાચની ઈંટો (૩૪ પાન)"
-                        : lang === "hi"
-                          ? "ठोस कांच की ईंटें (३४ पृष्ठ)"
-                          : "Solid Glass Bricks (34 Pgs)"}
-                    </span>
-                    <span className="text-[10px] font-mono">9.0 MB</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <a
-                      href="/catalogues/StoneTech_Solid_Glass_Bricks_Catalogue_English.pdf"
-                      download="StoneTech_Solid_Glass_Bricks_Catalogue_English.pdf"
-                      className={getTirangaLangBtnClass("en", activeLangCode)}
-                    >
-                      English
-                    </a>
-                    <a
-                      href="/catalogues/StoneTech_Solid_Glass_Bricks_Catalogue_Hindi.pdf"
-                      download="StoneTech_Solid_Glass_Bricks_Catalogue_Hindi.pdf"
-                      className={getTirangaLangBtnClass("hi", activeLangCode)}
-                    >
-                      हिंदी
-                    </a>
-                    <a
-                      href="/catalogues/StoneTech_Solid_Glass_Bricks_Catalogue_Gujarati.pdf"
-                      download="StoneTech_Solid_Glass_Bricks_Catalogue_Gujarati.pdf"
-                      className={getTirangaLangBtnClass("gu", activeLangCode)}
-                    >
-                      ગુજરાતી
-                    </a>
-                  </div>
-                </div>
-
-                {/* Hollow Glass Bricks */}
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Download className="h-3 w-3 text-sky-600" />
-                      {lang === "gu"
-                        ? "પોલી કાચની ઈંટો (૪૯ પાન)"
-                        : lang === "hi"
-                          ? "खोखली कांच की ईंटें (४९ पृष्ठ)"
-                          : "Hollow Glass Bricks (49 Pgs)"}
-                    </span>
-                    <span className="text-[10px] font-mono">4.5 MB</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <a
-                      href="/catalogues/StoneTech_Glass_Bricks_Catalogue_English.pdf"
-                      download="StoneTech_Glass_Bricks_Catalogue_English.pdf"
-                      className={getTirangaLangBtnClass("en", activeLangCode)}
-                    >
-                      English
-                    </a>
-                    <a
-                      href="/catalogues/StoneTech_Glass_Bricks_Catalogue_Hindi.pdf"
-                      download="StoneTech_Glass_Bricks_Catalogue_Hindi.pdf"
-                      className={getTirangaLangBtnClass("hi", activeLangCode)}
-                    >
-                      हिंदी
-                    </a>
-                    <a
-                      href="/catalogues/StoneTech_Glass_Bricks_Catalogue_Gujarati.pdf"
-                      download="StoneTech_Glass_Bricks_Catalogue_Gujarati.pdf"
-                      className={getTirangaLangBtnClass("gu", activeLangCode)}
-                    >
-                      ગુજરાતી
-                    </a>
-                  </div>
-                </div>
-              </div>
-
-              {/* 4. Flexible Clay Veneers Catalogue */}
-              <div className="rounded-lg border border-orange-500/20 bg-orange-500/5 p-2 space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-xs text-foreground flex items-center gap-1.5">
-                    <Compass className="h-3.5 w-3.5 text-orange-600" />
-                    {lang === "gu"
-                      ? "અત્યંત પાતળી લચીલી ક્લે વિનિયર્સ (૩૭ પાન)"
-                      : lang === "hi"
-                        ? "अत्यंत पतली लचीली क्ले विनियर्स (३७ पृष्ठ)"
-                        : "Flexible Clay Veneers (37 Pgs)"}
-                  </span>
-                  <Badge
-                    variant="outline"
-                    className="text-[10px] px-1.5 py-0 h-4 border-orange-500/40 text-orange-700 dark:text-orange-300"
-                  >
-                    {lang === "gu"
-                      ? "૪૦ ટેક્સચર્સ"
-                      : lang === "hi"
-                        ? "४० टेक्सचर्स"
-                        : "40 Textures"}
-                  </Badge>
-                </div>
-
-                <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground pt-0.5">
-                  <span className="flex items-center gap-1">
-                    <Download className="h-3 w-3 text-orange-600" />
-                    <span>
-                      {lang === "gu"
-                        ? "ક્લે વિનિયર્સ કેટલોગ (૩૭ પાન)"
-                        : lang === "hi"
-                          ? "क्ले विनियर्स कैटलॉग (३७ पृष्ठ)"
-                          : "Clay Veneers Catalogue (37 Pgs)"}
-                    </span>
-                  </span>
-                  <span className="text-[10px] font-mono font-semibold text-foreground/80">
-                    11.2 MB
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-1.5 pt-0.5">
-                  <a
-                    href="/catalogues/StoneTech_Flexible_Clay_Veneers_Catalogue_English.pdf"
-                    download="StoneTech_Flexible_Clay_Veneers_Catalogue_English.pdf"
-                    className={getTirangaLangBtnClass("en", activeLangCode)}
-                  >
-                    English
-                  </a>
-                  <a
-                    href="/catalogues/StoneTech_Flexible_Clay_Veneers_Catalogue_Hindi.pdf"
-                    download="StoneTech_Flexible_Clay_Veneers_Catalogue_Hindi.pdf"
-                    className={getTirangaLangBtnClass("hi", activeLangCode)}
-                  >
-                    हिंदी
-                  </a>
-                  <a
-                    href="/catalogues/StoneTech_Flexible_Clay_Veneers_Catalogue_Gujarati.pdf"
-                    download="StoneTech_Flexible_Clay_Veneers_Catalogue_Gujarati.pdf"
-                    className={getTirangaLangBtnClass("gu", activeLangCode)}
-                  >
-                    ગુજરાતી
-                  </a>
-                </div>
-              </div>
-
-              {/* 5. Natural Stone Pebbles Catalogue */}
-              <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-2 space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-xs text-foreground flex items-center gap-1.5">
-                    <CircleDot className="h-3.5 w-3.5 text-amber-500" />
-                    {lang === "gu"
-                      ? "વાસ્તુશિલ્પીય કુદરતી પાષાણ કાંકરા અને અર્ધ-કિંમતી સંગ્રહ (૨૩ પાન)"
-                      : lang === "hi"
-                        ? "वास्तुशिल्पीय प्राकृतिक पाषाण कंकड़ (पेबल्स) एवं अर्ध-कीमती संग्रह (२३ पृष्ठ)"
-                        : "Stone Pebbles & Aggregates (23 Pgs)"}
-                  </span>
-                  <Badge
-                    variant="outline"
-                    className="text-[10px] px-1.5 py-0 h-4 border-amber-500/40 text-amber-700 dark:text-amber-300"
-                  >
-                    {lang === "gu" ? "૭૫ જાતો" : lang === "hi" ? "૭૫ किस्में" : "75 Varieties"}
-                  </Badge>
-                </div>
-
-                <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground pt-0.5">
-                  <span className="flex items-center gap-1">
-                    <Download className="h-3 w-3 text-amber-600" />
-                    <span>
-                      {lang === "gu"
-                        ? "સ્ટોન પેબલ્સ કેટલોગ (૨૩ પાન)"
-                        : lang === "hi"
-                          ? "स्टोन पेबल्स कैटलॉग (२३ पृष्ठ)"
-                          : "Stone Pebbles Catalogue (23 Pgs)"}
-                    </span>
-                  </span>
-                  <span className="text-[10px] font-mono font-semibold text-foreground/80">
-                    16.2 MB
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-1.5 pt-0.5">
-                  <a
-                    href="/catalogues/StoneTech_Stone_Pebbles_Catalogue_English.pdf"
-                    download="StoneTech_Stone_Pebbles_Catalogue_English.pdf"
-                    className={getTirangaLangBtnClass("en", activeLangCode)}
-                  >
-                    English
-                  </a>
-                  <a
-                    href="/catalogues/StoneTech_Stone_Pebbles_Catalogue_Hindi.pdf"
-                    download="StoneTech_Stone_Pebbles_Catalogue_Hindi.pdf"
-                    className={getTirangaLangBtnClass("hi", activeLangCode)}
-                  >
-                    हिंदी
-                  </a>
-                  <a
-                    href="/catalogues/StoneTech_Stone_Pebbles_Catalogue_Gujarati.pdf"
-                    download="StoneTech_Stone_Pebbles_Catalogue_Gujarati.pdf"
-                    className={getTirangaLangBtnClass("gu", activeLangCode)}
-                  >
-                    ગુજરાતી
-                  </a>
-                </div>
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
-
-      {/* 3. QUICK COLLECTION PILLS WITH LIVE COUNTS */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none [touch-action:pan-x]">
-        <button
-          type="button"
-          onClick={() => {
-            setSelectedCategory("all");
-          }}
-          className={cn(
-            "px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer",
-            selectedCategory === "all"
-              ? "bg-primary text-primary-foreground shadow-xs"
-              : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground border border-border/40",
-          )}
-        >
-          {lang === "gu"
-            ? `બધી ${tabMetadata.countLabel} (${toIndicDigits(String(currentDataset.length), lang)})`
-            : lang === "hi"
-              ? `सभी ${tabMetadata.countLabel} (${toIndicDigits(String(currentDataset.length), lang)})`
-              : `All ${tabMetadata.countLabel} (${currentDataset.length})`}
-        </button>
-        {categoryOptions.map((cat) => (
-          <button
-            key={cat.key}
-            type="button"
-            onClick={() => {
-              setSelectedCategory(cat.key);
-            }}
-            className={cn(
-              "px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer",
-              selectedCategory === cat.key
-                ? "bg-primary text-primary-foreground shadow-xs"
-                : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground border border-border/40",
-            )}
-          >
-            {cat.label}
-          </button>
-        ))}
-      </div>
-
-      {/* 4. SQUEEZED 9-ITEM BOX VIEWPORT WITH SMOOTH IN-BOX SCROLLING */}
+      {/* 2. SQUEEZED PRODUCT GRID VIEWPORT WITH SMOOTH IN-BOX SCROLLING */}
       {displayedItems.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl border border-dashed border-border bg-card/40">
           <Layers className="h-10 w-10 text-muted-foreground/60 mb-3" />
           <p className="text-sm font-semibold text-foreground">No matching products found</p>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setSearchQuery("");
-              setSelectedCategory("all");
-              setSelectedSubFilter("all");
-            }}
-            className="mt-3 text-xs cursor-pointer"
-          >
-            Reset Filters
-          </Button>
         </div>
       ) : (
         <div className="space-y-2.5">
