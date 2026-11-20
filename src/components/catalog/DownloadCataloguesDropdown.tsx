@@ -85,11 +85,13 @@ export function DownloadCataloguesDropdown({
     if (typeof window === "undefined") return;
     const checkHash = () => {
       const h = window.location.hash.toLowerCase();
+      const s = window.location.search.toLowerCase();
       if (
         h === "#catalogues" ||
         h === "#download-catalogues" ||
         h === "#catalogue" ||
-        h === "#pdf-catalogues"
+        h === "#pdf-catalogues" ||
+        s.includes("catalog")
       ) {
         setIsOpen(true);
       }
@@ -99,7 +101,7 @@ export function DownloadCataloguesDropdown({
     return () => window.removeEventListener("hashchange", checkHash);
   }, []);
 
-  const shareUrl = "https://stonetech.in/#catalogues";
+  const shareUrl = "https://stonetech.in/?catalogues=2026#catalogues";
 
   const getShareText = () => {
     if (lang === "gu") {

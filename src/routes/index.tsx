@@ -116,11 +116,35 @@ export const Route = createFileRoute("/")({
   },
   head: () => ({
     meta: [
-      { title: "Stone Tech-Architectural Stone Atelier" },
+      { title: "Stone Tech - Architectural Stone Atelier & Catalogues" },
       {
         name: "description",
         content:
-          "India's premier architectural natural stone atelier. Custom Stone Veneer, 3D Wall Cladding, Interlocking Panels, Waterjet Inlays & Italian Marble. Instant WhatsApp quotation.",
+          "India's premier architectural natural stone atelier. Custom Stone Veneer, 3D Wall Cladding, Interlocking Panels, Glass Bricks & Italian Marble. Download verified PDF catalogues in English, Hindi & Gujarati.",
+      },
+      { property: "og:title", content: "Stone Tech - Architectural Stone Atelier & Catalogues" },
+      {
+        property: "og:description",
+        content:
+          "Explore & download verified architectural natural stone catalogues (Wall Cladding, Ultra-Thin Stone Veneer, Glass Bricks, Flexible Clay Veneers & Stone Pebbles) in English, Hindi & Gujarati.",
+      },
+      { property: "og:type", content: "website" },
+      {
+        property: "og:image",
+        content: "https://stonetech.in/branding/stone-tech-og-banner.png?v=4",
+      },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Stone Tech - Architectural Stone Atelier & Catalogues" },
+      {
+        name: "twitter:description",
+        content:
+          "Explore & download verified architectural natural stone catalogues in English, Hindi & Gujarati. Explore 275+ Wall Claddings & 98+ Stone Veneers.",
+      },
+      {
+        name: "twitter:image",
+        content: "https://stonetech.in/branding/stone-tech-og-banner.png?v=4",
       },
     ],
   }),
@@ -423,11 +447,13 @@ function HomePage() {
     if (typeof window === "undefined") return;
     const handleHash = () => {
       const h = window.location.hash.toLowerCase();
+      const s = window.location.search.toLowerCase();
       if (
         h === "#catalogues" ||
         h === "#download-catalogues" ||
         h === "#catalogue" ||
-        h === "#pdf-catalogues"
+        h === "#pdf-catalogues" ||
+        s.includes("catalog")
       ) {
         setTimeout(() => {
           const el = document.getElementById("download-catalogues");

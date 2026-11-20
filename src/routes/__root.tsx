@@ -140,25 +140,37 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
       { name: "apple-mobile-web-app-title", content: "Stone Tech" },
-      { property: "og:title", content: "Stone Tech - Architectural Stone Atelier" },
+      {
+        property: "og:title",
+        content: "Stone Tech - Architectural Natural Stone Atelier & Catalogues",
+      },
       {
         property: "og:description",
         content:
-          "Stone Tech - Architectural Stone Atelier, Ahmedabad. Premium Natural Stone, Cladding & Murals.",
+          "Explore & download verified architectural natural stone catalogues (Wall Cladding, Ultra-Thin Stone Veneer, Glass Bricks, Flexible Clay Veneers & Stone Pebbles) in English, Hindi & Gujarati.",
       },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "Stone Tech" },
-      { property: "og:image", content: "https://stonetech.in/branding/careers-og-banner.png?v=3" },
+      {
+        property: "og:image",
+        content: "https://stonetech.in/branding/stone-tech-og-banner.png?v=4",
+      },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Stone Tech - Architectural Stone Atelier" },
+      {
+        name: "twitter:title",
+        content: "Stone Tech - Architectural Natural Stone Atelier & Catalogues",
+      },
       {
         name: "twitter:description",
         content:
-          "Stone Tech - Architectural Stone Atelier, Ahmedabad. Premium Natural Stone, Cladding & Murals.",
+          "Explore & download verified architectural natural stone catalogues (Wall Cladding, Ultra-Thin Stone Veneer, Glass Bricks, Flexible Clay Veneers & Stone Pebbles) in English, Hindi & Gujarati.",
       },
-      { name: "twitter:image", content: "https://stonetech.in/branding/careers-og-banner.png?v=3" },
+      {
+        name: "twitter:image",
+        content: "https://stonetech.in/branding/stone-tech-og-banner.png?v=4",
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -182,7 +194,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "@context": "https://schema.org",
           "@type": "HomeAndConstructionBusiness",
           name: "Stone Tech - Architectural Natural Stone Atelier",
-          image: "https://stonetech.in/branding/careers-og-banner.png?v=3",
+          image: "https://stonetech.in/branding/stone-tech-og-banner.png?v=4",
           "@id": "https://stonetech.in/#organization",
           url: "https://stonetech.in",
           telephone: "+91-9876543210",
