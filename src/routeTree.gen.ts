@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as QuotationsRouteImport } from './routes/quotations'
 import { Route as InquiryRouteImport } from './routes/inquiry'
 import { Route as CareersRouteImport } from './routes/careers'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -203,6 +204,11 @@ import { Route as AuthenticatedDispatchIdPrintRouteImport } from './routes/_auth
 import { Route as AuthenticatedDispatchIdEditRouteImport } from './routes/_authenticated/dispatch/$id.edit'
 import { Route as AuthenticatedCustomersCustomerIdTimelineRouteImport } from './routes/_authenticated/customers/$customerId.timeline'
 
+const QuotationsRoute = QuotationsRouteImport.update({
+  id: '/quotations',
+  path: '/quotations',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InquiryRoute = InquiryRouteImport.update({
   id: '/inquiry',
   path: '/inquiry',
@@ -1322,6 +1328,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/careers': typeof CareersRoute
   '/inquiry': typeof InquiryRoute
+  '/quotations': typeof QuotationsRoute
   '/activity': typeof AuthenticatedActivityRoute
   '/agency-payments': typeof AuthenticatedAgencyPaymentsRoute
   '/agent-centre': typeof AuthenticatedAgentCentreRoute
@@ -1515,6 +1522,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/careers': typeof CareersRoute
   '/inquiry': typeof InquiryRoute
+  '/quotations': typeof QuotationsRoute
   '/activity': typeof AuthenticatedActivityRoute
   '/agency-payments': typeof AuthenticatedAgencyPaymentsRoute
   '/agent-centre': typeof AuthenticatedAgentCentreRoute
@@ -1711,6 +1719,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/careers': typeof CareersRoute
   '/inquiry': typeof InquiryRoute
+  '/quotations': typeof QuotationsRoute
   '/_authenticated/activity': typeof AuthenticatedActivityRoute
   '/_authenticated/agency-payments': typeof AuthenticatedAgencyPaymentsRoute
   '/_authenticated/agent-centre': typeof AuthenticatedAgentCentreRoute
@@ -1907,6 +1916,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/careers'
     | '/inquiry'
+    | '/quotations'
     | '/activity'
     | '/agency-payments'
     | '/agent-centre'
@@ -2100,6 +2110,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/careers'
     | '/inquiry'
+    | '/quotations'
     | '/activity'
     | '/agency-payments'
     | '/agent-centre'
@@ -2295,6 +2306,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/careers'
     | '/inquiry'
+    | '/quotations'
     | '/_authenticated/activity'
     | '/_authenticated/agency-payments'
     | '/_authenticated/agent-centre'
@@ -2491,6 +2503,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CareersRoute: typeof CareersRoute
   InquiryRoute: typeof InquiryRoute
+  QuotationsRoute: typeof QuotationsRoute
   PayLinkIdRoute: typeof PayLinkIdRoute
   TrackOrderNoRoute: typeof TrackOrderNoRoute
   TrackIndexRoute: typeof TrackIndexRoute
@@ -2511,6 +2524,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/quotations': {
+      id: '/quotations'
+      path: '/quotations'
+      fullPath: '/quotations'
+      preLoaderRoute: typeof QuotationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/inquiry': {
       id: '/inquiry'
       path: '/inquiry'
@@ -4395,6 +4415,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CareersRoute: CareersRoute,
   InquiryRoute: InquiryRoute,
+  QuotationsRoute: QuotationsRoute,
   PayLinkIdRoute: PayLinkIdRoute,
   TrackOrderNoRoute: TrackOrderNoRoute,
   TrackIndexRoute: TrackIndexRoute,
