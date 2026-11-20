@@ -436,7 +436,7 @@ export async function setQuoteStatus(
     .from("quotes")
     .update({ status })
     .eq("id", id)
-    .select("*, customer:customers!quotes_customer_id_fkey(name, primary_phone, whatsapp_number)")
+    .select("*, customer:customers!quotes_customer_id_fkey(name, primary_phone, whatsapp)")
     .single();
   if (error) throw new AppError(mapDbError(error));
 
@@ -462,9 +462,7 @@ export async function setQuoteStatus(
           .from("quotes")
           .update({ workflow_state: updatedWf as never })
           .eq("id", id)
-          .select(
-            "*, customer:customers!quotes_customer_id_fkey(name, primary_phone, whatsapp_number)",
-          )
+          .select("*, customer:customers!quotes_customer_id_fkey(name, primary_phone, whatsapp)")
           .single();
         if (updatedQuote) finalData = updatedQuote;
       }
@@ -472,11 +470,11 @@ export async function setQuoteStatus(
       const { broadcastQuoteApproved } = await import("@/lib/notifications/broadcast");
       const custObj = (
         finalData as unknown as {
-          customer?: { name?: string; primary_phone?: string; whatsapp_number?: string } | null;
+          customer?: { name?: string; primary_phone?: string; whatsapp?: string } | null;
         }
       )?.customer;
       const customerName = custObj?.name ?? null;
-      const customerPhone = custObj?.whatsapp_number || custObj?.primary_phone;
+      const customerPhone = custObj?.whatsapp || custObj?.primary_phone;
 
       broadcastQuoteApproved({
         id: finalData.id,
