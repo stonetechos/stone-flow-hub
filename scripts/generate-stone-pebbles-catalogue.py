@@ -592,7 +592,7 @@ PEBBLES = [
     },
     {
         "id": 71, "code": "ST-PB-071", "name": "Stone Chips White",
-        "category": "Mini Pebbles & Chips", "mineral": "Makrana Crushed White Marble",
+        "category": "Mini Pebbles & Chips", "mineral": "Pure Calcite Crushed White Marble",
         "finish": "Angular Crushed White Marble Chips", "sizes": "6-10mm · 10-15mm · 15-20mm",
         "color": "Sharp Angular Brilliant White",
         "use": "Permeable Driveways, French Drains, Flat Roof Ballast, Modern Pathways",
@@ -1192,7 +1192,7 @@ def generate_html():
         <strong>1. Crystalline Quartz &amp; Chalcedony:</strong> Rose Quartz, Crystal Quartz, Green Aventurine, and Carnelian deliver exceptional Mohs hardness (7.0) and high translucence for luxury water bodies and backlit features.<br><br>
         <strong>2. Microcrystalline Onyx &amp; Aragonite:</strong> Sourced from multi-toned banded calcite strata. Translucent under ambient illumination, ideal for interior reflecting trays, spa sanctuaries, and boutique foyers.<br><br>
         <strong>3. Volcanic Basalt &amp; Granite:</strong> High-density igneous stone (Mohs 6.0–6.5) tumbled to piano-gloss obsidian or natural matte velvet. Extreme resistance to vehicular load, freeze-thaw cycles, and acid rain.<br><br>
-        <strong>4. Metamorphic Calcite &amp; Marble:</strong> Makrana, Jaisalmer, and Kota crushed chips engineered for high-compaction permeable driveways, French drains, and terrazzo matrixes.
+        <strong>4. Metamorphic Calcite &amp; Marble:</strong> Pure Calcite, Jaisalmer, and Kota crushed chips engineered for high-compaction permeable driveways, French drains, and terrazzo matrixes.
       </div>
     </div>
 

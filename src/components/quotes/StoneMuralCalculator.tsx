@@ -1810,7 +1810,7 @@ export function StoneMuralCalculator({
               )}
             </div>
             <p className="text-[11px] text-muted-foreground ml-6">
-              For 2-layer relief murals where a contrasting carved stone (e.g. Makrana white marble
+              For 2-layer relief murals where a contrasting carved stone (e.g. Ambaji white marble
               deity or inlay motif) is pasted into CNC-cut pockets on the base stone.
             </p>
 

@@ -16,7 +16,7 @@ export interface AttachedProductPrice {
   mrp?: number; // Optional strike-through MRP
   badge?: string; // Optional tag: "Quarry Direct", "Architect Exclusive", "CNC Sculpted", etc.
   leadTime?: string; // e.g. "In Stock - Ready to Ship", "Made to Order (7-10 Days)"
-  notes?: string; // e.g. "Ex-factory Makrana, crating included"
+  notes?: string; // e.g. "Ex-factory Ahmedabad, crating included"
   showOnPdf?: boolean; // Whether to print this price in WhatsApp PDF softcopy (default: true)
   isCustom?: boolean; // Whether overridden by super admin
   updatedAt?: string;
@@ -99,7 +99,7 @@ export function getBenchmarkPrice(
     mrp,
     badge,
     leadTime: "In Stock - Ready to Ship",
-    notes: "Ex-factory Makrana, crating included. Freight & GST extra.",
+    notes: "Ex-factory Ahmedabad, crating included. Freight & GST extra.",
     showOnPdf: true,
     isCustom: false,
   };

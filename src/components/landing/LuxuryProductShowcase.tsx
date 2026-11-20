@@ -63,7 +63,7 @@ const LUXURY_PRODUCTS: LuxuryProductItem[] = [
         "Ceiling Soffits",
         "Bespoke Wardrobe & Door Wrapping",
       ],
-      quarryOrigin: "Deoli & Kund Slate Belts, Rajasthan",
+      quarryOrigin: "Certified Natural Slate & Quartzite Formations",
     },
     highlights: [
       "100% natural quarry stone face",
@@ -80,7 +80,7 @@ const LUXURY_PRODUCTS: LuxuryProductItem[] = [
     tagline: "Exterior elevation facades & interior 3D textured accent feature walls",
     luxurySubtitle: "Thermal-Mass Hand-Dressed Masonry · Timeless Monumental Stature",
     description:
-      "Engineered solid-body sandstone, limestone, and granite cladding tiles sculpted to deliver deep shadow lines and dimensional architectural drama. Sourced directly from certified Rajasthan quarries, each block is calibrated to tight sub-millimeter tolerances to ensure weatherproofing, zero thermal cracking, and enduring elegance across extreme monsoon, desert, and coastal climates.",
+      "Engineered solid-body sandstone, limestone, and granite cladding tiles sculpted to deliver deep shadow lines and dimensional architectural drama. Sourced directly from certified quarry formations, each block is calibrated to tight sub-millimeter tolerances to ensure weatherproofing, zero thermal cracking, and enduring elegance across extreme monsoon, desert, and coastal climates.",
     badge: "Heritage Elevation",
     popular: true,
     specs: {
@@ -146,7 +146,7 @@ const LUXURY_PRODUCTS: LuxuryProductItem[] = [
     tagline: "CNC 3D carved temple mandirs, artistic jaalis & stone wall sculptures",
     luxurySubtitle: "5-Axis CNC Precision Paired with Master Artisan Hand-Detailing",
     description:
-      "Transcendent devotional masterworks and artistic bas-relief murals carved into solid sandstone, pristine Makrana marble, and exotic limestones. Combines computerized 5-axis sculpting with the nuanced touch of third-generation Rajasthani carvers to deliver immaculate deities, sanctum mandapams, fluted columns, and geometric jaali screens.",
+      "Transcendent devotional masterworks and artistic bas-relief murals carved into solid sandstone, pristine white marble, and exotic limestones. Combines computerized 5-axis sculpting with the nuanced touch of master stone carvers to deliver immaculate deities, sanctum mandapams, fluted columns, and geometric jaali screens.",
     badge: "Bespoke Masterpiece",
     popular: true,
     specs: {
@@ -159,7 +159,7 @@ const LUXURY_PRODUCTS: LuxuryProductItem[] = [
         "Double-Height Spiritual Walls",
         "Lattice Jaali Partitions",
       ],
-      quarryOrigin: "Makrana White (Rajasthan) & Dholpur Pink/Beige",
+      quarryOrigin: "Pristine White Marble & Dholpur Sandstone",
     },
     highlights: [
       "Deep 3D undercuts and divine iconography",
@@ -188,7 +188,7 @@ const LUXURY_PRODUCTS: LuxuryProductItem[] = [
         "Master Ensuite Medallions",
         "Hotel & Ballroom Centerpieces",
       ],
-      quarryOrigin: "Italian Statuario, Carrara, Makrana White & Forest Green",
+      quarryOrigin: "Italian Statuario, Carrara, Pure White Marble & Forest Green",
     },
     highlights: [
       "Seamless flush fit with zero joint offset (<0.2mm)",

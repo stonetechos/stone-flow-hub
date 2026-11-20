@@ -417,20 +417,13 @@ export function WebsiteLandingContentEditor() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+          <div className="grid grid-cols-1 gap-3 pt-1">
             <div className="space-y-1.5">
-              <Label className="text-xs">Jaipur Studio &amp; Fabrication Hub</Label>
+              <Label className="text-xs">Ahmedabad Workshop &amp; Fabrication Hub</Label>
               <Input
                 value={form.contactAddressJaipur}
                 onChange={(e) => handleChange("contactAddressJaipur", e.target.value)}
-                className="text-xs h-9"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Makrana Marble Quarry Location</Label>
-              <Input
-                value={form.contactAddressMakrana}
-                onChange={(e) => handleChange("contactAddressMakrana", e.target.value)}
+                placeholder="Ahmedabad Studio &amp; Fabrication Hub"
                 className="text-xs h-9"
               />
             </div>

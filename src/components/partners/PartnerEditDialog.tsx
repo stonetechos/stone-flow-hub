@@ -357,8 +357,8 @@ export function PartnerEditDialog({
                 onChange={(e) => setCity(e.target.value)}
                 placeholder={
                   isAppPartner
-                    ? "e.g. Ahmedabad, Surat, Makrana, Udaipur"
-                    : "e.g. Ahmedabad Aslali Hub, Makrana Transport Nagar"
+                    ? "e.g. Ahmedabad, Surat, Rajkot, Vadodara"
+                    : "e.g. Ahmedabad Aslali Hub, Changodar Transport Nagar"
                 }
               />
             </Field>
@@ -507,7 +507,7 @@ export function PartnerEditDialog({
                 placeholder={
                   isAppPartner
                     ? "e.g. ₹45/sqft for dry cladding, ₹28/sqft for flooring. Payment terms: 50% advance, 50% on completion."
-                    : "e.g. Ahmedabad local carting ₹1,800/trip; Makrana to Ahmedabad ₹4.50/kg or ₹16,000 per 14ft truck."
+                    : "e.g. Ahmedabad local carting ₹1,800/trip; Changodar to Gota ₹1,200 or ₹14,000 per 14ft truck."
                 }
               />
             </Field>

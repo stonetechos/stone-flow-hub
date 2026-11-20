@@ -101,7 +101,7 @@ export function AttachPriceDialog({
       setMrp(p.mrp);
       setBadge(p.badge || "Quarry Direct");
       setLeadTime(p.leadTime || "In Stock - Ready to Ship");
-      setNotes(p.notes || "Ex-factory Makrana, crating included.");
+      setNotes(p.notes || "Ex-factory Ahmedabad, crating included.");
       setShowOnPdf(p.showOnPdf !== false);
     }
   }, [target]);
@@ -337,7 +337,7 @@ export function AttachPriceDialog({
               <Input
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="e.g. Ex-factory Makrana, crating included"
+                placeholder="e.g. Ex-factory Ahmedabad, crating included"
                 className="h-9 text-xs"
               />
             </div>

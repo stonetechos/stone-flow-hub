@@ -153,7 +153,7 @@ const MASTER_PRODUCT_OPTIONS: ProductOption[] = [
   {
     id: "indian_marble_slabs",
     name: "Indian Marble Slabs",
-    tagline: "Pure Makrana, Ambaji white, and premium Indian marble slabs",
+    tagline: "Ambaji white, Banswara, and premium Indian marble slabs",
     popular: true,
   },
   {

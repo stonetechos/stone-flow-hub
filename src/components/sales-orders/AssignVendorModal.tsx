@@ -486,7 +486,7 @@ export function AssignVendorModal({ open, onOpenChange, item, salesOrderId }: Pr
                   ? "e.g. Slabs inspected, lot #42, ready for loading"
                   : mode === "stock_lifted"
                     ? "e.g. Lifted by customer vehicle directly from yard"
-                    : "e.g. 20mm thickness, mirror polish, factory location: Makrana Unit 2"
+                    : "e.g. 20mm thickness, mirror polish, factory location: Ahmedabad Workshop Unit 2"
               }
               value={notes}
               onChange={(e) => setNotes(e.target.value)}

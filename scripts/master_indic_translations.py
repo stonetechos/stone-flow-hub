@@ -84,8 +84,8 @@ COMMON_TERMINOLOGY = {
     },
     "contact_phone": "+91 9784452998",
     "factory_address": {
-        "en": "Stone Tech Atelier, Industrial Area, Makrana Road, Rajasthan, India - 341505",
-        "hi": "स्टोन टेक एटेलियर, औद्योगिक क्षेत्र, मकराना रोड, राजस्थान, भारत - ३४१५०५",
-        "gu": "સ્ટોન ટેક એટેલિયર, ઔદ્યોગિક વિસ્તાર, મકરાણા રોડ, રાજસ્થાન, ભારત - ૩૪૧૫૦૫"
+        "en": "Stone Tech Experience Center, E-02, Ground Floor, SG Business Hub, Gota, Ahmedabad, Gujarat, India - 380060",
+        "hi": "स्टोन टेक एक्सपीरियंस सेंटर, ई-०२, ग्राउंड फ्लोर, एसजी बिजनेस हब, गोटा, अहमदाबाद, गुजरात, भारत - ३८००६०",
+        "gu": "સ્ટોન ટેક એક્સપિરિયન્સ સેન્ટર, ઇ-૦૨, ગ્રાઉન્ડ ફ્લોર, એસજી બિઝનેસ હબ, ગોટા, અમદાવાદ, ગુજરાત, ભારત - ૩૮૦૦૬૦"
     }
 }

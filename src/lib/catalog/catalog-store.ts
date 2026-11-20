@@ -531,7 +531,7 @@ export function useWebsiteCatalog(initialSettings?: Partial<SiteSettings>) {
           mrp: newProd.mrp || Math.round(newProd.price * 1.25),
           badge: newProd.badge || "New Launch",
           leadTime: newProd.leadTime || "Ready to Ship",
-          notes: newProd.notes || "Ex-factory Makrana, crating included.",
+          notes: newProd.notes || "Ex-factory Ahmedabad, crating included.",
           showOnPdf: true,
           isCustom: true,
           updatedAt: new Date().toISOString(),

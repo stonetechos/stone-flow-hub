@@ -350,7 +350,7 @@ export const SITE_SETTINGS_DEFAULTS: SiteSettings = {
     },
     {
       quote:
-        "Direct Rajasthan quarry sourcing with 3-year warranty and zero transit breakage. The most reliable natural stone partner for our luxury residences.",
+        "Direct quarry sourcing with 3-year warranty and zero transit breakage. The most reliable natural stone partner for our luxury residences.",
       author: "Pooja Mehta",
       role: "Luxury Interior Designer",
       rating: 5,
@@ -423,7 +423,7 @@ export const SITE_SETTINGS_DEFAULTS: SiteSettings = {
       dimensions: "Modular interlocking cubes · 100×100 to 150×150 mm",
       finish: "Natural Teakwood Sandstone cleft & hand-dressed edges",
       description:
-        "One of Stone Tech's all-time signature cladding products. Sourced from authentic Rajasthan teakwood sandstone formations featuring warm wood-grain striations.",
+        "One of Stone Tech's all-time signature cladding products. Sourced from authentic natural teakwood sandstone formations featuring warm wood-grain striations.",
       suitableWalls: [
         "Villa Exterior Balcony & Porch",
         "Living Room Highlight Wall",

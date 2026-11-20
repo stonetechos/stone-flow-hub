@@ -42,7 +42,7 @@ const MATERIAL_MAP: Record<string, DbEnum<"material_interest">> = {
   "r-black": "general_flooring",
   marble: "general_flooring",
   "italian marble": "custom_flooring",
-  makrana: "custom_flooring",
+  ambaji: "custom_flooring",
   statuario: "custom_flooring",
   quartz: "table_top",
   slate: "natural_stone_cladding_tiles",

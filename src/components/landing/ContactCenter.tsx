@@ -36,10 +36,7 @@ export function ContactCenter({ className }: { className?: string }) {
   const phone1 = content.contactPhone1 || "+91 77420 90866";
   const phone2 = content.contactPhone2 || "+91 97844 52998";
   const email = content.contactEmail || "info@stonetech.in";
-  const addressJaipur = isEn
-    ? content.contactAddressJaipur || texts.contact.experienceCenterAddress
-    : texts.contact.experienceCenterAddress;
-  const addressMakrana = content.contactAddressMakrana || "";
+  const experienceCenterAddress = texts.contact.experienceCenterAddress;
   const hours = isEn
     ? content.contactHours || texts.contact.studioHours
     : texts.contact.studioHours;
@@ -176,17 +173,9 @@ export function ContactCenter({ className }: { className?: string }) {
                 </div>
               </div>
 
-              <p className="text-xs text-foreground leading-relaxed font-medium">{addressJaipur}</p>
-              {addressMakrana && (
-                <div className="pt-2 border-t border-border/60">
-                  <span className="text-[10px] text-muted-foreground font-semibold block uppercase tracking-wider">
-                    Makrana Marble Quarry &amp; Depots:
-                  </span>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed mt-0.5">
-                    {addressMakrana}
-                  </p>
-                </div>
-              )}
+              <p className="text-xs text-foreground leading-relaxed font-medium">
+                {experienceCenterAddress}
+              </p>
             </div>
 
             <div className="pt-2">

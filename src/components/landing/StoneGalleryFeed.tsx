@@ -276,9 +276,14 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
                 ? `लाइव इंस्टाग्राम निष्पादित कार्य (${allPosts.length}) · बॉक्स के अंदर स्क्रॉल करें`
                 : `Live Instagram Executed Works (${allPosts.length} posts) · Scroll box to explore`}
           </span>
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-            @stonetech_official
-          </span>
+          <a
+            href="https://www.instagram.com/stonetech.ahmedabad/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11px] font-semibold tracking-wider text-amber-600 dark:text-amber-400 hover:underline inline-flex items-center gap-1"
+          >
+            @stonetech.ahmedabad
+          </a>
         </div>
       </div>
 

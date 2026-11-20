@@ -66,7 +66,7 @@ export interface WebsiteLandingContent {
 
 export const DEFAULT_LANDING_CONTENT: WebsiteLandingContent = {
   brandName: "Stone Tech",
-  brandTagline: "Architectural Stone Atelier · Jaipur & Makrana",
+  brandTagline: "Architectural Stone Atelier · Ahmedabad",
 
   heroTitlePart1: "Direct-from-Quarry",
   heroTitleHighlight: "Natural Stone Panels & Slabs",
@@ -105,8 +105,8 @@ export const DEFAULT_LANDING_CONTENT: WebsiteLandingContent = {
   contactPhone1: "+91 77420 90866",
   contactPhone2: "+91 97844 52998",
   contactEmail: "info@stonetech.in",
-  contactAddressJaipur: "RIICO Industrial Area, Mansarovar & Sitapura, Jaipur, Rajasthan",
-  contactAddressMakrana: "Gunawati Road, Makrana, Didwana-Kuchaman District, Rajasthan 341505",
+  contactAddressJaipur: "",
+  contactAddressMakrana: "",
   contactHours: "Mon – Sat: 9:00 AM – 7:30 PM IST",
 
   announcementEnabled: false,

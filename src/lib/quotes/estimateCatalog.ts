@@ -247,7 +247,7 @@ export type StoneSourcing = "stone_tech" | "client_provided";
 
 export const COMMON_OVERLAY_STONE_TYPES = [
   "White Marble",
-  "Makrana White Marble",
+  "Ambaji White Marble",
   "Mint Sandstone",
   "Teakwood Sandstone",
   "Rainbow Sandstone",

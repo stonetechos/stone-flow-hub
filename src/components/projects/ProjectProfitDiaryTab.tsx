@@ -540,7 +540,7 @@ export function ProjectProfitDiaryTab({ projectId }: ProjectProfitDiaryTabProps)
           >
             <Textarea
               rows={2}
-              placeholder="e.g. Received material in 3 parts from Makrana quarry. 2nd delivery had 3 broken slabs replaced at cost of ₹4,200. Client deducted ₹5,000 for delay."
+              placeholder="e.g. Received material in 3 parts from stone processing factory. 2nd delivery had 3 broken slabs replaced at cost of ₹4,200. Client deducted ₹5,000 for delay."
               value={diary.notes ?? ""}
               onChange={(e) =>
                 setDiary((prev) => ({

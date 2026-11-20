@@ -208,7 +208,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           },
           sameAs: [
             "https://www.linkedin.com/company/stonetech-in",
-            "https://www.instagram.com/stonetech.in",
+            "https://www.instagram.com/stonetech.ahmedabad",
           ],
           knowsAbout: [
             "Flexible Stone Veneer",

@@ -713,7 +713,7 @@ function VendorFormDialog({
               <Input
                 value={form.company_name}
                 onChange={(e) => set("company_name", e.target.value)}
-                placeholder="e.g. Makrana Marble House, Sompura Art Studio"
+                placeholder="e.g. Ambaji Stone Crafts, Sompura Art Studio"
                 required
               />
             </Field>
@@ -732,7 +732,7 @@ function VendorFormDialog({
               <Input
                 value={form.city ?? ""}
                 onChange={(e) => set("city", e.target.value)}
-                placeholder="e.g. Udaipur, Makrana, Kishangarh, Ahmedabad"
+                placeholder="e.g. Ahmedabad, Morbi, Surat, Vadodara"
               />
             </Field>
 

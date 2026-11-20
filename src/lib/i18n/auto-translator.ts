@@ -936,9 +936,9 @@ export const INDIC_DICTIONARY: Record<string, { hi: string; gu: string }> = {
     gu: "દા.ત. સોમપુરા સ્ટોન ફિક્સિંગ વર્ક્સ, અમદાવાદ",
   },
   "e.g. Rajesh Bhai Sompura": { hi: "उदा. राजेश भाई सोमपुरा", gu: "દા.ત. રાજેશ ભાઈ સોમપુરા" },
-  "e.g. Ahmedabad, Surat, Makrana, Udaipur": {
-    hi: "उदा. अहमदाबाद, सूरत, मकराना, उदयपुर",
-    gu: "દા.ત. અમદાવાદ, સુરત, મકરાણા, ઉદયપુર",
+  "e.g. Ahmedabad, Surat, Rajkot, Vadodara": {
+    hi: "उदा. अहमदाबाद, सूरत, राजकोट, वडोदरा",
+    gu: "દા.ત. અમદાવાદ, સુરત, રાજકોટ, વડોદરા",
   },
   "15-character GSTIN (Optional)": {
     hi: "१५-अंकीय जीएसटीआईएन (वैकल्पिक)",

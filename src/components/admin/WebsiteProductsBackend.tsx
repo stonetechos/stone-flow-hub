@@ -1612,7 +1612,7 @@ export function WebsiteProductsBackend() {
                 <Input
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
-                  placeholder="e.g. Makrana White &amp; Brass Inlay Strip Mosaic"
+                  placeholder="e.g. Ambaji White &amp; Brass Inlay Strip Mosaic"
                   required
                   className="h-9 text-xs"
                 />

@@ -275,7 +275,7 @@ PEBBLE_ITEMS_I18N = {
             .replace("Tumbled Translucent Agate Jujubes", "टंबल्ड पारभासी अकीक बूंदें")
             .replace("High-Silica Architectural Sand", "उच्च-सिलिका वास्तुशिल्पीय रेत")
             .replace("Micro-Crystalline Calcite Chips", "सूक्ष्म-क्रिस्टलीय कैल्साइट चिप्स")
-            .replace("Makrana Crushed White Marble", "मकराना क्रश्ड सफेद संगमरमर")
+            .replace("Pure Calcite Crushed White Marble", "अति-शुद्ध कैल्साइट क्रश्ड सफेद संगमरमर")
             .replace("Crushed Jaisalmer Yellow Limestone", "क्रश्ड जैसलमेर पीला चूना पत्थर")
             .replace("Crushed Dholpur Red Sandstone", "क्रश्ड धौलपुर लाल बलुआ पत्थर")
             .replace("Crushed Kota Blue-Grey Limestone", "क्रश्ड कोटा स्लेटी-नीला चूना पत्थर")

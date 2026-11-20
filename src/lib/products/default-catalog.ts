@@ -49,7 +49,7 @@ export const DEFAULT_NATURAL_STONE_PRODUCTS: readonly DefaultProductDef[] = [
     thicknessMm: 18,
     defaultUnit: "sqft",
     hsnCode: "68022190",
-    description: "Finest indigenous Indian marble slabs (Makrana, Morwad, Dungri, Ambaji)",
+    description: "Finest indigenous Indian marble slabs (Ambaji, Morwad, Dungri)",
   },
   {
     name: "Granite Slabs",

@@ -2075,8 +2075,8 @@ export const CATALOG_ITEMS_BY_CODE: Record<string, LocalizedItemRecord> = {
     },
     category: { hi: "प्राकृतिक पाषाण दीवार क्लैडिंग", gu: "કુદરતી પથ્થર દીવાલ ક્લેડિંગ" },
     details: {
-      hi: "Flamed Grey Granite, White Makrana Marble & Bronze-Patina Stone",
-      gu: "Flamed Grey Granite, White Makrana Marble & Bronze-Patina Stone",
+      hi: "Flamed Grey Granite, Pure White Marble & Bronze-Patina Stone",
+      gu: "Flamed Grey Granite, Pure White Marble & Bronze-Patina Stone",
     },
   },
   "ST-WC-069": {
@@ -2301,8 +2301,8 @@ export const CATALOG_ITEMS_BY_CODE: Record<string, LocalizedItemRecord> = {
     },
     category: { hi: "प्राकृतिक पाषाण दीवार क्लैडिंग", gu: "કુદરતી પથ્થર દીવાલ ક્લેડિંગ" },
     details: {
-      hi: "Flamed Grey Granite & Pristine White Makrana Marble",
-      gu: "Flamed Grey Granite & Pristine White Makrana Marble",
+      hi: "Flamed Grey Granite & Pristine Pure White Marble",
+      gu: "Flamed Grey Granite & Pristine Pure White Marble",
     },
   },
   "ST-WC-095": {
