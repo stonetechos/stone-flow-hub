@@ -20,6 +20,7 @@ import {
   type DealScope,
   detectClientProvidedSlabFromItems,
   hasClientBreakageDisclaimer,
+  hasEarlyPaymentDiscountDisclaimer,
 } from "@/lib/quotes/terms";
 import { useRoles } from "@/hooks/use-roles";
 import { toast } from "sonner";
@@ -113,6 +114,14 @@ function EditQuotePage() {
       const mode = getQuoteSaleMode(query.data);
       const split = getQuoteHybridSplit(query.data);
       setSaleMode(mode);
+      const wf = (query.data.workflow_state as Record<string, unknown> | null) ?? {};
+      const offerActive =
+        wf.include_prepayment_offer !== undefined
+          ? Boolean(wf.include_prepayment_offer)
+          : query.data.terms
+            ? hasEarlyPaymentDiscountDisclaimer(query.data.terms)
+            : true;
+
       setForm({
         category: cat,
         valid_until: query.data.valid_until ?? null,
@@ -121,6 +130,7 @@ function EditQuotePage() {
         sale_mode: mode,
         hybrid_cash_amount: split.cashAmount,
         hybrid_invoiced_amount: split.invoicedAmount,
+        include_prepayment_offer: offerActive,
       });
     }
   }, [query.data]);
@@ -346,6 +356,8 @@ function EditQuotePage() {
         className="mb-4"
         terms={form.terms ?? ""}
         onChangeTerms={(t) => set("terms", t || null)}
+        includePrepaymentOffer={form.include_prepayment_offer}
+        onChangeIncludePrepaymentOffer={(inc) => set("include_prepayment_offer", inc)}
         dealScope={
           form.category === "supply_and_installation" ? "supply_and_installation" : "supply_only"
         }

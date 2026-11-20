@@ -26,6 +26,7 @@ import {
 } from "@/lib/branding";
 import { STONE_TECH_UPI_ID, STONE_TECH_UPI_QR_DATA_URL } from "@/lib/branding/upi-qr-asset";
 import { amountToIndianWords } from "@/lib/format/words";
+import { hasEarlyPaymentDiscountDisclaimer } from "@/lib/quotes/terms";
 
 export type DocKind =
   | "quotation"
@@ -80,6 +81,7 @@ export type PdfDoc = {
   isCashDeal?: boolean;
   saleMode?: "invoiced" | "cash" | "hybrid";
   visualSpecs?: Array<{ url: string; label: string; caption?: string }>;
+  includePrepaymentOffer?: boolean;
 };
 
 export function isCashDealDoc(doc: PdfDoc): boolean {
@@ -697,9 +699,13 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
       </div>
     </div>
 
-    <!-- 100% Advance Payment 5% Discount Disclaimer Callout (Quotes Only) -->
+    <!-- 100% Advance Payment 5% Discount Disclaimer Callout (Quotes Only, Suppressed when offer is removed or excluded) -->
     ${
-      !isInvoice
+      !isInvoice &&
+      doc.includePrepaymentOffer !== false &&
+      (doc.includePrepaymentOffer === true ||
+        !doc.terms ||
+        hasEarlyPaymentDiscountDisclaimer(doc.terms))
         ? `<div class="avoid-break" style="margin-top:6px;margin-bottom:4px;padding:5px 9px;background:#f0fdf4;border:1px dashed #16a34a;border-radius:4px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
             <div style="display:flex;align-items:center;gap:6px;">
               <span style="font-size:11px;line-height:1;">✨</span>

@@ -236,6 +236,22 @@ describe("PDF Generator", () => {
     expect(html).not.toContain("Terms &amp; Conditions");
   });
 
+  it("suppresses the 5% prepayment incentive banner and Shree Yantra when includePrepaymentOffer is false", () => {
+    const quoteWithoutOffer: PdfDoc = {
+      ...sampleDoc,
+      kind: "quotation",
+      title: "Quotation",
+      number: "QUO-000038",
+      includePrepaymentOffer: false,
+      terms:
+        "1. Delivery Timeline: 15 days.\n\n2. Payment Terms: 80% advance and 20% on delivery.\n\n3. Non-Returnable.",
+    };
+    const html = renderDocHtml(quoteWithoutOffer);
+    expect(html).not.toContain("Payment Incentive");
+    expect(html).not.toContain("5% OFF ADVANCE");
+    expect(html).not.toContain("Shree Yantra");
+  });
+
   it("resolveInvoicePaymentTerm correctly identifies concise terms and calculates net days", () => {
     expect(resolveInvoicePaymentTerm("Net 30", "2026-11-01", "2026-12-01")).toBe("Net 30");
     expect(resolveInvoicePaymentTerm("Due on Receipt", "2026-11-05", "2026-11-05")).toBe(

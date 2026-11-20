@@ -33,6 +33,7 @@ export interface QuoteTermsOptions {
   deliveryDate?: string;
   customTimelineText?: string;
   clientProvidedSlab?: boolean;
+  includePrepaymentOffer?: boolean;
 }
 
 /** Formats a date string (YYYY-MM-DD or readable) into Indian standard "DD MMM YYYY". */
@@ -99,9 +100,10 @@ export function buildDeliveryTimelineTerm(
 export function buildPaymentTermsTerm(
   dealScope: DealScope = "supply_only",
   totalAmount: number = 0,
+  includePrepaymentOffer: boolean = true,
 ): string {
   const isUnderFiftyThousand = totalAmount > 0 && totalAmount < ADVANCE_PAYMENT_THRESHOLD_INR;
-  const offerClause = `\n   • ${EARLY_PAYMENT_DISCOUNT_DISCLAIMER}`;
+  const offerClause = includePrepaymentOffer ? `\n   • ${EARLY_PAYMENT_DISCOUNT_DISCLAIMER}` : "";
 
   if (isUnderFiftyThousand) {
     return `The payment terms are 100% advance payment required upon order confirmation prior to material procurement and dispatch (applicable for order value under ₹50,000).${offerClause}`;
@@ -133,7 +135,7 @@ export function getQuoteTermsList(options: QuoteTermsOptions = {}): string[] {
     customTimelineText: options.customTimelineText,
   });
 
-  const paymentTerm = buildPaymentTermsTerm(scope, total);
+  const paymentTerm = buildPaymentTermsTerm(scope, total, options.includePrepaymentOffer ?? true);
 
   const rawTerms: string[] = [];
 
@@ -277,4 +279,33 @@ export function ensureTermsHaveEarlyPaymentOffer(termsText?: string | null): str
     newLines.push(`• ${EARLY_PAYMENT_DISCOUNT_DISCLAIMER}`);
   }
   return newLines.join("\n\n");
+}
+
+/**
+ * Strips the special website prepayment privilege offer from existing quotation terms.
+ * Useful when users give custom discounts and wish to suppress further prepayment discounting.
+ */
+export function stripEarlyPaymentOffer(termsText?: string | null): string {
+  if (!termsText || !termsText.trim()) return "";
+  const lines = termsText.split("\n");
+  const filtered = lines.filter((line) => {
+    const lower = line.toLowerCase();
+    if (
+      lower.includes("shree yantra") &&
+      (lower.includes("5%") ||
+        lower.includes("pre-make") ||
+        lower.includes("prepayment") ||
+        lower.includes("discount"))
+    ) {
+      return false;
+    }
+    if (lower.includes("special website prepayment privilege offer")) {
+      return false;
+    }
+    return true;
+  });
+  return filtered
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }

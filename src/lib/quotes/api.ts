@@ -264,6 +264,9 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
 
   const rawWorkflowState = {
     sale_mode: parsed.sale_mode ?? "invoiced",
+    ...(parsed.include_prepayment_offer !== undefined
+      ? { include_prepayment_offer: parsed.include_prepayment_offer }
+      : {}),
     ...(parsed.hybrid_cash_amount !== undefined
       ? { hybrid_cash_amount: parsed.hybrid_cash_amount }
       : {}),
@@ -693,6 +696,9 @@ export async function updateQuote(id: string, input: QuoteUpdateInput): Promise<
       : {}),
     ...(parsed.hybrid_invoiced_amount !== undefined
       ? { hybrid_invoiced_amount: parsed.hybrid_invoiced_amount }
+      : {}),
+    ...(parsed.include_prepayment_offer !== undefined
+      ? { include_prepayment_offer: parsed.include_prepayment_offer }
       : {}),
   };
 

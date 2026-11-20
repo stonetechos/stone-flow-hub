@@ -18,6 +18,8 @@ import {
   hasClientBreakageDisclaimer,
   buildDeliveryTimelineTerm,
   hasEarlyPaymentDiscountDisclaimer,
+  ensureTermsHaveEarlyPaymentOffer,
+  stripEarlyPaymentOffer,
   EARLY_PAYMENT_DISCOUNT_DISCLAIMER,
   ADVANCE_PAYMENT_THRESHOLD_INR,
 } from "@/lib/quotes/terms";
@@ -47,6 +49,8 @@ export interface QuoteTermsManagerProps {
   initialDeliveryDate?: string;
   clientProvidedSlab?: boolean;
   onChangeClientProvidedSlab?: (clientProvided: boolean) => void;
+  includePrepaymentOffer?: boolean;
+  onChangeIncludePrepaymentOffer?: (include: boolean) => void;
   onTimelineChange?: (timeline: {
     mode: DeliveryTimelineMode;
     days?: string;
@@ -67,6 +71,8 @@ export function QuoteTermsManager({
   initialDeliveryDate = "",
   clientProvidedSlab,
   onChangeClientProvidedSlab,
+  includePrepaymentOffer,
+  onChangeIncludePrepaymentOffer,
   onTimelineChange,
   className = "",
 }: QuoteTermsManagerProps) {
@@ -78,6 +84,10 @@ export function QuoteTermsManager({
   const [isClientProvided, setIsClientProvided] = useState<boolean>(
     clientProvidedSlab ?? hasClientBreakageDisclaimer(terms),
   );
+  const [isPrepaymentOffer, setIsPrepaymentOffer] = useState<boolean>(() => {
+    if (includePrepaymentOffer !== undefined) return includePrepaymentOffer;
+    return terms && terms.trim() ? hasEarlyPaymentDiscountDisclaimer(terms) : true;
+  });
 
   // Sync external clientProvidedSlab prop changes without wiping custom terms
   useEffect(() => {
@@ -85,6 +95,13 @@ export function QuoteTermsManager({
       setIsClientProvided(clientProvidedSlab);
     }
   }, [clientProvidedSlab, isClientProvided]);
+
+  // Sync external includePrepaymentOffer prop changes
+  useEffect(() => {
+    if (includePrepaymentOffer !== undefined && includePrepaymentOffer !== isPrepaymentOffer) {
+      setIsPrepaymentOffer(includePrepaymentOffer);
+    }
+  }, [includePrepaymentOffer, isPrepaymentOffer]);
 
   const isUnderFiftyThousand = totalAmount > 0 && totalAmount < ADVANCE_PAYMENT_THRESHOLD_INR;
   const hasTermsContent = Boolean(terms && terms.trim());
@@ -98,6 +115,7 @@ export function QuoteTermsManager({
       timelineDays: days,
       deliveryDate: date,
       clientProvidedSlab: isClientProvided,
+      includePrepaymentOffer: isPrepaymentOffer,
     });
 
     onChangeTerms(generated);
@@ -187,6 +205,26 @@ export function QuoteTermsManager({
     }
   };
 
+  // Toggle prepayment offer on existing terms without clearing custom edits
+  const handleTogglePrepaymentOffer = (enable: boolean) => {
+    setIsPrepaymentOffer(enable);
+    if (onChangeIncludePrepaymentOffer) {
+      onChangeIncludePrepaymentOffer(enable);
+    }
+
+    if (!terms || !terms.trim()) return;
+
+    if (enable) {
+      if (!hasEarlyPaymentDiscountDisclaimer(terms)) {
+        const updated = ensureTermsHaveEarlyPaymentOffer(terms);
+        onChangeTerms(updated);
+      }
+    } else {
+      const updated = stripEarlyPaymentOffer(terms);
+      onChangeTerms(updated);
+    }
+  };
+
   // Update only timeline clause in existing terms
   const handleUpdateTimelineInTerms = () => {
     const timelineTerm = buildDeliveryTimelineTerm(timelineMode, {
@@ -251,12 +289,21 @@ export function QuoteTermsManager({
             </Badge>
           )}
 
-          <Badge
-            variant="outline"
-            className="bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/30 dark:text-emerald-300 text-[11px] font-medium"
-          >
-            100% Payment: 5% Discount
-          </Badge>
+          {isPrepaymentOffer ? (
+            <Badge
+              variant="outline"
+              className="bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/30 dark:text-emerald-300 text-[11px] font-medium"
+            >
+              100% Payment: 5% Discount
+            </Badge>
+          ) : (
+            <Badge
+              variant="outline"
+              className="bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 text-[11px] font-medium"
+            >
+              Offer Removed (No Extra Discount)
+            </Badge>
+          )}
 
           {isUnderFiftyThousand ? (
             <Badge
@@ -457,6 +504,37 @@ export function QuoteTermsManager({
             }`}
           >
             {isClientProvided ? "Disclaimer Active" : "Add Breakage Disclaimer"}
+          </button>
+        </div>
+      </div>
+
+      {/* Prepayment Incentive Offer (5% Off + Shree Yantra) Toggle */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-md border border-border/70 bg-muted/20 px-3 py-2 text-xs">
+        <div className="flex items-center gap-2">
+          <Sparkles
+            className={`h-4 w-4 shrink-0 ${isPrepaymentOffer ? "text-emerald-600" : "text-muted-foreground"}`}
+          />
+          <div>
+            <span className="font-semibold text-foreground">
+              Prepayment Privilege Offer (5% Instant Discount + Complimentary Shree Yantra)
+            </span>
+            <span className="text-[11px] text-muted-foreground ml-1.5 hidden sm:inline">
+              (Toggle off when you have already given a custom discount to suppress further
+              discounting)
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5 self-end sm:self-auto">
+          <button
+            type="button"
+            onClick={() => handleTogglePrepaymentOffer(!isPrepaymentOffer)}
+            className={`text-xs px-2.5 py-1 rounded font-medium border transition-colors cursor-pointer flex items-center gap-1.5 ${
+              isPrepaymentOffer
+                ? "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600 shadow-2xs font-semibold"
+                : "bg-background text-muted-foreground border-border hover:bg-muted"
+            }`}
+          >
+            {isPrepaymentOffer ? "Offer Active (5% Off + Yantra)" : "Offer Removed / Disabled"}
           </button>
         </div>
       </div>

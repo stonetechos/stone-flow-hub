@@ -1165,6 +1165,7 @@ function CreateQuoteDialog({
   const [isClientProvidedSlab, setIsClientProvidedSlab] = useState<boolean>(false);
   const [deliveryDays, setDeliveryDays] = useState<string>("15");
   const [deliveryDate, setDeliveryDate] = useState<string>("");
+  const [includePrepaymentOffer, setIncludePrepaymentOffer] = useState<boolean>(true);
   const [items, setItems] = useState<FormItem[]>([emptyItem("", false)]);
   const [mode, setMode] = useState<"manual" | "wall_cladding" | "stone_mural" | "calculator">(
     initialStudio === "mural"
@@ -1192,6 +1193,7 @@ function CreateQuoteDialog({
       setIsClientProvidedSlab(false);
       setDeliveryDays("15");
       setDeliveryDate("");
+      setIncludePrepaymentOffer(true);
       setItems([emptyItem("", false)]);
       if (initialStudio === "mural") setMode("stone_mural");
       else if (initialStudio === "cladding") setMode("wall_cladding");
@@ -1347,6 +1349,7 @@ function CreateQuoteDialog({
         valid_until: validUntil || null,
         notes: [notes, discountNote, sceneNote].filter(Boolean).join("\n\n") || null,
         terms: terms ? terms.trim() : null,
+        include_prepayment_offer: includePrepaymentOffer,
         sale_mode: saleMode,
         hybrid_cash_amount:
           saleMode === "hybrid" && hybridCashAmount ? Number(hybridCashAmount) : undefined,
@@ -1417,6 +1420,7 @@ function CreateQuoteDialog({
       valid_until: validUntil || null,
       notes: notes || null,
       terms: terms ? terms.trim() : null,
+      include_prepayment_offer: includePrepaymentOffer,
       sale_mode: saleMode,
       hybrid_cash_amount:
         saleMode === "hybrid" && hybridCashAmount ? Number(hybridCashAmount) : undefined,
@@ -1888,6 +1892,8 @@ function CreateQuoteDialog({
                 <QuoteTermsManager
                   terms={terms}
                   onChangeTerms={setTerms}
+                  includePrepaymentOffer={includePrepaymentOffer}
+                  onChangeIncludePrepaymentOffer={setIncludePrepaymentOffer}
                   dealScope={dealScope}
                   onChangeDealScope={setDealScope}
                   totalAmount={effectiveTotal}

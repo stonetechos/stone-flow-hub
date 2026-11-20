@@ -22,6 +22,8 @@ import {
   detectClientProvidedSlabFromItems,
   detectDealScopeFromItems,
   ensureTermsHaveEarlyPaymentOffer,
+  stripEarlyPaymentOffer,
+  hasEarlyPaymentDiscountDisclaimer,
   generateQuoteTerms,
 } from "@/lib/quotes/terms";
 import { getQuoteSaleMode } from "@/lib/quotes/sale-mode";
@@ -319,12 +321,24 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
       const scope = detectDealScopeFromItems(items);
       const isClientSlab = detectClientProvidedSlabFromItems(items, q.wall_estimate);
       const rawTerms = q.terms && q.terms.trim() ? q.terms.trim() : null;
+      const wf = (q.workflow_state as Record<string, unknown> | null) ?? {};
+      const termsHasOffer = hasEarlyPaymentDiscountDisclaimer(rawTerms);
+      const includePrepaymentOffer =
+        wf.include_prepayment_offer !== undefined
+          ? Boolean(wf.include_prepayment_offer)
+          : rawTerms
+            ? termsHasOffer
+            : true;
+
       const effectiveTerms = rawTerms
-        ? ensureTermsHaveEarlyPaymentOffer(rawTerms)
+        ? includePrepaymentOffer
+          ? ensureTermsHaveEarlyPaymentOffer(rawTerms)
+          : stripEarlyPaymentOffer(rawTerms)
         : generateQuoteTerms({
             dealScope: scope,
             totalAmount: Number(q.total) || 0,
             clientProvidedSlab: isClientSlab,
+            includePrepaymentOffer,
           });
       const saleMode = getQuoteSaleMode(q);
       const isCashDeal =
@@ -339,6 +353,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
           to: customerParty(cust),
           isCashDeal,
           saleMode,
+          includePrepaymentOffer,
           meta: [
             { label: "Project", value: q.project?.name ?? "—" },
             { label: "Valid until", value: q.valid_until ?? "—" },

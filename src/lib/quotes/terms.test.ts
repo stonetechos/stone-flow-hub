@@ -8,6 +8,7 @@ import {
   detectClientProvidedSlabFromItems,
   detectDealScopeFromItems,
   ensureTermsHaveEarlyPaymentOffer,
+  stripEarlyPaymentOffer,
   formatTimelineDate,
   generateQuoteTerms,
   getQuoteTermsList,
@@ -121,6 +122,21 @@ describe("Quote Terms & Conditions Engine", () => {
       const updated = ensureTermsHaveEarlyPaymentOffer(legacyTerms);
       expect(updated).toContain("✨ Special Website Prepayment Privilege Offer:");
       expect(hasEarlyPaymentDiscountDisclaimer(updated)).toBe(true);
+    });
+
+    it("allows suppressing and stripping the prepayment offer when discounts already exist", () => {
+      const withoutOffer = buildPaymentTermsTerm("supply_only", 80000, false);
+      expect(withoutOffer).not.toContain("Shree Yantra");
+      expect(withoutOffer).not.toContain("5% instant discount");
+      expect(hasEarlyPaymentDiscountDisclaimer(withoutOffer)).toBe(false);
+
+      const termsWithOffer =
+        "1. Delivery Timeline: 15 days.\n\n2. Payment Terms: 80% advance and 20% on delivery.\n   • ✨ Special Website Prepayment Privilege Offer: Pre-make 100% advance payment upon quotation approval to avail a 5% instant discount, plus receive a Complimentary Certified Sacred 3D Shree Yantra (Worth ₹14,999) on natural stone product orders of ₹1 Lakh or above (excludes site installation and chemicals/adhesives).*\n\n3. Non-Returnable.";
+      const stripped = stripEarlyPaymentOffer(termsWithOffer);
+      expect(stripped).not.toContain("Shree Yantra");
+      expect(stripped).not.toContain("5% instant discount");
+      expect(hasEarlyPaymentDiscountDisclaimer(stripped)).toBe(false);
+      expect(stripped).toContain("2. Payment Terms: 80% advance and 20% on delivery.");
     });
   });
 

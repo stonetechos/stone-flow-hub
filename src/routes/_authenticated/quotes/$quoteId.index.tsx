@@ -30,6 +30,7 @@ import {
   FileText,
   XCircle,
   RefreshCw,
+  Sparkles,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { autoTranslate } from "@/lib/i18n/auto-translator";
@@ -40,6 +41,9 @@ import {
   detectDealScopeFromItems,
   detectClientProvidedSlabFromItems,
   ADVANCE_PAYMENT_THRESHOLD_INR,
+  hasEarlyPaymentDiscountDisclaimer,
+  ensureTermsHaveEarlyPaymentOffer,
+  stripEarlyPaymentOffer,
   type DealScope,
 } from "@/lib/quotes/terms";
 
@@ -300,14 +304,31 @@ function QuoteDetailPage() {
   const [termsDialogOpen, setTermsDialogOpen] = useState(false);
   const [editingTerms, setEditingTerms] = useState("");
   const [editingScope, setEditingScope] = useState<DealScope>("supply_only");
+  const [editingOffer, setEditingOffer] = useState(true);
 
   const detectedScope: DealScope = useMemo(() => {
     if (q.data?.category === "supply_and_installation") return "supply_and_installation";
     return detectDealScopeFromItems(items.data ?? []);
   }, [q.data?.category, items.data]);
 
+  const quoteWf = useMemo(
+    () => (q.data?.workflow_state as Record<string, unknown> | null) ?? {},
+    [q.data?.workflow_state],
+  );
+
+  const isOfferActive = useMemo(() => {
+    if (quoteWf.include_prepayment_offer !== undefined) {
+      return Boolean(quoteWf.include_prepayment_offer);
+    }
+    return q.data?.terms ? hasEarlyPaymentDiscountDisclaimer(q.data.terms) : true;
+  }, [quoteWf.include_prepayment_offer, q.data?.terms]);
+
   const updateTermsMut = useMutation({
-    mutationFn: (newTerms: string) => updateQuote(quoteId, { terms: newTerms }),
+    mutationFn: ({ newTerms, includeOffer }: { newTerms: string; includeOffer: boolean }) =>
+      updateQuote(quoteId, {
+        terms: newTerms,
+        include_prepayment_offer: includeOffer,
+      }),
     onSuccess: () => {
       toast.success("Quotation terms updated");
       invalidateQuote(qc, quoteId);
@@ -316,9 +337,34 @@ function QuoteDetailPage() {
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
+  const toggleOfferMut = useMutation({
+    mutationFn: async (enable: boolean) => {
+      const currentTerms = q.data?.terms || "";
+      const nextTerms = currentTerms.trim()
+        ? enable
+          ? ensureTermsHaveEarlyPaymentOffer(currentTerms)
+          : stripEarlyPaymentOffer(currentTerms)
+        : null;
+      return updateQuote(quoteId, {
+        terms: nextTerms,
+        include_prepayment_offer: enable,
+      });
+    },
+    onSuccess: (_, enable) => {
+      toast.success(
+        enable
+          ? "Prepayment offer (5% discount + Shree Yantra) enabled"
+          : "Prepayment offer removed from quotation and PDF",
+      );
+      invalidateQuote(qc, quoteId);
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
   const openTermsDialog = () => {
     setEditingScope(detectedScope);
     setEditingTerms(q.data?.terms && q.data.terms.trim() ? q.data.terms.trim() : "");
+    setEditingOffer(isOfferActive);
     setTermsDialogOpen(true);
   };
 
@@ -1275,24 +1321,68 @@ function QuoteDetailPage() {
               </div>
             </CardHeader>
             <CardContent className="p-4 pt-1">
-              <div className="mb-3 flex items-center justify-between rounded-md border border-dashed border-emerald-500/70 bg-emerald-50/60 dark:bg-emerald-950/20 px-3 py-2 text-xs text-emerald-900 dark:text-emerald-200">
-                <div className="flex items-center gap-2">
-                  <div>
-                    <span className="font-semibold">
-                      {t("quotes.specialPaymentIncentive", "Special Payment Incentive:")}{" "}
-                    </span>
-                    <span>
-                      {t(
-                        "quotes.specialPaymentIncentiveText",
-                        "Premake 100% payment to avail 5% discount + free certified Shree Yantra worth ₹14,999 on stone product orders > ₹1 Lakh*.",
-                      )}
-                    </span>
+              {isOfferActive ? (
+                <div className="mb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-md border border-dashed border-emerald-500/70 bg-emerald-50/60 dark:bg-emerald-950/20 px-3 py-2 text-xs text-emerald-900 dark:text-emerald-200">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-emerald-600 shrink-0" />
+                    <div>
+                      <span className="font-semibold">
+                        {t("quotes.specialPaymentIncentive", "Special Payment Incentive:")}{" "}
+                      </span>
+                      <span>
+                        {t(
+                          "quotes.specialPaymentIncentiveText",
+                          "Premake 100% payment to avail 5% discount + free certified Shree Yantra worth ₹14,999 on stone product orders > ₹1 Lakh*.",
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                    <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] uppercase">
+                      {t("quotes.fivePercentOff", "5% Off")}
+                    </Badge>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-6 px-2 text-[11px] text-destructive hover:bg-destructive/10 border-destructive/30 shrink-0 gap-1 cursor-pointer"
+                      onClick={() => toggleOfferMut.mutate(false)}
+                      disabled={toggleOfferMut.isPending}
+                      title="Remove the 5% prepayment discount and Shree Yantra offer from this quotation and PDF"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                      {t("quotes.removeOffer", "Remove Offer")}
+                    </Button>
                   </div>
                 </div>
-                <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] uppercase shrink-0">
-                  {t("quotes.fivePercentOff", "5% Off")}
-                </Badge>
-              </div>
+              ) : (
+                <div className="mb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-md border border-dashed border-border/80 bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-muted-foreground/60 shrink-0" />
+                    <div>
+                      <span className="font-semibold text-foreground">
+                        {t("quotes.prepaymentOfferDisabled", "Prepayment Offer Removed:")}{" "}
+                      </span>
+                      <span>
+                        {t(
+                          "quotes.prepaymentOfferDisabledDesc",
+                          "No 5% advance discount or Shree Yantra will be offered on this quotation or its PDF.",
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-6 px-2 text-[11px] text-emerald-700 dark:text-emerald-300 border-emerald-500/40 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 shrink-0 gap-1 cursor-pointer"
+                    onClick={() => toggleOfferMut.mutate(true)}
+                    disabled={toggleOfferMut.isPending}
+                    title="Add the 5% prepayment discount and Shree Yantra offer back to this quotation and PDF"
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    {t("quotes.enableOffer", "Add Offer Back")}
+                  </Button>
+                </div>
+              )}
 
               {quote.terms && quote.terms.trim() ? (
                 <div className="rounded-md border border-border/70 bg-muted/20 p-3 text-xs font-mono leading-relaxed whitespace-pre-line text-slate-800 dark:text-slate-200">
@@ -1552,6 +1642,8 @@ function QuoteDetailPage() {
             <QuoteTermsManager
               terms={editingTerms}
               onChangeTerms={setEditingTerms}
+              includePrepaymentOffer={editingOffer}
+              onChangeIncludePrepaymentOffer={setEditingOffer}
               dealScope={editingScope}
               onChangeDealScope={setEditingScope}
               totalAmount={Number(quote.total) || 0}
@@ -1572,7 +1664,9 @@ function QuoteDetailPage() {
             </Button>
             <Button
               type="button"
-              onClick={() => updateTermsMut.mutate(editingTerms)}
+              onClick={() =>
+                updateTermsMut.mutate({ newTerms: editingTerms, includeOffer: editingOffer })
+              }
               disabled={updateTermsMut.isPending}
             >
               {updateTermsMut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
