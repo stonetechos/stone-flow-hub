@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "941420890816",
+    "project_id": "stos-48add",
+    "storage_bucket": "stos-48add.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:941420890816:android:68c995ca4c203eee75fb25",
+        "android_client_info": {
+          "package_name": "in.vedoravision.stonetechos.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAY-pIYxm_Yhlt0TlNV1um8n-azsifhskE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

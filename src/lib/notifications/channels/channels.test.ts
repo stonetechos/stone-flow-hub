@@ -34,6 +34,14 @@ export const localNotificationsMock = {
   addListener: mock(async () => ({ remove: mock(async () => {}) })),
 };
 
+export const pushNotificationsMock = {
+  checkPermissions: mock(async () => ({ receive: "granted" })),
+  requestPermissions: mock(async () => ({ receive: "granted" })),
+  createChannel: mock(async () => {}),
+  register: mock(async () => {}),
+  addListener: mock(async () => ({ remove: mock(async () => {}) })),
+};
+
 mock.module("@/lib/notifications/toast", () => ({ ...toastActual, ...toastMock }));
 mock.module("@capacitor/core", () => ({
   ...capacitorActual,
@@ -41,6 +49,9 @@ mock.module("@capacitor/core", () => ({
 }));
 mock.module("@capacitor/local-notifications", () => ({
   LocalNotifications: localNotificationsMock,
+}));
+mock.module("@capacitor/push-notifications", () => ({
+  PushNotifications: pushNotificationsMock,
 }));
 
 const { desktopChannel } = await import("./desktop");

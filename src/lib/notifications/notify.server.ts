@@ -81,12 +81,30 @@ export async function notify(input: NotifyInput): Promise<{ id: string } | null>
         console.warn(
           "[notifications] public.notifications does not exist yet — migration 20260728120000 is pending. Skipping write.",
         );
-        return null;
+      } else {
+        console.error("[notifications] failed to write notification", error);
       }
-      console.error("[notifications] failed to write notification", error);
-      return null;
     }
-    return data;
+
+    // Non-blocking FCM background push notification (curtain notification 24/7)
+    void (async () => {
+      try {
+        const { dispatchFcmNotification } = await import("./fcm.server");
+        await dispatchFcmNotification(supabaseAdmin, {
+          userId: input.userId,
+          title: input.title,
+          body: input.body,
+          linkPath: input.linkPath,
+          entityType: input.entityType,
+          entityId: input.entityId,
+          tier: input.tier,
+        });
+      } catch (fcmErr) {
+        console.warn("[FCM] Push dispatch skipped or failed", fcmErr);
+      }
+    })();
+
+    return data ?? null;
   } catch (err) {
     console.error("[notifications] notify() threw", err);
     return null;

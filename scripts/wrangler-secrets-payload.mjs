@@ -31,6 +31,7 @@ const OPTIONAL = [
   "WHATSAPP_VERIFY_TOKEN",
   "WHATSAPP_PHONE_NUMBER_ID",
   "WHATSAPP_BUSINESS_ACCOUNT_ID",
+  "FIREBASE_SERVICE_ACCOUNT_KEY",
   // TRANSITIONAL — src/routes/lovable/email/* (the old Lovable-relay auth
   // webhook + sender) still reads this directly and is kept running until
   // Supabase's Auth "Send Email" hook is manually repointed at the new

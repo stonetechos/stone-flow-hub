@@ -373,6 +373,7 @@ function RootComponent() {
       if (event === "SIGNED_IN" || event === "USER_UPDATED") {
         router.invalidate();
         queryClient.invalidateQueries();
+        void import("@/lib/notifications/channels/android").then((m) => m.syncDevicePushToken());
       }
     });
     return () => sub.subscription.unsubscribe();
