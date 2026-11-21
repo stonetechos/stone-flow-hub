@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { ReassignCustomerDialog } from "@/components/quotes/ReassignCustomerDialog";
 import { QuoteTermsManager } from "@/components/quotes/QuoteTermsManager";
+import { QuoteWallDetailsEditor } from "@/components/quotes/QuoteWallDetailsEditor";
 import {
   type DealScope,
   detectClientProvidedSlabFromItems,
@@ -91,6 +92,10 @@ function EditQuotePage() {
   const nav = useNavigate();
   const qc = useQueryClient();
   const query = useQuery({ queryKey: qk.quotes.byId(quoteId), queryFn: () => getQuote(quoteId) });
+  const itemsQuery = useQuery({
+    queryKey: qk.quotes.items(quoteId),
+    queryFn: () => getQuoteItems(quoteId),
+  });
   const roles = useRoles();
   const canReassign = roles.isAdmin || roles.isSalesManager;
   const [reassignOpen, setReassignOpen] = useState(false);
@@ -345,6 +350,14 @@ function EditQuotePage() {
           </div>
         </CardContent>
       </Card>
+
+      <QuoteWallDetailsEditor
+        quoteId={quoteId}
+        wallEstimate={query.data?.wall_estimate}
+        existingItems={itemsQuery.data ?? []}
+        saleMode={saleMode}
+        defaultFulfilment={form.category ?? null}
+      />
 
       <LineItemsEditor
         quoteId={quoteId}
@@ -638,15 +651,72 @@ function LineItemsEditor({
   };
 
   const addMut = useMutation({
-    mutationFn: () =>
-      addQuoteItem(quoteId, {
-        description: "New line",
-        quantity: 1,
-        unit_price: 0,
+    mutationFn: async ({
+      description = "New Stone Cladding Product",
+      targetIndex,
+      unit = "sq.ft",
+      unitPrice = 0,
+      quantity = 1,
+      hsn = "68022190",
+    }: {
+      description?: string;
+      targetIndex?: number;
+      unit?: string;
+      unitPrice?: number;
+      quantity?: number;
+      hsn?: string;
+    } = {}) => {
+      // 1. Add quote item
+      const newItem = await addQuoteItem(quoteId, {
+        description,
+        quantity,
+        unit,
+        unit_price: unitPrice,
         tax_pct: saleMode === "cash" ? 0 : 0,
+        hsn_sac: hsn,
         fulfilment: defaultFulfilment,
-      }),
-    onSuccess: () => invalidate(),
+      });
+
+      // 2. Determine target index:
+      // If targetIndex is specified (e.g. from "+ Insert line below"), use it.
+      // Otherwise, find the last stone product in rows.
+      // If stone products exist (e.g. products 1 and 2 at index 0 and 1), place right after them at index 2 (position 3)!
+      let insertAt = targetIndex;
+      if (insertAt === undefined) {
+        let lastStoneIndex = -1;
+        for (let idx = 0; idx < rows.length; idx++) {
+          const r = rows[idx];
+          const d = (r.description || "").toLowerCase();
+          const u = (r.unit || "").toLowerCase();
+          const isNonStone =
+            d.includes("carting") ||
+            d.includes("transport") ||
+            d.includes("freight") ||
+            d.includes("labour") ||
+            d.includes("labor") ||
+            d.includes("installation") ||
+            d.includes("adhesive") ||
+            d.includes("sealer") ||
+            u === "trip" ||
+            u === "bag" ||
+            u === "ltr";
+          if (!isNonStone) {
+            lastStoneIndex = idx;
+          }
+        }
+        insertAt = lastStoneIndex >= 0 ? lastStoneIndex + 1 : rows.length;
+      }
+
+      // 3. Reorder quote items so new item is placed at target index
+      const curIds = rows.map((r) => r.id).filter((id) => id !== newItem.id);
+      curIds.splice(insertAt, 0, newItem.id);
+      await reorderQuoteItems(curIds);
+      return { newItem, insertAt };
+    },
+    onSuccess: ({ insertAt }) => {
+      invalidate();
+      toast.success(`Stone cladding product placed at position #${insertAt + 1}`);
+    },
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
@@ -835,8 +905,24 @@ function LineItemsEditor({
           <Button
             size="sm"
             variant="outline"
-            onClick={() => addMut.mutate()}
+            onClick={() => addMut.mutate({ description: "New Stone Cladding Product" })}
             disabled={addMut.isPending}
+            className="h-8 border-cyan-300 bg-cyan-50 text-cyan-900 hover:bg-cyan-100 hover:text-cyan-950 text-xs font-semibold cursor-pointer shadow-2xs"
+            title="Add stone cladding product (placed under stone products 1 & 2 at position #3)"
+          >
+            {addMut.isPending ? (
+              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Plus className="mr-1.5 h-3.5 w-3.5 text-cyan-700" />
+            )}
+            + Add Stone Cladding Line
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => addMut.mutate({ description: "New line" })}
+            disabled={addMut.isPending}
+            className="h-8 text-xs font-medium"
           >
             {addMut.isPending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -989,9 +1075,27 @@ function LineItemsEditor({
                                 updateRow(r.id, "tax_pct", String(prod.defaultTaxPct));
                                 patchObj.tax_pct = prod.defaultTaxPct;
                               }
+                              if (prod.code) {
+                                const codeTag = `Catalog Code: ${prod.code}`;
+                                if (!r.notes || !r.notes.includes("Catalog Code")) {
+                                  const newNotes = r.notes ? `${r.notes}\n${codeTag}` : codeTag;
+                                  updateRow(r.id, "notes", newNotes);
+                                  patchObj.notes = newNotes;
+                                }
+                              }
                               patchMut.mutate({ id: r.id, patch: patchObj });
+                              if (prod.image && !lineImg) {
+                                void updateQuoteItemImage(
+                                  quoteId,
+                                  r.id,
+                                  prod.image,
+                                  prod.name,
+                                ).then(() => {
+                                  invalidate();
+                                });
+                              }
                             }}
-                            placeholder="Search or enter product…"
+                            placeholder="Search by code (e.g. 080, 80), stone, or adhesive…"
                           />
                         </div>
                       </div>
@@ -1079,13 +1183,14 @@ function LineItemsEditor({
                     </div>
                   </div>
                   <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5">
                       <Button
                         size="icon"
                         variant="ghost"
                         onClick={() => move(r.id, -1)}
                         disabled={i === 0 || reorderMut.isPending}
                         aria-label="Move up"
+                        className="h-7 w-7"
                       >
                         <ArrowUp className="h-4 w-4" />
                       </Button>
@@ -1095,8 +1200,26 @@ function LineItemsEditor({
                         onClick={() => move(r.id, 1)}
                         disabled={i === rows.length - 1 || reorderMut.isPending}
                         aria-label="Move down"
+                        className="h-7 w-7"
                       >
                         <ArrowDown className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() =>
+                          addMut.mutate({
+                            targetIndex: i + 1,
+                            description: "New Stone Cladding Product",
+                          })
+                        }
+                        disabled={addMut.isPending}
+                        className="h-7 px-2 text-[11px] text-cyan-800 hover:text-cyan-900 hover:bg-cyan-50 font-medium flex items-center gap-1 border border-dashed border-cyan-200 rounded cursor-pointer"
+                        title={`Insert new stone cladding line directly under item ${i + 1}`}
+                      >
+                        <Plus className="h-3 w-3 text-cyan-600" />
+                        <span>Insert line below (Place at #{i + 2})</span>
                       </Button>
                     </div>
                     <div className="flex items-center gap-3">

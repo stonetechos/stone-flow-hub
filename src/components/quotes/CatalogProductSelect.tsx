@@ -48,8 +48,12 @@ export const CatalogProductSelect = memo(function CatalogProductSelect({
       .filter((p) => p.isActive !== false)
       .map((p) => {
         const pr = getProductPrice(p);
+        const codeNum = p.index || (p.code ? parseInt(p.code.replace(/\D/g, ""), 10) : 0);
+        const paddedCode = codeNum > 0 ? String(codeNum).padStart(3, "0") : "";
+        const displayCode = p.code || (codeNum > 0 ? `ST-WC-${paddedCode}` : p.id);
         return {
           id: p.id,
+          code: displayCode,
           name: p.name,
           category: "stone_product" as const,
           defaultUnit: pr.unit || p.unit || "sqft",
@@ -57,6 +61,8 @@ export const CatalogProductSelect = memo(function CatalogProductSelect({
           hsnCode: "68022190",
           defaultTaxPct: 18,
           description: `${p.name} — ${p.stoneType} (${p.thickness || "20-30mm"})`,
+          image: p.image || (p.images && p.images[0]) || undefined,
+          patternIndex: codeNum > 0 ? codeNum : undefined,
         };
       });
   }, [websiteProducts, getProductPrice]);
@@ -98,9 +104,39 @@ export const CatalogProductSelect = memo(function CatalogProductSelect({
           onWheel={(e) => e.stopPropagation()}
           onTouchMove={(e) => e.stopPropagation()}
         >
-          <Command>
+          <Command
+            filter={(value, search) => {
+              const q = search.trim().toLowerCase();
+              if (!q) return 1;
+              const v = value.toLowerCase();
+              if (v.includes(q)) return 1;
+
+              // Check pure numbers or digits like "80", "080", "080/ 80", "278"
+              const digitsMatch = q.match(/\d+/g);
+              if (digitsMatch) {
+                for (const d of digitsMatch) {
+                  const num = parseInt(d, 10);
+                  if (!isNaN(num) && num > 0) {
+                    const raw = String(num);
+                    const pad = String(num).padStart(3, "0");
+                    if (
+                      v.includes(` ${raw} `) ||
+                      v.includes(` ${pad} `) ||
+                      v.includes(`-${pad}`) ||
+                      v.includes(`-${raw}`) ||
+                      v.includes(` ${pad}`) ||
+                      v.includes(`${pad} `)
+                    ) {
+                      return 1;
+                    }
+                  }
+                }
+              }
+              return 0;
+            }}
+          >
             <CommandInput
-              placeholder="Search stone, adhesive, or sealer…"
+              placeholder="Search by code (e.g. 080, 80), stone, or adhesive…"
               value={search}
               onValueChange={setSearch}
               className="text-xs"
@@ -124,30 +160,38 @@ export const CatalogProductSelect = memo(function CatalogProductSelect({
               </CommandEmpty>
 
               <CommandGroup heading="Website Natural Stone Products & Claddings">
-                {websiteCatalogItems.map((item) => (
-                  <CommandItem
-                    key={item.id}
-                    value={`${item.name} ${item.id}`}
-                    onSelect={() => handleSelect(item)}
-                    className="text-xs flex items-center justify-between cursor-pointer"
-                  >
-                    <div className="flex items-center gap-1.5 truncate">
-                      <Globe className="h-3 w-3 text-cyan-600 shrink-0" />
-                      <span className="font-medium truncate">{item.name}</span>
-                      {item.defaultPrice && (
-                        <span className="text-[11px] font-semibold text-emerald-700 shrink-0">
-                          (₹{item.defaultPrice}/{item.defaultUnit})
+                {websiteCatalogItems.map((item) => {
+                  const num = item.patternIndex;
+                  const numRaw = num ? String(num) : "";
+                  const numPadded = num ? String(num).padStart(3, "0") : "";
+                  const displayCode = item.code || item.id;
+                  const searchKeywords =
+                    `${item.name} ${displayCode} ${numRaw} ${numPadded} ${item.id} ${item.description || ""}`.toLowerCase();
+                  return (
+                    <CommandItem
+                      key={item.id}
+                      value={searchKeywords}
+                      onSelect={() => handleSelect(item)}
+                      className="text-xs flex items-center justify-between cursor-pointer"
+                    >
+                      <div className="flex items-center gap-1.5 truncate">
+                        <Globe className="h-3 w-3 text-cyan-600 shrink-0" />
+                        <span className="font-medium truncate">{item.name}</span>
+                        {item.defaultPrice && (
+                          <span className="text-[11px] font-semibold text-emerald-700 shrink-0">
+                            (₹{item.defaultPrice}/{item.defaultUnit})
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground shrink-0 ml-2">
+                        <span className="rounded bg-cyan-50 text-cyan-800 border border-cyan-200 px-1.5 py-0.5 font-mono font-semibold">
+                          {displayCode}
                         </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground shrink-0 ml-2">
-                      <span className="rounded bg-cyan-50 text-cyan-800 border border-cyan-200 px-1 py-0.2 font-mono">
-                        {item.id}
-                      </span>
-                      {value === item.name && <Check className="h-3.5 w-3.5 text-primary" />}
-                    </div>
-                  </CommandItem>
-                ))}
+                        {value === item.name && <Check className="h-3.5 w-3.5 text-primary" />}
+                      </div>
+                    </CommandItem>
+                  );
+                })}
               </CommandGroup>
 
               <CommandGroup heading="Standard Stone Products">

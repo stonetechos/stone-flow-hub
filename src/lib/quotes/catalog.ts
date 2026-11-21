@@ -17,6 +17,9 @@ export interface CatalogItem {
   hsnCode?: string;
   defaultTaxPct?: number;
   description?: string;
+  code?: string;
+  patternIndex?: number;
+  image?: string;
 }
 
 export const STONE_PRODUCTS_CATALOG: CatalogItem[] = [

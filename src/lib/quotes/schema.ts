@@ -102,5 +102,6 @@ export const quoteUpdateSchema = z.object({
   hybrid_cash_amount: z.coerce.number().min(0).nullable().optional(),
   hybrid_invoiced_amount: z.coerce.number().min(0).nullable().optional(),
   include_prepayment_offer: z.boolean().optional(),
+  wall_estimate: z.record(z.unknown()).nullable().optional(),
 });
 export type QuoteUpdateInput = z.infer<typeof quoteUpdateSchema>;

@@ -727,6 +727,9 @@ export async function updateQuote(id: string, input: QuoteUpdateInput): Promise<
       terms: parsed.terms ?? null,
       category: parsed.category ?? null,
       workflow_state: sanitizedWf,
+      ...(parsed.wall_estimate !== undefined
+        ? { wall_estimate: pruneOversizedDataUrls(parsed.wall_estimate ?? null) }
+        : {}),
     } as never)
     .eq("id", id)
     .select("*")
