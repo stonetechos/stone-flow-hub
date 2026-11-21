@@ -106,8 +106,10 @@ export const androidChannel: NotificationChannel = {
             body: payload.body ?? "",
             channelId: "stos_operations",
             sound: "default",
-            smallIcon: "ic_launcher",
+            smallIcon: "ic_stat_stos",
             iconColor: "#0f766e",
+            ongoing: false,
+            autoCancel: true,
             extra: {
               linkPath: payload.linkPath,
               entityType: payload.entityType,

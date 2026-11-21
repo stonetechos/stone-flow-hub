@@ -33,6 +33,11 @@ const config: CapacitorConfig = {
       overlaysWebView: true,
       style: "DEFAULT",
     },
+    LocalNotifications: {
+      smallIcon: "ic_stat_stos",
+      iconColor: "#0f766e",
+      sound: "default",
+    },
   },
 };
 
