@@ -1092,7 +1092,7 @@ function HomePage() {
               onClick={() => setShowcaseTab("installations")}
               className="hover:text-primary transition-colors whitespace-nowrap py-1"
             >
-              {texts.nav.ourWork}
+              {texts.nav.ourWork || "Our Works"}
             </a>
             <a
               href="#why-us"

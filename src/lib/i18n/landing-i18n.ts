@@ -50,7 +50,7 @@ export const LANDING_UI_TRANSLATIONS = {
     brandSubtitle: "Architectural Stone Atelier",
     nav: {
       ourProducts: "Our Products",
-      ourWork: "Our Work",
+      ourWork: "Our Works",
       whyUs: "Why Us",
       jobOpenings: "Job Openings",
       newBadge: "NEW",
