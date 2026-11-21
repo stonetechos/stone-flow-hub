@@ -170,9 +170,8 @@ export function WebsiteLeadsDashboardCard() {
       if (error) throw error;
       return (data ?? []) as unknown as WebLead[];
     },
-    staleTime: 10_000,
-    refetchInterval: 10_000,
-    refetchOnWindowFocus: true,
+    staleTime: 60_000,
+    placeholderData: (previousData) => previousData,
   });
 
   useEffect(() => {

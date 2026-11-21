@@ -11,6 +11,7 @@ import {
   PackageCheck,
   Truck,
   Factory,
+  ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -97,6 +98,9 @@ function SalesOrdersPage() {
   const query = useQuery({
     queryKey: qk.salesOrders.list(dq, status),
     queryFn: () => listSalesOrders(dq, status),
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
+    placeholderData: (previousData) => previousData,
   });
   useEffect(() => setPage(1), [dq, status, fulfilmentFilter]);
 
@@ -203,123 +207,243 @@ function SalesOrdersPage() {
             />
           }
         >
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {!isHidden("no") && <TableHead>SO / Customer</TableHead>}
-                {!isHidden("customer") && <TableHead>Customer</TableHead>}
-                {!isHidden("project") && <TableHead>Project</TableHead>}
-                {!isHidden("quote") && <TableHead>Quote</TableHead>}
-                {!isHidden("date") && <TableHead>Order date</TableHead>}
-                {!isHidden("deliveryDate") && (
-                  <TableHead className="w-40">Promised Delivery</TableHead>
-                )}
-                {!isHidden("fulfilment") && <TableHead>Fulfilment Source</TableHead>}
-                {!isHidden("status") && <TableHead>Status</TableHead>}
-                <TableHead className="w-12" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {pageRows.map((r) => (
-                <TableRow key={r.id}>
-                  {!isHidden("no") && (
-                    <TableCell className="text-xs">
-                      <div className="flex flex-col min-w-0">
-                        <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
-                          {r.customer?.name
-                            ? transliterateName(r.customer.name, i18n.language)
-                            : "—"}
+          {/* Mobile Cards View (< sm) */}
+          <div className="sm:hidden divide-y divide-border/60">
+            {pageRows.map((r) => {
+              const f = resolveSalesOrderFulfilment(r);
+              return (
+                <div key={r.id} className="p-3.5 space-y-2.5 bg-card/50">
+                  {/* Top Bar: SO # & Status */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <Link
+                        to="/sales-orders/$id"
+                        params={{ id: r.id }}
+                        className="font-mono text-xs font-bold text-primary hover:underline"
+                      >
+                        {r.so_no}
+                      </Link>
+                      {r.quote?.quote_no && (
+                        <span className="font-mono text-[10px] text-muted-foreground">
+                          ({r.quote.quote_no})
                         </span>
-                        <Link
-                          to="/sales-orders/$id"
-                          params={{ id: r.id }}
-                          className="font-mono text-[11px] text-primary hover:underline truncate"
-                        >
-                          {r.so_no}
-                        </Link>
-                      </div>
-                    </TableCell>
-                  )}
-                  {!isHidden("customer") && (
-                    <TableCell>
-                      {r.customer?.name ? transliterateName(r.customer.name, i18n.language) : "—"}
-                    </TableCell>
-                  )}
-                  {!isHidden("project") && (
-                    <TableCell>
-                      {r.project?.name ? transliterateName(r.project.name, i18n.language) : "—"}
-                    </TableCell>
-                  )}
-                  {!isHidden("quote") && (
-                    <TableCell className="font-mono text-xs">{r.quote?.quote_no ?? "—"}</TableCell>
-                  )}
-                  {!isHidden("date") && (
-                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                      {r.order_date ? formatDate(r.order_date, i18n.language) : "—"}
-                    </TableCell>
-                  )}
-                  {!isHidden("deliveryDate") && (
-                    <TableCell className="text-xs">
-                      {r.delivery_date ? (
-                        <span className="inline-flex items-center gap-1 font-mono text-slate-700 whitespace-nowrap">
-                          <Calendar className="h-3 w-3 text-slate-400" />
-                          {formatDate(r.delivery_date, i18n.language)}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground italic">—</span>
                       )}
-                    </TableCell>
-                  )}
-                  {!isHidden("fulfilment") && (
-                    <TableCell>
-                      {(() => {
-                        const f = resolveSalesOrderFulfilment(r);
-                        return (
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              "text-xs font-medium border whitespace-nowrap gap-1.5",
-                              f.badgeClass,
-                            )}
-                          >
-                            {f.type === "delivered" ? (
-                              <Truck className="h-3 w-3" />
-                            ) : f.type === "live_stock" ? (
-                              <Boxes className="h-3 w-3" />
-                            ) : f.type === "stock_lifted" ? (
-                              <PackageCheck className="h-3 w-3" />
-                            ) : f.type === "vendor" ? (
-                              <Factory className="h-3 w-3" />
-                            ) : (
-                              <Boxes className="h-3 w-3" />
-                            )}
-                            <span>{f.label}</span>
-                          </Badge>
-                        );
-                      })()}
-                    </TableCell>
-                  )}
-                  {!isHidden("status") && (
-                    <TableCell>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
                       <StatusPill status={r.status} />
-                    </TableCell>
+                      <RowActions
+                        onEdit={() => nav({ to: "/sales-orders/$id/edit", params: { id: r.id } })}
+                        onDelete={() => setToDelete(r)}
+                        extra={
+                          <DropdownMenuItem onSelect={() => setTrackingTarget(r)}>
+                            <MessageSquare className="mr-2 h-4 w-4 text-emerald-600 fill-current" />
+                            Send WhatsApp Tracking
+                          </DropdownMenuItem>
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  {/* Customer & Project */}
+                  <div>
+                    <div className="text-xs font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5 flex-wrap">
+                      <span>
+                        {r.customer?.name
+                          ? transliterateName(r.customer.name, i18n.language)
+                          : "Customer not set"}
+                      </span>
+                    </div>
+                    {r.project?.name && (
+                      <div className="text-muted-foreground flex items-center gap-1 text-[11px] mt-0.5">
+                        <span>{transliterateName(r.project.name, i18n.language)}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Badges: Fulfilment & Delivery */}
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "text-[10px] font-medium border whitespace-nowrap gap-1 px-2 py-0.5",
+                        f.badgeClass,
+                      )}
+                    >
+                      {f.type === "delivered" ? (
+                        <Truck className="h-3 w-3" />
+                      ) : f.type === "live_stock" ? (
+                        <Boxes className="h-3 w-3" />
+                      ) : f.type === "stock_lifted" ? (
+                        <PackageCheck className="h-3 w-3" />
+                      ) : f.type === "vendor" ? (
+                        <Factory className="h-3 w-3" />
+                      ) : (
+                        <Boxes className="h-3 w-3" />
+                      )}
+                      <span>{f.label}</span>
+                    </Badge>
+
+                    {r.delivery_date && (
+                      <span className="inline-flex items-center gap-1 font-mono text-[10px] text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+                        <Calendar className="h-3 w-3 text-slate-400" />
+                        <span>Due {formatDate(r.delivery_date, i18n.language)}</span>
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Footer: Tracking & Details */}
+                  <div className="flex items-center justify-between pt-1 border-t border-border/50 text-xs">
+                    <span className="text-[10px] text-muted-foreground">
+                      {r.order_date ? formatDate(r.order_date, i18n.language) : "Order placed"}
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => setTrackingTarget(r)}
+                        className="h-6 px-2 text-[11px] text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+                      >
+                        <MessageSquare className="h-3 w-3 mr-1 text-emerald-600" />
+                        Track
+                      </Button>
+                      <Link
+                        to="/sales-orders/$id"
+                        params={{ id: r.id }}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                      >
+                        <span>View</span>
+                        <ExternalLink className="h-3 w-3" />
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop Table View (>= sm) */}
+          <div className="hidden sm:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  {!isHidden("no") && <TableHead>SO / Customer</TableHead>}
+                  {!isHidden("customer") && <TableHead>Customer</TableHead>}
+                  {!isHidden("project") && <TableHead>Project</TableHead>}
+                  {!isHidden("quote") && <TableHead>Quote</TableHead>}
+                  {!isHidden("date") && <TableHead>Order date</TableHead>}
+                  {!isHidden("deliveryDate") && (
+                    <TableHead className="w-40">Promised Delivery</TableHead>
                   )}
-                  <TableCell>
-                    <RowActions
-                      onEdit={() => nav({ to: "/sales-orders/$id/edit", params: { id: r.id } })}
-                      onDelete={() => setToDelete(r)}
-                      extra={
-                        <DropdownMenuItem onSelect={() => setTrackingTarget(r)}>
-                          <MessageSquare className="mr-2 h-4 w-4 text-emerald-600 fill-current" />
-                          Send WhatsApp Tracking
-                        </DropdownMenuItem>
-                      }
-                    />
-                  </TableCell>
+                  {!isHidden("fulfilment") && <TableHead>Fulfilment Source</TableHead>}
+                  {!isHidden("status") && <TableHead>Status</TableHead>}
+                  <TableHead className="w-12" />
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {pageRows.map((r) => (
+                  <TableRow key={r.id}>
+                    {!isHidden("no") && (
+                      <TableCell className="text-xs">
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
+                            {r.customer?.name
+                              ? transliterateName(r.customer.name, i18n.language)
+                              : "—"}
+                          </span>
+                          <Link
+                            to="/sales-orders/$id"
+                            params={{ id: r.id }}
+                            className="font-mono text-[11px] text-primary hover:underline truncate"
+                          >
+                            {r.so_no}
+                          </Link>
+                        </div>
+                      </TableCell>
+                    )}
+                    {!isHidden("customer") && (
+                      <TableCell>
+                        {r.customer?.name ? transliterateName(r.customer.name, i18n.language) : "—"}
+                      </TableCell>
+                    )}
+                    {!isHidden("project") && (
+                      <TableCell>
+                        {r.project?.name ? transliterateName(r.project.name, i18n.language) : "—"}
+                      </TableCell>
+                    )}
+                    {!isHidden("quote") && (
+                      <TableCell className="font-mono text-xs">
+                        {r.quote?.quote_no ?? "—"}
+                      </TableCell>
+                    )}
+                    {!isHidden("date") && (
+                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                        {r.order_date ? formatDate(r.order_date, i18n.language) : "—"}
+                      </TableCell>
+                    )}
+                    {!isHidden("deliveryDate") && (
+                      <TableCell className="text-xs">
+                        {r.delivery_date ? (
+                          <span className="inline-flex items-center gap-1 font-mono text-slate-700 whitespace-nowrap">
+                            <Calendar className="h-3 w-3 text-slate-400" />
+                            {formatDate(r.delivery_date, i18n.language)}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground italic">—</span>
+                        )}
+                      </TableCell>
+                    )}
+                    {!isHidden("fulfilment") && (
+                      <TableCell>
+                        {(() => {
+                          const f = resolveSalesOrderFulfilment(r);
+                          return (
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                "text-xs font-medium border whitespace-nowrap gap-1.5",
+                                f.badgeClass,
+                              )}
+                            >
+                              {f.type === "delivered" ? (
+                                <Truck className="h-3 w-3" />
+                              ) : f.type === "live_stock" ? (
+                                <Boxes className="h-3 w-3" />
+                              ) : f.type === "stock_lifted" ? (
+                                <PackageCheck className="h-3 w-3" />
+                              ) : f.type === "vendor" ? (
+                                <Factory className="h-3 w-3" />
+                              ) : (
+                                <Boxes className="h-3 w-3" />
+                              )}
+                              <span>{f.label}</span>
+                            </Badge>
+                          );
+                        })()}
+                      </TableCell>
+                    )}
+                    {!isHidden("status") && (
+                      <TableCell>
+                        <StatusPill status={r.status} />
+                      </TableCell>
+                    )}
+                    <TableCell>
+                      <RowActions
+                        onEdit={() => nav({ to: "/sales-orders/$id/edit", params: { id: r.id } })}
+                        onDelete={() => setToDelete(r)}
+                        extra={
+                          <DropdownMenuItem onSelect={() => setTrackingTarget(r)}>
+                            <MessageSquare className="mr-2 h-4 w-4 text-emerald-600 fill-current" />
+                            Send WhatsApp Tracking
+                          </DropdownMenuItem>
+                        }
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </DataTableShell>
       )}
 

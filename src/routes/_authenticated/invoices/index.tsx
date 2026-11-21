@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { FileText, Plus, Receipt, RefreshCw, Truck } from "lucide-react";
+import { ExternalLink, FileText, Plus, Receipt, RefreshCw, Truck } from "lucide-react";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -65,7 +65,13 @@ function InvoicesPage() {
   const [ewbInvoice, setEwbInvoice] = useState<InvoiceListItem | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
-  const query = useQuery({ queryKey: qk.invoices.list(dq), queryFn: () => listInvoices(dq) });
+  const query = useQuery({
+    queryKey: qk.invoices.list(dq),
+    queryFn: () => listInvoices(dq),
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
+    placeholderData: (previousData) => previousData,
+  });
   const del = useMutation({
     mutationFn: (id: string) => deleteInvoice(id),
     onSuccess: (res) => {
@@ -199,126 +205,27 @@ function InvoicesPage() {
             />
           }
         >
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {!isHidden("no") && <TableHead>Invoice / Customer</TableHead>}
-                {!isHidden("challan") && <TableHead>Delivery Challan</TableHead>}
-                {!isHidden("eway") && <TableHead>E-Way Bill</TableHead>}
-                {!isHidden("customer") && <TableHead>Customer</TableHead>}
-                {!isHidden("project") && <TableHead>Project</TableHead>}
-                {!isHidden("date") && <TableHead>Date</TableHead>}
-                {!isHidden("status") && <TableHead>Status</TableHead>}
-                {!isHidden("total") && <TableHead className="text-right">Total</TableHead>}
-                {!isHidden("balance") && <TableHead className="text-right">Balance</TableHead>}
-                {!isHidden("due") && <TableHead>Due</TableHead>}
-                <TableHead className="w-12" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {pageRows.map((r) => (
-                <TableRow key={r.id}>
-                  {!isHidden("no") && (
-                    <TableCell className="text-xs">
-                      <div className="flex flex-col min-w-0">
-                        <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
-                          {r.customer?.name
-                            ? transliterateName(r.customer.name, i18n.language)
-                            : "—"}
-                        </span>
-                        <Link
-                          to="/invoices/$invoiceId"
-                          params={{ invoiceId: r.id }}
-                          className="font-mono text-[11px] text-primary hover:underline truncate"
-                        >
-                          {r.invoice_no}
-                        </Link>
-                      </div>
-                    </TableCell>
-                  )}
-                  {!isHidden("challan") && (
-                    <TableCell className="text-xs">
-                      {(() => {
-                        const challans = dispatchesByInvoice[r.id] ?? [];
-                        const primaryChallan = challans[0];
-                        const challanNo = primaryChallan?.dispatch_no || r.lr_no;
-                        if (primaryChallan) {
-                          return (
-                            <Link
-                              to="/dispatch/$id"
-                              params={{ id: primaryChallan.id }}
-                              className="font-mono text-primary hover:underline inline-flex items-center gap-1 font-semibold"
-                              title={`Delivery Challan ${primaryChallan.dispatch_no} (${primaryChallan.dispatch_date})`}
-                            >
-                              <Truck className="h-3 w-3 text-muted-foreground shrink-0" />
-                              {primaryChallan.dispatch_no}
-                            </Link>
-                          );
-                        }
-                        if (challanNo) {
-                          return (
-                            <span className="font-mono text-muted-foreground inline-flex items-center gap-1">
-                              <Truck className="h-3 w-3 text-muted-foreground/60 shrink-0" />
-                              {challanNo}
-                            </span>
-                          );
-                        }
-                        return <span className="text-muted-foreground/50">—</span>;
-                      })()}
-                    </TableCell>
-                  )}
-                  {!isHidden("eway") && (
-                    <TableCell className="text-xs">
-                      {r.eway_bill_no ? (
-                        <button
-                          type="button"
-                          onClick={() => setEwbInvoice(r)}
-                          className="font-mono text-emerald-700 dark:text-emerald-300 font-semibold hover:underline inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300/60 dark:border-emerald-700/50 rounded px-1.5 py-0.5 text-[11px]"
-                          title="View / Print E-Way Bill Slip"
-                        >
-                          <FileText className="h-3 w-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                          {r.eway_bill_no}
-                        </button>
-                      ) : Number(r.total || 0) > 50000 ? (
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => setEwbInvoice(r)}
-                          className="h-6 px-1.5 text-[11px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/60 border border-amber-300/70"
-                          title="Mandatory for consignments > ₹50,000"
-                        >
-                          <Plus className="mr-1 h-3 w-3" /> EWB Req.
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => setEwbInvoice(r)}
-                          className="h-6 px-1.5 text-[11px] text-muted-foreground hover:text-foreground"
-                          title="Create E-Way Bill"
-                        >
-                          <Plus className="mr-1 h-3 w-3" /> E-Way Bill
-                        </Button>
-                      )}
-                    </TableCell>
-                  )}
-                  {!isHidden("customer") && (
-                    <TableCell>
-                      {r.customer?.name ? transliterateName(r.customer.name, i18n.language) : "—"}
-                    </TableCell>
-                  )}
-                  {!isHidden("project") && (
-                    <TableCell>
-                      {r.project?.name ? transliterateName(r.project.name, i18n.language) : "—"}
-                    </TableCell>
-                  )}
-                  {!isHidden("date") && (
-                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                      {r.issue_date ? formatDate(r.issue_date, i18n.language) : "—"}
-                    </TableCell>
-                  )}
-                  {!isHidden("status") && (
-                    <TableCell>
+          {/* Mobile Cards View (< sm) */}
+          <div className="sm:hidden divide-y divide-border/60">
+            {pageRows.map((r) => {
+              const challans = dispatchesByInvoice[r.id] ?? [];
+              const primaryChallan = challans[0];
+              const challanNo = primaryChallan?.dispatch_no || r.lr_no;
+
+              return (
+                <div key={r.id} className="p-3.5 space-y-2.5 bg-card/50">
+                  {/* Top Bar: Invoice No & Status */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <Link
+                        to="/invoices/$invoiceId"
+                        params={{ invoiceId: r.id }}
+                        className="font-mono text-xs font-bold text-primary hover:underline"
+                      >
+                        {r.invoice_no}
+                      </Link>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
                       {r.status === "void" ? (
                         <Badge
                           variant="destructive"
@@ -327,68 +234,299 @@ function InvoicesPage() {
                           VOID
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="capitalize">
-                          {r.status === "sent" ? "Issued / Sent" : r.status.replace(/_/g, " ")}
+                        <Badge variant="outline" className="capitalize text-[10px]">
+                          {r.status === "sent" ? "Issued" : r.status.replace(/_/g, " ")}
                         </Badge>
                       )}
-                    </TableCell>
-                  )}
-                  {!isHidden("total") && (
-                    <TableCell className="text-right tabular-nums">{formatInr(r.total)}</TableCell>
-                  )}
-                  {!isHidden("balance") && (
-                    <TableCell className="text-right font-medium tabular-nums">
-                      {formatInr(r.balance_due)}
-                    </TableCell>
-                  )}
-                  {!isHidden("due") && (
-                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                      {r.due_date ? formatDate(r.due_date, i18n.language) : "—"}
-                    </TableCell>
-                  )}
-                  <TableCell>
-                    <div className="flex items-center justify-end gap-1.5">
-                      {(r.status === "void" || r.status === "cancelled") && (
-                        <Button
-                          asChild
-                          size="xs"
-                          variant="outline"
-                          className="h-7 px-2 text-xs font-semibold gap-1 border-amber-500/50 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/40"
-                        >
-                          <Link to="/invoices/new" search={{ reuseInvoiceId: r.id }}>
-                            <RefreshCw className="h-3 w-3 text-amber-600" />
-                            <span>Reuse</span>
-                          </Link>
-                        </Button>
-                      )}
                       <RowActions
-                        extra={
-                          <>
-                            <DropdownMenuItem onClick={() => setEwbInvoice(r)}>
-                              <Truck className="mr-2 h-4 w-4 text-primary" />
-                              {r.eway_bill_no ? "View / Print E-Way Bill" : "Create E-Way Bill"}
-                            </DropdownMenuItem>
-                            {(r.status === "void" || r.status === "cancelled") && (
-                              <DropdownMenuItem asChild>
-                                <Link to="/invoices/new" search={{ reuseInvoiceId: r.id }}>
-                                  <RefreshCw className="mr-2 h-4 w-4 text-amber-600" /> Reuse
-                                  Invoice Number
-                                </Link>
-                              </DropdownMenuItem>
-                            )}
-                          </>
-                        }
                         onEdit={() =>
                           nav({ to: "/invoices/$invoiceId/edit", params: { invoiceId: r.id } })
                         }
                         onDelete={() => setToDelete(r)}
                       />
                     </div>
-                  </TableCell>
+                  </div>
+
+                  {/* Customer & Project */}
+                  <div>
+                    <div className="text-xs font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5 flex-wrap">
+                      <span>
+                        {r.customer?.name
+                          ? transliterateName(r.customer.name, i18n.language)
+                          : "Customer not set"}
+                      </span>
+                    </div>
+                    {r.project?.name && (
+                      <div className="text-muted-foreground flex items-center gap-1 text-[11px] mt-0.5">
+                        <span>{transliterateName(r.project.name, i18n.language)}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Badges: Challan & E-Way Bill */}
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {primaryChallan ? (
+                      <Link
+                        to="/dispatch/$id"
+                        params={{ id: primaryChallan.id }}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold font-mono bg-blue-50 text-blue-800 border border-blue-200 hover:underline"
+                      >
+                        <Truck className="h-3 w-3 text-blue-600" />
+                        <span>DC {primaryChallan.dispatch_no}</span>
+                      </Link>
+                    ) : challanNo ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono text-muted-foreground bg-muted/40 border border-border/50">
+                        <Truck className="h-3 w-3" />
+                        <span>DC {challanNo}</span>
+                      </span>
+                    ) : null}
+
+                    {r.eway_bill_no ? (
+                      <button
+                        type="button"
+                        onClick={() => setEwbInvoice(r)}
+                        className="font-mono text-emerald-700 dark:text-emerald-300 font-semibold hover:underline inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300/60 rounded px-1.5 py-0.5 text-[10px]"
+                      >
+                        <FileText className="h-3 w-3 text-emerald-600" />
+                        <span>EWB {r.eway_bill_no}</span>
+                      </button>
+                    ) : Number(r.total || 0) > 50000 ? (
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => setEwbInvoice(r)}
+                        className="h-5 px-1.5 text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-300/70"
+                      >
+                        <Plus className="mr-0.5 h-2.5 w-2.5" /> EWB Req.
+                      </Button>
+                    ) : null}
+                  </div>
+
+                  {/* Financials & View */}
+                  <div className="flex items-center justify-between pt-1 border-t border-border/50 text-xs">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-muted-foreground">
+                        {r.issue_date ? formatDate(r.issue_date, i18n.language) : "Invoice Total"}
+                      </span>
+                      <div className="flex items-baseline gap-2">
+                        <span className="font-bold text-sm text-primary">{formatInr(r.total)}</span>
+                        {Number(r.balance_due ?? 0) > 0 && (
+                          <span className="text-[11px] font-semibold text-rose-600">
+                            Due: {formatInr(r.balance_due)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <Link
+                      to="/invoices/$invoiceId"
+                      params={{ invoiceId: r.id }}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                    >
+                      <span>View</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop Table View (>= sm) */}
+          <div className="hidden sm:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  {!isHidden("no") && <TableHead>Invoice / Customer</TableHead>}
+                  {!isHidden("challan") && <TableHead>Delivery Challan</TableHead>}
+                  {!isHidden("eway") && <TableHead>E-Way Bill</TableHead>}
+                  {!isHidden("customer") && <TableHead>Customer</TableHead>}
+                  {!isHidden("project") && <TableHead>Project</TableHead>}
+                  {!isHidden("date") && <TableHead>Date</TableHead>}
+                  {!isHidden("status") && <TableHead>Status</TableHead>}
+                  {!isHidden("total") && <TableHead className="text-right">Total</TableHead>}
+                  {!isHidden("balance") && <TableHead className="text-right">Balance</TableHead>}
+                  {!isHidden("due") && <TableHead>Due</TableHead>}
+                  <TableHead className="w-12" />
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {pageRows.map((r) => (
+                  <TableRow key={r.id}>
+                    {!isHidden("no") && (
+                      <TableCell className="text-xs">
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
+                            {r.customer?.name
+                              ? transliterateName(r.customer.name, i18n.language)
+                              : "—"}
+                          </span>
+                          <Link
+                            to="/invoices/$invoiceId"
+                            params={{ invoiceId: r.id }}
+                            className="font-mono text-[11px] text-primary hover:underline truncate"
+                          >
+                            {r.invoice_no}
+                          </Link>
+                        </div>
+                      </TableCell>
+                    )}
+                    {!isHidden("challan") && (
+                      <TableCell className="text-xs">
+                        {(() => {
+                          const challans = dispatchesByInvoice[r.id] ?? [];
+                          const primaryChallan = challans[0];
+                          const challanNo = primaryChallan?.dispatch_no || r.lr_no;
+                          if (primaryChallan) {
+                            return (
+                              <Link
+                                to="/dispatch/$id"
+                                params={{ id: primaryChallan.id }}
+                                className="font-mono text-primary hover:underline inline-flex items-center gap-1 font-semibold"
+                                title={`Delivery Challan ${primaryChallan.dispatch_no} (${primaryChallan.dispatch_date})`}
+                              >
+                                <Truck className="h-3 w-3 text-muted-foreground shrink-0" />
+                                {primaryChallan.dispatch_no}
+                              </Link>
+                            );
+                          }
+                          if (challanNo) {
+                            return (
+                              <span className="font-mono text-muted-foreground inline-flex items-center gap-1">
+                                <Truck className="h-3 w-3 text-muted-foreground/60 shrink-0" />
+                                {challanNo}
+                              </span>
+                            );
+                          }
+                          return <span className="text-muted-foreground/50">—</span>;
+                        })()}
+                      </TableCell>
+                    )}
+                    {!isHidden("eway") && (
+                      <TableCell className="text-xs">
+                        {r.eway_bill_no ? (
+                          <button
+                            type="button"
+                            onClick={() => setEwbInvoice(r)}
+                            className="font-mono text-emerald-700 dark:text-emerald-300 font-semibold hover:underline inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300/60 dark:border-emerald-700/50 rounded px-1.5 py-0.5 text-[11px]"
+                            title="View / Print E-Way Bill Slip"
+                          >
+                            <FileText className="h-3 w-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                            {r.eway_bill_no}
+                          </button>
+                        ) : Number(r.total || 0) > 50000 ? (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => setEwbInvoice(r)}
+                            className="h-6 px-1.5 text-[11px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/60 border border-amber-300/70"
+                            title="Mandatory for consignments > ₹50,000"
+                          >
+                            <Plus className="mr-1 h-3 w-3" /> EWB Req.
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => setEwbInvoice(r)}
+                            className="h-6 px-1.5 text-[11px] text-muted-foreground hover:text-foreground"
+                            title="Create E-Way Bill"
+                          >
+                            <Plus className="mr-1 h-3 w-3" /> E-Way Bill
+                          </Button>
+                        )}
+                      </TableCell>
+                    )}
+                    {!isHidden("customer") && (
+                      <TableCell>
+                        {r.customer?.name ? transliterateName(r.customer.name, i18n.language) : "—"}
+                      </TableCell>
+                    )}
+                    {!isHidden("project") && (
+                      <TableCell>
+                        {r.project?.name ? transliterateName(r.project.name, i18n.language) : "—"}
+                      </TableCell>
+                    )}
+                    {!isHidden("date") && (
+                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                        {r.issue_date ? formatDate(r.issue_date, i18n.language) : "—"}
+                      </TableCell>
+                    )}
+                    {!isHidden("status") && (
+                      <TableCell>
+                        {r.status === "void" ? (
+                          <Badge
+                            variant="destructive"
+                            className="bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border-rose-300 font-bold text-[10px]"
+                          >
+                            VOID
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="capitalize">
+                            {r.status === "sent" ? "Issued / Sent" : r.status.replace(/_/g, " ")}
+                          </Badge>
+                        )}
+                      </TableCell>
+                    )}
+                    {!isHidden("total") && (
+                      <TableCell className="text-right tabular-nums">
+                        {formatInr(r.total)}
+                      </TableCell>
+                    )}
+                    {!isHidden("balance") && (
+                      <TableCell className="text-right font-medium tabular-nums">
+                        {formatInr(r.balance_due)}
+                      </TableCell>
+                    )}
+                    {!isHidden("due") && (
+                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                        {r.due_date ? formatDate(r.due_date, i18n.language) : "—"}
+                      </TableCell>
+                    )}
+                    <TableCell>
+                      <div className="flex items-center justify-end gap-1.5">
+                        {(r.status === "void" || r.status === "cancelled") && (
+                          <Button
+                            asChild
+                            size="xs"
+                            variant="outline"
+                            className="h-7 px-2 text-xs font-semibold gap-1 border-amber-500/50 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/40"
+                          >
+                            <Link to="/invoices/new" search={{ reuseInvoiceId: r.id }}>
+                              <RefreshCw className="h-3 w-3 text-amber-600" />
+                              <span>Reuse</span>
+                            </Link>
+                          </Button>
+                        )}
+                        <RowActions
+                          extra={
+                            <>
+                              <DropdownMenuItem onClick={() => setEwbInvoice(r)}>
+                                <Truck className="mr-2 h-4 w-4 text-primary" />
+                                {r.eway_bill_no ? "View / Print E-Way Bill" : "Create E-Way Bill"}
+                              </DropdownMenuItem>
+                              {(r.status === "void" || r.status === "cancelled") && (
+                                <DropdownMenuItem asChild>
+                                  <Link to="/invoices/new" search={{ reuseInvoiceId: r.id }}>
+                                    <RefreshCw className="mr-2 h-4 w-4 text-amber-600" /> Reuse
+                                    Invoice Number
+                                  </Link>
+                                </DropdownMenuItem>
+                              )}
+                            </>
+                          }
+                          onEdit={() =>
+                            nav({ to: "/invoices/$invoiceId/edit", params: { invoiceId: r.id } })
+                          }
+                          onDelete={() => setToDelete(r)}
+                        />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </DataTableShell>
       )}
 

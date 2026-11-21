@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Plus, Loader2, ClipboardList } from "lucide-react";
+import { Plus, Loader2, ClipboardList, ExternalLink, Phone, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
@@ -141,8 +141,9 @@ function EnquiriesPage() {
   const query = useQuery({
     queryKey: qk.enquiries.list(dq),
     queryFn: () => listEnquiries(dq),
-    refetchInterval: 10_000,
-    refetchOnWindowFocus: true,
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
+    placeholderData: (previousData) => previousData,
   });
   useEffect(() => setPage(1), [dq, umbrella, web_only]);
 
@@ -258,7 +259,8 @@ function EnquiriesPage() {
         ),
       ),
     enabled: rowIds.length > 0,
-    staleTime: 30_000,
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
   });
   const signals = signalsQ.data ?? {};
 
@@ -411,176 +413,348 @@ function EnquiriesPage() {
             />
           }
         >
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {!isHidden("no") && <TableHead>Enquiry / Customer</TableHead>}
-                {!isHidden("customer") && <TableHead>Customer</TableHead>}
-                {!isHidden("requirement") && <TableHead>Requirement</TableHead>}
-                {!isHidden("project") && <TableHead>Project</TableHead>}
-                {!isHidden("stage") && <TableHead className="min-w-[200px]">Lead Stage</TableHead>}
-                {!isHidden("health") && <TableHead>Health</TableHead>}
-                {!isHidden("followup") && (
-                  <TableHead className="min-w-[140px]">Next follow-up</TableHead>
-                )}
-                {!isHidden("priority") && <TableHead>Priority</TableHead>}
-                {!isHidden("budget") && <TableHead>Budget (INR)</TableHead>}
-                <TableHead className="w-12" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {pageRows.map((e) => {
-                const currentUmbrella = stageToUmbrella(e.stage);
-                const sig = signals[e.id] ?? null;
-                const daysInStage = daysSince(
-                  sig?.stage_entered_at ?? e.updated_at ?? e.created_at,
-                );
-                const nextFup = sig?.next_followup ?? null;
-                const followupOverdue =
-                  !!nextFup && new Date(nextFup.scheduled_at).getTime() < Date.now();
-                const daysSinceLast = sig?.last_followup_at
-                  ? daysSince(sig.last_followup_at)
-                  : null;
-                const health = computeLeadHealth({
-                  stage: e.stage,
-                  daysInStage,
-                  daysSinceFollowup: daysSinceLast,
-                  followupOverdue,
-                  isTerminalLost: e.stage === "lost" || e.stage === "cancelled",
-                });
-                return (
-                  <TableRow key={e.id}>
-                    {!isHidden("no") && (
-                      <TableCell className="text-xs">
-                        <div className="flex flex-col gap-1 min-w-0">
-                          <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
-                            {e.customer?.name
-                              ? transliterateName(e.customer.name, i18n.language)
-                              : "—"}
-                          </span>
-                          <Link
-                            to="/enquiries/$enquiryId"
-                            params={{ enquiryId: e.id }}
-                            className="text-primary hover:underline font-mono text-[11px] font-bold truncate"
-                          >
-                            {e.enquiry_no}
-                          </Link>
-                          {(e.source === "Shareable Web Link" ||
-                            e.source?.toLowerCase().includes("web") ||
-                            e.source?.toLowerCase().includes("stonetech")) && (
-                            <span className="inline-flex items-center gap-1 rounded bg-cyan-50 px-1.5 py-0.5 font-mono text-[9px] font-bold text-cyan-800 border border-cyan-200 w-fit">
-                              🌐 stonetech.in
-                            </span>
-                          )}
-                        </div>
-                      </TableCell>
-                    )}
-                    {!isHidden("customer") && (
-                      <TableCell className="font-medium">
-                        <div className="flex flex-col gap-0.5">
-                          <span>
-                            {e.customer?.name
-                              ? transliterateName(e.customer.name, i18n.language)
-                              : "—"}
-                          </span>
-                          {(() => {
-                            const ext =
-                              typeof e.external_ref === "object" && e.external_ref !== null
-                                ? (e.external_ref as Record<string, unknown>)
-                                : {};
-                            const rawPhone =
-                              (typeof ext.client_whatsapp === "string"
-                                ? ext.client_whatsapp
-                                : null) || e.notes?.match(/Customer WhatsApp:\s*([^\s|]+)/)?.[1];
-                            const cleanDigits = rawPhone ? rawPhone.replace(/\D/g, "") : "";
-                            if (!cleanDigits) return null;
-                            return (
-                              <a
-                                href={`https://wa.me/${cleanDigits}?text=${encodeURIComponent(
-                                  `Hello ${e.customer?.name || "there"}! Regarding your Stone Tech inquiry ${e.enquiry_no}:`,
-                                )}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 hover:underline w-fit"
-                                title="Click to chat on WhatsApp"
-                              >
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                                <span>WhatsApp: {rawPhone}</span>
-                              </a>
-                            );
-                          })()}
-                        </div>
-                      </TableCell>
-                    )}
-                    {!isHidden("requirement") && (
-                      <TableCell className="max-w-xs truncate">{e.requirement ?? "—"}</TableCell>
-                    )}
-                    {!isHidden("project") && (
-                      <TableCell>
-                        {e.project ? (
-                          e.project.name
-                        ) : (
-                          <span className="text-xs text-muted-foreground">Unassigned</span>
-                        )}
-                      </TableCell>
-                    )}
-                    {!isHidden("stage") && (
-                      <TableCell>
-                        <div className="space-y-1">
-                          <Select
-                            value={currentUmbrella.id}
-                            onValueChange={(v) => {
-                              const target = UMBRELLA_BY_ID[v as LeadUmbrellaId];
-                              const primary = target.stages[0];
-                              if (target.stages.includes(e.stage)) return;
-                              if (primary === "lost" || primary === "cancelled") {
-                                setLostFor({ id: e.id, stage: primary });
-                                return;
-                              }
-                              stageMut.mutate({ id: e.id, stage: primary });
-                            }}
-                          >
-                            <SelectTrigger className="h-8 w-full text-xs">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {LEAD_UMBRELLAS.map((u) => (
-                                <SelectItem key={u.id} value={u.id}>
-                                  {u.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <StageAgeChip stage={e.stage} days={daysInStage} compact />
-                        </div>
-                      </TableCell>
-                    )}
-                    {!isHidden("health") && (
-                      <TableCell>
-                        <LeadHealthBadge health={health} compact />
-                      </TableCell>
-                    )}
-                    {!isHidden("followup") && (
-                      <TableCell>
-                        <NextFollowupChip next={nextFup} compact />
-                      </TableCell>
-                    )}
-                    {!isHidden("priority") && (
-                      <TableCell className="capitalize">{e.priority}</TableCell>
-                    )}
-                    {!isHidden("budget") && (
-                      <TableCell className="tabular-nums">
-                        {e.budget_inr != null ? e.budget_inr.toLocaleString("en-IN") : "—"}
-                      </TableCell>
-                    )}
-                    <TableCell>
+          {/* Mobile Cards View (< sm) */}
+          <div className="sm:hidden divide-y divide-border/60">
+            {pageRows.map((e) => {
+              const sig = signals[e.id] ?? null;
+              const daysInStage = daysSince(sig?.stage_entered_at ?? e.updated_at ?? e.created_at);
+              const nextFup = sig?.next_followup ?? null;
+              const followupOverdue =
+                !!nextFup && new Date(nextFup.scheduled_at).getTime() < Date.now();
+              const daysSinceLast = sig?.last_followup_at ? daysSince(sig.last_followup_at) : null;
+              const health = computeLeadHealth({
+                stage: e.stage,
+                daysInStage,
+                daysSinceFollowup: daysSinceLast,
+                followupOverdue,
+                isTerminalLost: e.stage === "lost" || e.stage === "cancelled",
+              });
+              const ext =
+                typeof e.external_ref === "object" && e.external_ref !== null
+                  ? (e.external_ref as Record<string, unknown>)
+                  : {};
+              const rawPhone =
+                (typeof ext.client_whatsapp === "string" ? ext.client_whatsapp : null) ||
+                e.notes?.match(/Customer WhatsApp:\s*([^\s|]+)/)?.[1];
+              const cleanDigits = rawPhone ? rawPhone.replace(/\D/g, "") : "";
+              const waUrl = cleanDigits
+                ? `https://wa.me/${cleanDigits}?text=${encodeURIComponent(
+                    `Hello ${e.customer?.name || "there"}! Regarding your Stone Tech inquiry ${e.enquiry_no}:`,
+                  )}`
+                : null;
+
+              return (
+                <div key={e.id} className="p-3.5 space-y-2.5 bg-card/50">
+                  {/* Top Bar: Enquiry No & Action */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <Link
+                        to="/enquiries/$enquiryId"
+                        params={{ enquiryId: e.id }}
+                        className="font-mono text-xs font-bold text-primary hover:underline"
+                      >
+                        {e.enquiry_no}
+                      </Link>
+                      {(e.source === "Shareable Web Link" ||
+                        e.source?.toLowerCase().includes("web") ||
+                        e.source?.toLowerCase().includes("stonetech")) && (
+                        <span className="inline-flex items-center gap-1 rounded bg-cyan-50 px-1.5 py-0.5 font-mono text-[9px] font-bold text-cyan-800 border border-cyan-200">
+                          🌐 Web Lead
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <LeadHealthBadge health={health} compact />
                       <RowActions onEdit={() => setEditing(e)} onDelete={() => setToDelete(e)} />
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                    </div>
+                  </div>
+
+                  {/* Customer & Requirement */}
+                  <div>
+                    <div className="text-xs font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5 flex-wrap">
+                      <span>
+                        {e.customer?.name
+                          ? transliterateName(e.customer.name, i18n.language)
+                          : "Direct Lead"}
+                      </span>
+                      {e.customer?.customer_code && (
+                        <span className="font-mono text-[10px] text-muted-foreground font-normal">
+                          ({e.customer.customer_code})
+                        </span>
+                      )}
+                    </div>
+                    {e.requirement && (
+                      <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
+                        {e.requirement}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Stage & Details */}
+                  <div className="space-y-1.5 text-xs bg-muted/30 rounded-md p-2 border border-border/50">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] text-muted-foreground font-medium shrink-0">
+                        Stage:
+                      </span>
+                      <Select
+                        value={e.stage}
+                        onValueChange={(v) => {
+                          const target = v as LeadStage;
+                          if (target === "lost" || target === "cancelled") {
+                            setLostFor({ id: e.id, stage: target });
+                            return;
+                          }
+                          stageMut.mutate({ id: e.id, stage: target });
+                        }}
+                      >
+                        <SelectTrigger className="h-7 text-[11px] w-48 max-w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {LEAD_STAGES.map((s) => (
+                            <SelectItem key={s.value} value={s.value} className="text-xs">
+                              {t(`leadStages.${s.value}`, s.label)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {nextFup && (
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[11px] text-muted-foreground font-medium">
+                          Follow-up:
+                        </span>
+                        <NextFollowupChip next={nextFup} compact />
+                      </div>
+                    )}
+
+                    {e.budget_inr != null && (
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[11px] text-muted-foreground font-medium">
+                          Budget:
+                        </span>
+                        <span className="font-semibold text-primary">
+                          ₹{e.budget_inr.toLocaleString("en-IN")}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Action Bar */}
+                  <div className="flex items-center justify-between pt-1 border-t border-border/50 text-xs">
+                    <div className="flex items-center gap-1.5">
+                      {cleanDigits ? (
+                        <a
+                          href={`tel:${cleanDigits}`}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-md border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition-colors"
+                        >
+                          <Phone className="h-3 w-3 text-slate-600" />
+                          <span>Call</span>
+                        </a>
+                      ) : null}
+                      {waUrl ? (
+                        <a
+                          href={waUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-md border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 transition-colors"
+                        >
+                          <MessageSquare className="h-3 w-3 text-emerald-600" />
+                          <span>WhatsApp</span>
+                        </a>
+                      ) : null}
+                    </div>
+
+                    <Link
+                      to="/enquiries/$enquiryId"
+                      params={{ enquiryId: e.id }}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                    >
+                      <span>View</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop Table View (>= sm) */}
+          <div className="hidden sm:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  {!isHidden("no") && <TableHead>Enquiry / Customer</TableHead>}
+                  {!isHidden("customer") && <TableHead>Customer</TableHead>}
+                  {!isHidden("requirement") && <TableHead>Requirement</TableHead>}
+                  {!isHidden("project") && <TableHead>Project</TableHead>}
+                  {!isHidden("stage") && (
+                    <TableHead className="min-w-[200px]">Lead Stage</TableHead>
+                  )}
+                  {!isHidden("health") && <TableHead>Health</TableHead>}
+                  {!isHidden("followup") && (
+                    <TableHead className="min-w-[140px]">Next follow-up</TableHead>
+                  )}
+                  {!isHidden("priority") && <TableHead>Priority</TableHead>}
+                  {!isHidden("budget") && <TableHead>Budget (INR)</TableHead>}
+                  <TableHead className="w-12" />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pageRows.map((e) => {
+                  const currentUmbrella = stageToUmbrella(e.stage);
+                  const sig = signals[e.id] ?? null;
+                  const daysInStage = daysSince(
+                    sig?.stage_entered_at ?? e.updated_at ?? e.created_at,
+                  );
+                  const nextFup = sig?.next_followup ?? null;
+                  const followupOverdue =
+                    !!nextFup && new Date(nextFup.scheduled_at).getTime() < Date.now();
+                  const daysSinceLast = sig?.last_followup_at
+                    ? daysSince(sig.last_followup_at)
+                    : null;
+                  const health = computeLeadHealth({
+                    stage: e.stage,
+                    daysInStage,
+                    daysSinceFollowup: daysSinceLast,
+                    followupOverdue,
+                    isTerminalLost: e.stage === "lost" || e.stage === "cancelled",
+                  });
+                  return (
+                    <TableRow key={e.id}>
+                      {!isHidden("no") && (
+                        <TableCell className="text-xs">
+                          <div className="flex flex-col gap-1 min-w-0">
+                            <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
+                              {e.customer?.name
+                                ? transliterateName(e.customer.name, i18n.language)
+                                : "—"}
+                            </span>
+                            <Link
+                              to="/enquiries/$enquiryId"
+                              params={{ enquiryId: e.id }}
+                              className="text-primary hover:underline font-mono text-[11px] font-bold truncate"
+                            >
+                              {e.enquiry_no}
+                            </Link>
+                            {(e.source === "Shareable Web Link" ||
+                              e.source?.toLowerCase().includes("web") ||
+                              e.source?.toLowerCase().includes("stonetech")) && (
+                              <span className="inline-flex items-center gap-1 rounded bg-cyan-50 px-1.5 py-0.5 font-mono text-[9px] font-bold text-cyan-800 border border-cyan-200 w-fit">
+                                🌐 stonetech.in
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+                      )}
+                      {!isHidden("customer") && (
+                        <TableCell className="font-medium">
+                          <div className="flex flex-col gap-0.5">
+                            <span>
+                              {e.customer?.name
+                                ? transliterateName(e.customer.name, i18n.language)
+                                : "—"}
+                            </span>
+                            {(() => {
+                              const ext =
+                                typeof e.external_ref === "object" && e.external_ref !== null
+                                  ? (e.external_ref as Record<string, unknown>)
+                                  : {};
+                              const rawPhone =
+                                (typeof ext.client_whatsapp === "string"
+                                  ? ext.client_whatsapp
+                                  : null) || e.notes?.match(/Customer WhatsApp:\s*([^\s|]+)/)?.[1];
+                              const cleanDigits = rawPhone ? rawPhone.replace(/\D/g, "") : "";
+                              if (!cleanDigits) return null;
+                              return (
+                                <a
+                                  href={`https://wa.me/${cleanDigits}?text=${encodeURIComponent(
+                                    `Hello ${e.customer?.name || "there"}! Regarding your Stone Tech inquiry ${e.enquiry_no}:`,
+                                  )}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 hover:underline w-fit"
+                                  title="Click to chat on WhatsApp"
+                                >
+                                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                  <span>WhatsApp: {rawPhone}</span>
+                                </a>
+                              );
+                            })()}
+                          </div>
+                        </TableCell>
+                      )}
+                      {!isHidden("requirement") && (
+                        <TableCell className="max-w-xs truncate">{e.requirement ?? "—"}</TableCell>
+                      )}
+                      {!isHidden("project") && (
+                        <TableCell>
+                          {e.project ? (
+                            e.project.name
+                          ) : (
+                            <span className="text-xs text-muted-foreground">Unassigned</span>
+                          )}
+                        </TableCell>
+                      )}
+                      {!isHidden("stage") && (
+                        <TableCell>
+                          <div className="space-y-1">
+                            <Select
+                              value={currentUmbrella.id}
+                              onValueChange={(v) => {
+                                const target = UMBRELLA_BY_ID[v as LeadUmbrellaId];
+                                const primary = target.stages[0];
+                                if (target.stages.includes(e.stage)) return;
+                                if (primary === "lost" || primary === "cancelled") {
+                                  setLostFor({ id: e.id, stage: primary });
+                                  return;
+                                }
+                                stageMut.mutate({ id: e.id, stage: primary });
+                              }}
+                            >
+                              <SelectTrigger className="h-8 w-full text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {LEAD_UMBRELLAS.map((u) => (
+                                  <SelectItem key={u.id} value={u.id}>
+                                    {u.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <StageAgeChip stage={e.stage} days={daysInStage} compact />
+                          </div>
+                        </TableCell>
+                      )}
+                      {!isHidden("health") && (
+                        <TableCell>
+                          <LeadHealthBadge health={health} compact />
+                        </TableCell>
+                      )}
+                      {!isHidden("followup") && (
+                        <TableCell>
+                          <NextFollowupChip next={nextFup} compact />
+                        </TableCell>
+                      )}
+                      {!isHidden("priority") && (
+                        <TableCell className="capitalize">{e.priority}</TableCell>
+                      )}
+                      {!isHidden("budget") && (
+                        <TableCell className="tabular-nums">
+                          {e.budget_inr != null ? e.budget_inr.toLocaleString("en-IN") : "—"}
+                        </TableCell>
+                      )}
+                      <TableCell>
+                        <RowActions onEdit={() => setEditing(e)} onDelete={() => setToDelete(e)} />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
         </DataTableShell>
       )}
 

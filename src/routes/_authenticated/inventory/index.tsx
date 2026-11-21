@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Plus, Warehouse } from "lucide-react";
+import { Plus, Warehouse, ExternalLink, Boxes } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
@@ -63,7 +63,13 @@ function InventoryPage() {
     [t],
   );
 
-  const query = useQuery({ queryKey: qk.inventory.list(dq), queryFn: () => listInventory(dq) });
+  const query = useQuery({
+    queryKey: qk.inventory.list(dq),
+    queryFn: () => listInventory(dq),
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
+    placeholderData: (previousData) => previousData,
+  });
   useEffect(() => setPage(1), [dq]);
 
   const del = useMutation({
@@ -140,63 +146,139 @@ function InventoryPage() {
             />
           }
         >
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {!isHidden("code") && <TableHead>{t("inventory.fields.code", "Code")}</TableHead>}
-                {!isHidden("product") && (
-                  <TableHead>{t("inventory.fields.product", "Product")}</TableHead>
-                )}
-                {!isHidden("location") && (
-                  <TableHead>{t("inventory.fields.location", "Location")}</TableHead>
-                )}
-                {!isHidden("unit") && <TableHead>{t("inventory.fields.unit", "Unit")}</TableHead>}
-                {!isHidden("onHand") && (
-                  <TableHead className="text-right">
-                    {t("inventory.fields.onHand", "On hand")}
-                  </TableHead>
-                )}
-                {!isHidden("reorder") && (
-                  <TableHead className="text-right">
-                    {t("inventory.fields.reorder", "Reorder")}
-                  </TableHead>
-                )}
-                <TableHead className="w-12" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {pageRows.map((r) => (
-                <TableRow key={r.id}>
-                  {!isHidden("code") && (
-                    <TableCell className="font-mono text-xs">
+          {/* Mobile Cards View (< sm) */}
+          <div className="sm:hidden divide-y divide-border/60">
+            {pageRows.map((r) => {
+              const isLowStock =
+                r.reorder_level != null && Number(r.quantity_on_hand) <= Number(r.reorder_level);
+
+              return (
+                <div key={r.id} className="p-3.5 space-y-2.5 bg-card/50">
+                  {/* Top Bar: Code & Actions */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 min-w-0">
                       <Link
                         to="/inventory/$id"
                         params={{ id: r.id }}
-                        className="text-primary hover:underline"
+                        className="font-mono text-xs font-bold text-primary hover:underline"
                       >
                         {r.stock_code}
                       </Link>
-                    </TableCell>
-                  )}
-                  {!isHidden("product") && <TableCell>{r.product?.name ?? "—"}</TableCell>}
-                  {!isHidden("location") && <TableCell>{r.location ?? "—"}</TableCell>}
-                  {!isHidden("unit") && <TableCell>{r.unit ?? "—"}</TableCell>}
-                  {!isHidden("onHand") && (
-                    <TableCell className="text-right tabular-nums">{r.quantity_on_hand}</TableCell>
-                  )}
-                  {!isHidden("reorder") && (
-                    <TableCell className="text-right tabular-nums">{r.reorder_level}</TableCell>
-                  )}
-                  <TableCell>
+                      {isLowStock && (
+                        <span className="inline-flex items-center rounded bg-rose-50 px-1.5 py-0.5 text-[9px] font-bold text-rose-800 border border-rose-200">
+                          Low Stock
+                        </span>
+                      )}
+                    </div>
                     <RowActions
                       onEdit={() => nav({ to: "/inventory/$id/edit", params: { id: r.id } })}
                       onDelete={() => setToDelete(r)}
                     />
-                  </TableCell>
+                  </div>
+
+                  {/* Product & Location */}
+                  <div>
+                    <div className="text-xs font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5 flex-wrap">
+                      <span>{r.product?.name ?? "Unnamed Product"}</span>
+                    </div>
+                    {r.location && (
+                      <div className="text-muted-foreground flex items-center gap-1 text-[11px] mt-0.5">
+                        <Warehouse className="h-3 w-3 shrink-0" />
+                        <span>{r.location}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Stock Quantities & Details */}
+                  <div className="flex items-center justify-between pt-1 border-t border-border/50 text-xs">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-[10px] text-muted-foreground">On hand:</span>
+                      <span className="font-bold text-sm text-foreground">
+                        {r.quantity_on_hand} {r.unit ?? ""}
+                      </span>
+                      {r.reorder_level != null && (
+                        <span className="text-[10px] text-muted-foreground">
+                          (Reorder: {r.reorder_level})
+                        </span>
+                      )}
+                    </div>
+
+                    <Link
+                      to="/inventory/$id"
+                      params={{ id: r.id }}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                    >
+                      <span>View</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop Table View (>= sm) */}
+          <div className="hidden sm:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  {!isHidden("code") && <TableHead>{t("inventory.fields.code", "Code")}</TableHead>}
+                  {!isHidden("product") && (
+                    <TableHead>{t("inventory.fields.product", "Product")}</TableHead>
+                  )}
+                  {!isHidden("location") && (
+                    <TableHead>{t("inventory.fields.location", "Location")}</TableHead>
+                  )}
+                  {!isHidden("unit") && <TableHead>{t("inventory.fields.unit", "Unit")}</TableHead>}
+                  {!isHidden("onHand") && (
+                    <TableHead className="text-right">
+                      {t("inventory.fields.onHand", "On hand")}
+                    </TableHead>
+                  )}
+                  {!isHidden("reorder") && (
+                    <TableHead className="text-right">
+                      {t("inventory.fields.reorder", "Reorder")}
+                    </TableHead>
+                  )}
+                  <TableHead className="w-12" />
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {pageRows.map((r) => (
+                  <TableRow key={r.id}>
+                    {!isHidden("code") && (
+                      <TableCell className="font-mono text-xs">
+                        <Link
+                          to="/inventory/$id"
+                          params={{ id: r.id }}
+                          className="text-primary hover:underline"
+                        >
+                          {r.stock_code}
+                        </Link>
+                      </TableCell>
+                    )}
+                    {!isHidden("product") && <TableCell>{r.product?.name ?? "—"}</TableCell>}
+                    {!isHidden("location") && <TableCell>{r.location ?? "—"}</TableCell>}
+                    {!isHidden("unit") && <TableCell>{r.unit ?? "—"}</TableCell>}
+                    {!isHidden("onHand") && (
+                      <TableCell className="text-right tabular-nums">
+                        {r.quantity_on_hand}
+                      </TableCell>
+                    )}
+                    {!isHidden("reorder") && (
+                      <TableCell className="text-right tabular-nums">{r.reorder_level}</TableCell>
+                    )}
+                    <TableCell>
+                      <RowActions
+                        onEdit={() => nav({ to: "/inventory/$id/edit", params: { id: r.id } })}
+                        onDelete={() => setToDelete(r)}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </DataTableShell>
       )}
 

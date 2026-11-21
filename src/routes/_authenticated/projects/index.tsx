@@ -92,7 +92,13 @@ function ProjectsPage() {
     [],
   );
 
-  const query = useQuery({ queryKey: qk.projects.list(dq), queryFn: () => listProjects(dq) });
+  const query = useQuery({
+    queryKey: qk.projects.list(dq),
+    queryFn: () => listProjects(dq),
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
+    placeholderData: (previousData) => previousData,
+  });
   useEffect(() => setPage(1), [dq]);
 
   useEffect(() => {
@@ -185,105 +191,205 @@ function ProjectsPage() {
             />
           }
         >
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {!isHidden("code") && <TableHead>Code</TableHead>}
-                {!isHidden("name") && <TableHead>Name</TableHead>}
-                {!isHidden("customer") && <TableHead>Customer</TableHead>}
-                {!isHidden("type") && <TableHead>Type</TableHead>}
-                {!isHidden("city") && <TableHead>City</TableHead>}
-                {!isHidden("stage") && <TableHead>Stage</TableHead>}
-                <TableHead className="w-12" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {pageRows.map((p) => (
-                <TableRow key={p.id}>
-                  {!isHidden("code") && (
-                    <TableCell className="font-mono text-xs">
-                      <Link
-                        to="/projects/$projectId"
-                        params={{ projectId: p.id }}
-                        className="hover:underline"
-                      >
-                        {p.project_code}
-                      </Link>
-                    </TableCell>
+          {/* Mobile Cards View (< sm) */}
+          <div className="sm:hidden divide-y divide-border/60">
+            {pageRows.map((p) => (
+              <div key={p.id} className="p-3.5 space-y-2.5 bg-card/50">
+                {/* Top Bar: Project Name & Code */}
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <Link
+                      to="/projects/$projectId"
+                      params={{ projectId: p.id }}
+                      className="font-semibold text-xs text-foreground hover:underline truncate"
+                    >
+                      {p.name}
+                    </Link>
+                    <span className="font-mono text-[10px] text-muted-foreground shrink-0">
+                      ({p.project_code})
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <Badge variant="outline" className="text-[10px]">
+                      {LEAD_STAGE_LABEL[p.stage]}
+                    </Badge>
+                    <RowActions
+                      extra={
+                        <>
+                          <DropdownMenuItem asChild>
+                            <Link
+                              to="/projects/$projectId"
+                              params={{ projectId: p.id }}
+                              search={{ tab: "diary" }}
+                            >
+                              <Receipt className="mr-2 h-4 w-4 text-cyan-600" /> Open Profit Diary
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link to="/projects/$projectId" params={{ projectId: p.id }}>
+                              <ExternalLink className="mr-2 h-4 w-4" /> Open Project
+                            </Link>
+                          </DropdownMenuItem>
+                        </>
+                      }
+                      onEdit={() => {
+                        setEditing(p);
+                        setFormOpen(true);
+                      }}
+                      onDelete={() => setToDelete(p)}
+                    />
+                  </div>
+                </div>
+
+                {/* Customer & Location */}
+                <div>
+                  <div className="text-xs text-slate-800 dark:text-slate-200 flex items-center gap-1.5 flex-wrap">
+                    <Building2 className="h-3 w-3 text-muted-foreground shrink-0" />
+                    <span>{p.customer?.name ?? "No customer linked"}</span>
+                  </div>
+                  {(p.city || p.project_type) && (
+                    <div className="text-muted-foreground flex items-center gap-1.5 text-[11px] mt-0.5">
+                      {p.city && <span>{p.city}</span>}
+                      {p.city && p.project_type && <span>·</span>}
+                      {p.project_type && <span className="capitalize">{p.project_type}</span>}
+                    </div>
                   )}
-                  {!isHidden("name") && (
-                    <TableCell className="font-medium">
-                      <Link
-                        to="/projects/$projectId"
-                        params={{ projectId: p.id }}
-                        className="hover:underline"
-                      >
-                        {p.name}
-                      </Link>
-                    </TableCell>
-                  )}
-                  {!isHidden("customer") && <TableCell>{p.customer?.name ?? "—"}</TableCell>}
-                  {!isHidden("type") && (
-                    <TableCell>
-                      <Badge variant="secondary" className="capitalize">
-                        {p.project_type}
-                      </Badge>
-                    </TableCell>
-                  )}
-                  {!isHidden("city") && <TableCell>{p.city ?? "—"}</TableCell>}
-                  {!isHidden("stage") && (
-                    <TableCell>
-                      <Badge variant="outline">{LEAD_STAGE_LABEL[p.stage]}</Badge>
-                    </TableCell>
-                  )}
-                  <TableCell>
-                    <div className="flex items-center justify-end gap-1.5">
-                      <Button
-                        asChild
-                        size="xs"
-                        variant="outline"
-                        className="h-7 px-2 text-xs font-semibold gap-1 border-cyan-500/40 text-cyan-800 dark:text-cyan-300 hover:bg-cyan-50 dark:hover:bg-cyan-950/40"
-                      >
+                </div>
+
+                {/* Actions Footer */}
+                <div className="flex items-center justify-between pt-1 border-t border-border/50 text-xs">
+                  <Button
+                    asChild
+                    size="xs"
+                    variant="outline"
+                    className="h-6 px-2 text-[11px] font-semibold gap-1 border-cyan-500/40 text-cyan-800 dark:text-cyan-300 hover:bg-cyan-50 dark:hover:bg-cyan-950/40"
+                  >
+                    <Link
+                      to="/projects/$projectId"
+                      params={{ projectId: p.id }}
+                      search={{ tab: "diary" }}
+                    >
+                      <Receipt className="h-3 w-3 text-cyan-600" />
+                      <span>Profit Diary</span>
+                    </Link>
+                  </Button>
+
+                  <Link
+                    to="/projects/$projectId"
+                    params={{ projectId: p.id }}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                  >
+                    <span>Hub</span>
+                    <ExternalLink className="h-3 w-3" />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table View (>= sm) */}
+          <div className="hidden sm:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  {!isHidden("code") && <TableHead>Code</TableHead>}
+                  {!isHidden("name") && <TableHead>Name</TableHead>}
+                  {!isHidden("customer") && <TableHead>Customer</TableHead>}
+                  {!isHidden("type") && <TableHead>Type</TableHead>}
+                  {!isHidden("city") && <TableHead>City</TableHead>}
+                  {!isHidden("stage") && <TableHead>Stage</TableHead>}
+                  <TableHead className="w-12" />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pageRows.map((p) => (
+                  <TableRow key={p.id}>
+                    {!isHidden("code") && (
+                      <TableCell className="font-mono text-xs">
                         <Link
                           to="/projects/$projectId"
                           params={{ projectId: p.id }}
-                          search={{ tab: "diary" }}
+                          className="hover:underline"
                         >
-                          <Receipt className="h-3 w-3 text-cyan-600" />
-                          <span>Profit Diary</span>
+                          {p.project_code}
                         </Link>
-                      </Button>
-                      <RowActions
-                        extra={
-                          <>
-                            <DropdownMenuItem asChild>
-                              <Link
-                                to="/projects/$projectId"
-                                params={{ projectId: p.id }}
-                                search={{ tab: "diary" }}
-                              >
-                                <Receipt className="mr-2 h-4 w-4 text-cyan-600" /> Open Profit Diary
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <Link to="/projects/$projectId" params={{ projectId: p.id }}>
-                                <ExternalLink className="mr-2 h-4 w-4" /> Open Project
-                              </Link>
-                            </DropdownMenuItem>
-                          </>
-                        }
-                        onEdit={() => {
-                          setEditing(p);
-                          setFormOpen(true);
-                        }}
-                        onDelete={() => setToDelete(p)}
-                      />
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                      </TableCell>
+                    )}
+                    {!isHidden("name") && (
+                      <TableCell className="font-medium">
+                        <Link
+                          to="/projects/$projectId"
+                          params={{ projectId: p.id }}
+                          className="hover:underline"
+                        >
+                          {p.name}
+                        </Link>
+                      </TableCell>
+                    )}
+                    {!isHidden("customer") && <TableCell>{p.customer?.name ?? "—"}</TableCell>}
+                    {!isHidden("type") && (
+                      <TableCell>
+                        <Badge variant="secondary" className="capitalize">
+                          {p.project_type}
+                        </Badge>
+                      </TableCell>
+                    )}
+                    {!isHidden("city") && <TableCell>{p.city ?? "—"}</TableCell>}
+                    {!isHidden("stage") && (
+                      <TableCell>
+                        <Badge variant="outline">{LEAD_STAGE_LABEL[p.stage]}</Badge>
+                      </TableCell>
+                    )}
+                    <TableCell>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Button
+                          asChild
+                          size="xs"
+                          variant="outline"
+                          className="h-7 px-2 text-xs font-semibold gap-1 border-cyan-500/40 text-cyan-800 dark:text-cyan-300 hover:bg-cyan-50 dark:hover:bg-cyan-950/40"
+                        >
+                          <Link
+                            to="/projects/$projectId"
+                            params={{ projectId: p.id }}
+                            search={{ tab: "diary" }}
+                          >
+                            <Receipt className="h-3 w-3 text-cyan-600" />
+                            <span>Profit Diary</span>
+                          </Link>
+                        </Button>
+                        <RowActions
+                          extra={
+                            <>
+                              <DropdownMenuItem asChild>
+                                <Link
+                                  to="/projects/$projectId"
+                                  params={{ projectId: p.id }}
+                                  search={{ tab: "diary" }}
+                                >
+                                  <Receipt className="mr-2 h-4 w-4 text-cyan-600" /> Open Profit
+                                  Diary
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link to="/projects/$projectId" params={{ projectId: p.id }}>
+                                  <ExternalLink className="mr-2 h-4 w-4" /> Open Project
+                                </Link>
+                              </DropdownMenuItem>
+                            </>
+                          }
+                          onEdit={() => {
+                            setEditing(p);
+                            setFormOpen(true);
+                          }}
+                          onDelete={() => setToDelete(p)}
+                        />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </DataTableShell>
       )}
 

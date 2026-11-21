@@ -160,7 +160,7 @@ function UnifiedPaymentsPage() {
         />
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3 md:w-auto md:inline-flex">
+          <TabsList className="flex w-full overflow-x-auto scrollbar-none touch-pan-x flex-nowrap justify-start md:inline-flex">
             <TabsTrigger value="customer" className="gap-2">
               <Wallet className="h-4 w-4" />
               <span>{t("payments.tabs.customer", "Customer Payments")}</span>
@@ -229,6 +229,9 @@ function CustomerPaymentsTab() {
   const query = useQuery({
     queryKey: qk.paymentRegister.list(dq),
     queryFn: () => listPaymentRegister(dq),
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
+    placeholderData: (previousData) => previousData,
   });
 
   const del = useMutation({
@@ -802,6 +805,9 @@ function VendorPaymentsTab() {
   const query = useQuery({
     queryKey: qk.vendorPayments.list(dq),
     queryFn: () => listVendorPayments(dq),
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
+    placeholderData: (previousData) => previousData,
   });
   useEffect(() => setPage(1), [dq]);
 
@@ -1032,11 +1038,15 @@ function AgencyPaymentsTab() {
   const agenciesQuery = useQuery<InstallationAgencyRow[]>({
     queryKey: qk.installationAgencies.list(),
     queryFn: () => listInstallationAgencies(false),
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
   });
 
   const ledgerQuery = useQuery({
     queryKey: qk.installationLedger.all(),
     queryFn: () => listInstallationLedger(),
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
   });
 
   const agencies = agenciesQuery.data ?? [];

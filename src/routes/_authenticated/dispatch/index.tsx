@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Plus, Truck, MessageSquare } from "lucide-react";
+import { Plus, Truck, MessageSquare, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
@@ -88,10 +88,9 @@ function DispatchPage() {
   const query = useQuery({
     queryKey: qk.dispatch.list(dq, status),
     queryFn: () => listDispatches(dq, status),
-  });
-  const quotesList = useQuery({
-    queryKey: qk.quotes.list(""),
-    queryFn: () => listQuotes(""),
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
+    placeholderData: (previousData) => previousData,
   });
   useEffect(() => setPage(1), [dq, status]);
 
@@ -114,6 +113,46 @@ function DispatchPage() {
 
   const rows = query.data ?? [];
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
+
+  const pageQuoteIds = useMemo(() => {
+    return Array.from(
+      new Set(
+        pageRows
+          .map((r) => r.sales_order?.quote_id || (r as unknown as { quote_id?: string }).quote_id)
+          .filter(Boolean),
+      ),
+    ) as string[];
+  }, [pageRows]);
+
+  const pageCustomerIds = useMemo(() => {
+    return Array.from(new Set(pageRows.map((r) => r.customer_id).filter(Boolean))) as string[];
+  }, [pageRows]);
+
+  const quotesMapQ = useQuery({
+    queryKey: ["quotes-for-dispatch-page", pageQuoteIds, pageCustomerIds],
+    queryFn: async () => {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const [byQuoteId, byCustomer] = await Promise.all([
+        pageQuoteIds.length > 0
+          ? supabase
+              .from("quotes")
+              .select("id, quote_no, total, customer_id")
+              .in("id", pageQuoteIds)
+          : { data: [] },
+        pageCustomerIds.length > 0
+          ? supabase
+              .from("quotes")
+              .select("id, quote_no, total, customer_id")
+              .in("customer_id", pageCustomerIds)
+              .limit(50)
+          : { data: [] },
+      ]);
+      return [...(byQuoteId.data ?? []), ...(byCustomer.data ?? [])];
+    },
+    enabled: pageRows.length > 0,
+    staleTime: 60_000,
+  });
+  const quotesList = quotesMapQ.data ?? [];
 
   return (
     <div className="space-y-6">
@@ -215,102 +254,38 @@ function DispatchPage() {
                 />
               }
             >
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    {!isHidden("no") && (
-                      <TableHead>
-                        {t("dispatch.columns.dispatchNo", "Dispatch / Customer")}
-                      </TableHead>
-                    )}
-                    {!isHidden("customer") && (
-                      <TableHead>{t("common.customer", "Customer")}</TableHead>
-                    )}
-                    {!isHidden("so") && (
-                      <TableHead>{t("dispatch.columns.so", "Sales Order")}</TableHead>
-                    )}
-                    {!isHidden("carrier") && (
-                      <TableHead>{t("dispatch.columns.carrier", "Carrier")}</TableHead>
-                    )}
-                    {!isHidden("tracking") && (
-                      <TableHead>{t("dispatch.columns.tracking", "Tracking")}</TableHead>
-                    )}
-                    {!isHidden("amount") && (
-                      <TableHead className="text-right">
-                        {t("common.amount", "Total Amount")}
-                      </TableHead>
-                    )}
-                    {!isHidden("date") && <TableHead>{t("common.date", "Date")}</TableHead>}
-                    {!isHidden("status") && <TableHead>{t("common.status", "Status")}</TableHead>}
-                    <TableHead className="w-12" />
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {pageRows.map((r) => {
-                    const matchedQuote = (quotesList.data ?? []).find(
-                      (q) =>
-                        (r.notes && r.notes.includes(q.quote_no)) ||
-                        (r.customer_id && q.customer_id === r.customer_id),
-                    );
-                    const totalAmt =
-                      (matchedQuote ? Number(matchedQuote.total) : 0) +
-                      Number(r.carting_charge ?? 0);
-                    return (
-                      <TableRow key={r.id}>
-                        {!isHidden("no") && (
-                          <TableCell className="text-xs">
-                            <div className="flex flex-col min-w-0">
-                              <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
-                                {transliterateName(r.customer?.name, i18n.language) ?? "—"}
-                              </span>
-                              <Link
-                                to="/dispatch/$id"
-                                params={{ id: r.id }}
-                                className="font-mono text-[11px] text-primary hover:underline truncate"
-                              >
-                                {toIndicDigits(r.dispatch_no, i18n.language)}
-                              </Link>
-                            </div>
-                          </TableCell>
-                        )}
-                        {!isHidden("customer") && (
-                          <TableCell className="text-xs font-medium">
-                            {transliterateName(r.customer?.name, i18n.language) ?? "—"}
-                          </TableCell>
-                        )}
-                        {!isHidden("so") && (
-                          <TableCell className="font-mono text-xs">
-                            {r.sales_order?.so_no
-                              ? toIndicDigits(r.sales_order.so_no, i18n.language)
-                              : "—"}
-                          </TableCell>
-                        )}
-                        {!isHidden("carrier") && (
-                          <TableCell>
-                            {r.carrier ? transliterateName(r.carrier, i18n.language) : "—"}
-                          </TableCell>
-                        )}
-                        {!isHidden("tracking") && (
-                          <TableCell>
-                            {r.tracking_no ? toIndicDigits(r.tracking_no, i18n.language) : "—"}
-                          </TableCell>
-                        )}
-                        {!isHidden("amount") && (
-                          <TableCell className="text-right font-mono text-xs font-semibold tabular-nums text-foreground">
-                            {totalAmt > 0 ? toIndicDigits(formatInr(totalAmt), i18n.language) : "—"}
-                          </TableCell>
-                        )}
-                        {!isHidden("date") && (
-                          <TableCell>
-                            {r.dispatch_date ? toIndicDigits(r.dispatch_date, i18n.language) : "—"}
-                          </TableCell>
-                        )}
-                        {!isHidden("status") && (
-                          <TableCell>
-                            <StatusPill status={r.status} />
-                          </TableCell>
-                        )}
-                        <TableCell>
+              {/* Mobile Cards View (< sm) */}
+              <div className="sm:hidden divide-y divide-border/60">
+                {pageRows.map((r) => {
+                  const matchedQuote = quotesList.find(
+                    (q) =>
+                      (r.sales_order?.quote_id && q.id === r.sales_order.quote_id) ||
+                      (r.notes && r.notes.includes(q.quote_no)) ||
+                      (r.customer_id && q.customer_id === r.customer_id),
+                  );
+                  const totalAmt =
+                    (matchedQuote ? Number(matchedQuote.total) : 0) + Number(r.carting_charge ?? 0);
+
+                  return (
+                    <div key={r.id} className="p-3.5 space-y-2.5 bg-card/50">
+                      {/* Top Bar: Dispatch No & Status */}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <Link
+                            to="/dispatch/$id"
+                            params={{ id: r.id }}
+                            className="font-mono text-xs font-bold text-primary hover:underline"
+                          >
+                            {toIndicDigits(r.dispatch_no, i18n.language)}
+                          </Link>
+                          {r.sales_order?.so_no && (
+                            <span className="font-mono text-[10px] text-muted-foreground">
+                              (SO: {toIndicDigits(r.sales_order.so_no, i18n.language)})
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <StatusPill status={r.status} />
                           <RowActions
                             onEdit={() => nav({ to: "/dispatch/$id/edit", params: { id: r.id } })}
                             onDelete={() => setToDelete(r)}
@@ -321,12 +296,197 @@ function DispatchPage() {
                               </DropdownMenuItem>
                             }
                           />
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+                        </div>
+                      </div>
+
+                      {/* Customer & Carrier */}
+                      <div>
+                        <div className="text-xs font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5 flex-wrap">
+                          <span>
+                            {transliterateName(r.customer?.name, i18n.language) ??
+                              "Customer not set"}
+                          </span>
+                        </div>
+                        {(r.carrier || r.vehicle_no || r.tracking_no) && (
+                          <div className="text-muted-foreground flex items-center gap-1.5 text-[11px] mt-0.5 flex-wrap">
+                            {r.carrier && (
+                              <span>{transliterateName(r.carrier, i18n.language)}</span>
+                            )}
+                            {r.vehicle_no && (
+                              <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">
+                                · {r.vehicle_no}
+                              </span>
+                            )}
+                            {r.tracking_no && (
+                              <span className="font-mono text-slate-500">
+                                (Track: {toIndicDigits(r.tracking_no, i18n.language)})
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Footer: Date, Amount & View */}
+                      <div className="flex items-center justify-between pt-1 border-t border-border/50 text-xs">
+                        <div className="flex flex-col">
+                          <span className="text-[10px] text-muted-foreground">
+                            {r.dispatch_date
+                              ? toIndicDigits(r.dispatch_date, i18n.language)
+                              : "Dispatch"}
+                          </span>
+                          {totalAmt > 0 && (
+                            <span className="font-bold text-sm text-primary">
+                              {toIndicDigits(formatInr(totalAmt), i18n.language)}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => setTrackingTarget(r)}
+                            className="h-6 px-2 text-[11px] text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+                          >
+                            <MessageSquare className="h-3 w-3 mr-1 text-emerald-600" />
+                            Track
+                          </Button>
+                          <Link
+                            to="/dispatch/$id"
+                            params={{ id: r.id }}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                          >
+                            <span>View</span>
+                            <ExternalLink className="h-3 w-3" />
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop Table View (>= sm) */}
+              <div className="hidden sm:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      {!isHidden("no") && (
+                        <TableHead>
+                          {t("dispatch.columns.dispatchNo", "Dispatch / Customer")}
+                        </TableHead>
+                      )}
+                      {!isHidden("customer") && (
+                        <TableHead>{t("common.customer", "Customer")}</TableHead>
+                      )}
+                      {!isHidden("so") && (
+                        <TableHead>{t("dispatch.columns.so", "Sales Order")}</TableHead>
+                      )}
+                      {!isHidden("carrier") && (
+                        <TableHead>{t("dispatch.columns.carrier", "Carrier")}</TableHead>
+                      )}
+                      {!isHidden("tracking") && (
+                        <TableHead>{t("dispatch.columns.tracking", "Tracking")}</TableHead>
+                      )}
+                      {!isHidden("amount") && (
+                        <TableHead className="text-right">
+                          {t("common.amount", "Total Amount")}
+                        </TableHead>
+                      )}
+                      {!isHidden("date") && <TableHead>{t("common.date", "Date")}</TableHead>}
+                      {!isHidden("status") && <TableHead>{t("common.status", "Status")}</TableHead>}
+                      <TableHead className="w-12" />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {pageRows.map((r) => {
+                      const matchedQuote = quotesList.find(
+                        (q) =>
+                          (r.sales_order?.quote_id && q.id === r.sales_order.quote_id) ||
+                          (r.notes && r.notes.includes(q.quote_no)) ||
+                          (r.customer_id && q.customer_id === r.customer_id),
+                      );
+                      const totalAmt =
+                        (matchedQuote ? Number(matchedQuote.total) : 0) +
+                        Number(r.carting_charge ?? 0);
+                      return (
+                        <TableRow key={r.id}>
+                          {!isHidden("no") && (
+                            <TableCell className="text-xs">
+                              <div className="flex flex-col min-w-0">
+                                <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
+                                  {transliterateName(r.customer?.name, i18n.language) ?? "—"}
+                                </span>
+                                <Link
+                                  to="/dispatch/$id"
+                                  params={{ id: r.id }}
+                                  className="font-mono text-[11px] text-primary hover:underline truncate"
+                                >
+                                  {toIndicDigits(r.dispatch_no, i18n.language)}
+                                </Link>
+                              </div>
+                            </TableCell>
+                          )}
+                          {!isHidden("customer") && (
+                            <TableCell className="text-xs font-medium">
+                              {transliterateName(r.customer?.name, i18n.language) ?? "—"}
+                            </TableCell>
+                          )}
+                          {!isHidden("so") && (
+                            <TableCell className="font-mono text-xs">
+                              {r.sales_order?.so_no
+                                ? toIndicDigits(r.sales_order.so_no, i18n.language)
+                                : "—"}
+                            </TableCell>
+                          )}
+                          {!isHidden("carrier") && (
+                            <TableCell>
+                              {r.carrier ? transliterateName(r.carrier, i18n.language) : "—"}
+                            </TableCell>
+                          )}
+                          {!isHidden("tracking") && (
+                            <TableCell>
+                              {r.tracking_no ? toIndicDigits(r.tracking_no, i18n.language) : "—"}
+                            </TableCell>
+                          )}
+                          {!isHidden("amount") && (
+                            <TableCell className="text-right font-mono text-xs font-semibold tabular-nums text-foreground">
+                              {totalAmt > 0
+                                ? toIndicDigits(formatInr(totalAmt), i18n.language)
+                                : "—"}
+                            </TableCell>
+                          )}
+                          {!isHidden("date") && (
+                            <TableCell>
+                              {r.dispatch_date
+                                ? toIndicDigits(r.dispatch_date, i18n.language)
+                                : "—"}
+                            </TableCell>
+                          )}
+                          {!isHidden("status") && (
+                            <TableCell>
+                              <StatusPill status={r.status} />
+                            </TableCell>
+                          )}
+                          <TableCell>
+                            <RowActions
+                              onEdit={() => nav({ to: "/dispatch/$id/edit", params: { id: r.id } })}
+                              onDelete={() => setToDelete(r)}
+                              extra={
+                                <DropdownMenuItem onSelect={() => setTrackingTarget(r)}>
+                                  <MessageSquare className="mr-2 h-4 w-4 text-emerald-600 fill-current" />
+                                  Send WhatsApp Tracking
+                                </DropdownMenuItem>
+                              }
+                            />
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
             </DataTableShell>
           )}
 
