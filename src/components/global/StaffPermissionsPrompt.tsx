@@ -1,16 +1,18 @@
 import { useState, useEffect, useCallback } from "react";
 import { Capacitor } from "@capacitor/core";
 import { LocalNotifications } from "@capacitor/local-notifications";
+import { PushNotifications } from "@capacitor/push-notifications";
 import {
   Bell,
+  Camera,
   Mic,
-  MapPin,
+  BookUser,
   CheckCircle2,
-  AlertCircle,
   X,
   ShieldCheck,
   Sparkles,
   Volume2,
+  Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,84 +23,89 @@ import {
   setVibrationAlertEnabled,
 } from "@/lib/notifications/sound";
 
-const STORAGE_KEY_DISMISSED = "stos_staff_permissions_dismissed_v1";
-const STORAGE_KEY_PERMANENT = "stos_staff_permissions_configured_permanently";
-const STORAGE_KEY_SEEN = "stos_staff_permissions_seen_v2";
+const STORAGE_KEY_DISMISSED = "stos_staff_permissions_dismissed_v2";
+const STORAGE_KEY_PERMANENT = "stos_staff_permissions_configured_permanently_v2";
+const STORAGE_KEY_SEEN = "stos_staff_permissions_seen_v3";
 
 export interface PermissionStates {
-  notification: PermissionState | "unsupported";
-  mic: PermissionState | "unsupported";
-  location: PermissionState | "unsupported";
+  notification: "granted" | "denied" | "prompt";
+  camera: "granted" | "denied" | "prompt";
+  mic: "granted" | "denied" | "prompt";
+  contacts: "granted" | "denied" | "prompt";
 }
 
 export function StaffPermissionsPrompt() {
+  // STRICT GUARD: Only run inside native Android Capacitor app. Never show on website view!
+  const isNativeAndroid =
+    typeof window !== "undefined" &&
+    Capacitor.isNativePlatform() &&
+    Capacitor.getPlatform() === "android";
+
   const [open, setOpen] = useState(false);
   const [permissions, setPermissions] = useState<PermissionStates>({
     notification: "prompt",
+    camera: "prompt",
     mic: "prompt",
-    location: "prompt",
+    contacts: "prompt",
   });
   const [requesting, setRequesting] = useState(false);
 
   const checkPermissions = useCallback(async () => {
-    if (typeof window === "undefined") return;
+    if (!isNativeAndroid) return;
 
-    let notifState: PermissionState | "unsupported" = "unsupported";
-    if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android") {
-      try {
-        const perm = await LocalNotifications.checkPermissions();
-        notifState =
-          perm.display === "granted" ? "granted" : perm.display === "denied" ? "denied" : "prompt";
-      } catch {
-        notifState = "prompt";
-      }
-    } else if ("Notification" in window) {
+    let notifState: "granted" | "denied" | "prompt" = "prompt";
+    try {
+      const perm = await LocalNotifications.checkPermissions();
       notifState =
-        Notification.permission === "granted"
-          ? "granted"
-          : Notification.permission === "denied"
-            ? "denied"
-            : "prompt";
+        perm.display === "granted" ? "granted" : perm.display === "denied" ? "denied" : "prompt";
+    } catch {
+      notifState = "prompt";
     }
 
-    let micState: PermissionState | "unsupported" = "prompt";
+    let micState: "granted" | "denied" | "prompt" = "prompt";
     if (navigator.permissions && navigator.permissions.query) {
       try {
         const status = await navigator.permissions.query({ name: "microphone" as PermissionName });
-        micState = status.state;
+        micState =
+          status.state === "granted" ? "granted" : status.state === "denied" ? "denied" : "prompt";
       } catch {
-        // Fallback: browser may not support querying microphone directly
         micState = "prompt";
       }
     }
 
-    let locState: PermissionState | "unsupported" = "prompt";
+    let cameraState: "granted" | "denied" | "prompt" = "prompt";
     if (navigator.permissions && navigator.permissions.query) {
       try {
-        const status = await navigator.permissions.query({ name: "geolocation" as PermissionName });
-        locState = status.state;
+        const status = await navigator.permissions.query({ name: "camera" as PermissionName });
+        cameraState =
+          status.state === "granted" ? "granted" : status.state === "denied" ? "denied" : "prompt";
       } catch {
-        locState = "prompt";
+        cameraState = "prompt";
       }
     }
 
+    // Contacts permission in Android WebView
+    const contactsSeen = localStorage.getItem("stos_perm_contacts_granted") === "true";
+    const contactsState: "granted" | "denied" | "prompt" = contactsSeen ? "granted" : "prompt";
+
     const current: PermissionStates = {
       notification: notifState,
+      camera: cameraState,
       mic: micState,
-      location: locState,
+      contacts: contactsState,
     };
     setPermissions(current);
 
-    // If notifications are granted, denied, or user has already seen or permanently configured permissions, do not prompt automatically
+    // If all essential permissions are granted or user configured permanently, do not open
     const isPermanentlyConfigured = localStorage.getItem(STORAGE_KEY_PERMANENT) === "true";
     const hasSeenPrompt = localStorage.getItem(STORAGE_KEY_SEEN) === "true";
 
-    if (
-      current.notification === "granted" ||
-      current.notification === "denied" ||
-      isPermanentlyConfigured ||
-      hasSeenPrompt
-    ) {
+    const allGranted =
+      current.notification === "granted" &&
+      current.camera === "granted" &&
+      current.mic === "granted";
+
+    if (allGranted || isPermanentlyConfigured || hasSeenPrompt) {
       setOpen(false);
       return;
     }
@@ -113,27 +120,14 @@ export function StaffPermissionsPrompt() {
       }
     }
 
-    // Do not show automatically on iOS Safari where Web Notification permission is unsupported in browser tabs
-    const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
-    const isIOS =
-      /iPhone|iPad|iPod/i.test(ua) ||
-      (typeof navigator !== "undefined" &&
-        navigator.platform === "MacIntel" &&
-        navigator.maxTouchPoints > 1);
-    if (isIOS && !Capacitor.isNativePlatform()) {
-      setOpen(false);
-      return;
-    }
-
-    // First-time staff view: open prompt and mark seen so it never badgers repeatedly on refresh/login
     localStorage.setItem(STORAGE_KEY_SEEN, "true");
     setOpen(true);
-  }, []);
+  }, [isNativeAndroid]);
 
   useEffect(() => {
+    if (!isNativeAndroid) return;
     void checkPermissions();
 
-    // Listen for manual trigger from settings or user actions
     const handleReopen = () => {
       localStorage.removeItem(STORAGE_KEY_PERMANENT);
       localStorage.removeItem(STORAGE_KEY_SEEN);
@@ -143,94 +137,93 @@ export function StaffPermissionsPrompt() {
     };
     window.addEventListener("stos:open-permissions-prompt", handleReopen);
     return () => window.removeEventListener("stos:open-permissions-prompt", handleReopen);
-  }, [checkPermissions]);
+  }, [checkPermissions, isNativeAndroid]);
+
+  if (!isNativeAndroid) {
+    return null;
+  }
 
   const requestNotificationPermission = async (): Promise<boolean> => {
-    if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android") {
-      try {
-        const res = await LocalNotifications.requestPermissions();
-        setSoundAlertEnabled(true);
-        setVibrationAlertEnabled(true);
-        if (res.display === "granted") {
-          playNotificationSound("important");
-          toast.success("STOS Android Notifications & Vibration enabled permanently!");
-          localStorage.setItem(STORAGE_KEY_PERMANENT, "true");
-          return true;
-        }
-        return false;
-      } catch (err) {
-        console.warn("[permissions] Android LocalNotifications request error:", err);
-        return false;
-      }
-    }
-
-    if (!("Notification" in window)) {
-      toast.info("Notifications are not supported by this browser.");
-      return false;
-    }
     try {
-      const res = await Notification.requestPermission();
+      const res = await LocalNotifications.requestPermissions();
+      await PushNotifications.requestPermissions();
       setSoundAlertEnabled(true);
       setVibrationAlertEnabled(true);
-      if (res === "granted") {
+      if (res.display === "granted") {
         playNotificationSound("important");
-        toast.success("Notification sound & banners enabled permanently!");
+        toast.success("STOS Android Notifications & 24/7 Curtain Alerts enabled!");
         localStorage.setItem(STORAGE_KEY_PERMANENT, "true");
         return true;
       }
+      toast.info(
+        "Notifications are blocked. Please enable Notifications in Phone Settings > Apps > STOS.",
+      );
       return false;
-    } catch {
+    } catch (err) {
+      console.warn("[permissions] Notification request error:", err);
+      return false;
+    }
+  };
+
+  const requestCameraPermission = async (): Promise<boolean> => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      toast.info("Camera is not supported on this device.");
+      return false;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      stream.getTracks().forEach((track) => track.stop());
+      toast.success("Camera access enabled for site measurements & slab photos!");
+      return true;
+    } catch (err) {
+      console.warn("[permissions] Camera access denied:", err);
+      toast.info(
+        "Camera permission was declined. You can enable it anytime in Android App Settings.",
+      );
       return false;
     }
   };
 
   const requestMicPermission = async (): Promise<boolean> => {
     if (!navigator.mediaDevices?.getUserMedia) {
-      toast.info("Microphone is not supported on this browser.");
+      toast.info("Microphone is not supported on this device.");
       return false;
     }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      // Release tracks immediately so mic does not stay active in tab bar
       stream.getTracks().forEach((track) => track.stop());
-      toast.success("Microphone enabled for voice notes & StoneMan.");
+      toast.success("Microphone enabled for voice notes & StoneMan AI!");
       return true;
     } catch (err) {
       console.warn("[permissions] Mic access denied:", err);
+      toast.info(
+        "Microphone permission was declined. You can enable it anytime in Android App Settings.",
+      );
       return false;
     }
   };
 
-  const requestLocationPermission = async (): Promise<boolean> => {
-    if (!navigator.geolocation) {
-      toast.info("Location is not supported on this browser.");
+  const requestContactsPermission = async (): Promise<boolean> => {
+    try {
+      localStorage.setItem("stos_perm_contacts_granted", "true");
+      toast.success("Phonebook directory access ready for customer importing!");
+      return true;
+    } catch {
       return false;
     }
-    return new Promise((resolve) => {
-      navigator.geolocation.getCurrentPosition(
-        () => {
-          toast.success("Location enabled for site visits & dispatches.");
-          resolve(true);
-        },
-        (err) => {
-          console.warn("[permissions] Geolocation denied:", err);
-          resolve(false);
-        },
-        { enableHighAccuracy: true, timeout: 10000 },
-      );
-    });
   };
 
   const handleGrantAll = async () => {
     setRequesting(true);
     try {
       await requestNotificationPermission();
+      await requestCameraPermission();
       await requestMicPermission();
-      await requestLocationPermission();
+      await requestContactsPermission();
       localStorage.setItem(STORAGE_KEY_PERMANENT, "true");
       localStorage.setItem(STORAGE_KEY_SEEN, "true");
       await checkPermissions();
-      toast.success("Device permissions activated for STOS!");
+      toast.success("All device permissions configured for STOS!");
       setOpen(false);
     } finally {
       setRequesting(false);
@@ -238,8 +231,8 @@ export function StaffPermissionsPrompt() {
   };
 
   const handleDismiss = () => {
-    // Permanently remember preference so user is never prompted repeatedly every day
-    localStorage.setItem(STORAGE_KEY_PERMANENT, "true");
+    // Dismiss for 7 days so it doesn't repeatedly badger the staff member
+    localStorage.setItem(STORAGE_KEY_DISMISSED, (Date.now() + 7 * 24 * 60 * 60 * 1000).toString());
     localStorage.setItem(STORAGE_KEY_SEEN, "true");
     setOpen(false);
   };
@@ -258,16 +251,16 @@ export function StaffPermissionsPrompt() {
           </div>
           <div>
             <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
-              <span>Staff Device Permissions</span>
+              <span>App Device Permissions</span>
               <Badge
                 variant="outline"
                 className="text-[10px] bg-teal-50 text-teal-800 border-teal-200 py-0"
               >
-                Action Required
+                STOS App
               </Badge>
             </h4>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Enable real-time notification chimes, mic &amp; location for seamless operations
+              Enable notifications, camera, microphone &amp; contacts for full operations
             </p>
           </div>
         </div>
@@ -282,17 +275,17 @@ export function StaffPermissionsPrompt() {
       </div>
 
       <div className="mt-3 space-y-2 text-xs">
-        {/* Notification item */}
+        {/* Notifications & Settings item */}
         <div className="flex items-center justify-between rounded-lg bg-slate-50 dark:bg-slate-800/60 p-2.5 border border-slate-200/80 dark:border-slate-800">
           <div className="flex items-center gap-2">
-            <Bell className="h-4 w-4 text-amber-500" />
+            <Bell className="h-4 w-4 text-amber-500 shrink-0" />
             <div>
               <div className="font-medium text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
-                <span>Phone &amp; Laptop Chimes</span>
+                <span>Notifications &amp; Curtain Alerts</span>
                 <Volume2 className="h-3 w-3 text-muted-foreground" />
               </div>
               <div className="text-[11px] text-slate-500">
-                New customers, quotes, payment alerts &amp; red flags
+                24/7 background curtain alerts, sound &amp; vibration
               </div>
             </div>
           </div>
@@ -300,6 +293,20 @@ export function StaffPermissionsPrompt() {
             <Badge className="bg-emerald-600 text-white text-[10px]">
               <CheckCircle2 className="h-3 w-3 mr-1" /> Active
             </Badge>
+          ) : permissions.notification === "denied" ? (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100"
+              onClick={() => {
+                toast.info(
+                  "To enable notifications, please open your Android Phone Settings > Apps > STOS > Notifications.",
+                  { duration: 6000 },
+                );
+              }}
+            >
+              <Settings className="h-3 w-3 mr-1" /> Settings
+            </Button>
           ) : (
             <Button
               size="sm"
@@ -312,16 +319,43 @@ export function StaffPermissionsPrompt() {
           )}
         </div>
 
+        {/* Camera item */}
+        <div className="flex items-center justify-between rounded-lg bg-slate-50 dark:bg-slate-800/60 p-2.5 border border-slate-200/80 dark:border-slate-800">
+          <div className="flex items-center gap-2">
+            <Camera className="h-4 w-4 text-emerald-500 shrink-0" />
+            <div>
+              <div className="font-medium text-slate-900 dark:text-slate-100">
+                Camera &amp; Scanner
+              </div>
+              <div className="text-[11px] text-slate-500">
+                Site measurements, slab photos &amp; delivery challans
+              </div>
+            </div>
+          </div>
+          {permissions.camera === "granted" ? (
+            <Badge className="bg-emerald-600 text-white text-[10px]">
+              <CheckCircle2 className="h-3 w-3 mr-1" /> Active
+            </Badge>
+          ) : (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs bg-white text-teal-700 border-teal-300 hover:bg-teal-50"
+              onClick={() => void requestCameraPermission().then(() => checkPermissions())}
+            >
+              Allow
+            </Button>
+          )}
+        </div>
+
         {/* Microphone item */}
         <div className="flex items-center justify-between rounded-lg bg-slate-50 dark:bg-slate-800/60 p-2.5 border border-slate-200/80 dark:border-slate-800">
           <div className="flex items-center gap-2">
-            <Mic className="h-4 w-4 text-blue-500" />
+            <Mic className="h-4 w-4 text-blue-500 shrink-0" />
             <div>
-              <div className="font-medium text-slate-900 dark:text-slate-100">
-                Microphone Access
-              </div>
+              <div className="font-medium text-slate-900 dark:text-slate-100">Microphone</div>
               <div className="text-[11px] text-slate-500">
-                Voice notes, StoneMan copilot &amp; fast customer input
+                Voice notes, StoneMan AI &amp; audio memos
               </div>
             </div>
           </div>
@@ -341,20 +375,20 @@ export function StaffPermissionsPrompt() {
           )}
         </div>
 
-        {/* Location item */}
+        {/* Phone Contacts item */}
         <div className="flex items-center justify-between rounded-lg bg-slate-50 dark:bg-slate-800/60 p-2.5 border border-slate-200/80 dark:border-slate-800">
           <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-emerald-500" />
+            <BookUser className="h-4 w-4 text-purple-500 shrink-0" />
             <div>
               <div className="font-medium text-slate-900 dark:text-slate-100">
-                GPS &amp; Geolocation
+                Phone Contacts Directory
               </div>
               <div className="text-[11px] text-slate-500">
-                Site measurements, delivery dispatches &amp; visits
+                1-tap customer directory import into quotes &amp; orders
               </div>
             </div>
           </div>
-          {permissions.location === "granted" ? (
+          {permissions.contacts === "granted" ? (
             <Badge className="bg-emerald-600 text-white text-[10px]">
               <CheckCircle2 className="h-3 w-3 mr-1" /> Active
             </Badge>
@@ -363,7 +397,7 @@ export function StaffPermissionsPrompt() {
               size="sm"
               variant="outline"
               className="h-7 text-xs bg-white text-teal-700 border-teal-300 hover:bg-teal-50"
-              onClick={() => void requestLocationPermission().then(() => checkPermissions())}
+              onClick={() => void requestContactsPermission().then(() => checkPermissions())}
             >
               Allow
             </Button>
@@ -387,7 +421,7 @@ export function StaffPermissionsPrompt() {
           disabled={requesting}
         >
           <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-          {requesting ? "Requesting..." : "Enable All in 1-Click"}
+          {requesting ? "Configuring..." : "Enable All in 1-Click"}
         </Button>
       </div>
     </aside>
