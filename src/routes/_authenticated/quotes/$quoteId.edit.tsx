@@ -13,10 +13,17 @@ import {
   Image as ImageIcon,
   X as XIcon,
   Truck,
+  Layers,
 } from "lucide-react";
 import { ReassignCustomerDialog } from "@/components/quotes/ReassignCustomerDialog";
 import { QuoteTermsManager } from "@/components/quotes/QuoteTermsManager";
 import { QuoteWallDetailsEditor } from "@/components/quotes/QuoteWallDetailsEditor";
+import {
+  categorizeQuoteItem,
+  sortQuoteItemsCategorically,
+  QUOTE_ITEM_CATEGORY_LABELS,
+  QUOTE_ITEM_CATEGORY_BADGE_CLASSES,
+} from "@/lib/quotes/quoteCategories";
 import {
   type DealScope,
   detectClientProvidedSlabFromItems,
@@ -677,45 +684,26 @@ function LineItemsEditor({
         fulfilment: defaultFulfilment,
       });
 
-      // 2. Determine target index:
+      // 2. Order items:
       // If targetIndex is specified (e.g. from "+ Insert line below"), use it.
-      // Otherwise, find the last stone product in rows.
-      // If stone products exist (e.g. products 1 and 2 at index 0 and 1), place right after them at index 2 (position 3)!
+      // Otherwise, sort categorically: Products -> Installation Labour -> Adhesives -> Sealers -> Sealer Labour -> Carting
       let insertAt = targetIndex;
-      if (insertAt === undefined) {
-        let lastStoneIndex = -1;
-        for (let idx = 0; idx < rows.length; idx++) {
-          const r = rows[idx];
-          const d = (r.description || "").toLowerCase();
-          const u = (r.unit || "").toLowerCase();
-          const isNonStone =
-            d.includes("carting") ||
-            d.includes("transport") ||
-            d.includes("freight") ||
-            d.includes("labour") ||
-            d.includes("labor") ||
-            d.includes("installation") ||
-            d.includes("adhesive") ||
-            d.includes("sealer") ||
-            u === "trip" ||
-            u === "bag" ||
-            u === "ltr";
-          if (!isNonStone) {
-            lastStoneIndex = idx;
-          }
-        }
-        insertAt = lastStoneIndex >= 0 ? lastStoneIndex + 1 : rows.length;
+      if (insertAt !== undefined) {
+        const curIds = rows.map((r) => r.id).filter((id) => id !== newItem.id);
+        curIds.splice(insertAt, 0, newItem.id);
+        await reorderQuoteItems(curIds);
+      } else {
+        const freshItems = await getQuoteItems(quoteId);
+        const sorted = sortQuoteItemsCategorically(freshItems);
+        await reorderQuoteItems(sorted.map((it) => it.id));
+        const newPos = sorted.findIndex((it) => it.id === newItem.id);
+        insertAt = newPos >= 0 ? newPos : 0;
       }
-
-      // 3. Reorder quote items so new item is placed at target index
-      const curIds = rows.map((r) => r.id).filter((id) => id !== newItem.id);
-      curIds.splice(insertAt, 0, newItem.id);
-      await reorderQuoteItems(curIds);
       return { newItem, insertAt };
     },
     onSuccess: ({ insertAt }) => {
       invalidate();
-      toast.success(`Stone cladding product placed at position #${insertAt + 1}`);
+      toast.success(`Line item placed into category group at position #${insertAt + 1}`);
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
@@ -886,7 +874,23 @@ function LineItemsEditor({
             </Badge>
           )}
         </CardTitle>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={async () => {
+              const fresh = await getQuoteItems(quoteId);
+              const sorted = sortQuoteItemsCategorically(fresh);
+              await reorderQuoteItems(sorted.map((it) => it.id));
+              invalidate();
+              toast.success("Organized into Products → Labour → Adhesives → Sealers → Carting!");
+            }}
+            className="h-8 border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-xs font-medium cursor-pointer shadow-2xs"
+            title="Club items: Products → Installation Labour → Adhesives → Sealers → Sealer Labour → Carting"
+          >
+            <Layers className="mr-1.5 h-3.5 w-3.5 text-slate-600" />
+            Auto-Organize Categories
+          </Button>
           <Button
             size="sm"
             variant="outline"
@@ -950,11 +954,23 @@ function LineItemsEditor({
                 <div key={r.id} className="rounded-md border border-border p-3">
                   <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-12">
                     <div className="col-span-2 md:col-span-4">
-                      <div className="mb-1 flex items-center justify-between">
-                        <label className="text-xs text-muted-foreground">
-                          Description &amp; Photo{" "}
-                          <span className="text-destructive font-bold">*</span>
-                        </label>
+                      <div className="mb-1 flex items-center justify-between gap-1 flex-wrap">
+                        <div className="flex items-center gap-1.5">
+                          {(() => {
+                            const cat = categorizeQuoteItem(r);
+                            return (
+                              <Badge
+                                variant="outline"
+                                className={cn(
+                                  "text-[10px] font-semibold px-1.5 py-0 border",
+                                  QUOTE_ITEM_CATEGORY_BADGE_CLASSES[cat],
+                                )}
+                              >
+                                #{i + 1} · {QUOTE_ITEM_CATEGORY_LABELS[cat]}
+                              </Badge>
+                            );
+                          })()}
+                        </div>
                         {lineImg && (
                           <span className="flex items-center gap-1 text-[10px] font-medium text-primary">
                             <ImageIcon className="h-3 w-3" /> Photo attached

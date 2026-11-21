@@ -11,6 +11,12 @@ import {
   Loader2,
   ChevronDown,
   ChevronUp,
+  RefreshCw,
+  Sparkles,
+  PackageCheck,
+  ShieldCheck,
+  Wrench,
+  Hammer,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,10 +49,26 @@ import {
   type EstimateProduct,
   type EstimateWorksheet,
 } from "@/lib/quotes/estimateSchema";
-import { addQuoteItem, reorderQuoteItems, updateQuote, type QuoteItemRow } from "@/lib/quotes/api";
+import {
+  addQuoteItem,
+  getQuoteItems,
+  deleteQuoteItem,
+  updateQuoteItem,
+  reorderQuoteItems,
+  updateQuote,
+  type QuoteItemRow,
+} from "@/lib/quotes/api";
+import {
+  sortQuoteItemsCategorically,
+  calculateConsumableUpdates,
+  categorizeQuoteItem,
+  QUOTE_ITEM_CATEGORY_LABELS,
+  QUOTE_ITEM_CATEGORY_BADGE_CLASSES,
+} from "@/lib/quotes/quoteCategories";
 import { CatalogProductSelect } from "@/components/quotes/CatalogProductSelect";
 import { type CatalogItem } from "@/lib/quotes/catalog";
 import { invalidateQuote } from "@/lib/query-invalidation";
+import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { formatInr } from "@/lib/format";
 import { toast } from "sonner";
@@ -129,8 +151,31 @@ export function QuoteWallDetailsEditor({
 
   // Total sqft across all walls
   const totalArea = useMemo(() => {
-    return walls.reduce((acc, w) => acc + (Number(w.sqft) || 0), 0);
+    return Math.round(walls.reduce((acc, w) => acc + (Number(w.sqft) || 0), 0) * 100) / 100;
   }, [walls]);
+
+  // Live calculation of consumable and installation updates based on current walls
+  const liveConsumables = useMemo(() => {
+    return calculateConsumableUpdates(walls, products, existingItems, worksheet);
+  }, [walls, products, existingItems, worksheet]);
+
+  // Check which consumables exist in the current quote items
+  const hasLabourItem = useMemo(
+    () => existingItems.some((it) => categorizeQuoteItem(it) === "installation_labour"),
+    [existingItems],
+  );
+  const hasAdhesiveItem = useMemo(
+    () => existingItems.some((it) => categorizeQuoteItem(it) === "adhesive"),
+    [existingItems],
+  );
+  const hasSealerItem = useMemo(
+    () => existingItems.some((it) => categorizeQuoteItem(it) === "sealer"),
+    [existingItems],
+  );
+  const hasSealerLabourItem = useMemo(
+    () => existingItems.some((it) => categorizeQuoteItem(it) === "sealer_labour"),
+    [existingItems],
+  );
 
   // Form state for adding a new wall
   const [newWallName, setNewWallName] = useState("");
@@ -171,6 +216,12 @@ export function QuoteWallDetailsEditor({
     setProductRate("");
     setWastagePct("5");
     setAddWallOpen(true);
+  };
+
+  // Helper to sync and invalidate
+  const invalidateAll = () => {
+    invalidateQuote(qc, quoteId);
+    qc.invalidateQueries({ queryKey: qk.quotes.items(quoteId) });
   };
 
   // Add Wall Mutation
@@ -240,86 +291,101 @@ export function QuoteWallDetailsEditor({
         insertedLineItemId = newItem.id;
       }
 
-      // Save updated worksheet to quotes.wall_estimate
-      const newTotalWallSqft = updatedWalls.reduce((sum, w) => sum + (w.sqft || 0), 0);
-      const updatedWorksheet: EstimateWorksheet = {
-        ...worksheet,
-        unit: newWallUnit,
-        walls: updatedWalls,
-        products: updatedProducts,
-        totalWallSqft: newTotalWallSqft,
-      };
+      // Fetch fresh items including the newly inserted item
+      const currentItems = await getQuoteItems(quoteId);
 
-      await updateQuote(quoteId, {
-        wall_estimate: updatedWorksheet as unknown as Record<string, unknown>,
-      });
+      // Recalculate all consumables and installation quantities (labour, chemicals, PU, sealers)
+      const consumableUpdates = calculateConsumableUpdates(
+        updatedWalls,
+        updatedProducts,
+        currentItems,
+        worksheet,
+      );
 
-      // Position the new line item right under existing stone cladding products (at position 3)
-      if (insertedLineItemId) {
-        // Find index of last stone cladding product in existingItems
-        let lastStoneIndex = -1;
-        for (let idx = 0; idx < existingItems.length; idx++) {
-          const item = existingItems[idx];
-          const d = (item.description || "").toLowerCase();
-          const u = (item.unit || "").toLowerCase();
-          const isNonStone =
-            d.includes("carting") ||
-            d.includes("transport") ||
-            d.includes("freight") ||
-            d.includes("labour") ||
-            d.includes("labor") ||
-            d.includes("installation") ||
-            d.includes("adhesive") ||
-            d.includes("sealer") ||
-            u === "trip" ||
-            u === "bag" ||
-            u === "ltr";
-          if (!isNonStone) {
-            lastStoneIndex = idx;
-          }
+      // Apply patches to existing quote items (e.g. increase labour sqft, adhesive bags, PU buckets, sealers)
+      for (const patch of consumableUpdates.itemPatches) {
+        if (patch.id !== insertedLineItemId) {
+          await updateQuoteItem(patch.id, { quantity: patch.newQuantity });
         }
-
-        // Target index is right after the last stone product (e.g. index 2 for 2 stone products -> position 3)
-        const targetIndex = lastStoneIndex >= 0 ? lastStoneIndex + 1 : existingItems.length;
-        const curIds = existingItems.map((r) => r.id).filter((id) => id !== insertedLineItemId);
-        curIds.splice(targetIndex, 0, insertedLineItemId);
-        await reorderQuoteItems(curIds);
       }
 
-      return { wallName: newWall.name, hasProduct: Boolean(insertedLineItemId) };
+      // Save updated worksheet to quotes.wall_estimate
+      await updateQuote(quoteId, {
+        wall_estimate: consumableUpdates.updatedWorksheet as unknown as Record<string, unknown>,
+      });
+
+      // Refetch items to get updated quantities and sort categorically
+      const finalItems = await getQuoteItems(quoteId);
+      const sortedItems = sortQuoteItemsCategorically(finalItems);
+      await reorderQuoteItems(sortedItems.map((it) => it.id));
+
+      return {
+        wallName: newWall.name,
+        hasProduct: Boolean(insertedLineItemId),
+        newLabour: consumableUpdates.summary.labourSqft,
+        newBags: consumableUpdates.summary.cementAdhesiveBags,
+        newBottles: consumableUpdates.summary.sealerBottles,
+        patchesApplied: consumableUpdates.itemPatches.length,
+      };
     },
-    onSuccess: ({ wallName, hasProduct }) => {
-      invalidateQuote(qc, quoteId);
-      qc.invalidateQueries({ queryKey: ["quotes", "items", quoteId] });
+    onSuccess: ({ wallName, hasProduct, newLabour, newBags, patchesApplied }) => {
+      invalidateAll();
       setAddWallOpen(false);
       if (hasProduct) {
-        toast.success(`${wallName} added and stone cladding product placed at position #3`);
+        toast.success(
+          `${wallName} added! Stone product placed at top, and updated labour (${newLabour} sq.ft) & adhesives (${newBags} bags).`,
+        );
       } else {
-        toast.success(`${wallName} added to quotation details`);
+        toast.success(
+          `${wallName} added! Recalculated labour (${newLabour} sq.ft) & adhesives (${newBags} bags).`,
+        );
       }
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
-  // Edit Wall Mutation
+  // Edit Wall Mutation (updates wall dimensions, linked products, and recalculates consumables)
   const editWallMut = useMutation({
     mutationFn: async (updatedWall: EstimateWall) => {
       const updatedWalls = walls.map((w) => (w.id === updatedWall.id ? updatedWall : w));
-      const newTotalWallSqft = updatedWalls.reduce((sum, w) => sum + (w.sqft || 0), 0);
-      const updatedWorksheet: EstimateWorksheet = {
-        ...worksheet,
-        walls: updatedWalls,
-        totalWallSqft: newTotalWallSqft,
-      };
+      const currentItems = await getQuoteItems(quoteId);
 
+      const consumableUpdates = calculateConsumableUpdates(
+        updatedWalls,
+        products,
+        currentItems,
+        worksheet,
+      );
+
+      // Apply patches (e.g. decreasing or increasing product qty, labour, adhesive bags, PU buckets, sealers)
+      for (const patch of consumableUpdates.itemPatches) {
+        await updateQuoteItem(patch.id, { quantity: patch.newQuantity });
+      }
+
+      // Save updated worksheet
       await updateQuote(quoteId, {
-        wall_estimate: updatedWorksheet as unknown as Record<string, unknown>,
+        wall_estimate: consumableUpdates.updatedWorksheet as unknown as Record<string, unknown>,
       });
+
+      // Re-sort categorically
+      const finalItems = await getQuoteItems(quoteId);
+      const sorted = sortQuoteItemsCategorically(finalItems);
+      await reorderQuoteItems(sorted.map((it) => it.id));
+
+      return {
+        wallName: updatedWall.name,
+        totalSqft: consumableUpdates.totalWallSqft,
+        newBags: consumableUpdates.summary.cementAdhesiveBags,
+        newBottles: consumableUpdates.summary.sealerBottles,
+        patchesCount: consumableUpdates.itemPatches.length,
+      };
     },
-    onSuccess: () => {
-      invalidateQuote(qc, quoteId);
+    onSuccess: ({ wallName, totalSqft, newBags, patchesCount }) => {
+      invalidateAll();
       setEditingWall(null);
-      toast.success("Wall dimensions updated");
+      toast.success(
+        `${wallName} updated! Total area: ${totalSqft} sq.ft. Adjusted ${patchesCount} item(s) (Labour: ${totalSqft} sq.ft, Adhesives: ${newBags} bags).`,
+      );
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
@@ -327,23 +393,169 @@ export function QuoteWallDetailsEditor({
   // Delete Wall Mutation
   const deleteWallMut = useMutation({
     mutationFn: async (wallId: string) => {
+      const wallToDelete = walls.find((w) => w.id === wallId);
       const updatedWalls = walls.filter((w) => w.id !== wallId);
       const updatedProducts = products.filter((p) => p.wallId !== wallId);
-      const newTotalWallSqft = updatedWalls.reduce((sum, w) => sum + (w.sqft || 0), 0);
-      const updatedWorksheet: EstimateWorksheet = {
-        ...worksheet,
-        walls: updatedWalls,
-        products: updatedProducts,
-        totalWallSqft: newTotalWallSqft,
-      };
+
+      // Check if any quote item matches this wall specifically
+      const currentItems = await getQuoteItems(quoteId);
+      if (wallToDelete) {
+        const wn = wallToDelete.name.toLowerCase();
+        const itemToDelete = currentItems.find((it) => {
+          const d = (it.description || "").toLowerCase();
+          const n = (it.notes || "").toLowerCase();
+          return d.includes(`(${wn})`) || n.includes(`wall: ${wn}`);
+        });
+        if (itemToDelete) {
+          await deleteQuoteItem(itemToDelete.id);
+        }
+      }
+
+      const remainingItems = await getQuoteItems(quoteId);
+      const consumableUpdates = calculateConsumableUpdates(
+        updatedWalls,
+        updatedProducts,
+        remainingItems,
+        worksheet,
+      );
+
+      // Apply patches to scale down remaining labour and consumables
+      for (const patch of consumableUpdates.itemPatches) {
+        await updateQuoteItem(patch.id, { quantity: patch.newQuantity });
+      }
 
       await updateQuote(quoteId, {
-        wall_estimate: updatedWorksheet as unknown as Record<string, unknown>,
+        wall_estimate: consumableUpdates.updatedWorksheet as unknown as Record<string, unknown>,
       });
+
+      const finalItems = await getQuoteItems(quoteId);
+      const sorted = sortQuoteItemsCategorically(finalItems);
+      await reorderQuoteItems(sorted.map((it) => it.id));
+
+      return {
+        wallName: wallToDelete?.name || "Wall",
+        remainingSqft: consumableUpdates.totalWallSqft,
+        newBags: consumableUpdates.summary.cementAdhesiveBags,
+      };
+    },
+    onSuccess: ({ wallName, remainingSqft, newBags }) => {
+      invalidateAll();
+      toast.success(
+        `${wallName} removed. Adjusted remaining labour (${remainingSqft} sq.ft) & adhesives (${newBags} bags).`,
+      );
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+
+  // Sync / Recalculate Quantities Mutation
+  const syncEstimatorMut = useMutation({
+    mutationFn: async () => {
+      const currentItems = await getQuoteItems(quoteId);
+      const consumableUpdates = calculateConsumableUpdates(
+        walls,
+        products,
+        currentItems,
+        worksheet,
+      );
+
+      for (const patch of consumableUpdates.itemPatches) {
+        await updateQuoteItem(patch.id, { quantity: patch.newQuantity });
+      }
+
+      await updateQuote(quoteId, {
+        wall_estimate: consumableUpdates.updatedWorksheet as unknown as Record<string, unknown>,
+      });
+
+      const finalItems = await getQuoteItems(quoteId);
+      const sorted = sortQuoteItemsCategorically(finalItems);
+      await reorderQuoteItems(sorted.map((it) => it.id));
+
+      return {
+        count: consumableUpdates.itemPatches.length,
+        summary: consumableUpdates.summary,
+      };
+    },
+    onSuccess: ({ count, summary }) => {
+      invalidateAll();
+      toast.success(
+        `Synced & organized! Updated ${count} items: Labour (${summary.labourSqft} sq.ft), Adhesives (${summary.cementAdhesiveBags} bags), Sealer (${summary.sealerBottles} btl).`,
+      );
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+
+  // Add Missing Installation & Consumables Lines Mutation
+  const addMissingConsumablesMut = useMutation({
+    mutationFn: async () => {
+      const currentItems = await getQuoteItems(quoteId);
+      const updates = calculateConsumableUpdates(walls, products, currentItems, worksheet);
+
+      // 1. Add Labour if missing
+      if (!hasLabourItem && updates.summary.labourSqft > 0) {
+        await addQuoteItem(quoteId, {
+          description: "Installation Labour",
+          quantity: updates.summary.labourSqft,
+          unit: "sq.ft",
+          unit_price: 80,
+          tax_pct: saleMode === "cash" ? 0 : 0,
+          hsn_sac: "9954",
+          notes: "Installation, alignment, scaffolding, and mortar/adhesive fixing",
+          fulfilment: defaultFulfilment,
+        });
+      }
+
+      // 2. Add Cementitious Adhesive if missing
+      if (!hasAdhesiveItem && updates.summary.cementAdhesiveBags > 0) {
+        await addQuoteItem(quoteId, {
+          description: "Adhesive — Standard Cementitious Stone Adhesive Grey",
+          quantity: updates.summary.cementAdhesiveBags,
+          unit: "bag",
+          unit_price: 800,
+          tax_pct: saleMode === "cash" ? 0 : 0,
+          hsn_sac: "3506",
+          notes: "Polymer-modified cementitious tile & stone adhesive (25 sq.ft coverage/bag)",
+          fulfilment: defaultFulfilment,
+        });
+      }
+
+      // 3. Add Sealer Chemical if missing
+      if (!hasSealerItem && updates.summary.sealerBottles > 0) {
+        await addQuoteItem(quoteId, {
+          description: "Sealer Chemical — Water Based Water Repellent",
+          quantity: updates.summary.sealerBottles,
+          unit: "ltr",
+          unit_price: 1700,
+          tax_pct: saleMode === "cash" ? 0 : 0,
+          hsn_sac: "3208",
+          notes: "Silicone deep-penetrating water repellent sealer (550 sq.ft coverage/ltr)",
+          fulfilment: defaultFulfilment,
+        });
+      }
+
+      // 4. Add Sealer Labour if missing
+      if (!hasSealerLabourItem && updates.summary.sealerLabourSqft > 0) {
+        await addQuoteItem(quoteId, {
+          description: "Sealer Application Labour",
+          quantity: updates.summary.sealerLabourSqft,
+          unit: "sq.ft",
+          unit_price: 10,
+          tax_pct: saleMode === "cash" ? 0 : 0,
+          hsn_sac: "9954",
+          notes: "Surface dust cleaning, dry wipe, and dual-coat sealer application",
+          fulfilment: defaultFulfilment,
+        });
+      }
+
+      // Re-fetch all and sort categorically
+      const finalItems = await getQuoteItems(quoteId);
+      const sorted = sortQuoteItemsCategorically(finalItems);
+      await reorderQuoteItems(sorted.map((it) => it.id));
     },
     onSuccess: () => {
-      invalidateQuote(qc, quoteId);
-      toast.success("Wall removed from quotation");
+      invalidateAll();
+      toast.success(
+        "Added installation labour, adhesives, and sealers in standard category order!",
+      );
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
@@ -358,7 +570,7 @@ export function QuoteWallDetailsEditor({
             </div>
             <div>
               <CardTitle className="text-xs sm:text-sm font-semibold flex items-center gap-2">
-                <span>Wall Details & Dimensions</span>
+                <span>Wall Details & Estimator</span>
                 <Badge
                   variant="outline"
                   className="text-[10px] font-normal border-teal-200 bg-teal-50 text-teal-900"
@@ -375,7 +587,7 @@ export function QuoteWallDetailsEditor({
                 )}
               </CardTitle>
               <p className="text-[11px] text-muted-foreground hidden sm:block">
-                Architectural wall surface measurements and per-wall cladding assignments.
+                Auto-calculates product sq.ft, installation labour, adhesives & sealer chemicals.
               </p>
             </div>
           </div>
@@ -402,7 +614,7 @@ export function QuoteWallDetailsEditor({
         </CardHeader>
 
         {!collapsed && (
-          <CardContent className="p-3 sm:p-4">
+          <CardContent className="p-3 sm:p-4 space-y-4">
             {walls.length === 0 ? (
               <div className="flex flex-col items-center justify-center p-6 text-center rounded-lg border border-dashed border-border bg-muted/10">
                 <Ruler className="h-8 w-8 text-muted-foreground/60 mb-2" />
@@ -411,7 +623,7 @@ export function QuoteWallDetailsEditor({
                 </h4>
                 <p className="text-xs text-muted-foreground max-w-md mt-1 mb-3">
                   Add Wall 1, Wall 2, etc. to calculate precise surface areas and automatically
-                  insert stone cladding products into this quotation.
+                  determine stone cladding, chemical bags, and installation labour.
                 </p>
                 <Button
                   size="sm"
@@ -446,7 +658,7 @@ export function QuoteWallDetailsEditor({
                               variant="ghost"
                               className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
                               onClick={() => setEditingWall(w)}
-                              title="Edit wall dimensions"
+                              title="Edit wall dimensions (increases/decreases quantities)"
                             >
                               <Edit2 className="h-3 w-3" />
                             </Button>
@@ -508,6 +720,165 @@ export function QuoteWallDetailsEditor({
                 })}
               </div>
             )}
+
+            {/* Estimator Consumables & Live Quantities Breakdown */}
+            {totalArea > 0 && (
+              <div className="rounded-lg border border-teal-100 bg-teal-50/40 p-3 sm:p-3.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-teal-200/50">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-teal-700 shrink-0" />
+                    <div>
+                      <span className="text-xs font-semibold text-teal-950 block">
+                        Estimator Consumables & Required Materials Breakdown
+                      </span>
+                      <span className="text-[11px] text-teal-800/80 block">
+                        Based on {totalArea} sq.ft total wall surface across {walls.length} wall(s).
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => syncEstimatorMut.mutate()}
+                      disabled={syncEstimatorMut.isPending}
+                      className="h-7.5 border-teal-300 bg-white text-teal-900 hover:bg-teal-50 text-xs font-medium cursor-pointer shadow-2xs"
+                      title="Sync all proposed quantities to quote items and re-club categories"
+                    >
+                      {syncEstimatorMut.isPending ? (
+                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <RefreshCw className="mr-1.5 h-3.5 w-3.5 text-teal-700" />
+                      )}
+                      Sync & Recalculate Quantities
+                    </Button>
+
+                    {(!hasLabourItem || !hasAdhesiveItem || !hasSealerItem) && (
+                      <Button
+                        size="sm"
+                        onClick={() => addMissingConsumablesMut.mutate()}
+                        disabled={addMissingConsumablesMut.isPending}
+                        className="h-7.5 bg-teal-700 hover:bg-teal-800 text-white text-xs font-medium cursor-pointer shadow-2xs"
+                        title="Add missing installation labour, adhesives, and sealer lines to quote"
+                      >
+                        {addMissingConsumablesMut.isPending ? (
+                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Plus className="mr-1.5 h-3.5 w-3.5" />
+                        )}
+                        + Add Missing Consumables
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2.5 text-xs">
+                  {/* Installation Labour */}
+                  <div className="rounded bg-white p-2.5 border border-teal-100 shadow-2xs">
+                    <div className="flex items-center justify-between text-muted-foreground text-[10px] uppercase font-semibold mb-1">
+                      <span className="flex items-center gap-1">
+                        <Hammer className="h-3 w-3 text-blue-600" /> Labour
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "text-[9px] px-1 py-0",
+                          hasLabourItem
+                            ? "bg-blue-50 text-blue-800 border-blue-200"
+                            : "bg-amber-50 text-amber-800 border-amber-200",
+                        )}
+                      >
+                        {hasLabourItem ? "In Quote" : "Not In Quote"}
+                      </Badge>
+                    </div>
+                    <span className="text-sm font-bold text-slate-800 block">
+                      {liveConsumables.summary.labourSqft} sq.ft
+                    </span>
+                    <span className="text-[10px] text-muted-foreground">
+                      Full surface cladding fixing
+                    </span>
+                  </div>
+
+                  {/* Adhesives & Chemicals */}
+                  <div className="rounded bg-white p-2.5 border border-teal-100 shadow-2xs">
+                    <div className="flex items-center justify-between text-muted-foreground text-[10px] uppercase font-semibold mb-1">
+                      <span className="flex items-center gap-1">
+                        <Wrench className="h-3 w-3 text-amber-600" /> Adhesives
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "text-[9px] px-1 py-0",
+                          hasAdhesiveItem
+                            ? "bg-amber-50 text-amber-800 border-amber-200"
+                            : "bg-slate-100 text-slate-700 border-slate-200",
+                        )}
+                      >
+                        {hasAdhesiveItem ? "In Quote" : "Not In Quote"}
+                      </Badge>
+                    </div>
+                    <span className="text-sm font-bold text-slate-800 block">
+                      {liveConsumables.summary.cementAdhesiveBags} Bags
+                    </span>
+                    <span className="text-[10px] text-muted-foreground">
+                      25 sq.ft/bag (or PU: {liveConsumables.summary.puAdhesiveBuckets} buckets)
+                    </span>
+                  </div>
+
+                  {/* Sealer Chemical */}
+                  <div className="rounded bg-white p-2.5 border border-teal-100 shadow-2xs">
+                    <div className="flex items-center justify-between text-muted-foreground text-[10px] uppercase font-semibold mb-1">
+                      <span className="flex items-center gap-1">
+                        <ShieldCheck className="h-3 w-3 text-purple-600" /> Sealer
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "text-[9px] px-1 py-0",
+                          hasSealerItem
+                            ? "bg-purple-50 text-purple-800 border-purple-200"
+                            : "bg-slate-100 text-slate-700 border-slate-200",
+                        )}
+                      >
+                        {hasSealerItem ? "In Quote" : "Not In Quote"}
+                      </Badge>
+                    </div>
+                    <span className="text-sm font-bold text-slate-800 block">
+                      {liveConsumables.summary.sealerBottles} Bottle(s)
+                    </span>
+                    <span className="text-[10px] text-muted-foreground">
+                      550 sq.ft coverage/ltr
+                    </span>
+                  </div>
+
+                  {/* Sealer Labour */}
+                  <div className="rounded bg-white p-2.5 border border-teal-100 shadow-2xs">
+                    <div className="flex items-center justify-between text-muted-foreground text-[10px] uppercase font-semibold mb-1">
+                      <span className="flex items-center gap-1">
+                        <PackageCheck className="h-3 w-3 text-indigo-600" /> Sealer Labour
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "text-[9px] px-1 py-0",
+                          hasSealerLabourItem
+                            ? "bg-indigo-50 text-indigo-800 border-indigo-200"
+                            : "bg-slate-100 text-slate-700 border-slate-200",
+                        )}
+                      >
+                        {hasSealerLabourItem ? "In Quote" : "Not In Quote"}
+                      </Badge>
+                    </div>
+                    <span className="text-sm font-bold text-slate-800 block">
+                      {liveConsumables.summary.sealerLabourSqft} sq.ft
+                    </span>
+                    <span className="text-[10px] text-muted-foreground">
+                      Dual-coat sealer wiping
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
           </CardContent>
         )}
       </Card>
@@ -518,11 +889,12 @@ export function QuoteWallDetailsEditor({
           <DialogHeader>
             <DialogTitle className="text-base font-semibold flex items-center gap-2">
               <Layers className="h-5 w-5 text-teal-700" />
-              Add New Wall & Stone Cladding Line
+              Add New Wall & Cladding Line
             </DialogTitle>
             <DialogDescription className="text-xs">
-              Enter the dimensions for this wall. The stone cladding line item will be placed
-              directly at <strong>Position #3</strong> (under stone products 1 & 2).
+              Enter wall measurements. The stone product will be clubbed at the top with other
+              products, and installation labour, adhesive bags, and sealers will automatically
+              update.
             </DialogDescription>
           </DialogHeader>
 
@@ -685,9 +1057,8 @@ export function QuoteWallDetailsEditor({
             <div className="p-2.5 rounded-md bg-blue-50/70 border border-blue-200 flex items-center gap-2 text-blue-900 text-[11px]">
               <AlertCircle className="h-4 w-4 text-blue-700 shrink-0" />
               <span>
-                <strong>Placement:</strong> This line item will be inserted directly at{" "}
-                <strong>Position #3</strong> (right under stone cladding products 1 and 2), before
-                downstream services or carting.
+                <strong>Categorical Hierarchy:</strong> Stone products are grouped at the top,
+                followed by installation labour, adhesives/chemicals, sealers, and carting.
               </span>
             </div>
           </div>
@@ -710,12 +1081,12 @@ export function QuoteWallDetailsEditor({
               {addWallMut.isPending ? (
                 <>
                   <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                  Adding Wall & Line Item…
+                  Adding Wall & Updating Consumables…
                 </>
               ) : (
                 <>
                   <Check className="mr-1.5 h-3.5 w-3.5" />
-                  Add Wall & Place at #3
+                  Add Wall & Recalculate
                 </>
               )}
             </Button>
@@ -731,6 +1102,10 @@ export function QuoteWallDetailsEditor({
               <DialogTitle className="text-sm font-semibold">
                 Edit {editingWall.name} Dimensions
               </DialogTitle>
+              <DialogDescription className="text-xs">
+                Decreasing or increasing wall dimensions will automatically adjust product
+                quantities, installation labour, adhesives bags, and sealers.
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-3 py-2 text-xs">
               <div>
@@ -811,7 +1186,7 @@ export function QuoteWallDetailsEditor({
                 {editWallMut.isPending ? (
                   <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
                 ) : null}
-                Save Changes
+                Save & Adjust Quantities
               </Button>
             </DialogFooter>
           </DialogContent>
