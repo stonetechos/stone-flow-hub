@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Layers,
@@ -484,7 +484,22 @@ export function QuoteWallDetailsEditor({
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
-  // Add Missing Installation & Consumables Lines Mutation
+  // Auto-sync out-of-sync consumables and sorting on mount / when walls change
+  const autoSyncFingerprintRef = useRef<string>("");
+  useEffect(() => {
+    if (!existingItems.length || !walls.length || syncEstimatorMut.isPending) return;
+    const updates = calculateConsumableUpdates(walls, products, existingItems, worksheet);
+    const sorted = sortQuoteItemsCategorically(existingItems);
+    const isOutOfOrder = sorted.some((item, idx) => item.id !== existingItems[idx]?.id);
+
+    if (updates.itemPatches.length === 0 && !isOutOfOrder) return;
+
+    const patchFingerprint = `${updates.itemPatches.map((p) => `${p.id}:${p.newQuantity}`).join(",")}|order:${isOutOfOrder}`;
+    if (autoSyncFingerprintRef.current === patchFingerprint) return;
+
+    autoSyncFingerprintRef.current = patchFingerprint;
+    syncEstimatorMut.mutate();
+  }, [existingItems, walls, products, worksheet, syncEstimatorMut]);
   const addMissingConsumablesMut = useMutation({
     mutationFn: async () => {
       const currentItems = await getQuoteItems(quoteId);

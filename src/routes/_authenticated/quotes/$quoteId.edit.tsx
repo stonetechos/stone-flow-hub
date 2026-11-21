@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -514,18 +514,50 @@ function LineItemsEditor({
   const [rows, setRows] = useState<DraftRow[]>([]);
   useEffect(() => {
     if (!itemsQuery.data) return;
+    const sorted = sortQuoteItemsCategorically(itemsQuery.data);
     setRows((prev) => {
-      const serverIds = itemsQuery.data.map((r) => r.id);
-      const prevIds = prev.map((r) => r.id);
-      const idsChanged =
-        serverIds.length !== prevIds.length || serverIds.some((id, i) => id !== prevIds[i]);
-      if (idsChanged) return itemsQuery.data.map(toDraft);
-      // Preserve local uncommitted edits; only backfill rows we haven't touched
-      // (identity by id + description).
-      const byId = new Map(prev.map((r) => [r.id, r]));
-      return itemsQuery.data.map((server) => byId.get(server.id) ?? toDraft(server));
+      if (prev.length === 0) return sorted.map(toDraft);
+      const prevMap = new Map(prev.map((r) => [r.id, r]));
+      return sorted.map((server) => {
+        const draft = toDraft(server);
+        const existing = prevMap.get(server.id);
+        if (!existing) return draft;
+        // Prioritize server numeric values (quantity, rate, tax) whenever updated from DB or estimator sync
+        const serverQtyStr = String(server.quantity ?? "");
+        const serverRateStr =
+          server.unit_price != null && Number(server.unit_price) !== 0
+            ? String(server.unit_price)
+            : "";
+        return {
+          ...draft,
+          quantity: serverQtyStr,
+          unit_price: serverRateStr,
+          description: existing.description.trim() ? existing.description : draft.description,
+          notes: existing.notes !== "" ? existing.notes : draft.notes,
+          hsn_sac: existing.hsn_sac !== "" ? existing.hsn_sac : draft.hsn_sac,
+          tax_pct: existing.tax_pct !== "" ? existing.tax_pct : draft.tax_pct,
+        };
+      });
     });
   }, [itemsQuery.data]);
+
+  // Auto-sync sort_order in database if existing items are out of categorical order
+  const hasAutoOrderedRef = useRef(false);
+  useEffect(() => {
+    if (!itemsQuery.data || itemsQuery.data.length <= 1 || hasAutoOrderedRef.current) return;
+    const sorted = sortQuoteItemsCategorically(itemsQuery.data);
+    const isOutOfOrder = sorted.some((item, idx) => item.id !== itemsQuery.data[idx]?.id);
+    if (isOutOfOrder) {
+      hasAutoOrderedRef.current = true;
+      reorderQuoteItems(sorted.map((it) => it.id))
+        .then(() => {
+          qc.invalidateQueries({ queryKey: qk.quotes.items(quoteId) });
+        })
+        .catch((err) => {
+          console.warn("[quotes] Auto-reorder failed:", err);
+        });
+    }
+  }, [itemsQuery.data, quoteId, qc]);
 
   const [uploadingRowId, setUploadingRowId] = useState<string | null>(null);
 

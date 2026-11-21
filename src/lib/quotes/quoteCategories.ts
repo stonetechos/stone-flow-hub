@@ -310,8 +310,12 @@ export function calculateConsumableUpdates(
   });
 
   // Also check if any existingItems match wall products (e.g. description has wall name or notes has wallId)
-  for (const wall of walls) {
-    const wallProd = updatedProducts.find((p) => p.wallId === wall.id);
+  for (let idx = 0; idx < walls.length; idx++) {
+    const wall = walls[idx];
+    let wallProd = updatedProducts.find((p) => p.wallId === wall.id);
+    if (!wallProd && updatedProducts[idx]) {
+      wallProd = updatedProducts[idx];
+    }
     if (!wallProd) continue;
 
     const matchedItem = existingItems.find((it) => {

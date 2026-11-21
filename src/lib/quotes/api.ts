@@ -13,6 +13,7 @@ import {
   type QuoteCreateInput,
   type QuoteUpdateInput,
 } from "./schema";
+import { sortQuoteItemsCategorically } from "./quoteCategories";
 
 export type QuoteRow = DbTable<"quotes">;
 export type QuoteItemRow = DbTable<"quote_items">;
@@ -155,7 +156,7 @@ export async function getQuoteItems(
   }
   const notesMap = (wf.line_item_notes as Record<string, string> | null) ?? {};
 
-  return (data ?? []).map((it, idx) => {
+  const items = (data ?? []).map((it, idx) => {
     const serverNote = (it as { notes?: string | null }).notes;
     const wfNote =
       notesMap[it.id] ??
@@ -167,6 +168,8 @@ export async function getQuoteItems(
       notes: serverNote || wfNote || null,
     };
   });
+
+  return sortQuoteItemsCategorically(items);
 }
 
 export function pruneOversizedDataUrls<T>(obj: T, maxChars = 200_000): T {
@@ -946,23 +949,18 @@ export async function deleteQuoteItem(itemId: string): Promise<void> {
 }
 
 export async function reorderQuoteItems(orderedIds: string[]): Promise<void> {
-  // Two-phase reorder to avoid unique-index conflicts if one exists.
-  await Promise.all(
-    orderedIds.map((id, idx) =>
-      getDb()
-        .from("quote_items")
-        .update({ sort_order: idx + 1000 } as never)
-        .eq("id", id),
-    ),
-  );
-  await Promise.all(
-    orderedIds.map((id, idx) =>
-      getDb()
-        .from("quote_items")
-        .update({ sort_order: idx } as never)
-        .eq("id", id),
-    ),
-  );
+  const db = getDb();
+  for (let idx = 0; idx < orderedIds.length; idx++) {
+    const id = orderedIds[idx];
+    const { error } = await db
+      .from("quote_items")
+      .update({ sort_order: idx } as never)
+      .eq("id", id);
+    if (error) {
+      console.error(`[quotes] Failed to update sort_order for quote item ${id} to ${idx}:`, error);
+      throw new AppError(mapDbError(error));
+    }
+  }
 }
 
 /**

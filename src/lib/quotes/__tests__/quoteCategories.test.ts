@@ -310,4 +310,174 @@ describe("quoteCategories", () => {
     const sealerLabourPatch = result.itemPatches.find((p) => p.id === "it_sealer_labour");
     expect(sealerLabourPatch?.newQuantity).toBe(80);
   });
+
+  it("handles the user 3-wall scenario (318 sq.ft): places stone cladding line at #3 and updates consumables to 318 sq.ft / 13 bags", () => {
+    // 3 walls totaling 318 sq.ft
+    const walls: EstimateWall[] = [
+      { id: "w1", name: "Suresh Bhai's Bedroom Wall", height: 5, length: 4, unit: "ft", sqft: 20 },
+      { id: "w2", name: "Living Area Wall", height: 14, length: 7, unit: "ft", sqft: 98 },
+      { id: "w3", name: "Compound Wall", height: 20, length: 10, unit: "ft", sqft: 200 },
+    ];
+
+    const products: EstimateProduct[] = [
+      {
+        id: "p1",
+        wallId: "w1",
+        materialCategory: "stone_cladding",
+        productName: "Natural Stone Mosaics - Weaving Pattern",
+        priceUnit: "sqft",
+        pricePerUnit: 340,
+        wastagePct: 10,
+        quantityToOrder: 22,
+        amount: 22 * 340,
+      },
+      {
+        id: "p2",
+        wallId: "w2",
+        materialCategory: "stone_cladding",
+        productName: 'Natural Stone Mosaics - 3"x3"',
+        priceUnit: "sqft",
+        pricePerUnit: 340,
+        wastagePct: 5,
+        quantityToOrder: 103,
+        amount: 103 * 340,
+      },
+      {
+        id: "p3",
+        wallId: "w3",
+        materialCategory: "stone_cladding",
+        productName: "Teakwood Sandstone Veined Ashlar Modular Cladding",
+        priceUnit: "sqft",
+        pricePerUnit: 185,
+        wastagePct: 5,
+        quantityToOrder: 210,
+        amount: 210 * 185,
+      },
+    ];
+
+    // Out-of-sync items as shown in user screenshot (Labour 118, Teakwood at bottom #8 after Carting)
+    const existingItems = [
+      {
+        id: "it_p1",
+        description: "Natural Stone Mosaics - Weaving Pattern",
+        quantity: 22,
+        unit: "sq.ft",
+        unit_price: 340,
+        sort_order: 0,
+      },
+      {
+        id: "it_p2",
+        description: 'Natural Stone Mosaics - 3"x3"',
+        quantity: 103,
+        unit: "sq.ft",
+        unit_price: 340,
+        sort_order: 1,
+      },
+      {
+        id: "it_labour",
+        description: "Installation Labour",
+        quantity: 118, // STALE! (From 20+98 sq.ft)
+        unit: "sq.ft",
+        unit_price: 80,
+        sort_order: 2,
+      },
+      {
+        id: "it_adhesive",
+        description: "Adhesive — Standard Cementitious Stone Adhesive Grey",
+        quantity: 5, // STALE!
+        unit: "bag",
+        unit_price: 800,
+        sort_order: 3,
+      },
+      {
+        id: "it_sealer",
+        description: "Sealer Chemical — Water Based Water Repellent",
+        quantity: 1,
+        unit: "bottle",
+        unit_price: 1700,
+        sort_order: 4,
+      },
+      {
+        id: "it_sealer_labour",
+        description: "Sealer Application Labour",
+        quantity: 118, // STALE!
+        unit: "sq.ft",
+        unit_price: 10,
+        sort_order: 5,
+      },
+      {
+        id: "it_carting",
+        description: "Local Carting & Transportation",
+        quantity: 1,
+        unit: "trip",
+        unit_price: 2500,
+        sort_order: 6,
+      },
+      {
+        id: "it_p3",
+        description: "Teakwood Sandstone Veined Ashlar Modular Cladding",
+        quantity: 210,
+        unit: "sq.ft",
+        unit_price: 185,
+        notes: "Wall: Compound Wall · 20x10 ft (200 sq.ft) · Wastage: 5% Catalog Code: ST-WC-080",
+        sort_order: 7, // Stale position at the very bottom!
+      },
+    ];
+
+    // 1. Verify sortQuoteItemsCategorically places Teakwood at position #3 under Products 1 & 2!
+    const sorted = sortQuoteItemsCategorically(existingItems);
+    expect(sorted.map((it) => it.id)).toEqual([
+      "it_p1",
+      "it_p2",
+      "it_p3", // Placed directly under product 2!
+      "it_labour",
+      "it_adhesive",
+      "it_sealer",
+      "it_sealer_labour",
+      "it_carting", // Strictly at the bottom!
+    ]);
+
+    // 2. Verify calculateConsumableUpdates updates quantities:
+    // Total = 318 sq.ft
+    // Labour = 318 sq.ft
+    // Adhesives = 318 / 25 = 12.72 -> 13 Bags
+    // Sealer = 1 Bottle
+    // Sealer Labour = 318 sq.ft
+    const updates = calculateConsumableUpdates(walls, products, existingItems);
+    expect(updates.totalWallSqft).toBe(318);
+
+    const labourPatch = updates.itemPatches.find((p) => p.id === "it_labour");
+    expect(labourPatch?.newQuantity).toBe(318);
+
+    const adhesivePatch = updates.itemPatches.find((p) => p.id === "it_adhesive");
+    expect(adhesivePatch?.newQuantity).toBe(13);
+
+    const sealerLabourPatch = updates.itemPatches.find((p) => p.id === "it_sealer_labour");
+    expect(sealerLabourPatch?.newQuantity).toBe(318);
+
+    expect(updates.summary.labourSqft).toBe(318);
+    expect(updates.summary.cementAdhesiveBags).toBe(13);
+    expect(updates.summary.sealerBottles).toBe(1);
+    expect(updates.summary.sealerLabourSqft).toBe(318);
+
+    // 3. Verify decreasing wall 3 (Compound Wall) from 200 sq.ft to 100 sq.ft
+    const reducedWalls: EstimateWall[] = [
+      walls[0],
+      walls[1],
+      { id: "w3", name: "Compound Wall", height: 10, length: 10, unit: "ft", sqft: 100 },
+    ];
+    // Total is now 20 + 98 + 100 = 218 sq.ft
+    const reducedUpdates = calculateConsumableUpdates(reducedWalls, products, existingItems);
+    expect(reducedUpdates.totalWallSqft).toBe(218);
+
+    const reducedLabour = reducedUpdates.itemPatches.find((p) => p.id === "it_labour");
+    expect(reducedLabour?.newQuantity).toBe(218);
+
+    // 218 / 25 = 8.72 -> 9 Bags
+    const reducedAdhesive = reducedUpdates.itemPatches.find((p) => p.id === "it_adhesive");
+    expect(reducedAdhesive?.newQuantity).toBe(9);
+
+    const reducedSealerLabour = reducedUpdates.itemPatches.find((p) => p.id === "it_sealer_labour");
+    expect(reducedSealerLabour?.newQuantity).toBe(218);
+  });
 });
