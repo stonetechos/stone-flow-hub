@@ -151,14 +151,15 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
           aria-label="Instagram Live Feed Scrollable Box"
           className={cn(
             "relative w-full rounded-2xl border border-border/80 bg-card/40 p-2 sm:p-3 shadow-inner",
-            "h-[380px] sm:h-[420px] md:h-[480px] lg:h-[520px]",
-            "overflow-y-auto overscroll-y-auto",
+            "h-[420px] sm:h-[460px] md:h-[520px] lg:h-[580px]",
+            "overflow-y-auto overscroll-contain",
+            "touch-pan-y [-webkit-overflow-scrolling:touch]",
             "[scrollbar-width:thin] scrollbar-thumb-muted-foreground/30 hover:scrollbar-thumb-muted-foreground/60",
             "[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-muted/30 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/50",
           )}
-          style={{ overscrollBehaviorY: "auto" }}
+          style={{ overscrollBehaviorY: "contain" }}
         >
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-2.5 sm:gap-3.5 pb-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-2.5 sm:gap-3.5 pb-8">
             {visiblePosts.map((post, idx) => {
               const hasMultiplePhotos =
                 (post.carouselImages && post.carouselImages.length > 1) ||

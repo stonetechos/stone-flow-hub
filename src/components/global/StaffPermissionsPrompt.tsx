@@ -23,6 +23,7 @@ import {
 
 const STORAGE_KEY_DISMISSED = "stos_staff_permissions_dismissed_v1";
 const STORAGE_KEY_PERMANENT = "stos_staff_permissions_configured_permanently";
+const STORAGE_KEY_SEEN = "stos_staff_permissions_seen_v2";
 
 export interface PermissionStates {
   notification: PermissionState | "unsupported";
@@ -88,9 +89,16 @@ export function StaffPermissionsPrompt() {
     };
     setPermissions(current);
 
-    // If notifications are granted OR user has permanently configured permissions, do not prompt automatically
+    // If notifications are granted, denied, or user has already seen or permanently configured permissions, do not prompt automatically
     const isPermanentlyConfigured = localStorage.getItem(STORAGE_KEY_PERMANENT) === "true";
-    if (current.notification === "granted" || isPermanentlyConfigured) {
+    const hasSeenPrompt = localStorage.getItem(STORAGE_KEY_SEEN) === "true";
+
+    if (
+      current.notification === "granted" ||
+      current.notification === "denied" ||
+      isPermanentlyConfigured ||
+      hasSeenPrompt
+    ) {
       setOpen(false);
       return;
     }
@@ -105,7 +113,20 @@ export function StaffPermissionsPrompt() {
       }
     }
 
-    // Open if not granted and not permanently configured
+    // Do not show automatically on iOS Safari where Web Notification permission is unsupported in browser tabs
+    const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+    const isIOS =
+      /iPhone|iPad|iPod/i.test(ua) ||
+      (typeof navigator !== "undefined" &&
+        navigator.platform === "MacIntel" &&
+        navigator.maxTouchPoints > 1);
+    if (isIOS && !Capacitor.isNativePlatform()) {
+      setOpen(false);
+      return;
+    }
+
+    // First-time staff view: open prompt and mark seen so it never badgers repeatedly on refresh/login
+    localStorage.setItem(STORAGE_KEY_SEEN, "true");
     setOpen(true);
   }, []);
 
@@ -115,6 +136,7 @@ export function StaffPermissionsPrompt() {
     // Listen for manual trigger from settings or user actions
     const handleReopen = () => {
       localStorage.removeItem(STORAGE_KEY_PERMANENT);
+      localStorage.removeItem(STORAGE_KEY_SEEN);
       localStorage.removeItem(STORAGE_KEY_DISMISSED);
       setOpen(true);
       void checkPermissions();
@@ -206,6 +228,7 @@ export function StaffPermissionsPrompt() {
       await requestMicPermission();
       await requestLocationPermission();
       localStorage.setItem(STORAGE_KEY_PERMANENT, "true");
+      localStorage.setItem(STORAGE_KEY_SEEN, "true");
       await checkPermissions();
       toast.success("Device permissions activated for STOS!");
       setOpen(false);
@@ -217,6 +240,7 @@ export function StaffPermissionsPrompt() {
   const handleDismiss = () => {
     // Permanently remember preference so user is never prompted repeatedly every day
     localStorage.setItem(STORAGE_KEY_PERMANENT, "true");
+    localStorage.setItem(STORAGE_KEY_SEEN, "true");
     setOpen(false);
   };
 

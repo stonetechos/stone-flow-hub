@@ -65,6 +65,7 @@ import { DangerNotifications } from "@/components/insights/DangerNotifications";
 import { GrowthAdvisoryBroadcaster } from "@/components/insights/GrowthAdvisoryBroadcaster";
 import { NotificationBanner } from "@/components/global/NotificationBanner";
 import { StaffPermissionsPrompt } from "@/components/global/StaffPermissionsPrompt";
+import { AppDownloadBanner } from "@/components/global/AppDownloadBanner";
 import { DemoProvider, useDemoMode } from "@/lib/demo/context";
 import { toIndicDigits } from "@/lib/format";
 
@@ -1565,6 +1566,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <GrowthAdvisoryBroadcaster />
         <NotificationBanner />
         <StaffPermissionsPrompt />
+        <AppDownloadBanner />
       </div>
     </DemoProvider>
   );

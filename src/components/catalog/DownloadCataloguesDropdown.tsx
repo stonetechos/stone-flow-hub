@@ -206,12 +206,12 @@ export function DownloadCataloguesDropdown({
 
         <DropdownMenuContent
           align={align}
-          collisionPadding={16}
+          collisionPadding={12}
           sideOffset={8}
-          className="w-[340px] sm:w-[420px] overflow-y-auto p-3 space-y-2.5 z-50 rounded-2xl shadow-2xl border-border/80 overscroll-contain touch-pan-y [scrollbar-width:thin] [scrollbar-color:rgba(156,163,175,0.4)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/50 [&::-webkit-scrollbar-thumb]:rounded-full"
+          className="w-[calc(100vw-1.5rem)] sm:w-[440px] max-w-[440px] overflow-y-auto p-3 pb-8 space-y-2.5 z-50 rounded-2xl shadow-2xl border-border/80 overscroll-contain touch-pan-y [-webkit-overflow-scrolling:touch] [scrollbar-width:thin] [scrollbar-color:rgba(156,163,175,0.4)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/50 [&::-webkit-scrollbar-thumb]:rounded-full"
           style={{
             maxHeight:
-              "min(480px, calc(100vh - 160px), calc(var(--radix-dropdown-menu-content-available-height, 480px) - 20px))",
+              "min(560px, calc(100vh - 100px), calc(var(--radix-dropdown-menu-content-available-height, 560px) - 16px))",
           }}
         >
           {/* WhatsApp Direct Share Banner */}
@@ -707,7 +707,7 @@ export function DownloadCataloguesDropdown({
           </div>
 
           {/* End of Catalogues Footer indicator */}
-          <div className="pt-1.5 pb-0.5 text-center text-[10px] font-medium text-muted-foreground/80 flex items-center justify-center gap-1 border-t border-border/40">
+          <div className="pt-2 pb-2 text-center text-[10px] font-medium text-muted-foreground/80 flex items-center justify-center gap-1 border-t border-border/40">
             <Check className="h-3 w-3 text-emerald-500" />
             <span>
               {lang === "gu"
@@ -717,6 +717,7 @@ export function DownloadCataloguesDropdown({
                   : "All 6 Architectural Catalogues Listed"}
             </span>
           </div>
+          <div className="h-4" />
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

@@ -721,12 +721,12 @@ export function MasterProductCatalog({
       )}
     >
       {/* 1. MASTER PRODUCT DIVISION TABS STRIP (DIRECTLY IN THE CARD DISPLAY) */}
-      <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-muted/80 border border-border/60 overflow-x-auto scrollbar-none [touch-action:pan-x]">
+      <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-muted/80 border border-border/60 overflow-x-auto scrollbar-none touch-pan-x [-webkit-overflow-scrolling:touch]">
         <button
           type="button"
           onClick={() => handleTabChange("cladding")}
           className={cn(
-            "flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
+            "shrink-0 flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
             currentTab === "cladding"
               ? "bg-primary text-primary-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground",
@@ -746,7 +746,7 @@ export function MasterProductCatalog({
           type="button"
           onClick={() => handleTabChange("stone-veneer")}
           className={cn(
-            "flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
+            "shrink-0 flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
             currentTab === "stone-veneer"
               ? "bg-primary text-primary-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground",
@@ -766,7 +766,7 @@ export function MasterProductCatalog({
           type="button"
           onClick={() => handleTabChange("glass-bricks")}
           className={cn(
-            "flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
+            "shrink-0 flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
             currentTab === "glass-bricks"
               ? "bg-primary text-primary-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground",
@@ -786,7 +786,7 @@ export function MasterProductCatalog({
           type="button"
           onClick={() => handleTabChange("clay-veneers")}
           className={cn(
-            "flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
+            "shrink-0 flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
             currentTab === "clay-veneers"
               ? "bg-primary text-primary-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground",
@@ -806,7 +806,7 @@ export function MasterProductCatalog({
           type="button"
           onClick={() => handleTabChange("pebbles")}
           className={cn(
-            "flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
+            "shrink-0 flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
             currentTab === "pebbles"
               ? "bg-primary text-primary-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground",
@@ -826,7 +826,7 @@ export function MasterProductCatalog({
           type="button"
           onClick={() => handleTabChange("installations")}
           className={cn(
-            "relative flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 whitespace-nowrap cursor-pointer border overflow-hidden",
+            "shrink-0 relative flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 whitespace-nowrap cursor-pointer border overflow-hidden",
             "animate-works-glow",
             currentTab === "installations"
               ? "bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.5)]"
@@ -856,193 +856,183 @@ export function MasterProductCatalog({
       )}
 
       {/* 2. SQUEEZED PRODUCT GRID VIEWPORT WITH SMOOTH IN-BOX SCROLLING */}
-      {displayedItems.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl border border-dashed border-border bg-card/40">
-          <Layers className="h-10 w-10 text-muted-foreground/60 mb-3" />
-          <p className="text-sm font-semibold text-foreground">No matching products found</p>
-        </div>
-      ) : (
-        <div className="space-y-2.5">
-          {/* 2-Row 8-Product Catalog Box with Smooth In-Box Scroll */}
-          <div
-            ref={scrollContainerRef}
-            aria-label="Architectural Products 8-Item Frame"
-            className={cn(
-              "relative w-full rounded-2xl border border-border/80 bg-card/40 p-2 sm:p-3 shadow-inner",
-              "h-[530px] sm:h-[560px] md:h-[620px] lg:h-[700px] xl:h-[780px]",
-              "overflow-y-auto overscroll-y-auto",
-              "[scrollbar-width:thin] scrollbar-thumb-muted-foreground/30 hover:scrollbar-thumb-muted-foreground/60",
-              "[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-muted/30 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/50",
-            )}
-            style={{ overscrollBehaviorY: "auto" }}
-          >
-            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
-              {displayedItems.map((item) => (
-                <div
-                  key={item.code}
-                  onClick={() => setLightboxItem(item)}
-                  className="group relative flex flex-col overflow-hidden rounded-xl border border-border/70 bg-card hover:border-amber-500/60 hover:shadow-md transition-all duration-200 cursor-pointer"
-                >
-                  {/* Squeezed Product Image Frame */}
-                  <div className="relative aspect-square w-full overflow-hidden bg-neutral-100 dark:bg-neutral-900">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      loading="lazy"
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
+      {currentTab !== "installations" &&
+        (displayedItems.length === 0 ? (
+          <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl border border-dashed border-border bg-card/40">
+            <Layers className="h-10 w-10 text-muted-foreground/60 mb-3" />
+            <p className="text-sm font-semibold text-foreground">No matching products found</p>
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            {/* 2-Row 8-Product Catalog Box with Smooth In-Box Scroll */}
+            <div
+              ref={scrollContainerRef}
+              aria-label="Architectural Products 8-Item Frame"
+              className={cn(
+                "relative w-full rounded-2xl border border-border/80 bg-card/40 p-2 sm:p-3 shadow-inner",
+                "h-[480px] sm:h-[540px] md:h-[600px] lg:h-[700px] xl:h-[780px]",
+                "overflow-y-auto overscroll-contain",
+                "touch-pan-y [-webkit-overflow-scrolling:touch]",
+                "[scrollbar-width:thin] scrollbar-thumb-muted-foreground/30 hover:scrollbar-thumb-muted-foreground/60",
+                "[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-muted/30 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/50",
+              )}
+              style={{ overscrollBehaviorY: "contain" }}
+            >
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-2.5 sm:gap-3.5 pb-8">
+                {displayedItems.map((item) => (
+                  <div
+                    key={item.code}
+                    onClick={() => setLightboxItem(item)}
+                    className="group relative flex flex-col overflow-hidden rounded-xl border border-border/70 bg-card hover:border-amber-500/60 hover:shadow-md transition-all duration-200 cursor-pointer"
+                  >
+                    {/* Squeezed Product Image Frame */}
+                    <div className="relative aspect-square w-full overflow-hidden bg-neutral-100 dark:bg-neutral-900">
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
 
-                    {/* Top badges */}
-                    <div className="absolute top-2 left-2 flex items-center gap-1 z-10">
-                      <span className="rounded-md bg-amber-500 px-1.5 py-0.5 text-[9px] font-extrabold text-slate-950 tracking-wider shadow-xs">
-                        {item.code}
-                      </span>
-                      <span className="rounded-md bg-slate-950/85 backdrop-blur-xs px-1.5 py-0.5 text-[8.5px] font-semibold text-cyan-300 border border-cyan-500/30 line-clamp-1 max-w-[110px]">
-                        {item.category}
-                      </span>
-                    </div>
+                      {/* Top badges */}
+                      <div className="absolute top-2 left-2 flex items-center gap-1 z-10">
+                        <span className="rounded-md bg-amber-500 px-1.5 py-0.5 text-[9px] font-extrabold text-slate-950 tracking-wider shadow-xs">
+                          {item.code}
+                        </span>
+                        <span className="rounded-md bg-slate-950/85 backdrop-blur-xs px-1.5 py-0.5 text-[8.5px] font-semibold text-cyan-300 border border-cyan-500/30 line-clamp-1 max-w-[110px]">
+                          {item.category}
+                        </span>
+                      </div>
 
-                    {/* Quick Share */}
-                    <button
-                      type="button"
-                      onClick={(e) => handleShare(item, e)}
-                      className="absolute top-2 right-2 rounded-full bg-slate-950/70 backdrop-blur-xs p-1 text-slate-300 hover:text-white transition-opacity z-10 cursor-pointer opacity-70 group-hover:opacity-100"
-                      title="Share"
-                    >
-                      <Share2 className="h-3 w-3" />
-                    </button>
+                      {/* Quick Share */}
+                      <button
+                        type="button"
+                        onClick={(e) => handleShare(item, e)}
+                        className="absolute top-2 right-2 rounded-full bg-slate-950/70 backdrop-blur-xs p-1 text-slate-300 hover:text-white transition-opacity z-10 cursor-pointer opacity-70 group-hover:opacity-100"
+                        title="Share"
+                      >
+                        <Share2 className="h-3 w-3" />
+                      </button>
 
-                    {/* Hover overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-2.5 z-10">
-                      <p className="text-[10px] text-amber-300 font-medium line-clamp-1 mb-0.5">
-                        {item.details}
-                      </p>
-                      <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-white font-bold">
-                          {currentTab === "installations"
-                            ? lang === "gu"
-                              ? "લાઇવ સ્થાપિત"
-                              : lang === "hi"
-                                ? "लाइव स्थापित"
-                                : "Live Executed"
-                            : lang === "gu"
+                      {/* Hover overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-2.5 z-10">
+                        <p className="text-[10px] text-amber-300 font-medium line-clamp-1 mb-0.5">
+                          {item.details}
+                        </p>
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-white font-bold">
+                            {lang === "gu"
                               ? "સત્યાપિત સંગ્રહ"
                               : lang === "hi"
                                 ? "सत्यापित संग्रह"
                                 : "Verified Atelier Collection"}
-                        </span>
-                        <span className="flex items-center gap-0.5 text-[10px] text-amber-400 font-semibold">
-                          <Eye className="h-3 w-3" />{" "}
-                          {lang === "gu" ? "વિગતો" : lang === "hi" ? "विवरण" : "Details"}
-                        </span>
+                          </span>
+                          <span className="flex items-center gap-0.5 text-[10px] text-amber-400 font-semibold">
+                            <Eye className="h-3 w-3" />{" "}
+                            {lang === "gu" ? "વિગતો" : lang === "hi" ? "विवरण" : "Details"}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Squeezed Product Info */}
-                  <div className="p-2 sm:p-2.5 flex flex-col flex-1 justify-between gap-1.5">
-                    <div>
-                      <h3 className="text-xs sm:text-sm font-bold text-foreground group-hover:text-amber-500 transition-colors line-clamp-1">
-                        {item.name}
-                      </h3>
-                      <p className="text-[10px] sm:text-[11px] text-amber-600 dark:text-amber-400 font-medium line-clamp-1">
-                        {item.details}
-                      </p>
-                      <p className="mt-0.5 text-[10px] text-muted-foreground line-clamp-1">
-                        <span className="font-semibold">
-                          {lang === "gu" ? "માપ:" : lang === "hi" ? "साइज़:" : "Size:"}
-                        </span>{" "}
-                        {item.sizes}
-                      </p>
-                    </div>
+                    {/* Squeezed Product Info */}
+                    <div className="p-2 sm:p-2.5 flex flex-col flex-1 justify-between gap-1.5">
+                      <div>
+                        <h3 className="text-xs sm:text-sm font-bold text-foreground group-hover:text-amber-500 transition-colors line-clamp-1">
+                          {item.name}
+                        </h3>
+                        <p className="text-[10px] sm:text-[11px] text-amber-600 dark:text-amber-400 font-medium line-clamp-1">
+                          {item.details}
+                        </p>
+                        <p className="mt-0.5 text-[10px] text-muted-foreground line-clamp-1">
+                          <span className="font-semibold">
+                            {lang === "gu" ? "માપ:" : lang === "hi" ? "साइज़:" : "Size:"}
+                          </span>{" "}
+                          {item.sizes}
+                        </p>
+                      </div>
 
-                    <div className="pt-1.5 border-t border-border/40 flex items-center justify-between gap-1">
-                      <span className="text-[10px] font-semibold text-muted-foreground">
-                        {currentTab === "installations"
-                          ? lang === "gu"
-                            ? "લાઇવ સ્થાપિત"
-                            : lang === "hi"
-                              ? "लाइव स्थापित"
-                              : "Live Executed"
-                          : lang === "gu"
+                      <div className="pt-1.5 border-t border-border/40 flex items-center justify-between gap-1">
+                        <span className="text-[10px] font-semibold text-muted-foreground">
+                          {lang === "gu"
                             ? "વિનંતી પર ભાવ"
                             : lang === "hi"
                               ? "अनुरोध पर मूल्य"
                               : "Price on Request"}
-                      </span>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={(e) => handleSelectProductClick(item, e)}
-                        className="h-6 text-[10px] px-2 border-amber-500/40 hover:bg-amber-500 hover:text-slate-950 cursor-pointer font-semibold shrink-0"
-                      >
-                        {lang === "gu"
-                          ? "અંદાજ મેળવો"
-                          : lang === "hi"
-                            ? "अनुमान प्राप्त करें"
-                            : "Estimate"}
-                        <ArrowRight className="h-2.5 w-2.5 ml-1" />
-                      </Button>
+                        </span>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => handleSelectProductClick(item, e)}
+                          className="h-6 text-[10px] px-2 border-amber-500/40 hover:bg-amber-500 hover:text-slate-950 cursor-pointer font-semibold shrink-0"
+                        >
+                          {lang === "gu"
+                            ? "અંદાજ મેળવો"
+                            : lang === "hi"
+                              ? "अनुमान प्राप्त करें"
+                              : "Estimate"}
+                          <ArrowRight className="h-2.5 w-2.5 ml-1" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Crisp Action & Navigation Bar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-3 py-2 rounded-xl border border-border/60 bg-muted/20 text-xs">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <span className="font-semibold text-foreground">
-                {lang === "gu"
-                  ? `${toIndicDigits(String(filteredItems.length), lang)} ${tabMetadata.countLabel} દર્શાવી રહ્યાં છીએ`
-                  : lang === "hi"
-                    ? `${toIndicDigits(String(filteredItems.length), lang)} ${tabMetadata.countLabel} प्रदर्शित`
-                    : `Showing ${filteredItems.length} ${tabMetadata.countLabel}`}
-              </span>
-              <span className="hidden md:inline text-[11px]">·</span>
-              <span className="hidden md:inline text-[11px]">
-                {lang === "gu"
-                  ? "૨ હરોળનું ફ્રેમ (૮ દૃશ્યમાન) · બધા જોવા માટે સ્ક્રોલ કરો"
-                  : lang === "hi"
-                    ? "२ पंक्तियों का फ्रेम (८ दृश्यमान) · सभी देखने के लिए स्क्रॉल करें"
-                    : "2-Row Frame (8 visible) · Scroll box to explore all"}
-              </span>
+                ))}
+              </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={scrollToContainerTop}
-                className="h-7 px-2.5 text-[11px] text-muted-foreground hover:text-foreground cursor-pointer"
-                title="Scroll to Top of Catalog"
-              >
-                <ChevronUp className="h-3.5 w-3.5 mr-1" />
-                {lang === "gu" ? "ટોચ પર જાઓ" : lang === "hi" ? "शीर्ष पर जाएं" : "Top"}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const footer = document.querySelector("footer");
-                  if (footer) {
-                    footer.scrollIntoView({ behavior: "smooth" });
-                  }
-                }}
-                className="h-7 px-2.5 text-[11px] text-muted-foreground hover:text-foreground cursor-pointer"
-                title="Scroll past catalog to Footer"
-              >
-                <ChevronDown className="h-3.5 w-3.5 mr-1" />
-                {lang === "gu" ? "પેજ ફૂટર" : lang === "hi" ? "पेज फ़ुटर" : "Page Footer"}
-              </Button>
+            {/* Crisp Action & Navigation Bar */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-3 py-2 rounded-xl border border-border/60 bg-muted/20 text-xs">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <span className="font-semibold text-foreground">
+                  {lang === "gu"
+                    ? `${toIndicDigits(String(filteredItems.length), lang)} ${tabMetadata.countLabel} દર્શાવી રહ્યાં છીએ`
+                    : lang === "hi"
+                      ? `${toIndicDigits(String(filteredItems.length), lang)} ${tabMetadata.countLabel} प्रदर्शित`
+                      : `Showing ${filteredItems.length} ${tabMetadata.countLabel}`}
+                </span>
+                <span className="hidden md:inline text-[11px]">·</span>
+                <span className="hidden md:inline text-[11px]">
+                  {lang === "gu"
+                    ? "૨ હરોળનું ફ્રેમ (૮ દૃશ્યમાન) · બધા જોવા માટે સ્ક્રોલ કરો"
+                    : lang === "hi"
+                      ? "२ पंक्तियों का फ्रेम (८ दृश्यमान) · सभी देखने के लिए स्क्रॉल करें"
+                      : "2-Row Frame (8 visible) · Scroll box to explore all"}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={scrollToContainerTop}
+                  className="h-7 px-2.5 text-[11px] text-muted-foreground hover:text-foreground cursor-pointer"
+                  title="Scroll to Top of Catalog"
+                >
+                  <ChevronUp className="h-3.5 w-3.5 mr-1" />
+                  {lang === "gu" ? "ટોચ પર જાઓ" : lang === "hi" ? "शीर्ष पर जाएं" : "Top"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const footer = document.querySelector("footer");
+                    if (footer) {
+                      footer.scrollIntoView({ behavior: "smooth" });
+                    }
+                  }}
+                  className="h-7 px-2.5 text-[11px] text-muted-foreground hover:text-foreground cursor-pointer"
+                  title="Scroll past catalog to Footer"
+                >
+                  <ChevronDown className="h-3.5 w-3.5 mr-1" />
+                  {lang === "gu" ? "પેજ ફૂટર" : lang === "hi" ? "पेज फ़ुटर" : "Page Footer"}
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        ))}
 
       {/* ARCHITECTURAL LIGHTBOX MODAL */}
       <Dialog

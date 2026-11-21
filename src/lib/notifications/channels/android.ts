@@ -54,7 +54,16 @@ async function ensureAndroidChannel(): Promise<void> {
   }
   try {
     const perm = await LocalNotifications.checkPermissions();
-    if (perm.display === "prompt" || perm.display === "prompt-with-rationale") {
+    const alreadyPrompted =
+      typeof localStorage !== "undefined" &&
+      localStorage.getItem("stos_android_notif_requested") === "true";
+    if (
+      !alreadyPrompted &&
+      (perm.display === "prompt" || perm.display === "prompt-with-rationale")
+    ) {
+      if (typeof localStorage !== "undefined") {
+        localStorage.setItem("stos_android_notif_requested", "true");
+      }
       await LocalNotifications.requestPermissions();
     }
     await LocalNotifications.createChannel({
