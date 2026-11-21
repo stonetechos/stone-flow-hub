@@ -274,22 +274,11 @@ export interface CustomerLedgerOverviewItem {
 export async function listCustomerLedgerSummaries(): Promise<
   Map<string, CustomerLedgerOverviewItem>
 > {
-  const [ledgerRes, dispRes, invRes, quoteRes, cnRes] = await Promise.all([
-    supabase.from("customer_ledger").select("*").order("entry_date", { ascending: true }),
+  const [ledgerRes, cnRes] = await Promise.all([
     supabase
-      .from("dispatches")
-      .select(
-        "id, dispatch_no, dispatch_date, status, carting_charge, notes, sales_order_id, customer_id, created_at, sales_order:sales_orders!dispatches_sales_order_id_fkey(id, quote_id)",
-      )
-      .neq("status", "cancelled"),
-    supabase
-      .from("invoices")
-      .select("id, invoice_no, quote_id, notes, status, customer_id")
-      .neq("status", "cancelled"),
-    supabase
-      .from("quotes")
-      .select("id, quote_no, total, status, customer_id")
-      .neq("status", "rejected"),
+      .from("customer_ledger")
+      .select("customer_id, debit, credit, entry_date, entry_type, ref_id")
+      .order("entry_date", { ascending: true }),
     supabase
       .from("credit_notes")
       .select("id, amount, customer_id, issued_at, status")
@@ -340,7 +329,24 @@ export async function listCustomerLedgerSummaries(): Promise<
     return map;
   }
 
-  // Augment with uninvoiced delivery challan debits
+  // Lazily augment with uninvoiced delivery challan debits only if delivery_challan entries are absent from the view
+  const [dispRes, invRes, quoteRes] = await Promise.all([
+    supabase
+      .from("dispatches")
+      .select(
+        "id, dispatch_no, dispatch_date, status, carting_charge, notes, sales_order_id, customer_id, created_at, sales_order:sales_orders!dispatches_sales_order_id_fkey(id, quote_id)",
+      )
+      .neq("status", "cancelled"),
+    supabase
+      .from("invoices")
+      .select("id, invoice_no, quote_id, notes, status, customer_id")
+      .neq("status", "cancelled"),
+    supabase
+      .from("quotes")
+      .select("id, quote_no, total, status, customer_id")
+      .neq("status", "rejected"),
+  ]);
+
   const challanEntries = resolveUninvoicedDeliveryChallans({
     dispatches: (dispRes.data ?? []) as unknown as RawDispatchForLedger[],
     invoices: (invRes.data ?? []) as unknown as RawInvoiceForLedger[],

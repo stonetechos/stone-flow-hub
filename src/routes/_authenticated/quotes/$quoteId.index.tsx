@@ -138,21 +138,30 @@ function QuoteDetailPage() {
   const roles = useRoles();
   const canReassign = roles.isAdmin || roles.isSalesManager;
 
-  const q = useQuery({ queryKey: qk.quotes.byId(quoteId), queryFn: () => getQuote(quoteId) });
+  const q = useQuery({
+    queryKey: qk.quotes.byId(quoteId),
+    queryFn: () => getQuote(quoteId),
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
+  });
   const items = useQuery({
     queryKey: qk.quotes.items(quoteId),
-    queryFn: () => getQuoteItems(quoteId),
+    queryFn: () => getQuoteItems(quoteId, q.data?.workflow_state),
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
   });
   const linkedSo = useQuery({
     queryKey: ["quotes", "linkedSalesOrder", quoteId],
     queryFn: () => getSalesOrderForQuote(quoteId),
     enabled: Boolean(q.data),
+    staleTime: 60_000,
   });
   const sourceEstimateId = q.data?.estimate_id ?? null;
   const sourceEstimate = useQuery({
     queryKey: ["quotes", "sourceEstimate", sourceEstimateId ?? ""],
     queryFn: () => (sourceEstimateId ? getEstimateForQuote(sourceEstimateId) : null),
     enabled: !!sourceEstimateId,
+    staleTime: 60_000,
   });
 
   const linkedDispatches = useQuery({
@@ -162,6 +171,7 @@ function QuoteDetailPage() {
       return map[quoteId] ?? [];
     },
     enabled: Boolean(q.data),
+    staleTime: 60_000,
   });
   const quoteDispatches = linkedDispatches.data ?? [];
   const primaryDispatch = quoteDispatches[0] ?? null;
@@ -170,6 +180,7 @@ function QuoteDetailPage() {
     queryKey: ["dispatch", primaryDispatch?.id, "items"],
     queryFn: () => (primaryDispatch ? listDispatchItems(primaryDispatch.id) : []),
     enabled: !!primaryDispatch?.id,
+    staleTime: 60_000,
   });
 
   const varianceReport = useMemo(() => {
@@ -369,20 +380,11 @@ function QuoteDetailPage() {
   };
 
   const quoteImages = useQuery({
-    queryKey: [
-      "quotes",
-      "images",
-      quoteId,
-      JSON.stringify(
-        (q.data?.workflow_state as Record<string, unknown> | null)?.line_item_images ?? {},
-      ),
-      JSON.stringify(
-        (q.data?.workflow_state as Record<string, unknown> | null)?.line_item_multi_images ?? {},
-      ),
-      items.data?.length,
-    ],
+    queryKey: ["quotes", "images", quoteId],
     queryFn: () => resolveAllQuoteImages(q.data, items.data ?? []),
     enabled: Boolean(q.data && items.data),
+    staleTime: 5 * 60_000,
+    gcTime: 10 * 60_000,
   });
 
   const statusMut = useMutation({

@@ -728,15 +728,20 @@ function CustomerHub() {
   const q = useQuery({
     queryKey: qk.customers.byId(customerId),
     queryFn: () => getCustomer(customerId),
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
   });
   const stats = useQuery({
     queryKey: ["hub", "customer", customerId, "stats"],
     queryFn: () => hub.customerStats(customerId),
+    staleTime: 5 * 60_000,
+    gcTime: 10 * 60_000,
   });
   const nextFupQ = useQuery({
     queryKey: ["customer-next-followup", customerId],
     queryFn: () => listFollowups({ customerId, scope: "pending", limit: 1 }),
-    staleTime: 30_000,
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
   });
   const nextFupRow = (nextFupQ.data ?? [])[0] ?? null;
 
@@ -926,24 +931,64 @@ function CustomerHub() {
       />
 
       <Tabs value={tab} onValueChange={setTab} className="w-full">
-        <TabsList className="w-full">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="projects">Projects</TabsTrigger>
-          <TabsTrigger value="enquiries">Enquiries</TabsTrigger>
-          <TabsTrigger value="quotes">Quotations</TabsTrigger>
-          <TabsTrigger value="sales">Sales Orders</TabsTrigger>
-          <TabsTrigger value="invoices">Invoices</TabsTrigger>
-          <TabsTrigger value="payments">Payments</TabsTrigger>
-          <TabsTrigger value="challans">Challans</TabsTrigger>
-          <TabsTrigger value="installations">Installation</TabsTrigger>
-          <TabsTrigger value="statements">Sales Ledger</TabsTrigger>
-          <TabsTrigger value="documents">Documents</TabsTrigger>
-          <TabsTrigger value="timeline">Timeline</TabsTrigger>
-          <TabsTrigger value="notes">Notes</TabsTrigger>
-          <TabsTrigger value="attachments">Attachments</TabsTrigger>
-          <TabsTrigger value="contacts">Contacts</TabsTrigger>
-          <TabsTrigger value="addresses">Addresses</TabsTrigger>
-          <TabsTrigger value="stats">Statistics</TabsTrigger>
+        <TabsList className="w-full overflow-x-auto scrollbar-none touch-pan-x flex-nowrap justify-start h-11 border-b border-border">
+          <TabsTrigger value="overview" className="shrink-0 text-xs sm:text-sm whitespace-nowrap">
+            Overview
+          </TabsTrigger>
+          <TabsTrigger value="projects" className="shrink-0 text-xs sm:text-sm whitespace-nowrap">
+            Projects
+          </TabsTrigger>
+          <TabsTrigger value="enquiries" className="shrink-0 text-xs sm:text-sm whitespace-nowrap">
+            Enquiries
+          </TabsTrigger>
+          <TabsTrigger value="quotes" className="shrink-0 text-xs sm:text-sm whitespace-nowrap">
+            Quotations
+          </TabsTrigger>
+          <TabsTrigger value="sales" className="shrink-0 text-xs sm:text-sm whitespace-nowrap">
+            Sales Orders
+          </TabsTrigger>
+          <TabsTrigger value="invoices" className="shrink-0 text-xs sm:text-sm whitespace-nowrap">
+            Invoices
+          </TabsTrigger>
+          <TabsTrigger value="payments" className="shrink-0 text-xs sm:text-sm whitespace-nowrap">
+            Payments
+          </TabsTrigger>
+          <TabsTrigger value="challans" className="shrink-0 text-xs sm:text-sm whitespace-nowrap">
+            Challans
+          </TabsTrigger>
+          <TabsTrigger
+            value="installations"
+            className="shrink-0 text-xs sm:text-sm whitespace-nowrap"
+          >
+            Installation
+          </TabsTrigger>
+          <TabsTrigger value="statements" className="shrink-0 text-xs sm:text-sm whitespace-nowrap">
+            Sales Ledger
+          </TabsTrigger>
+          <TabsTrigger value="documents" className="shrink-0 text-xs sm:text-sm whitespace-nowrap">
+            Documents
+          </TabsTrigger>
+          <TabsTrigger value="timeline" className="shrink-0 text-xs sm:text-sm whitespace-nowrap">
+            Timeline
+          </TabsTrigger>
+          <TabsTrigger value="notes" className="shrink-0 text-xs sm:text-sm whitespace-nowrap">
+            Notes
+          </TabsTrigger>
+          <TabsTrigger
+            value="attachments"
+            className="shrink-0 text-xs sm:text-sm whitespace-nowrap"
+          >
+            Attachments
+          </TabsTrigger>
+          <TabsTrigger value="contacts" className="shrink-0 text-xs sm:text-sm whitespace-nowrap">
+            Contacts
+          </TabsTrigger>
+          <TabsTrigger value="addresses" className="shrink-0 text-xs sm:text-sm whitespace-nowrap">
+            Addresses
+          </TabsTrigger>
+          <TabsTrigger value="stats" className="shrink-0 text-xs sm:text-sm whitespace-nowrap">
+            Statistics
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-4 space-y-4">

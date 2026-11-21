@@ -42,9 +42,16 @@ const SELECT_WITH_JOINS =
  * transfer kilobytes instead of megabytes over the network.
  */
 const SELECT_LIST_FIELDS =
-  "id,quote_no,customer_id,project_id,enquiry_id,status,category,valid_until,issue_date,created_at,subtotal,tax_amount,total,notes,workflow_state, customer:customers!quotes_customer_id_fkey(id,name,customer_code,workflow_state,external_ref), project:projects!quotes_project_id_fkey(id,name,project_code), invoices:invoices!invoices_quote_id_fkey(id,invoice_no,status,total)";
+  "id,quote_no,customer_id,project_id,enquiry_id,status,category,valid_until,issue_date,created_at,subtotal,tax_amount,total,notes,workflow_state, customer:customers!quotes_customer_id_fkey(id,name,customer_code,workflow_state), project:projects!quotes_project_id_fkey(id,name,project_code), invoices:invoices!invoices_quote_id_fkey(id,invoice_no,status,total)";
 
 function reconcileQuoteItem(quote: QuoteListItem, persistHeal = false): QuoteListItem {
+  if (quote.workflow_state && typeof quote.workflow_state === "object") {
+    const rawLen = JSON.stringify(quote.workflow_state).length;
+    if (rawLen > 100_000) {
+      quote.workflow_state = pruneOversizedDataUrls(quote.workflow_state, 80_000);
+    }
+  }
+
   if (quote.status === "converted") {
     const hasActiveInvoice =
       Array.isArray(quote.invoices) &&
@@ -124,7 +131,10 @@ export async function getQuote(id: string): Promise<QuoteListItem | null> {
   return reconcileQuoteItem(data as QuoteListItem, true);
 }
 
-export async function getQuoteItems(quoteId: string): Promise<QuoteItemRow[]> {
+export async function getQuoteItems(
+  quoteId: string,
+  workflowState?: unknown,
+): Promise<QuoteItemRow[]> {
   const { data, error } = await getDb()
     .from("quote_items")
     .select("*")
@@ -132,12 +142,17 @@ export async function getQuoteItems(quoteId: string): Promise<QuoteItemRow[]> {
     .order("sort_order", { ascending: true });
   if (error) throw new AppError(mapDbError(error));
 
-  const { data: q } = await getDb()
-    .from("quotes")
-    .select("workflow_state")
-    .eq("id", quoteId)
-    .maybeSingle();
-  const wf = (q?.workflow_state as Record<string, unknown> | null) ?? {};
+  let wf: Record<string, unknown> = {};
+  if (workflowState && typeof workflowState === "object") {
+    wf = workflowState as Record<string, unknown>;
+  } else {
+    const { data: q } = await getDb()
+      .from("quotes")
+      .select("workflow_state")
+      .eq("id", quoteId)
+      .maybeSingle();
+    wf = (q?.workflow_state as Record<string, unknown> | null) ?? {};
+  }
   const notesMap = (wf.line_item_notes as Record<string, string> | null) ?? {};
 
   return (data ?? []).map((it, idx) => {

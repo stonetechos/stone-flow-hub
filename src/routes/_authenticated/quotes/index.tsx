@@ -21,6 +21,7 @@ import {
   XCircle,
   RefreshCw,
   ChevronDown,
+  ExternalLink,
 } from "lucide-react";
 import { parseQuoteVendorAssignment, assignVendorToQuote } from "@/lib/quotes/vendor-assignment";
 import { AssignQuoteVendorDialog } from "@/components/quotes/AssignQuoteVendorDialog";
@@ -175,7 +176,12 @@ function QuotesPage() {
     [],
   );
 
-  const query = useQuery({ queryKey: qk.quotes.list(dq), queryFn: () => listQuotes(dq) });
+  const query = useQuery({
+    queryKey: qk.quotes.list(dq),
+    queryFn: () => listQuotes(dq),
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
+  });
   const del = useMutation({
     mutationFn: (id: string) => deleteQuote(id),
     onSuccess: () => {
@@ -321,7 +327,7 @@ function QuotesPage() {
       <PageHeader title="Quotes" subtitle="Send priced offers, then convert to invoice." />
 
       {/* Deal Type Sub-Tabs Filter: GST Deals vs Cash Deals vs Hybrid Deals */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 mb-2">
+      <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none touch-pan-x pb-1 mb-2">
         <span className="text-xs font-semibold text-slate-500 mr-1 flex items-center gap-1 shrink-0">
           <Receipt className="h-3.5 w-3.5 text-slate-400" />
           <span>Deal Type:</span>
@@ -392,7 +398,7 @@ function QuotesPage() {
       </div>
 
       {/* Quick Order / Vendor Sub-Tabs Filter */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 mb-3">
+      <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none touch-pan-x pb-1 mb-3">
         <span className="text-xs font-semibold text-slate-500 mr-1 flex items-center gap-1 shrink-0">
           <Building2 className="h-3.5 w-3.5 text-slate-400" />
           <span>Orders & Fulfilment:</span>
@@ -554,466 +560,626 @@ function QuotesPage() {
             />
           }
         >
-          <Table className="min-w-[1200px]">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-8" />
-                {!isHidden("no") && <TableHead className="w-36">Quote #</TableHead>}
-                {!isHidden("saleMode") && (
-                  <TableHead className="w-36">{t("quotes.dealType", "Deal Type")}</TableHead>
-                )}
-                {!isHidden("date") && <TableHead className="w-28">Quote Date</TableHead>}
-                {!isHidden("project") && <TableHead>Project</TableHead>}
-                {!isHidden("customer") && <TableHead>Customer</TableHead>}
-                {!isHidden("status") && <TableHead>Status</TableHead>}
-                {!isHidden("vendor") && <TableHead className="w-48">Vendor Assignment</TableHead>}
-                {!isHidden("deliveryDate") && (
-                  <TableHead className="w-36 whitespace-nowrap">Promised Delivery</TableHead>
-                )}
-                {!isHidden("total") && <TableHead className="text-right">Total</TableHead>}
-                {!isHidden("valid") && (
-                  <TableHead className="whitespace-nowrap">Valid until</TableHead>
-                )}
-                <TableHead className="w-12 text-right" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {pageRows.map((r) => {
-                const assignment = parseQuoteVendorAssignment(r);
-                return (
-                  <TableRow key={r.id}>
-                    <TableCell>
+          {/* Mobile Responsive Cards View (< sm) */}
+          <div className="sm:hidden divide-y divide-border/60">
+            {pageRows.map((r) => {
+              const assignment = parseQuoteVendorAssignment(r);
+              const mode = getQuoteSaleMode(r);
+              const cfg = SALE_MODE_CONFIG[mode];
+              const activeInvoice = r.invoices?.find((i) => i.status !== "cancelled");
+              const isInvoiced = !!activeInvoice;
+
+              return (
+                <div
+                  key={r.id}
+                  className="p-3.5 space-y-2.5 bg-card hover:bg-muted/30 transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2">
                       <Checkbox
                         checked={compareIds.has(r.id)}
                         onCheckedChange={() => toggleCompare(r.id)}
                         aria-label={`Select ${r.quote_no} for comparison`}
                       />
-                    </TableCell>
-                    {!isHidden("no") && (
-                      <TableCell className="text-xs">
-                        <Link
-                          to="/quotes/$quoteId"
-                          params={{ quoteId: r.id }}
-                          className="font-mono text-xs font-semibold text-primary hover:underline truncate block"
-                        >
-                          {r.quote_no}
-                        </Link>
-                      </TableCell>
-                    )}
-                    {!isHidden("saleMode") && (
-                      <TableCell>
-                        {(() => {
-                          const mode = getQuoteSaleMode(r);
-                          const cfg = SALE_MODE_CONFIG[mode];
-                          const activeInvoice = r.invoices?.find((i) => i.status !== "cancelled");
-                          const isInvoiced = !!activeInvoice;
+                      <Link
+                        to="/quotes/$quoteId"
+                        params={{ quoteId: r.id }}
+                        className="font-mono text-sm font-bold text-primary hover:underline"
+                      >
+                        {r.quote_no}
+                      </Link>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "capitalize text-[11px] font-semibold px-2 py-0.5",
+                          r.status === "accepted" &&
+                            "bg-emerald-50 text-emerald-700 border-emerald-200",
+                          r.status === "sent" && "bg-sky-50 text-sky-700 border-sky-200",
+                          r.status === "draft" && "bg-slate-50 text-slate-700 border-slate-200",
+                          r.status === "rejected" && "bg-rose-50 text-rose-700 border-rose-200",
+                          r.status === "converted" &&
+                            "bg-indigo-50 text-indigo-700 border-indigo-200",
+                          r.status === "expired" && "bg-amber-50 text-amber-700 border-amber-200",
+                        )}
+                      >
+                        {r.status === "rejected"
+                          ? t("quotes.status.declined", "Declined")
+                          : r.status === "converted"
+                            ? t("quotes.status.converted", "Converted")
+                            : r.status === "draft"
+                              ? t("quotes.status.draft", "Draft")
+                              : r.status === "sent"
+                                ? t("quotes.status.sent", "Sent")
+                                : r.status === "accepted"
+                                  ? t("quotes.status.accepted", "Accepted")
+                                  : r.status === "expired"
+                                    ? t("quotes.status.expired", "Expired")
+                                    : r.status}
+                      </Badge>
+                      <RowActions
+                        canEdit={true}
+                        onEdit={() =>
+                          nav({ to: "/quotes/$quoteId/edit", params: { quoteId: r.id } })
+                        }
+                        onDelete={() => setToDelete(r)}
+                      />
+                    </div>
+                  </div>
 
-                          return (
-                            <div className="flex flex-col gap-0.5 items-start">
-                              <span
-                                className={cn(
-                                  "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold border",
-                                  cfg.badgeTone,
-                                )}
-                              >
+                  {/* Customer & Project info */}
+                  <div className="space-y-0.5 text-xs">
+                    <div className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5 flex-wrap">
+                      <span>{r.customer?.name || "Customer not set"}</span>
+                      {r.customer?.customer_code && (
+                        <span className="font-mono text-[10px] text-muted-foreground font-normal">
+                          ({r.customer.customer_code})
+                        </span>
+                      )}
+                    </div>
+                    {r.project?.name && (
+                      <div className="text-muted-foreground flex items-center gap-1 text-[11px]">
+                        <Building2 className="h-3 w-3 shrink-0" />
+                        <span>{r.project.name}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Badges bar: Deal Type & Fulfilment */}
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold border",
+                        cfg.badgeTone,
+                      )}
+                    >
+                      <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", cfg.dotColor)} />
+                      <span>{t(`quotes.saleMode.${mode}`, cfg.shortLabel)}</span>
+                    </span>
+
+                    {assignment.fulfilmentType === "in_stock" ||
+                    assignment.fulfilmentType === "stock_lifted" ||
+                    assignment.isOrderCompleted ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-300">
+                        <Boxes className="h-3 w-3 text-emerald-600" /> Live Stock
+                      </span>
+                    ) : assignment.isAssigned ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-cyan-50 text-cyan-800 border border-cyan-300">
+                        <Building2 className="h-3 w-3 text-cyan-600" /> {assignment.vendorName}
+                      </span>
+                    ) : r.status === "accepted" ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-50 text-amber-800 border border-amber-300">
+                        <Clock className="h-3 w-3 text-amber-600" /> Awaiting Partner
+                      </span>
+                    ) : null}
+
+                    {isInvoiced && activeInvoice && (
+                      <Link
+                        to="/invoices/$invoiceId"
+                        params={{ invoiceId: activeInvoice.id }}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-blue-50 text-blue-800 border border-blue-200 hover:underline"
+                      >
+                        <CheckCircle2 className="h-3 w-3 text-blue-600" />
+                        <span>{activeInvoice.invoice_no}</span>
+                      </Link>
+                    )}
+                  </div>
+
+                  {/* Financials & Quick Action Footer */}
+                  <div className="flex items-center justify-between pt-1 border-t border-border/50 text-xs">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-muted-foreground">
+                        {r.issue_date ? formatDate(r.issue_date) : "Total Quote"}
+                      </span>
+                      <span className="font-bold text-sm text-primary">{formatInr(r.total)}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Link
+                        to="/quotes/$quoteId"
+                        params={{ quoteId: r.id }}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                      >
+                        <span>View</span>
+                        <ExternalLink className="h-3 w-3" />
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop Table View (>= sm) */}
+          <div className="hidden sm:block">
+            <Table className="min-w-[1200px]">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-8" />
+                  {!isHidden("no") && <TableHead className="w-36">Quote #</TableHead>}
+                  {!isHidden("saleMode") && (
+                    <TableHead className="w-36">{t("quotes.dealType", "Deal Type")}</TableHead>
+                  )}
+                  {!isHidden("date") && <TableHead className="w-28">Quote Date</TableHead>}
+                  {!isHidden("project") && <TableHead>Project</TableHead>}
+                  {!isHidden("customer") && <TableHead>Customer</TableHead>}
+                  {!isHidden("status") && <TableHead>Status</TableHead>}
+                  {!isHidden("vendor") && <TableHead className="w-48">Vendor Assignment</TableHead>}
+                  {!isHidden("deliveryDate") && (
+                    <TableHead className="w-36 whitespace-nowrap">Promised Delivery</TableHead>
+                  )}
+                  {!isHidden("total") && <TableHead className="text-right">Total</TableHead>}
+                  {!isHidden("valid") && (
+                    <TableHead className="whitespace-nowrap">Valid until</TableHead>
+                  )}
+                  <TableHead className="w-12 text-right" />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pageRows.map((r) => {
+                  const assignment = parseQuoteVendorAssignment(r);
+                  return (
+                    <TableRow key={r.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={compareIds.has(r.id)}
+                          onCheckedChange={() => toggleCompare(r.id)}
+                          aria-label={`Select ${r.quote_no} for comparison`}
+                        />
+                      </TableCell>
+                      {!isHidden("no") && (
+                        <TableCell className="text-xs">
+                          <Link
+                            to="/quotes/$quoteId"
+                            params={{ quoteId: r.id }}
+                            className="font-mono text-xs font-semibold text-primary hover:underline truncate block"
+                          >
+                            {r.quote_no}
+                          </Link>
+                        </TableCell>
+                      )}
+                      {!isHidden("saleMode") && (
+                        <TableCell>
+                          {(() => {
+                            const mode = getQuoteSaleMode(r);
+                            const cfg = SALE_MODE_CONFIG[mode];
+                            const activeInvoice = r.invoices?.find((i) => i.status !== "cancelled");
+                            const isInvoiced = !!activeInvoice;
+
+                            return (
+                              <div className="flex flex-col gap-0.5 items-start">
                                 <span
-                                  className={cn("h-1.5 w-1.5 rounded-full shrink-0", cfg.dotColor)}
-                                />
-                                <span>{t(`quotes.saleMode.${mode}`, cfg.shortLabel)}</span>
-                              </span>
-                              {mode === "invoiced" ? (
-                                isInvoiced && activeInvoice ? (
-                                  <Link
-                                    to="/invoices/$invoiceId"
-                                    params={{ invoiceId: activeInvoice.id }}
-                                    className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-700 hover:text-blue-900 hover:underline"
-                                  >
-                                    <CheckCircle2 className="h-3 w-3 text-blue-600" />
-                                    <span>
-                                      {t("quotes.invoiced", "Invoiced")} ({activeInvoice.invoice_no}
-                                      )
-                                    </span>
-                                  </Link>
-                                ) : (
-                                  <span className="text-[10px] text-muted-foreground font-normal">
-                                    {t("quotes.toBeInvoiced", "To be invoiced")}
-                                  </span>
-                                )
-                              ) : mode === "cash" ? (
-                                <Link
-                                  to="/dispatch/new"
-                                  search={{ quote: r.id, customer: r.customer_id }}
-                                  className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 hover:underline"
+                                  className={cn(
+                                    "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold border",
+                                    cfg.badgeTone,
+                                  )}
                                 >
-                                  <Truck className="h-3 w-3" />
-                                  <span>{t("quotes.challanOnly", "Challan Only")}</span>
-                                </Link>
-                              ) : (
-                                <div className="flex items-center gap-1 text-[10px]">
-                                  {isInvoiced && activeInvoice ? (
+                                  <span
+                                    className={cn(
+                                      "h-1.5 w-1.5 rounded-full shrink-0",
+                                      cfg.dotColor,
+                                    )}
+                                  />
+                                  <span>{t(`quotes.saleMode.${mode}`, cfg.shortLabel)}</span>
+                                </span>
+                                {mode === "invoiced" ? (
+                                  isInvoiced && activeInvoice ? (
                                     <Link
                                       to="/invoices/$invoiceId"
                                       params={{ invoiceId: activeInvoice.id }}
-                                      className="font-semibold text-purple-700 hover:underline inline-flex items-center gap-0.5"
+                                      className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-700 hover:text-blue-900 hover:underline"
                                     >
-                                      <CheckCircle2 className="h-2.5 w-2.5 text-purple-600" />
+                                      <CheckCircle2 className="h-3 w-3 text-blue-600" />
                                       <span>
                                         {t("quotes.invoiced", "Invoiced")} (
                                         {activeInvoice.invoice_no})
                                       </span>
                                     </Link>
                                   ) : (
-                                    <span className="text-purple-700 font-normal">
-                                      {t("quotes.bill", "Bill")}
+                                    <span className="text-[10px] text-muted-foreground font-normal">
+                                      {t("quotes.toBeInvoiced", "To be invoiced")}
                                     </span>
-                                  )}
-                                  <span className="text-muted-foreground">
-                                    {t("quotes.plusCash", "+ Cash")}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })()}
-                      </TableCell>
-                    )}
-                    {!isHidden("date") && (
-                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                        {formatDate(r.issue_date || r.created_at)}
-                      </TableCell>
-                    )}
-                    {!isHidden("project") && (
-                      <TableCell className="font-medium">
-                        {r.project?.name ? transliterateName(r.project.name, i18n.language) : "—"}
-                      </TableCell>
-                    )}
-                    {!isHidden("customer") && (
-                      <TableCell>
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="font-medium text-xs text-foreground">
-                            {r.customer?.name
-                              ? transliterateName(r.customer.name, i18n.language)
-                              : "—"}
-                          </span>
-                          {r.customer?.id && (
-                            <CustomerAssigneeSelect
-                              customerId={r.customer.id}
-                              customerName={r.customer.name}
-                              workflowState={r.customer.workflow_state}
-                              externalRef={r.customer.external_ref}
-                              size="sm"
-                            />
-                          )}
-                        </div>
-                      </TableCell>
-                    )}
-                    {!isHidden("status") && (
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <button
-                              type="button"
-                              className="inline-flex items-center gap-1 cursor-pointer focus:outline-hidden group"
-                              title="Click to change quotation status"
-                            >
-                              <Badge
-                                variant="outline"
-                                className={cn(
-                                  "capitalize font-medium transition-all group-hover:ring-1 group-hover:ring-slate-300",
-                                  r.status === "accepted" &&
-                                    "bg-emerald-50 text-emerald-700 border-emerald-200",
-                                  r.status === "sent" && "bg-sky-50 text-sky-700 border-sky-200",
-                                  r.status === "draft" &&
-                                    "bg-slate-50 text-slate-700 border-slate-200",
-                                  r.status === "rejected" &&
-                                    "bg-rose-50 text-rose-700 border-rose-200",
-                                  r.status === "converted" &&
-                                    "bg-indigo-50 text-indigo-700 border-indigo-200",
-                                  r.status === "expired" &&
-                                    "bg-amber-50 text-amber-700 border-amber-200",
+                                  )
+                                ) : mode === "cash" ? (
+                                  <Link
+                                    to="/dispatch/new"
+                                    search={{ quote: r.id, customer: r.customer_id }}
+                                    className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 hover:underline"
+                                  >
+                                    <Truck className="h-3 w-3" />
+                                    <span>{t("quotes.challanOnly", "Challan Only")}</span>
+                                  </Link>
+                                ) : (
+                                  <div className="flex items-center gap-1 text-[10px]">
+                                    {isInvoiced && activeInvoice ? (
+                                      <Link
+                                        to="/invoices/$invoiceId"
+                                        params={{ invoiceId: activeInvoice.id }}
+                                        className="font-semibold text-purple-700 hover:underline inline-flex items-center gap-0.5"
+                                      >
+                                        <CheckCircle2 className="h-2.5 w-2.5 text-purple-600" />
+                                        <span>
+                                          {t("quotes.invoiced", "Invoiced")} (
+                                          {activeInvoice.invoice_no})
+                                        </span>
+                                      </Link>
+                                    ) : (
+                                      <span className="text-purple-700 font-normal">
+                                        {t("quotes.bill", "Bill")}
+                                      </span>
+                                    )}
+                                    <span className="text-muted-foreground">
+                                      {t("quotes.plusCash", "+ Cash")}
+                                    </span>
+                                  </div>
                                 )}
+                              </div>
+                            );
+                          })()}
+                        </TableCell>
+                      )}
+                      {!isHidden("date") && (
+                        <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                          {formatDate(r.issue_date || r.created_at)}
+                        </TableCell>
+                      )}
+                      {!isHidden("project") && (
+                        <TableCell className="font-medium">
+                          {r.project?.name ? transliterateName(r.project.name, i18n.language) : "—"}
+                        </TableCell>
+                      )}
+                      {!isHidden("customer") && (
+                        <TableCell>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-medium text-xs text-foreground">
+                              {r.customer?.name
+                                ? transliterateName(r.customer.name, i18n.language)
+                                : "—"}
+                            </span>
+                            {r.customer?.id && (
+                              <CustomerAssigneeSelect
+                                customerId={r.customer.id}
+                                customerName={r.customer.name}
+                                workflowState={r.customer.workflow_state}
+                                externalRef={r.customer.external_ref}
+                                size="sm"
+                              />
+                            )}
+                          </div>
+                        </TableCell>
+                      )}
+                      {!isHidden("status") && (
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button
+                                type="button"
+                                className="inline-flex items-center gap-1 cursor-pointer focus:outline-hidden group"
+                                title="Click to change quotation status"
                               >
-                                {r.status === "rejected"
-                                  ? t("quotes.status.declined", "Declined")
-                                  : r.status === "converted"
-                                    ? t("quotes.status.converted", "Converted")
-                                    : r.status === "draft"
-                                      ? t("quotes.status.draft", "Draft")
-                                      : r.status === "sent"
-                                        ? t("quotes.status.sent", "Sent")
-                                        : r.status === "accepted"
-                                          ? t("quotes.status.accepted", "Accepted")
-                                          : r.status === "expired"
-                                            ? t("quotes.status.expired", "Expired")
-                                            : r.status}
-                                <ChevronDown className="ml-1 h-3 w-3 opacity-50 group-hover:opacity-100" />
-                              </Badge>
-                            </button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="start" className="w-44">
-                            <DropdownMenuLabel className="text-xs text-muted-foreground">
-                              {t("quotes.changeStatus", "Change Status")}
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              disabled={r.status === "draft"}
-                              onClick={() => changeStatusMut.mutate({ id: r.id, status: "draft" })}
-                            >
-                              {t("quotes.status.draft", "Draft")}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              disabled={r.status === "sent"}
-                              onClick={() => changeStatusMut.mutate({ id: r.id, status: "sent" })}
-                            >
-                              {t("quotes.status.sent", "Sent")}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              disabled={r.status === "accepted"}
-                              onClick={() =>
-                                changeStatusMut.mutate({ id: r.id, status: "accepted" })
-                              }
-                            >
-                              <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-600" />
-                              {t("quotes.status.accepted", "Accepted")}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              disabled={r.status === "rejected"}
-                              className="text-rose-600 focus:text-rose-600 focus:bg-rose-50"
-                              onClick={() =>
-                                changeStatusMut.mutate({ id: r.id, status: "rejected" })
-                              }
-                            >
-                              <XCircle className="mr-2 h-4 w-4 text-rose-600" />
-                              {t("quotes.status.declined", "Declined")}
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    )}
-                    {!isHidden("vendor") && (
-                      <TableCell>
-                        {assignment.fulfilmentType === "stock_lifted" ||
-                        assignment.isOrderCompleted ? (
-                          <button
-                            type="button"
-                            onClick={() => setAssigningQuote(r)}
-                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 transition-colors shadow-2xs group cursor-pointer text-left"
-                            title="Material lifted from stock · No RFQ required. Click to view or edit."
-                          >
-                            <PackageCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                            <span className="font-semibold truncate max-w-[140px]">
-                              Material Lifted from Stock
-                            </span>
-                            {assignment.isOrderCompleted && (
-                              <span className="text-[10px] bg-emerald-200/80 px-1 py-0.2 rounded text-emerald-900 font-bold ml-0.5">
-                                Order Completed
-                              </span>
-                            )}
-                          </button>
-                        ) : assignment.fulfilmentType === "in_stock" ? (
-                          <button
-                            type="button"
-                            onClick={() => setAssigningQuote(r)}
-                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-800 border border-blue-200 hover:bg-blue-100 transition-colors text-left group cursor-pointer"
-                            title={
-                              assignment.stockLocation
-                                ? `Fulfilled from in-house stock (${assignment.stockLocation}) — Click to view/edit`
-                                : "Fulfilled from in-house stock — Click to view/edit"
-                            }
-                          >
-                            <Boxes className="h-3.5 w-3.5 text-blue-600 shrink-0" />
-                            <span className="font-semibold truncate max-w-[130px]">
-                              In-House Stock
-                            </span>
-                            {assignment.stockLocation && (
-                              <span className="text-[10px] text-blue-600/80 max-w-[80px] truncate">
-                                · {assignment.stockLocation}
-                              </span>
-                            )}
-                          </button>
-                        ) : assignment.isAssigned ? (
-                          <button
-                            type="button"
-                            onClick={() => setAssigningQuote(r)}
-                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 transition-colors text-left group cursor-pointer"
-                            title="Click to view or change assigned vendor"
-                          >
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
-                            <span className="font-semibold truncate max-w-[130px]">
-                              {assignment.vendorName}
-                            </span>
-                            <Building2 className="h-3 w-3 text-emerald-600 opacity-60 group-hover:opacity-100 shrink-0" />
-                          </button>
-                        ) : r.status === "accepted" ? (
-                          <div className="inline-flex items-center gap-1">
-                            <button
-                              type="button"
-                              onClick={() => quickLiftStockMut.mutate(r)}
-                              disabled={quickLiftStockMut.isPending}
-                              className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded transition-colors shadow-2xs cursor-pointer"
-                              title="1-click: Mark material as lifted from stock (RFQ not required)"
-                            >
-                              <PackageCheck className="h-3 w-3 text-blue-600 shrink-0" />
-                              <span>Lift from Stock</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setRfqQuote(r)}
-                              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded transition-colors cursor-pointer"
-                              title="Send optional WhatsApp RFQ to vendors"
-                            >
-                              <MessageCircle className="h-3 w-3 text-slate-500" />
-                              <span>RFQ</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setAssigningQuote(r);
-                              }}
-                              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded border border-slate-200 transition-colors cursor-pointer"
-                              title="Assign stone vendor or stock source"
-                            >
-                              <Boxes className="h-3 w-3 text-slate-500" />
-                              <span>+ Vendor</span>
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="inline-flex items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setRfqQuote(r);
-                              }}
-                              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 rounded transition-colors cursor-pointer"
-                              title="Send optional WhatsApp RFQ to vendors"
-                            >
-                              <MessageCircle className="h-3 w-3 text-emerald-600" />
-                              <span>RFQ</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setAssigningQuote(r);
-                              }}
-                              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded border border-slate-200 transition-colors cursor-pointer"
-                              title="Assign stone vendor or stock source"
-                            >
-                              <Boxes className="h-3 w-3 text-slate-500" />
-                              <span>+ Vendor</span>
-                            </button>
-                          </div>
-                        )}
-                      </TableCell>
-                    )}
-                    {!isHidden("deliveryDate") && (
-                      <TableCell className="text-xs whitespace-nowrap">
-                        {assignment.promisedDeliveryDate ? (
-                          <button
-                            type="button"
-                            onClick={() => setAssigningQuote(r)}
-                            className="inline-flex items-center gap-1 text-slate-700 hover:text-primary hover:underline font-mono cursor-pointer"
-                            title="Click to change promised delivery date"
-                          >
-                            <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                            <span>{formatDate(assignment.promisedDeliveryDate)}</span>
-                          </button>
-                        ) : r.status === "accepted" ? (
-                          <button
-                            type="button"
-                            onClick={() => setAssigningQuote(r)}
-                            className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-1.5 py-0.5 rounded transition-colors cursor-pointer"
-                            title="Promised delivery date missing — Click to set"
-                          >
-                            <Calendar className="h-3 w-3 text-amber-600 shrink-0" />
-                            <span>+ Set Date</span>
-                          </button>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </TableCell>
-                    )}
-                    {!isHidden("total") && (
-                      <TableCell className="text-right tabular-nums">
-                        {formatInr(r.total)}
-                      </TableCell>
-                    )}
-                    {!isHidden("valid") && (
-                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                        {r.valid_until ? formatDate(r.valid_until) : "—"}
-                      </TableCell>
-                    )}
-                    <TableCell className="text-right">
-                      <RowActions
-                        canEdit={true}
-                        canDelete={true}
-                        extra={
-                          <>
-                            <DropdownMenuItem
-                              onClick={() =>
-                                nav({
-                                  to: "/dispatch/new",
-                                  search: { quote: r.id, customer: r.customer_id },
-                                })
-                              }
-                            >
-                              <Truck className="mr-2 h-4 w-4 text-emerald-600" />
-                              Issue Delivery Challan
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setRfqQuote(r)}>
-                              <MessageCircle className="mr-2 h-4 w-4 text-emerald-600" />
-                              WhatsApp RFQ / Sourcing
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setAssigningQuote(r)}>
-                              <Building2 className="mr-2 h-4 w-4" />
-                              Assign Vendor / Delivery Date
-                            </DropdownMenuItem>
-                            {r.status !== "rejected" && r.status !== "converted" && (
+                                <Badge
+                                  variant="outline"
+                                  className={cn(
+                                    "capitalize font-medium transition-all group-hover:ring-1 group-hover:ring-slate-300",
+                                    r.status === "accepted" &&
+                                      "bg-emerald-50 text-emerald-700 border-emerald-200",
+                                    r.status === "sent" && "bg-sky-50 text-sky-700 border-sky-200",
+                                    r.status === "draft" &&
+                                      "bg-slate-50 text-slate-700 border-slate-200",
+                                    r.status === "rejected" &&
+                                      "bg-rose-50 text-rose-700 border-rose-200",
+                                    r.status === "converted" &&
+                                      "bg-indigo-50 text-indigo-700 border-indigo-200",
+                                    r.status === "expired" &&
+                                      "bg-amber-50 text-amber-700 border-amber-200",
+                                  )}
+                                >
+                                  {r.status === "rejected"
+                                    ? t("quotes.status.declined", "Declined")
+                                    : r.status === "converted"
+                                      ? t("quotes.status.converted", "Converted")
+                                      : r.status === "draft"
+                                        ? t("quotes.status.draft", "Draft")
+                                        : r.status === "sent"
+                                          ? t("quotes.status.sent", "Sent")
+                                          : r.status === "accepted"
+                                            ? t("quotes.status.accepted", "Accepted")
+                                            : r.status === "expired"
+                                              ? t("quotes.status.expired", "Expired")
+                                              : r.status}
+                                  <ChevronDown className="ml-1 h-3 w-3 opacity-50 group-hover:opacity-100" />
+                                </Badge>
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start" className="w-44">
+                              <DropdownMenuLabel className="text-xs text-muted-foreground">
+                                {t("quotes.changeStatus", "Change Status")}
+                              </DropdownMenuLabel>
+                              <DropdownMenuSeparator />
                               <DropdownMenuItem
+                                disabled={r.status === "draft"}
+                                onClick={() =>
+                                  changeStatusMut.mutate({ id: r.id, status: "draft" })
+                                }
+                              >
+                                {t("quotes.status.draft", "Draft")}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                disabled={r.status === "sent"}
+                                onClick={() => changeStatusMut.mutate({ id: r.id, status: "sent" })}
+                              >
+                                {t("quotes.status.sent", "Sent")}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                disabled={r.status === "accepted"}
+                                onClick={() =>
+                                  changeStatusMut.mutate({ id: r.id, status: "accepted" })
+                                }
+                              >
+                                <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-600" />
+                                {t("quotes.status.accepted", "Accepted")}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                disabled={r.status === "rejected"}
                                 className="text-rose-600 focus:text-rose-600 focus:bg-rose-50"
                                 onClick={() =>
                                   changeStatusMut.mutate({ id: r.id, status: "rejected" })
                                 }
                               >
                                 <XCircle className="mr-2 h-4 w-4 text-rose-600" />
-                                Mark as Declined
+                                {t("quotes.status.declined", "Declined")}
                               </DropdownMenuItem>
-                            )}
-                            {r.status === "rejected" && (
-                              <DropdownMenuItem
-                                className="text-sky-600 focus:text-sky-600 focus:bg-sky-50"
-                                onClick={() => changeStatusMut.mutate({ id: r.id, status: "sent" })}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      )}
+                      {!isHidden("vendor") && (
+                        <TableCell>
+                          {assignment.fulfilmentType === "stock_lifted" ||
+                          assignment.isOrderCompleted ? (
+                            <button
+                              type="button"
+                              onClick={() => setAssigningQuote(r)}
+                              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 transition-colors shadow-2xs group cursor-pointer text-left"
+                              title="Material lifted from stock · No RFQ required. Click to view or edit."
+                            >
+                              <PackageCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                              <span className="font-semibold truncate max-w-[140px]">
+                                Material Lifted from Stock
+                              </span>
+                              {assignment.isOrderCompleted && (
+                                <span className="text-[10px] bg-emerald-200/80 px-1 py-0.2 rounded text-emerald-900 font-bold ml-0.5">
+                                  Order Completed
+                                </span>
+                              )}
+                            </button>
+                          ) : assignment.fulfilmentType === "in_stock" ? (
+                            <button
+                              type="button"
+                              onClick={() => setAssigningQuote(r)}
+                              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-800 border border-blue-200 hover:bg-blue-100 transition-colors text-left group cursor-pointer"
+                              title={
+                                assignment.stockLocation
+                                  ? `Fulfilled from in-house stock (${assignment.stockLocation}) — Click to view/edit`
+                                  : "Fulfilled from in-house stock — Click to view/edit"
+                              }
+                            >
+                              <Boxes className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+                              <span className="font-semibold truncate max-w-[130px]">
+                                In-House Stock
+                              </span>
+                              {assignment.stockLocation && (
+                                <span className="text-[10px] text-blue-600/80 max-w-[80px] truncate">
+                                  · {assignment.stockLocation}
+                                </span>
+                              )}
+                            </button>
+                          ) : assignment.isAssigned ? (
+                            <button
+                              type="button"
+                              onClick={() => setAssigningQuote(r)}
+                              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 transition-colors text-left group cursor-pointer"
+                              title="Click to view or change assigned vendor"
+                            >
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
+                              <span className="font-semibold truncate max-w-[130px]">
+                                {assignment.vendorName}
+                              </span>
+                              <Building2 className="h-3 w-3 text-emerald-600 opacity-60 group-hover:opacity-100 shrink-0" />
+                            </button>
+                          ) : r.status === "accepted" ? (
+                            <div className="inline-flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => quickLiftStockMut.mutate(r)}
+                                disabled={quickLiftStockMut.isPending}
+                                className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded transition-colors shadow-2xs cursor-pointer"
+                                title="1-click: Mark material as lifted from stock (RFQ not required)"
                               >
-                                <RefreshCw className="mr-2 h-4 w-4 text-sky-600" />
-                                Reopen (Mark as Sent)
-                              </DropdownMenuItem>
-                            )}
-                            {r.status !== "accepted" && r.status !== "converted" && (
+                                <PackageCheck className="h-3 w-3 text-blue-600 shrink-0" />
+                                <span>Lift from Stock</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setRfqQuote(r)}
+                                className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded transition-colors cursor-pointer"
+                                title="Send optional WhatsApp RFQ to vendors"
+                              >
+                                <MessageCircle className="h-3 w-3 text-slate-500" />
+                                <span>RFQ</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setAssigningQuote(r);
+                                }}
+                                className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded border border-slate-200 transition-colors cursor-pointer"
+                                title="Assign stone vendor or stock source"
+                              >
+                                <Boxes className="h-3 w-3 text-slate-500" />
+                                <span>+ Vendor</span>
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="inline-flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setRfqQuote(r);
+                                }}
+                                className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 rounded transition-colors cursor-pointer"
+                                title="Send optional WhatsApp RFQ to vendors"
+                              >
+                                <MessageCircle className="h-3 w-3 text-emerald-600" />
+                                <span>RFQ</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setAssigningQuote(r);
+                                }}
+                                className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded border border-slate-200 transition-colors cursor-pointer"
+                                title="Assign stone vendor or stock source"
+                              >
+                                <Boxes className="h-3 w-3 text-slate-500" />
+                                <span>+ Vendor</span>
+                              </button>
+                            </div>
+                          )}
+                        </TableCell>
+                      )}
+                      {!isHidden("deliveryDate") && (
+                        <TableCell className="text-xs whitespace-nowrap">
+                          {assignment.promisedDeliveryDate ? (
+                            <button
+                              type="button"
+                              onClick={() => setAssigningQuote(r)}
+                              className="inline-flex items-center gap-1 text-slate-700 hover:text-primary hover:underline font-mono cursor-pointer"
+                              title="Click to change promised delivery date"
+                            >
+                              <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                              <span>{formatDate(assignment.promisedDeliveryDate)}</span>
+                            </button>
+                          ) : r.status === "accepted" ? (
+                            <button
+                              type="button"
+                              onClick={() => setAssigningQuote(r)}
+                              className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-1.5 py-0.5 rounded transition-colors cursor-pointer"
+                              title="Promised delivery date missing — Click to set"
+                            >
+                              <Calendar className="h-3 w-3 text-amber-600 shrink-0" />
+                              <span>+ Set Date</span>
+                            </button>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+                      )}
+                      {!isHidden("total") && (
+                        <TableCell className="text-right tabular-nums">
+                          {formatInr(r.total)}
+                        </TableCell>
+                      )}
+                      {!isHidden("valid") && (
+                        <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                          {r.valid_until ? formatDate(r.valid_until) : "—"}
+                        </TableCell>
+                      )}
+                      <TableCell className="text-right">
+                        <RowActions
+                          canEdit={true}
+                          canDelete={true}
+                          extra={
+                            <>
                               <DropdownMenuItem
-                                className="text-emerald-600 focus:text-emerald-600 focus:bg-emerald-50"
                                 onClick={() =>
-                                  changeStatusMut.mutate({ id: r.id, status: "accepted" })
+                                  nav({
+                                    to: "/dispatch/new",
+                                    search: { quote: r.id, customer: r.customer_id },
+                                  })
                                 }
                               >
-                                <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-600" />
-                                Mark as Accepted
+                                <Truck className="mr-2 h-4 w-4 text-emerald-600" />
+                                Issue Delivery Challan
                               </DropdownMenuItem>
-                            )}
-                          </>
-                        }
-                        onEdit={() =>
-                          nav({ to: "/quotes/$quoteId/edit", params: { quoteId: r.id } })
-                        }
-                        onDelete={() => setToDelete(r)}
-                      />
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                              <DropdownMenuItem onClick={() => setRfqQuote(r)}>
+                                <MessageCircle className="mr-2 h-4 w-4 text-emerald-600" />
+                                WhatsApp RFQ / Sourcing
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setAssigningQuote(r)}>
+                                <Building2 className="mr-2 h-4 w-4" />
+                                Assign Vendor / Delivery Date
+                              </DropdownMenuItem>
+                              {r.status !== "rejected" && r.status !== "converted" && (
+                                <DropdownMenuItem
+                                  className="text-rose-600 focus:text-rose-600 focus:bg-rose-50"
+                                  onClick={() =>
+                                    changeStatusMut.mutate({ id: r.id, status: "rejected" })
+                                  }
+                                >
+                                  <XCircle className="mr-2 h-4 w-4 text-rose-600" />
+                                  Mark as Declined
+                                </DropdownMenuItem>
+                              )}
+                              {r.status === "rejected" && (
+                                <DropdownMenuItem
+                                  className="text-sky-600 focus:text-sky-600 focus:bg-sky-50"
+                                  onClick={() =>
+                                    changeStatusMut.mutate({ id: r.id, status: "sent" })
+                                  }
+                                >
+                                  <RefreshCw className="mr-2 h-4 w-4 text-sky-600" />
+                                  Reopen (Mark as Sent)
+                                </DropdownMenuItem>
+                              )}
+                              {r.status !== "accepted" && r.status !== "converted" && (
+                                <DropdownMenuItem
+                                  className="text-emerald-600 focus:text-emerald-600 focus:bg-emerald-50"
+                                  onClick={() =>
+                                    changeStatusMut.mutate({ id: r.id, status: "accepted" })
+                                  }
+                                >
+                                  <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-600" />
+                                  Mark as Accepted
+                                </DropdownMenuItem>
+                              )}
+                            </>
+                          }
+                          onEdit={() =>
+                            nav({ to: "/quotes/$quoteId/edit", params: { quoteId: r.id } })
+                          }
+                          onDelete={() => setToDelete(r)}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
         </DataTableShell>
       )}
 

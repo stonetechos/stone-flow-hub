@@ -20,6 +20,7 @@ import {
   Trash2,
   UserCheck,
   UserX,
+  Pencil,
 } from "lucide-react";
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { StoreVoiceAssistantTab } from "@/components/customers/StoreVoiceAssistantTab";
@@ -172,20 +173,22 @@ function CustomersPage() {
   const query = useQuery({
     queryKey: qk.customers.list(dq),
     queryFn: () => listCustomers(dq),
-    refetchInterval: 15_000,
-    refetchOnWindowFocus: true,
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
   });
 
   const ledgerQuery = useQuery({
     queryKey: ["customer-ledger-summaries"],
     queryFn: () => listCustomerLedgerSummaries(),
-    staleTime: 30_000,
+    staleTime: 5 * 60_000,
+    gcTime: 10 * 60_000,
   });
 
   const pipelineQuery = useQuery({
     queryKey: ["customer-order-pipeline"],
     queryFn: () => listOrderPipeline(),
-    staleTime: 30_000,
+    staleTime: 5 * 60_000,
+    gcTime: 10 * 60_000,
   });
 
   const customerOrderMap = useMemo(() => {
@@ -879,377 +882,93 @@ function CustomersPage() {
                 />
               }
             >
-              <Table className="w-full table-fixed min-w-[1020px] table-sticky-head">
-                <TableHeader sticky className="bg-white/95 backdrop-blur-xs">
-                  <TableRow>
-                    <TableHead className="w-12 text-center px-1">
-                      {t("common.srNo", "Sr. No.")}
-                    </TableHead>
-                    <TableHead className="min-w-[180px] px-2">{t("common.name", "Name")}</TableHead>
-                    <TableHead className="w-22 whitespace-nowrap px-1.5">
-                      {t("common.createdDate", "Created")}
-                    </TableHead>
-                    <TableHead className="w-26 whitespace-nowrap px-1.5">
-                      {t("customers.table.type", "Type")}
-                    </TableHead>
-                    <TableHead className="min-w-[190px] whitespace-nowrap px-1.5">
-                      {t("customers.table.crmStatus", "CRM Status & Updates")}
-                    </TableHead>
-                    <TableHead className="w-32 whitespace-nowrap px-1.5 overflow-hidden">
-                      {t("customers.table.assignedTo", "Assigned To")}
-                    </TableHead>
-                    <TableHead className="w-34 whitespace-nowrap px-1.5 overflow-hidden">
-                      {t("customers.table.paymentStatus", "Payment Status")}
-                    </TableHead>
-                    <TableHead className="w-44 whitespace-nowrap px-1.5">
-                      {t("customers.table.contact", "Contact")}
-                    </TableHead>
-                    <TableHead className="w-10 text-right px-1" />
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {pageRows.map((c, i) => {
-                    const norm = normalizeCustomerRow(c);
-                    const stats = getCustomerFollowupStats(c);
-                    const isLastContacted = lastContacted?.customerId === c.id;
-                    const phone =
-                      c.primary_phone || (c as unknown as { mobile?: string | null }).mobile || "";
-                    const waPhone = c.whatsapp || phone;
-                    const cleanPhone = phone.replace(/[^0-9]/g, "");
-                    const cleanWaPhone = waPhone.replace(/[^0-9]/g, "");
-                    const serial = extractCustomerSerialNumber(c.customer_code);
-                    const orderInfo = customerOrderMap.get(c.id);
-                    const waFollowupText = buildCustomerFollowupWhatsappMessage({
-                      customerName: c.name,
-                      contactPerson: norm.contact_person,
-                      companyName: norm.company_name,
-                      salesperson: getCustomerSalesperson(c),
-                      orderNo: orderInfo?.urgentOrderNo,
-                    });
-                    const waUrl = buildWhatsappUrl(cleanWaPhone, waFollowupText, "wa.me");
+              {/* Mobile Responsive Cards View (< sm) */}
+              <div className="sm:hidden divide-y divide-border/60">
+                {pageRows.map((c, i) => {
+                  const norm = normalizeCustomerRow(c);
+                  const isLastContacted = lastContacted?.customerId === c.id;
+                  const phone =
+                    c.primary_phone || (c as unknown as { mobile?: string | null }).mobile || "";
+                  const waPhone = c.whatsapp || phone;
+                  const cleanPhone = phone.replace(/[^0-9]/g, "");
+                  const cleanWaPhone = waPhone.replace(/[^0-9]/g, "");
+                  const serial = extractCustomerSerialNumber(c.customer_code);
+                  const orderInfo = customerOrderMap.get(c.id);
+                  const waFollowupText = buildCustomerFollowupWhatsappMessage({
+                    customerName: c.name,
+                    contactPerson: norm.contact_person,
+                    companyName: norm.company_name,
+                    salesperson: getCustomerSalesperson(c),
+                    orderNo: orderInfo?.urgentOrderNo,
+                  });
+                  const waUrl = buildWhatsappUrl(cleanWaPhone, waFollowupText, "wa.me");
 
-                    const handleContactLog = (channel: "whatsapp" | "call") => {
-                      const info = {
-                        customerId: c.id,
-                        channel,
-                        timestamp: Date.now(),
-                      };
-                      setLastContacted(info);
-                      try {
-                        sessionStorage.setItem(
-                          "stos_last_contacted_customer",
-                          JSON.stringify(info),
-                        );
-                      } catch (err) {
-                        console.debug("[customers] sessionStorage write skipped:", err);
-                      }
-                      logContactMutation.mutate({ customerId: c.id, channel });
+                  const handleContactLog = (channel: "whatsapp" | "call") => {
+                    const info = {
+                      customerId: c.id,
+                      channel,
+                      timestamp: Date.now(),
                     };
+                    setLastContacted(info);
+                    try {
+                      sessionStorage.setItem("stos_last_contacted_customer", JSON.stringify(info));
+                    } catch (err) {
+                      console.debug("[customers] sessionStorage write skipped:", err);
+                    }
+                    logContactMutation.mutate({ customerId: c.id, channel });
+                  };
 
-                    return (
-                      <TableRow
-                        key={c.id}
-                        className={cn(
-                          "transition-colors",
-                          isLastContacted &&
-                            "bg-emerald-50/85 hover:bg-emerald-100/80 border-l-4 border-l-emerald-600 ring-1 ring-inset ring-emerald-300/80 shadow-2xs",
-                        )}
-                      >
-                        <TableCell className="w-12 text-center font-mono text-xs text-muted-foreground px-1">
-                          <Link
-                            to="/customers/$customerId"
-                            params={{ customerId: c.id }}
-                            className="hover:underline font-semibold text-slate-700"
-                          >
+                  const effType = getEffectiveCustomerType(c);
+
+                  return (
+                    <div
+                      key={c.id}
+                      className={cn(
+                        "p-3.5 space-y-2.5 bg-card hover:bg-muted/30 transition-colors",
+                        isLastContacted &&
+                          "bg-emerald-50/80 border-l-4 border-l-emerald-600 ring-1 ring-inset ring-emerald-300/80 shadow-2xs",
+                      )}
+                    >
+                      {/* Header Row: Serial + Name + Actions */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-start gap-2 min-w-0">
+                          <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 font-mono text-[11px] font-bold text-slate-700">
                             {toIndicDigits(
                               serial !== null ? serial : rows.length - ((page - 1) * pageSize + i),
                               i18n.language,
                             )}
-                          </Link>
-                        </TableCell>
-                        <TableCell className="min-w-[180px] font-medium px-2">
-                          <Link
-                            to="/customers/$customerId"
-                            params={{ customerId: c.id }}
-                            className="hover:underline flex flex-col gap-0.5 py-0.5"
-                          >
-                            <div className="flex flex-wrap items-center gap-1.5">
-                              <span className="font-semibold text-slate-900 truncate">
-                                {transliterateName(c.name, i18n.language)}
+                          </span>
+                          <div className="min-w-0">
+                            <Link
+                              to="/customers/$customerId"
+                              params={{ customerId: c.id }}
+                              className="font-semibold text-sm text-foreground hover:underline truncate block"
+                            >
+                              {transliterateName(c.name, i18n.language)}
+                            </Link>
+                            {c.customer_code && (
+                              <span className="font-mono text-[10px] text-muted-foreground">
+                                {toIndicDigits(c.customer_code, i18n.language)}
                               </span>
-                              {c.customer_code && (
-                                <span className="font-mono text-[11px] text-muted-foreground shrink-0">
-                                  ({toIndicDigits(c.customer_code, i18n.language)})
-                                </span>
-                              )}
-                              {isLastContacted && (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-xs shrink-0 animate-in fade-in">
-                                  {lastContacted.channel === "whatsapp"
-                                    ? t("customers.justMessagedBadge", "Just Messaged")
-                                    : t("customers.justCalledBadge", "Just Called")}
-                                </span>
-                              )}
-                              {orderInfo?.nearestDeadline &&
-                                getCustomerResponseStatus(c) !== "order_completed" &&
-                                getCustomerResponseStatus(c) !== "order_cancelled_delay" &&
-                                getCustomerResponseStatus(c) !==
-                                  "order_cancelled_change_of_plans" &&
-                                orderInfo.health !== "completed" && (
-                                  <span
-                                    className={cn(
-                                      "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold border shrink-0",
-                                      orderInfo.health === "overdue"
-                                        ? "bg-rose-50 text-rose-700 border-rose-200"
-                                        : orderInfo.health === "tight_buffer"
-                                          ? "bg-amber-50 text-amber-700 border-amber-200"
-                                          : "bg-emerald-50 text-emerald-700 border-emerald-200",
-                                    )}
-                                    title={`Order #${orderInfo.urgentOrderNo ?? ""}`}
-                                  >
-                                    ⏳ {t("common.due", "Due")}:{" "}
-                                    {formatDate(orderInfo.nearestDeadline, i18n.language)}
-                                  </span>
-                                )}
-                              {(() => {
-                                const payReminder = getCustomerPaymentReminderInfo(c);
-                                if (!payReminder.hasReminder || !payReminder.isFlaggedActive)
-                                  return null;
-                                return (
-                                  <span
-                                    className={cn(
-                                      "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-bold border shrink-0",
-                                      payReminder.urgency === "overdue"
-                                        ? "bg-rose-100 text-rose-800 border-rose-300 animate-pulse"
-                                        : payReminder.urgency === "due_today"
-                                          ? "bg-amber-100 text-amber-900 border-amber-400 font-bold animate-pulse"
-                                          : "bg-amber-50 text-amber-900 border-amber-300 font-semibold",
-                                    )}
-                                    title={`Payment Promised Date: ${payReminder.promisedDate ? formatDate(payReminder.promisedDate) : ""}`}
-                                  >
-                                    💰 {payReminder.badgeLabel}
-                                  </span>
-                                );
-                              })()}
-                            </div>
-                            <div className="flex flex-wrap items-center gap-1.5 text-xs font-normal">
-                              {norm.contact_person && (
-                                <span className="inline-flex items-center gap-1 rounded bg-teal-50 text-teal-800 border border-teal-200/70 px-1.5 py-0.5 text-[11px] font-medium truncate max-w-full">
-                                  <User className="h-3 w-3 text-teal-600 shrink-0" />
-                                  <span className="truncate">
-                                    {t("customers.contactPrefix", "Contact")}:{" "}
-                                    <strong className="font-semibold text-teal-900">
-                                      {transliterateName(norm.contact_person, i18n.language)}
-                                    </strong>
-                                  </span>
-                                </span>
-                              )}
-                              {norm.company_name && norm.company_name !== c.name && (
-                                <span className="inline-flex items-center gap-1 rounded bg-slate-100 text-slate-700 px-1.5 py-0.5 text-[11px] font-medium truncate max-w-full">
-                                  <Building2 className="h-3 w-3 text-slate-500 shrink-0" />
-                                  <span className="truncate">
-                                    {t("customers.firmPrefix", "Firm")}:{" "}
-                                    {transliterateName(norm.company_name, i18n.language)}
-                                  </span>
-                                </span>
-                              )}
-                            </div>
-                          </Link>
-                        </TableCell>
-                        <TableCell className="w-22 text-xs text-muted-foreground whitespace-nowrap px-1.5">
-                          {c.created_at ? formatDate(c.created_at, i18n.language) : "—"}
-                        </TableCell>
-                        <TableCell className="w-26 whitespace-nowrap px-1.5">
-                          {(() => {
-                            const effType = getEffectiveCustomerType(c);
-                            return (
-                              <span
-                                className={cn(
-                                  "inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold tracking-wide whitespace-nowrap",
-                                  getCustomerTypeBadgeTone(effType),
-                                )}
-                              >
-                                {getCustomerTypeLabel(effType, i18n.language)}
-                              </span>
-                            );
-                          })()}
-                        </TableCell>
-                        <TableCell className="min-w-[190px] px-1.5 align-middle">
-                          <div className="flex flex-col items-start gap-1">
-                            <CustomerResponseStatusSelect
-                              customerId={c.id}
-                              customerName={c.name}
-                              contactPerson={
-                                c.contact_person ||
-                                ((c.external_ref as Record<string, unknown> | null)
-                                  ?.contact_person as string | undefined)
-                              }
-                              phone={c.primary_phone || c.whatsapp}
-                              whatsapp={c.whatsapp || c.primary_phone}
-                              companyName={c.company_name}
-                              isActive={c.is_active}
-                              workflowState={c.workflow_state}
-                              externalRef={c.external_ref}
-                            />
-                            {stats.isUnresponsive && getCustomerResponseStatus(c) !== "dormant" && (
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  markDormantMutation.mutate(c.id);
-                                }}
-                                disabled={markDormantMutation.isPending}
-                                className="inline-flex items-center gap-1 rounded bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300/80 px-1.5 py-0.5 text-[10px] font-semibold transition-colors cursor-pointer shadow-2xs touch-manipulation"
-                                title={`Unresponsive after ${toIndicDigits(stats.totalFollowups, i18n.language)} follow-ups. Click to mark Dormant.`}
-                              >
-                                <UserX className="h-3 w-3 text-rose-600 shrink-0" />
-                                <span>{t("crm.markDormant", "Mark Dormant")}</span>
-                                <span className="rounded-full bg-rose-200/90 px-1 py-0 text-[9px] font-bold text-rose-900">
-                                  {toIndicDigits(stats.totalFollowups, i18n.language)}
-                                </span>
-                              </button>
                             )}
                           </div>
-                        </TableCell>
-                        <TableCell className="w-32 whitespace-nowrap px-1.5 overflow-hidden">
-                          <CustomerAssigneeSelect
-                            customerId={c.id}
-                            customerName={c.name}
-                            workflowState={c.workflow_state}
-                            externalRef={c.external_ref}
-                          />
-                        </TableCell>
-                        <TableCell className="w-34 whitespace-nowrap px-1.5 overflow-hidden">
-                          {(() => {
-                            if (!hasCustomerPlacedOrder(c, orderInfo)) {
-                              return (
-                                <span
-                                  className="text-slate-400 font-mono text-xs pl-2"
-                                  title="No orders placed"
-                                >
-                                  —
-                                </span>
-                              );
-                            }
-                            const ledger = ledgerQuery.data?.get(c.id);
-                            return (
-                              <CustomerPaymentStatusSelect
-                                customerId={c.id}
-                                customerName={c.name}
-                                workflowState={c.workflow_state}
-                                externalRef={c.external_ref}
-                                ledgerSummary={ledger}
-                              />
-                            );
-                          })()}
-                        </TableCell>
-                        <TableCell className="w-44 whitespace-nowrap px-1.5 align-middle">
-                          {phone ? (
-                            <div className="flex flex-col gap-1 py-0.5">
-                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                <a
-                                  href={`tel:${phone}`}
-                                  onClick={() => handleContactLog("call")}
-                                  title={`Call ${phone} (auto-registers call follow-up)`}
-                                  className="inline-flex items-center gap-1 text-slate-700 hover:text-primary font-mono transition-colors font-medium"
-                                >
-                                  <Phone className="h-3 w-3 text-emerald-600 shrink-0" />
-                                  <span className="truncate">
-                                    {toIndicDigits(phone, i18n.language)}
-                                  </span>
-                                </a>
-                                {(cleanWaPhone || cleanPhone) && (
-                                  <a
-                                    href={waUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    onClick={() => handleContactLog("whatsapp")}
-                                    title={`Send follow-up on WhatsApp to ${norm.contact_person || c.name} (auto-registers WhatsApp follow-up)`}
-                                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/80 text-[10.5px] font-medium transition-colors shrink-0 shadow-2xs"
-                                  >
-                                    <MessageSquare className="h-3 w-3 text-emerald-600" />
-                                    <span className="hidden sm:inline">WhatsApp</span>
-                                  </a>
-                                )}
-                              </div>
-
-                              {/* Follow-up count and relative time */}
-                              <div className="flex items-center gap-1 text-[10px]">
-                                {stats.totalFollowups > 0 ? (
-                                  <span
-                                    className={cn(
-                                      "inline-flex items-center gap-1 rounded px-1.5 py-0.5 border text-[10px]",
-                                      isLastContacted
-                                        ? "bg-emerald-100/90 border-emerald-300 text-emerald-950 font-bold"
-                                        : "bg-slate-50 border-slate-200/90 text-slate-600",
-                                    )}
-                                    title={`${toIndicDigits(stats.whatsappCount, i18n.language)} WhatsApp · ${toIndicDigits(stats.callCount, i18n.language)} Call(s). Last: ${stats.lastContactedAt ? formatDate(stats.lastContactedAt, i18n.language) : "Never"}`}
-                                  >
-                                    <span className="font-semibold text-slate-800">
-                                      {toIndicDigits(stats.totalFollowups, i18n.language)} flw-up
-                                      {stats.totalFollowups > 1 ? "s" : ""}
-                                    </span>
-                                    <span className="text-slate-300">·</span>
-                                    <span className="text-muted-foreground whitespace-nowrap">
-                                      {formatRelativeContactTime(
-                                        stats.lastContactedAt,
-                                        i18n.language,
-                                      )}
-                                    </span>
-                                  </span>
-                                ) : (
-                                  <span className="text-[10px] text-slate-400 italic">
-                                    {t("customers.noFollowupsYet", "No follow-ups yet")}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          ) : (
-                            <span className="text-xs text-muted-foreground italic">
-                              {t("customers.noPhone", "No phone")}
-                            </span>
-                          )}
-                        </TableCell>
-                        <TableCell className="w-10 text-right px-1">
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
                           <RowActions
+                            canEdit={true}
                             extra={
                               <>
                                 <DropdownMenuItem asChild>
-                                  <Link to="/customers/$customerId" params={{ customerId: c.id }}>
-                                    <ExternalLink className="mr-2 h-4 w-4" />{" "}
-                                    {t("common.open", "Open")}
-                                  </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem asChild>
-                                  <Link to="/projects" search={{ new: "1", customer: c.id }}>
-                                    <FolderPlus className="mr-2 h-4 w-4 text-indigo-600" /> Add Next
-                                    Project
+                                  <Link to="/enquiries" search={{ new: "1", customer: c.id }}>
+                                    <FileText className="mr-2 h-4 w-4 text-emerald-600" /> New
+                                    Enquiry
                                   </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem asChild>
                                   <Link to="/quotes" search={{ new: "1", customer: c.id }}>
-                                    <FileText className="mr-2 h-4 w-4 text-emerald-600" /> New Quote
+                                    <FileText className="mr-2 h-4 w-4 text-indigo-600" /> New Quote
                                   </Link>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem asChild>
-                                  <Link to="/sales-orders/new" search={{ customer: c.id }}>
-                                    <ShoppingCart className="mr-2 h-4 w-4 text-amber-600" /> New
-                                    Sales Order
-                                  </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                {getCustomerResponseStatus(c) !== "dormant" ? (
-                                  <DropdownMenuItem
-                                    onClick={() => markDormantMutation.mutate(c.id)}
-                                  >
-                                    <UserX className="mr-2 h-4 w-4 text-rose-600" />
-                                    {t("crm.markDormant", "Mark Dormant (Unresponsive)")}
-                                  </DropdownMenuItem>
-                                ) : (
-                                  <DropdownMenuItem onClick={() => reactivateMutation.mutate(c.id)}>
-                                    <UserCheck className="mr-2 h-4 w-4 text-emerald-600" />
-                                    {t("crm.reactivateAccount", "Reactivate Account")}
-                                  </DropdownMenuItem>
-                                )}
                                 <DropdownMenuSeparator />
                                 <LifecycleMenuItems
                                   entityType="customer"
@@ -1269,12 +988,563 @@ function CustomersPage() {
                             }}
                             onDelete={() => setToDelete(c)}
                           />
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+                        </div>
+                      </div>
+
+                      {/* Firm / Contact / Type Badges */}
+                      <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                        <span
+                          className={cn(
+                            "inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold tracking-wide whitespace-nowrap",
+                            getCustomerTypeBadgeTone(effType),
+                          )}
+                        >
+                          {getCustomerTypeLabel(effType, i18n.language)}
+                        </span>
+                        {norm.contact_person && (
+                          <span className="inline-flex items-center gap-1 rounded bg-teal-50 text-teal-800 border border-teal-200/70 px-1.5 py-0.5 text-[10px] font-medium truncate max-w-[200px]">
+                            <User className="h-3 w-3 text-teal-600 shrink-0" />
+                            <span className="truncate">
+                              {transliterateName(norm.contact_person, i18n.language)}
+                            </span>
+                          </span>
+                        )}
+                        {norm.company_name && norm.company_name !== c.name && (
+                          <span className="inline-flex items-center gap-1 rounded bg-slate-100 text-slate-700 px-1.5 py-0.5 text-[10px] font-medium truncate max-w-[200px]">
+                            <Building2 className="h-3 w-3 text-slate-500 shrink-0" />
+                            <span className="truncate">
+                              {transliterateName(norm.company_name, i18n.language)}
+                            </span>
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Deadline info if active */}
+                      {orderInfo?.nearestDeadline &&
+                        getCustomerResponseStatus(c) !== "order_completed" &&
+                        getCustomerResponseStatus(c) !== "order_cancelled_delay" &&
+                        getCustomerResponseStatus(c) !== "order_cancelled_change_of_plans" &&
+                        orderInfo.health !== "completed" && (
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span
+                              className={cn(
+                                "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold border",
+                                orderInfo.health === "overdue"
+                                  ? "bg-rose-50 text-rose-700 border-rose-200"
+                                  : orderInfo.health === "tight_buffer"
+                                    ? "bg-amber-50 text-amber-700 border-amber-200"
+                                    : "bg-emerald-50 text-emerald-700 border-emerald-200",
+                              )}
+                            >
+                              ⏳ Due: {formatDate(orderInfo.nearestDeadline, i18n.language)}
+                            </span>
+                          </div>
+                        )}
+
+                      {/* Selects: CRM Status & Assignee & Payment */}
+                      <div className="grid grid-cols-1 gap-2 pt-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[11px] font-medium text-muted-foreground shrink-0">
+                            CRM:
+                          </span>
+                          <div className="w-52 max-w-full">
+                            <CustomerResponseStatusSelect
+                              customerId={c.id}
+                              customerName={c.name}
+                              contactPerson={
+                                c.contact_person ||
+                                ((c.external_ref as Record<string, unknown> | null)
+                                  ?.contact_person as string | undefined)
+                              }
+                              phone={c.primary_phone || c.whatsapp}
+                              whatsapp={c.whatsapp || c.primary_phone}
+                              companyName={c.company_name}
+                              isActive={c.is_active}
+                              workflowState={c.workflow_state}
+                              externalRef={c.external_ref}
+                            />
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[11px] font-medium text-muted-foreground shrink-0">
+                            Assigned:
+                          </span>
+                          <div className="w-52 max-w-full">
+                            <CustomerAssigneeSelect
+                              customerId={c.id}
+                              customerName={c.name}
+                              workflowState={c.workflow_state}
+                              externalRef={c.external_ref}
+                            />
+                          </div>
+                        </div>
+                        {hasCustomerPlacedOrder(c, orderInfo) && (
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-[11px] font-medium text-muted-foreground shrink-0">
+                              Payment:
+                            </span>
+                            <div className="w-52 max-w-full">
+                              <CustomerPaymentStatusSelect
+                                customerId={c.id}
+                                customerName={c.name}
+                                workflowState={c.workflow_state}
+                                externalRef={c.external_ref}
+                                ledgerSummary={ledgerQuery.data?.get(c.id)}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Bottom Action Bar: Call, WhatsApp, View */}
+                      <div className="flex items-center justify-between pt-2 border-t border-border/60">
+                        <div className="flex items-center gap-1.5">
+                          {cleanPhone ? (
+                            <a
+                              href={`tel:${cleanPhone}`}
+                              onClick={() => handleContactLog("call")}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-md border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition-colors"
+                            >
+                              <Phone className="h-3 w-3 text-slate-600" />
+                              <span>Call</span>
+                            </a>
+                          ) : null}
+                          {cleanWaPhone ? (
+                            <a
+                              href={waUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={() => handleContactLog("whatsapp")}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-md border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 transition-colors"
+                            >
+                              <MessageSquare className="h-3 w-3 text-emerald-600" />
+                              <span>WhatsApp</span>
+                            </a>
+                          ) : null}
+                        </div>
+                        <Link
+                          to="/customers/$customerId"
+                          params={{ customerId: c.id }}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                        >
+                          <span>Hub</span>
+                          <ExternalLink className="h-3 w-3" />
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop Table View (>= sm) */}
+              <div className="hidden sm:block">
+                <Table className="w-full table-fixed min-w-[1020px] table-sticky-head">
+                  <TableHeader sticky className="bg-white/95 backdrop-blur-xs">
+                    <TableRow>
+                      <TableHead className="w-12 text-center px-1">
+                        {t("common.srNo", "Sr. No.")}
+                      </TableHead>
+                      <TableHead className="min-w-[180px] px-2">
+                        {t("common.name", "Name")}
+                      </TableHead>
+                      <TableHead className="w-22 whitespace-nowrap px-1.5">
+                        {t("common.createdDate", "Created")}
+                      </TableHead>
+                      <TableHead className="w-26 whitespace-nowrap px-1.5">
+                        {t("customers.table.type", "Type")}
+                      </TableHead>
+                      <TableHead className="min-w-[190px] whitespace-nowrap px-1.5">
+                        {t("customers.table.crmStatus", "CRM Status & Updates")}
+                      </TableHead>
+                      <TableHead className="w-32 whitespace-nowrap px-1.5 overflow-hidden">
+                        {t("customers.table.assignedTo", "Assigned To")}
+                      </TableHead>
+                      <TableHead className="w-34 whitespace-nowrap px-1.5 overflow-hidden">
+                        {t("customers.table.paymentStatus", "Payment Status")}
+                      </TableHead>
+                      <TableHead className="w-44 whitespace-nowrap px-1.5">
+                        {t("customers.table.contact", "Contact")}
+                      </TableHead>
+                      <TableHead className="w-10 text-right px-1" />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {pageRows.map((c, i) => {
+                      const norm = normalizeCustomerRow(c);
+                      const stats = getCustomerFollowupStats(c);
+                      const isLastContacted = lastContacted?.customerId === c.id;
+                      const phone =
+                        c.primary_phone ||
+                        (c as unknown as { mobile?: string | null }).mobile ||
+                        "";
+                      const waPhone = c.whatsapp || phone;
+                      const cleanPhone = phone.replace(/[^0-9]/g, "");
+                      const cleanWaPhone = waPhone.replace(/[^0-9]/g, "");
+                      const serial = extractCustomerSerialNumber(c.customer_code);
+                      const orderInfo = customerOrderMap.get(c.id);
+                      const waFollowupText = buildCustomerFollowupWhatsappMessage({
+                        customerName: c.name,
+                        contactPerson: norm.contact_person,
+                        companyName: norm.company_name,
+                        salesperson: getCustomerSalesperson(c),
+                        orderNo: orderInfo?.urgentOrderNo,
+                      });
+                      const waUrl = buildWhatsappUrl(cleanWaPhone, waFollowupText, "wa.me");
+
+                      const handleContactLog = (channel: "whatsapp" | "call") => {
+                        const info = {
+                          customerId: c.id,
+                          channel,
+                          timestamp: Date.now(),
+                        };
+                        setLastContacted(info);
+                        try {
+                          sessionStorage.setItem(
+                            "stos_last_contacted_customer",
+                            JSON.stringify(info),
+                          );
+                        } catch (err) {
+                          console.debug("[customers] sessionStorage write skipped:", err);
+                        }
+                        logContactMutation.mutate({ customerId: c.id, channel });
+                      };
+
+                      return (
+                        <TableRow
+                          key={c.id}
+                          className={cn(
+                            "transition-colors",
+                            isLastContacted &&
+                              "bg-emerald-50/85 hover:bg-emerald-100/80 border-l-4 border-l-emerald-600 ring-1 ring-inset ring-emerald-300/80 shadow-2xs",
+                          )}
+                        >
+                          <TableCell className="w-12 text-center font-mono text-xs text-muted-foreground px-1">
+                            <Link
+                              to="/customers/$customerId"
+                              params={{ customerId: c.id }}
+                              className="hover:underline font-semibold text-slate-700"
+                            >
+                              {toIndicDigits(
+                                serial !== null
+                                  ? serial
+                                  : rows.length - ((page - 1) * pageSize + i),
+                                i18n.language,
+                              )}
+                            </Link>
+                          </TableCell>
+                          <TableCell className="min-w-[180px] font-medium px-2">
+                            <Link
+                              to="/customers/$customerId"
+                              params={{ customerId: c.id }}
+                              className="hover:underline flex flex-col gap-0.5 py-0.5"
+                            >
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                <span className="font-semibold text-slate-900 truncate">
+                                  {transliterateName(c.name, i18n.language)}
+                                </span>
+                                {c.customer_code && (
+                                  <span className="font-mono text-[11px] text-muted-foreground shrink-0">
+                                    ({toIndicDigits(c.customer_code, i18n.language)})
+                                  </span>
+                                )}
+                                {isLastContacted && (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-xs shrink-0 animate-in fade-in">
+                                    {lastContacted.channel === "whatsapp"
+                                      ? t("customers.justMessagedBadge", "Just Messaged")
+                                      : t("customers.justCalledBadge", "Just Called")}
+                                  </span>
+                                )}
+                                {orderInfo?.nearestDeadline &&
+                                  getCustomerResponseStatus(c) !== "order_completed" &&
+                                  getCustomerResponseStatus(c) !== "order_cancelled_delay" &&
+                                  getCustomerResponseStatus(c) !==
+                                    "order_cancelled_change_of_plans" &&
+                                  orderInfo.health !== "completed" && (
+                                    <span
+                                      className={cn(
+                                        "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold border shrink-0",
+                                        orderInfo.health === "overdue"
+                                          ? "bg-rose-50 text-rose-700 border-rose-200"
+                                          : orderInfo.health === "tight_buffer"
+                                            ? "bg-amber-50 text-amber-700 border-amber-200"
+                                            : "bg-emerald-50 text-emerald-700 border-emerald-200",
+                                      )}
+                                      title={`Order #${orderInfo.urgentOrderNo ?? ""}`}
+                                    >
+                                      ⏳ {t("common.due", "Due")}:{" "}
+                                      {formatDate(orderInfo.nearestDeadline, i18n.language)}
+                                    </span>
+                                  )}
+                                {(() => {
+                                  const payReminder = getCustomerPaymentReminderInfo(c);
+                                  if (!payReminder.hasReminder || !payReminder.isFlaggedActive)
+                                    return null;
+                                  return (
+                                    <span
+                                      className={cn(
+                                        "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-bold border shrink-0",
+                                        payReminder.urgency === "overdue"
+                                          ? "bg-rose-100 text-rose-800 border-rose-300 animate-pulse"
+                                          : payReminder.urgency === "due_today"
+                                            ? "bg-amber-100 text-amber-900 border-amber-400 font-bold animate-pulse"
+                                            : "bg-amber-50 text-amber-900 border-amber-300 font-semibold",
+                                      )}
+                                      title={`Payment Promised Date: ${payReminder.promisedDate ? formatDate(payReminder.promisedDate) : ""}`}
+                                    >
+                                      💰 {payReminder.badgeLabel}
+                                    </span>
+                                  );
+                                })()}
+                              </div>
+                              <div className="flex flex-wrap items-center gap-1.5 text-xs font-normal">
+                                {norm.contact_person && (
+                                  <span className="inline-flex items-center gap-1 rounded bg-teal-50 text-teal-800 border border-teal-200/70 px-1.5 py-0.5 text-[11px] font-medium truncate max-w-full">
+                                    <User className="h-3 w-3 text-teal-600 shrink-0" />
+                                    <span className="truncate">
+                                      {t("customers.contactPrefix", "Contact")}:{" "}
+                                      <strong className="font-semibold text-teal-900">
+                                        {transliterateName(norm.contact_person, i18n.language)}
+                                      </strong>
+                                    </span>
+                                  </span>
+                                )}
+                                {norm.company_name && norm.company_name !== c.name && (
+                                  <span className="inline-flex items-center gap-1 rounded bg-slate-100 text-slate-700 px-1.5 py-0.5 text-[11px] font-medium truncate max-w-full">
+                                    <Building2 className="h-3 w-3 text-slate-500 shrink-0" />
+                                    <span className="truncate">
+                                      {t("customers.firmPrefix", "Firm")}:{" "}
+                                      {transliterateName(norm.company_name, i18n.language)}
+                                    </span>
+                                  </span>
+                                )}
+                              </div>
+                            </Link>
+                          </TableCell>
+                          <TableCell className="w-22 text-xs text-muted-foreground whitespace-nowrap px-1.5">
+                            {c.created_at ? formatDate(c.created_at, i18n.language) : "—"}
+                          </TableCell>
+                          <TableCell className="w-26 whitespace-nowrap px-1.5">
+                            {(() => {
+                              const effType = getEffectiveCustomerType(c);
+                              return (
+                                <span
+                                  className={cn(
+                                    "inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold tracking-wide whitespace-nowrap",
+                                    getCustomerTypeBadgeTone(effType),
+                                  )}
+                                >
+                                  {getCustomerTypeLabel(effType, i18n.language)}
+                                </span>
+                              );
+                            })()}
+                          </TableCell>
+                          <TableCell className="min-w-[190px] px-1.5 align-middle">
+                            <div className="flex flex-col items-start gap-1">
+                              <CustomerResponseStatusSelect
+                                customerId={c.id}
+                                customerName={c.name}
+                                contactPerson={
+                                  c.contact_person ||
+                                  ((c.external_ref as Record<string, unknown> | null)
+                                    ?.contact_person as string | undefined)
+                                }
+                                phone={c.primary_phone || c.whatsapp}
+                                whatsapp={c.whatsapp || c.primary_phone}
+                                companyName={c.company_name}
+                                isActive={c.is_active}
+                                workflowState={c.workflow_state}
+                                externalRef={c.external_ref}
+                              />
+                              {stats.isUnresponsive &&
+                                getCustomerResponseStatus(c) !== "dormant" && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      markDormantMutation.mutate(c.id);
+                                    }}
+                                    disabled={markDormantMutation.isPending}
+                                    className="inline-flex items-center gap-1 rounded bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300/80 px-1.5 py-0.5 text-[10px] font-semibold transition-colors cursor-pointer shadow-2xs touch-manipulation"
+                                    title={`Unresponsive after ${toIndicDigits(stats.totalFollowups, i18n.language)} follow-ups. Click to mark Dormant.`}
+                                  >
+                                    <UserX className="h-3 w-3 text-rose-600 shrink-0" />
+                                    <span>{t("crm.markDormant", "Mark Dormant")}</span>
+                                    <span className="rounded-full bg-rose-200/90 px-1 py-0 text-[9px] font-bold text-rose-900">
+                                      {toIndicDigits(stats.totalFollowups, i18n.language)}
+                                    </span>
+                                  </button>
+                                )}
+                            </div>
+                          </TableCell>
+                          <TableCell className="w-32 whitespace-nowrap px-1.5 overflow-hidden">
+                            <CustomerAssigneeSelect
+                              customerId={c.id}
+                              customerName={c.name}
+                              workflowState={c.workflow_state}
+                              externalRef={c.external_ref}
+                            />
+                          </TableCell>
+                          <TableCell className="w-34 whitespace-nowrap px-1.5 overflow-hidden">
+                            {(() => {
+                              if (!hasCustomerPlacedOrder(c, orderInfo)) {
+                                return (
+                                  <span
+                                    className="text-slate-400 font-mono text-xs pl-2"
+                                    title="No orders placed"
+                                  >
+                                    —
+                                  </span>
+                                );
+                              }
+                              const ledger = ledgerQuery.data?.get(c.id);
+                              return (
+                                <CustomerPaymentStatusSelect
+                                  customerId={c.id}
+                                  customerName={c.name}
+                                  workflowState={c.workflow_state}
+                                  externalRef={c.external_ref}
+                                  ledgerSummary={ledger}
+                                />
+                              );
+                            })()}
+                          </TableCell>
+                          <TableCell className="w-44 whitespace-nowrap px-1.5 align-middle">
+                            {phone ? (
+                              <div className="flex flex-col gap-1 py-0.5">
+                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                  <a
+                                    href={`tel:${phone}`}
+                                    onClick={() => handleContactLog("call")}
+                                    title={`Call ${phone} (auto-registers call follow-up)`}
+                                    className="inline-flex items-center gap-1 text-slate-700 hover:text-primary font-mono transition-colors font-medium"
+                                  >
+                                    <Phone className="h-3 w-3 text-emerald-600 shrink-0" />
+                                    <span className="truncate">
+                                      {toIndicDigits(phone, i18n.language)}
+                                    </span>
+                                  </a>
+                                  {(cleanWaPhone || cleanPhone) && (
+                                    <a
+                                      href={waUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      onClick={() => handleContactLog("whatsapp")}
+                                      title={`Send follow-up on WhatsApp to ${norm.contact_person || c.name} (auto-registers WhatsApp follow-up)`}
+                                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/80 text-[10.5px] font-medium transition-colors shrink-0 shadow-2xs"
+                                    >
+                                      <MessageSquare className="h-3 w-3 text-emerald-600" />
+                                      <span className="hidden sm:inline">WhatsApp</span>
+                                    </a>
+                                  )}
+                                </div>
+
+                                {/* Follow-up count and relative time */}
+                                <div className="flex items-center gap-1 text-[10px]">
+                                  {stats.totalFollowups > 0 ? (
+                                    <span
+                                      className={cn(
+                                        "inline-flex items-center gap-1 rounded px-1.5 py-0.5 border text-[10px]",
+                                        isLastContacted
+                                          ? "bg-emerald-100/90 border-emerald-300 text-emerald-950 font-bold"
+                                          : "bg-slate-50 border-slate-200/90 text-slate-600",
+                                      )}
+                                      title={`${toIndicDigits(stats.whatsappCount, i18n.language)} WhatsApp · ${toIndicDigits(stats.callCount, i18n.language)} Call(s). Last: ${stats.lastContactedAt ? formatDate(stats.lastContactedAt, i18n.language) : "Never"}`}
+                                    >
+                                      <span className="font-semibold text-slate-800">
+                                        {toIndicDigits(stats.totalFollowups, i18n.language)} flw-up
+                                        {stats.totalFollowups > 1 ? "s" : ""}
+                                      </span>
+                                      <span className="text-slate-300">·</span>
+                                      <span className="text-muted-foreground whitespace-nowrap">
+                                        {formatRelativeContactTime(
+                                          stats.lastContactedAt,
+                                          i18n.language,
+                                        )}
+                                      </span>
+                                    </span>
+                                  ) : (
+                                    <span className="text-[10px] text-slate-400 italic">
+                                      {t("customers.noFollowupsYet", "No follow-ups yet")}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-muted-foreground italic">
+                                {t("customers.noPhone", "No phone")}
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell className="w-10 text-right px-1">
+                            <RowActions
+                              extra={
+                                <>
+                                  <DropdownMenuItem asChild>
+                                    <Link to="/customers/$customerId" params={{ customerId: c.id }}>
+                                      <ExternalLink className="mr-2 h-4 w-4" />{" "}
+                                      {t("common.open", "Open")}
+                                    </Link>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem asChild>
+                                    <Link to="/projects" search={{ new: "1", customer: c.id }}>
+                                      <FolderPlus className="mr-2 h-4 w-4 text-indigo-600" /> Add
+                                      Next Project
+                                    </Link>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem asChild>
+                                    <Link to="/quotes" search={{ new: "1", customer: c.id }}>
+                                      <FileText className="mr-2 h-4 w-4 text-emerald-600" /> New
+                                      Quote
+                                    </Link>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem asChild>
+                                    <Link to="/sales-orders/new" search={{ customer: c.id }}>
+                                      <ShoppingCart className="mr-2 h-4 w-4 text-amber-600" /> New
+                                      Sales Order
+                                    </Link>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  {getCustomerResponseStatus(c) !== "dormant" ? (
+                                    <DropdownMenuItem
+                                      onClick={() => markDormantMutation.mutate(c.id)}
+                                    >
+                                      <UserX className="mr-2 h-4 w-4 text-rose-600" />
+                                      {t("crm.markDormant", "Mark Dormant (Unresponsive)")}
+                                    </DropdownMenuItem>
+                                  ) : (
+                                    <DropdownMenuItem
+                                      onClick={() => reactivateMutation.mutate(c.id)}
+                                    >
+                                      <UserCheck className="mr-2 h-4 w-4 text-emerald-600" />
+                                      {t("crm.reactivateAccount", "Reactivate Account")}
+                                    </DropdownMenuItem>
+                                  )}
+                                  <DropdownMenuSeparator />
+                                  <LifecycleMenuItems
+                                    entityType="customer"
+                                    entityId={c.id}
+                                    currentStatus={
+                                      ((c as unknown as { lifecycle_status?: LifecycleStatus })
+                                        .lifecycle_status ??
+                                        (c.is_active ? "active" : "inactive")) as LifecycleStatus
+                                    }
+                                    allowPurge={false}
+                                  />
+                                </>
+                              }
+                              onEdit={() => {
+                                setEditing(c);
+                                setFormOpen(true);
+                              }}
+                              onDelete={() => setToDelete(c)}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
             </DataTableShell>
           )}
         </>
