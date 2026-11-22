@@ -25,6 +25,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   getStoredDeviceSession,
   saveStoredDeviceSession,
+  OFFICIAL_STONE_TECH_WHATSAPP,
   type WhatsappDeviceSession,
 } from "./device-session";
 
@@ -65,7 +66,7 @@ export function WhatsappLinkedDeviceDialog({ open, onOpenChange, onSessionUpdate
   const handleSimulateScanAndLink = () => {
     const newSession: WhatsappDeviceSession = {
       isLinked: true,
-      phoneNumber: "+91 98791 23456",
+      phoneNumber: OFFICIAL_STONE_TECH_WHATSAPP,
       accountName: "Stone Tech Architectural Atelier",
       platform: "macOS Web Session (Multi-Device Engine)",
       linkedAt: new Date().toISOString(),
@@ -304,7 +305,7 @@ export function WhatsappLinkedDeviceDialog({ open, onOpenChange, onSessionUpdate
                   </h4>
                   <ol className="list-decimal pl-4 space-y-1.5 text-muted-foreground text-[11px] leading-relaxed">
                     <li>
-                      Open <b>WhatsApp Business</b> on your phone
+                      Open <b>WhatsApp Business (+91 77420 90866)</b> on your phone
                     </li>
                     <li>
                       Tap <b>Menu ⋮</b> (Android) or <b>Settings</b> (iOS)

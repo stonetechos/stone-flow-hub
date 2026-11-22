@@ -27,9 +27,26 @@ describe("WhatsApp Linked Device (Option B) session management", () => {
   test("defaults to an initialized linked state for Stone Tech terminal with calls suppressed", () => {
     const session = getStoredDeviceSession();
     expect(session.isLinked).toBe(true);
-    expect(session.phoneNumber).toBe("+91 98791 23456");
+    expect(session.phoneNumber).toBe("+91 77420 90866");
     expect(session.suppressCalls).toBe(true);
     expect(session.accountName).toContain("Stone Tech");
+  });
+
+  test("auto-migrates legacy placeholder numbers to official +91 77420 90866", () => {
+    const legacySession: WhatsappDeviceSession = {
+      isLinked: true,
+      phoneNumber: "+91 98791 23456",
+      accountName: "Stone Tech Architectural Atelier",
+      platform: "macOS Web Session (Multi-Device Engine)",
+      linkedAt: "2026-11-20T10:00:00Z",
+      lastActiveAt: "2026-11-20T10:00:00Z",
+      suppressCalls: true,
+    };
+    saveStoredDeviceSession(legacySession);
+
+    const migrated = getStoredDeviceSession();
+    expect(migrated.isLinked).toBe(true);
+    expect(migrated.phoneNumber).toBe("+91 77420 90866");
   });
 
   test("saves and loads customized linked session to localStorage", () => {

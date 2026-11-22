@@ -17,7 +17,7 @@ import type { WhatsappConversation, WhatsappMessage } from "./types";
 const SEED_CONVERSATIONS: WhatsappConversation[] = [
   {
     id: "conv-1",
-    phone: "919879123456",
+    phone: "919825091234",
     contactName: "Ar. Mehul Panchal",
     companyName: "Studio Vista Architects",
     lastMessage: "Please share the rate for 30mm Gwalior Mint Sandstone and Agra Red.",
