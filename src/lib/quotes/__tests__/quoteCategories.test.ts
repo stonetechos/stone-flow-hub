@@ -573,4 +573,80 @@ describe("quoteCategories", () => {
     expect(updates.summary.sealerCoverageSqftPerLtr).toBe(50);
     expect(updates.summary.sealerLabourSqft).toBe(318);
   });
+
+  it("handles bifurcated/split adhesives (5 bags White + 8 bags Grey = 13 total) without reverting them to 13", () => {
+    const walls: EstimateWall[] = [
+      { id: "w1", name: "Suresh Bhai's Bedroom Wall", height: 5, length: 4, unit: "ft", sqft: 20 },
+      { id: "w2", name: "Living Area Wall", height: 14, length: 7, unit: "ft", sqft: 98 },
+      { id: "w3", name: "Compound Wall", height: 20, length: 10, unit: "ft", sqft: 200 },
+    ];
+    // Total sqft = 318 -> requires ceil(318 / 25) = 13 bags
+
+    const products: EstimateProduct[] = [];
+    const existingItems = [
+      {
+        id: "it_p1",
+        description: "Natural Stone Mosaics",
+        quantity: 22,
+        unit: "sq.ft",
+      },
+      {
+        id: "it_labour",
+        description: "Installation Labour",
+        quantity: 318,
+        unit: "sq.ft",
+      },
+      {
+        id: "it_adh_white",
+        description: "Standard Cement Based Stone Adhesive White",
+        quantity: 5, // 5 bags white
+        unit: "bag",
+        unit_price: 900,
+      },
+      {
+        id: "it_adh_grey",
+        description: "Standard Cementitious Stone Adhesive Grey",
+        quantity: 8, // 8 bags grey
+        unit: "bag",
+        unit_price: 800,
+      },
+      {
+        id: "it_sealer",
+        description: "Sealer Chemical — Solvent Based Water Oil and Dust Repellent",
+        quantity: 7,
+        unit: "ltr",
+      },
+      {
+        id: "it_carting",
+        description: "Local Carting & Transportation",
+        quantity: 1,
+        unit: "trip",
+      },
+    ];
+
+    const updates = calculateConsumableUpdates(walls, products, existingItems);
+    expect(updates.totalWallSqft).toBe(318);
+
+    // CRITICAL: Neither White adhesive (5) nor Grey adhesive (8) must be patched to 13!
+    const whitePatch = updates.itemPatches.find((p) => p.id === "it_adh_white");
+    const greyPatch = updates.itemPatches.find((p) => p.id === "it_adh_grey");
+    expect(whitePatch).toBeUndefined();
+    expect(greyPatch).toBeUndefined();
+
+    // Summary checks
+    expect(updates.summary.cementAdhesiveBags).toBe(13);
+    expect(updates.summary.actualCementBagsInQuote).toBe(13);
+    expect(updates.summary.cementBreakdownText).toBe("5 White + 8 Grey");
+
+    // Categorical sorting check: both adhesive lines must be grouped under Adhesives (position #3 in category order)
+    const sorted = sortQuoteItemsCategorically(existingItems);
+    expect(sorted.map((it) => it.id)).toEqual([
+      "it_p1",
+      "it_labour",
+      "it_adh_white",
+      "it_adh_grey",
+      "it_sealer",
+      "it_carting",
+    ]);
+  });
 });

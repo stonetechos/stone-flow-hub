@@ -484,22 +484,6 @@ export function QuoteWallDetailsEditor({
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
-  // Auto-sync out-of-sync consumables and sorting on mount / when walls change
-  const autoSyncFingerprintRef = useRef<string>("");
-  useEffect(() => {
-    if (!existingItems.length || !walls.length || syncEstimatorMut.isPending) return;
-    const updates = calculateConsumableUpdates(walls, products, existingItems, worksheet);
-    const sorted = sortQuoteItemsCategorically(existingItems);
-    const isOutOfOrder = sorted.some((item, idx) => item.id !== existingItems[idx]?.id);
-
-    if (updates.itemPatches.length === 0 && !isOutOfOrder) return;
-
-    const patchFingerprint = `${updates.itemPatches.map((p) => `${p.id}:${p.newQuantity}`).join(",")}|order:${isOutOfOrder}`;
-    if (autoSyncFingerprintRef.current === patchFingerprint) return;
-
-    autoSyncFingerprintRef.current = patchFingerprint;
-    syncEstimatorMut.mutate();
-  }, [existingItems, walls, products, worksheet, syncEstimatorMut]);
   const addMissingConsumablesMut = useMutation({
     mutationFn: async () => {
       const currentItems = await getQuoteItems(quoteId);
@@ -833,10 +817,21 @@ export function QuoteWallDetailsEditor({
                       </Badge>
                     </div>
                     <span className="text-sm font-bold text-slate-800 block">
-                      {liveConsumables.summary.cementAdhesiveBags} Bags
+                      {liveConsumables.summary.actualCementBagsInQuote ??
+                        liveConsumables.summary.cementAdhesiveBags}{" "}
+                      Bags
+                      {liveConsumables.summary.cementBreakdownText && (
+                        <span className="ml-1 text-[11px] font-medium text-amber-800 block">
+                          ({liveConsumables.summary.cementBreakdownText})
+                        </span>
+                      )}
                     </span>
                     <span className="text-[10px] text-muted-foreground">
-                      25 sq.ft/bag (or PU: {liveConsumables.summary.puAdhesiveBuckets} buckets)
+                      {liveConsumables.summary.actualCementBagsInQuote != null &&
+                      liveConsumables.summary.actualCementBagsInQuote !==
+                        liveConsumables.summary.cementAdhesiveBags
+                        ? `Required: ${liveConsumables.summary.cementAdhesiveBags} bags (25 sq.ft/bag)`
+                        : `25 sq.ft/bag (or PU: ${liveConsumables.summary.puAdhesiveBuckets} buckets)`}
                     </span>
                   </div>
 

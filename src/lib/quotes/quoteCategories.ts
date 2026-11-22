@@ -220,6 +220,8 @@ export interface ProposedConsumableUpdates {
   summary: {
     labourSqft: number;
     cementAdhesiveBags: number;
+    actualCementBagsInQuote?: number;
+    cementBreakdownText?: string;
     puAdhesiveBuckets: number;
     sealerBottles: number;
     sealerCoverageSqftPerLtr?: number;
@@ -439,32 +441,77 @@ export function calculateConsumableUpdates(
 
   // 3. Adhesives & Chemicals
   const adhesiveItems = existingItems.filter((it) => categorizeQuoteItem(it) === "adhesive");
-  for (const adhItem of adhesiveItems) {
-    const d = (adhItem.description || "").toLowerCase();
-    const u = (adhItem.unit || "").toLowerCase();
-    let newQty = 0;
+  const isPuItem = (it: { description?: string | null; unit?: string | null }) => {
+    const d = (it.description || "").toLowerCase();
+    const u = (it.unit || "").toLowerCase();
+    return d.includes("pu based") || d.includes("pu-based") || u === "bucket";
+  };
 
-    if (d.includes("pu based") || d.includes("pu-based") || u === "bucket") {
-      // PU Based: 20 sqft/bucket
-      newQty = ceilWhole(totalWallSqft / 20);
-    } else {
-      // Standard / Sika / No-Limit: 25 sqft/bag (15 for crazy)
-      const cat =
-        ADHESIVE_CATALOG.find((c) => d.includes(c.label.toLowerCase())) ?? ADHESIVE_CATALOG[1]; // default grey
-      newQty = calculateAdhesiveUnits(cat, wallBreakdown);
-    }
+  const puItems = adhesiveItems.filter(isPuItem);
+  const cementItems = adhesiveItems.filter((it) => !isPuItem(it));
 
-    if (Number(adhItem.quantity) !== newQty) {
+  // PU Based (20 sqft/bucket)
+  for (const puItem of puItems) {
+    const calculatedPu = ceilWhole(totalWallSqft / 20);
+    if (Number(puItem.quantity) !== calculatedPu) {
       itemPatches.push({
-        id: adhItem.id,
-        description: adhItem.description || "Adhesive",
+        id: puItem.id,
+        description: puItem.description || "PU Based Adhesive",
         category: "adhesive",
-        currentQuantity: Number(adhItem.quantity) || 0,
-        newQuantity: newQty,
-        unit: adhItem.unit || (d.includes("pu") ? "bucket" : "bag"),
+        currentQuantity: Number(puItem.quantity) || 0,
+        newQuantity: calculatedPu,
+        unit: puItem.unit || "bucket",
       });
     }
   }
+
+  // Cementitious Stone Adhesives (Standard Grey, White, No-Limit, Sika Ceram, etc.)
+  const firstCementDesc = cementItems[0]?.description || "";
+  const adhesiveCatalogEntry =
+    ADHESIVE_CATALOG.find((c) => firstCementDesc.toLowerCase().includes(c.label.toLowerCase())) ??
+    ADHESIVE_CATALOG[1]; // default grey
+  const calculatedCementBags = calculateAdhesiveUnits(adhesiveCatalogEntry, wallBreakdown);
+
+  const totalCementBagsInQuote = cementItems.reduce(
+    (sum, it) => sum + (Number(it.quantity) || 0),
+    0,
+  );
+
+  const cementBreakdownText =
+    cementItems.length > 1
+      ? cementItems
+          .map((it) => {
+            const d = (it.description || "").toLowerCase();
+            const color = d.includes("white")
+              ? "White"
+              : d.includes("grey")
+                ? "Grey"
+                : d.includes("pu")
+                  ? "PU"
+                  : "Bags";
+            return `${Number(it.quantity) || 0} ${color}`;
+          })
+          .join(" + ")
+      : undefined;
+
+  // Single-item vs Multi-item (Split / Bifurcated) Adhesives:
+  // If there is exactly ONE cement item, keep that item's quantity in sync with calculated total.
+  if (cementItems.length === 1) {
+    const singleCement = cementItems[0];
+    if (Number(singleCement.quantity) !== calculatedCementBags) {
+      itemPatches.push({
+        id: singleCement.id,
+        description: singleCement.description || "Adhesives & Chemicals",
+        category: "adhesive",
+        currentQuantity: Number(singleCement.quantity) || 0,
+        newQuantity: calculatedCementBags,
+        unit: singleCement.unit || "bag",
+      });
+    }
+  }
+  // When there are MULTIPLE cement items (e.g. user bifurcated into 5 bags White + 8 bags Grey):
+  // We NEVER overwrite the individual lines to calculatedCementBags (which would make each 13!).
+  // If total bags in quote matches calculatedCementBags (13 === 13), it is in 100% balance.
 
   // 4. Sealers
   const sealerItem = existingItems.find((it) => categorizeQuoteItem(it) === "sealer");
@@ -604,7 +651,9 @@ export function calculateConsumableUpdates(
     productPatches,
     summary: {
       labourSqft: totalWallSqft,
-      cementAdhesiveBags: calculateAdhesiveUnits(ADHESIVE_CATALOG[1], wallBreakdown),
+      cementAdhesiveBags: calculatedCementBags,
+      actualCementBagsInQuote: totalCementBagsInQuote,
+      cementBreakdownText,
       puAdhesiveBuckets: ceilWhole(totalWallSqft / 20),
       sealerBottles: calculatedSealerBottles,
       sealerCoverageSqftPerLtr: sealerCoverage,

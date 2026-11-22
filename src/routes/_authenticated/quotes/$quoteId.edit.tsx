@@ -14,7 +14,18 @@ import {
   X as XIcon,
   Truck,
   Layers,
+  Package,
+  ShieldCheck,
+  ChevronDown,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { ReassignCustomerDialog } from "@/components/quotes/ReassignCustomerDialog";
 import { QuoteTermsManager } from "@/components/quotes/QuoteTermsManager";
 import { QuoteWallDetailsEditor } from "@/components/quotes/QuoteWallDetailsEditor";
@@ -923,28 +934,15 @@ function LineItemsEditor({
             <Layers className="mr-1.5 h-3.5 w-3.5 text-slate-600" />
             Auto-Organize Categories
           </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => addCartingMut.mutate()}
-            disabled={addCartingMut.isPending}
-            className="h-8 border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 hover:text-amber-950 text-xs font-medium cursor-pointer"
-            title="Add optional local carting / transport charge"
-          >
-            {addCartingMut.isPending ? (
-              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Truck className="mr-1.5 h-3.5 w-3.5 text-amber-700" />
-            )}
-            + Add Local Carting
-          </Button>
+
+          {/* Add Stone Cladding Line */}
           <Button
             size="sm"
             variant="outline"
             onClick={() => addMut.mutate({ description: "New Stone Cladding Product" })}
             disabled={addMut.isPending}
             className="h-8 border-cyan-300 bg-cyan-50 text-cyan-900 hover:bg-cyan-100 hover:text-cyan-950 text-xs font-semibold cursor-pointer shadow-2xs"
-            title="Add stone cladding product (placed under stone products 1 & 2 at position #3)"
+            title="Add stone cladding product (placed under stone products at top)"
           >
             {addMut.isPending ? (
               <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
@@ -953,6 +951,263 @@ function LineItemsEditor({
             )}
             + Add Stone Cladding Line
           </Button>
+
+          {/* Add Adhesive / Chemical Line (Major Category) */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={addMut.isPending}
+                className="h-8 border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 hover:text-amber-950 text-xs font-semibold cursor-pointer shadow-2xs"
+                title="Add adhesive line (placed under the Adhesives & Chemicals category)"
+              >
+                <Package className="mr-1.5 h-3.5 w-3.5 text-amber-700" />
+                + Add Adhesive
+                <ChevronDown className="ml-1 h-3 w-3 opacity-60" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80">
+              <DropdownMenuLabel className="text-xs font-semibold text-slate-700">
+                Adhesives & Chemicals (Major Category)
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="cursor-pointer flex flex-col items-start gap-0.5 py-1.5"
+                onClick={() =>
+                  addMut.mutate({
+                    description: "Standard Cement Based Stone Adhesive White",
+                    unit: "bag",
+                    unitPrice: 900,
+                    hsn: "3506",
+                    quantity: 1,
+                  })
+                }
+              >
+                <div className="flex items-center justify-between w-full font-medium text-xs">
+                  <span>⚪ White Cement Adhesive</span>
+                  <span className="text-emerald-700 font-semibold">₹900/bag</span>
+                </div>
+                <span className="text-[10px] text-muted-foreground">
+                  Polymer-modified for light/white stones & mosaics
+                </span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer flex flex-col items-start gap-0.5 py-1.5"
+                onClick={() =>
+                  addMut.mutate({
+                    description: "Standard Cementitious Stone Adhesive Grey",
+                    unit: "bag",
+                    unitPrice: 800,
+                    hsn: "3506",
+                    quantity: 1,
+                  })
+                }
+              >
+                <div className="flex items-center justify-between w-full font-medium text-xs">
+                  <span>🔘 Grey Cement Adhesive</span>
+                  <span className="text-emerald-700 font-semibold">₹800/bag</span>
+                </div>
+                <span className="text-[10px] text-muted-foreground">
+                  High-strength standard for darker stone claddings
+                </span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer flex flex-col items-start gap-0.5 py-1.5"
+                onClick={() =>
+                  addMut.mutate({
+                    description: "No-Limit Grey Adhesive",
+                    unit: "bag",
+                    unitPrice: 1650,
+                    hsn: "3506",
+                    quantity: 1,
+                  })
+                }
+              >
+                <div className="flex items-center justify-between w-full font-medium text-xs">
+                  <span>⚡ No-Limit Grey Adhesive</span>
+                  <span className="text-emerald-700 font-semibold">₹1,650/bag</span>
+                </div>
+                <span className="text-[10px] text-muted-foreground">
+                  Zero vertical slip, extreme adhesion for facades
+                </span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer flex flex-col items-start gap-0.5 py-1.5"
+                onClick={() =>
+                  addMut.mutate({
+                    description: "PU Based Adhesive",
+                    unit: "bucket",
+                    unitPrice: 1650,
+                    hsn: "3506",
+                    quantity: 1,
+                  })
+                }
+              >
+                <div className="flex items-center justify-between w-full font-medium text-xs">
+                  <span>🪣 PU Based Adhesive (Bucket)</span>
+                  <span className="text-emerald-700 font-semibold">₹1,650/bucket</span>
+                </div>
+                <span className="text-[10px] text-muted-foreground">
+                  Polyurethane for metal, drywall, or timber substrates
+                </span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="cursor-pointer text-xs font-medium text-amber-900"
+                onClick={() =>
+                  addMut.mutate({
+                    description: "Adhesive — Cementitious Stone Adhesive",
+                    unit: "bag",
+                    unitPrice: 800,
+                    hsn: "3506",
+                    quantity: 1,
+                  })
+                }
+              >
+                <Plus className="mr-1.5 h-3.5 w-3.5 text-amber-700" />
+                Custom Adhesive Line
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Add Sealer / Chemical Line (Major Category) */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={addMut.isPending}
+                className="h-8 border-purple-300 bg-purple-50 text-purple-900 hover:bg-purple-100 hover:text-purple-950 text-xs font-semibold cursor-pointer shadow-2xs"
+                title="Add sealer line (placed under the Sealers & Repellents category)"
+              >
+                <ShieldCheck className="mr-1.5 h-3.5 w-3.5 text-purple-700" />
+                + Add Sealer
+                <ChevronDown className="ml-1 h-3 w-3 opacity-60" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80">
+              <DropdownMenuLabel className="text-xs font-semibold text-slate-700">
+                Sealers & Repellents (Major Category)
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="cursor-pointer flex flex-col items-start gap-0.5 py-1.5"
+                onClick={() =>
+                  addMut.mutate({
+                    description: "Sealer Chemical — Solvent Based Water Oil and Dust Repellent",
+                    unit: "ltr",
+                    unitPrice: 2500,
+                    hsn: "38249900",
+                    quantity: 1,
+                  })
+                }
+              >
+                <div className="flex items-center justify-between w-full font-medium text-xs">
+                  <span>🛡️ Solvent Based Oil & Dust Repellent</span>
+                  <span className="text-emerald-700 font-semibold">₹2,500/ltr</span>
+                </div>
+                <span className="text-[10px] text-muted-foreground">
+                  50 sq.ft coverage/ltr · Deep penetrating oleophobic
+                </span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer flex flex-col items-start gap-0.5 py-1.5"
+                onClick={() =>
+                  addMut.mutate({
+                    description: "Sealer Chemical — Water Based Water Repellent",
+                    unit: "ltr",
+                    unitPrice: 1700,
+                    hsn: "38249900",
+                    quantity: 1,
+                  })
+                }
+              >
+                <div className="flex items-center justify-between w-full font-medium text-xs">
+                  <span>💧 Water Based Water Repellent</span>
+                  <span className="text-emerald-700 font-semibold">₹1,700/ltr</span>
+                </div>
+                <span className="text-[10px] text-muted-foreground">
+                  550 sq.ft coverage/ltr · Invisible breathable silicone
+                </span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer flex flex-col items-start gap-0.5 py-1.5"
+                onClick={() =>
+                  addMut.mutate({
+                    description: "Wetlook Sealer (Gloss Finish)",
+                    unit: "ltr",
+                    unitPrice: 3000,
+                    hsn: "38249900",
+                    quantity: 1,
+                  })
+                }
+              >
+                <div className="flex items-center justify-between w-full font-medium text-xs">
+                  <span>✨ Wetlook Sealer (Gloss Finish)</span>
+                  <span className="text-emerald-700 font-semibold">₹3,000/ltr</span>
+                </div>
+                <span className="text-[10px] text-muted-foreground">
+                  60 sq.ft coverage/ltr · Color enhancing gloss
+                </span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer flex flex-col items-start gap-0.5 py-1.5"
+                onClick={() =>
+                  addMut.mutate({
+                    description: "Back Coat Protective Sealer",
+                    unit: "ltr",
+                    unitPrice: 3000,
+                    hsn: "38249900",
+                    quantity: 1,
+                  })
+                }
+              >
+                <div className="flex items-center justify-between w-full font-medium text-xs">
+                  <span>🛡️ Back Coat Sealer</span>
+                  <span className="text-emerald-700 font-semibold">₹3,000/ltr</span>
+                </div>
+                <span className="text-[10px] text-muted-foreground">
+                  100 sq.ft coverage/ltr · Anti-efflorescence barrier
+                </span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="cursor-pointer text-xs font-medium text-purple-900"
+                onClick={() =>
+                  addMut.mutate({
+                    description: "Sealer Chemical",
+                    unit: "ltr",
+                    unitPrice: 1700,
+                    hsn: "38249900",
+                    quantity: 1,
+                  })
+                }
+              >
+                <Plus className="mr-1.5 h-3.5 w-3.5 text-purple-700" />
+                Custom Sealer Line
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Add Local Carting */}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => addCartingMut.mutate()}
+            disabled={addCartingMut.isPending}
+            className="h-8 border-orange-300 bg-orange-50 text-orange-900 hover:bg-orange-100 hover:text-orange-950 text-xs font-medium cursor-pointer"
+            title="Add optional local carting / transport charge"
+          >
+            {addCartingMut.isPending ? (
+              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Truck className="mr-1.5 h-3.5 w-3.5 text-orange-700" />
+            )}
+            + Add Local Carting
+          </Button>
+
+          {/* Generic Add Line */}
           <Button
             size="sm"
             variant="outline"
@@ -1252,23 +1507,96 @@ function LineItemsEditor({
                       >
                         <ArrowDown className="h-4 w-4" />
                       </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        onClick={() =>
-                          addMut.mutate({
-                            targetIndex: i + 1,
-                            description: "New Stone Cladding Product",
-                          })
+                      {(() => {
+                        const cat = categorizeQuoteItem(r);
+                        const isAdhesive = cat === "adhesive";
+                        const isWhite = (r.description || "").toLowerCase().includes("white");
+                        const isGrey = (r.description || "").toLowerCase().includes("grey");
+
+                        let nextDesc = "New line";
+                        let nextUnit = "sq.ft";
+                        let nextPrice = 0;
+                        let nextHsn = "68022190";
+                        let buttonLabel = `Insert line below (Place at #${i + 2})`;
+                        let buttonBorder = "border-cyan-200 text-cyan-800 hover:bg-cyan-50";
+
+                        if (isAdhesive) {
+                          if (isWhite) {
+                            nextDesc = "Standard Cementitious Stone Adhesive Grey";
+                            nextUnit = "bag";
+                            nextPrice = 800;
+                            nextHsn = "3506";
+                            buttonLabel = `+ Insert Grey Adhesive below (Place at #${i + 2})`;
+                          } else if (isGrey) {
+                            nextDesc = "Standard Cement Based Stone Adhesive White";
+                            nextUnit = "bag";
+                            nextPrice = 900;
+                            nextHsn = "3506";
+                            buttonLabel = `+ Insert White Adhesive below (Place at #${i + 2})`;
+                          } else {
+                            nextDesc = "Adhesive — Cementitious Stone Adhesive";
+                            nextUnit = "bag";
+                            nextPrice = 800;
+                            nextHsn = "3506";
+                            buttonLabel = `+ Insert another Adhesive below (Place at #${i + 2})`;
+                          }
+                          buttonBorder = "border-amber-300 text-amber-900 hover:bg-amber-50";
+                        } else if (cat === "product") {
+                          nextDesc = "New Stone Cladding Product";
+                          nextUnit = "sq.ft";
+                          nextPrice = 0;
+                          nextHsn = "68022190";
+                          buttonLabel = `+ Insert Stone Product below (Place at #${i + 2})`;
+                          buttonBorder = "border-cyan-200 text-cyan-800 hover:bg-cyan-50";
+                        } else if (cat === "sealer") {
+                          nextDesc = "Sealer Chemical — Water Based Water Repellent";
+                          nextUnit = "ltr";
+                          nextPrice = 1700;
+                          nextHsn = "38249900";
+                          buttonLabel = `+ Insert Sealer line below (Place at #${i + 2})`;
+                          buttonBorder = "border-purple-300 text-purple-900 hover:bg-purple-50";
+                        } else if (cat === "installation_labour" || cat === "sealer_labour") {
+                          nextDesc = "Installation Labour";
+                          nextUnit = "sq.ft";
+                          nextPrice = 80;
+                          nextHsn = "9954";
+                          buttonLabel = `+ Insert Labour line below (Place at #${i + 2})`;
+                          buttonBorder = "border-blue-300 text-blue-900 hover:bg-blue-50";
+                        } else if (cat === "carting") {
+                          nextDesc = "Local Carting & Transportation";
+                          nextUnit = "trip";
+                          nextPrice = 1500;
+                          nextHsn = "9965";
+                          buttonLabel = `+ Insert Carting line below (Place at #${i + 2})`;
+                          buttonBorder = "border-orange-300 text-orange-900 hover:bg-orange-50";
                         }
-                        disabled={addMut.isPending}
-                        className="h-7 px-2 text-[11px] text-cyan-800 hover:text-cyan-900 hover:bg-cyan-50 font-medium flex items-center gap-1 border border-dashed border-cyan-200 rounded cursor-pointer"
-                        title={`Insert new stone cladding line directly under item ${i + 1}`}
-                      >
-                        <Plus className="h-3 w-3 text-cyan-600" />
-                        <span>Insert line below (Place at #{i + 2})</span>
-                      </Button>
+
+                        return (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            onClick={() =>
+                              addMut.mutate({
+                                targetIndex: i + 1,
+                                description: nextDesc,
+                                unit: nextUnit,
+                                unitPrice: nextPrice,
+                                hsn: nextHsn,
+                              })
+                            }
+                            disabled={addMut.isPending}
+                            className={cn(
+                              "h-7 px-2 text-[11px] font-medium flex items-center gap-1 border border-dashed rounded cursor-pointer",
+                              buttonBorder,
+                            )}
+                            title={`Insert item directly under #${i + 1}`}
+                          >
+                            <Plus className="h-3 w-3" />
+                            <span>{buttonLabel}</span>
+                          </Button>
+                        );
+                      })()}
                     </div>
                     <div className="flex items-center gap-3">
                       <span>Line total: {formatInr(lineTotal)}</span>
