@@ -23,6 +23,8 @@ import {
   detectDealScopeFromItems,
   ensureTermsHaveEarlyPaymentOffer,
   stripEarlyPaymentOffer,
+  ensureTermsHaveCashDealGstClause,
+  stripCashDealGstClause,
   hasEarlyPaymentDiscountDisclaimer,
   generateQuoteTerms,
 } from "@/lib/quotes/terms";
@@ -401,11 +403,18 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
         }
       }
       const gstSplit = gstTotalsFromItems(items as unknown as GstItem[]);
-      const totals: PdfMeta[] = [
-        { label: "Subtotal", value: inr(q.subtotal) },
-        ...(gstSplit.length ? gstSplit : [{ label: "Tax", value: inr(q.tax_amount) }]),
-        { label: "Total", value: inr(q.total) },
-      ];
+      const totals: PdfMeta[] = isCashDeal
+        ? [
+            ...(Number(q.subtotal) !== Number(q.total) && Number(q.subtotal) > 0
+              ? [{ label: "Subtotal", value: inr(q.subtotal) }]
+              : []),
+            { label: "Total", value: inr(q.total) },
+          ]
+        : [
+            { label: "Subtotal", value: inr(q.subtotal) },
+            ...(gstSplit.length ? gstSplit : [{ label: "Tax", value: inr(q.tax_amount) }]),
+            { label: "Total", value: inr(q.total) },
+          ];
       const scope = detectDealScopeFromItems(items);
       const isClientSlab = detectClientProvidedSlabFromItems(items, q.wall_estimate);
       const rawTerms = q.terms && q.terms.trim() ? q.terms.trim() : null;
@@ -417,7 +426,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
             ? termsHasOffer
             : true;
 
-      const effectiveTerms = rawTerms
+      let effectiveTerms = rawTerms
         ? includePrepaymentOffer
           ? ensureTermsHaveEarlyPaymentOffer(rawTerms)
           : stripEarlyPaymentOffer(rawTerms)
@@ -426,7 +435,14 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
             totalAmount: Number(q.total) || 0,
             clientProvidedSlab: isClientSlab,
             includePrepaymentOffer,
+            isCashDeal,
           });
+
+      if (isCashDeal) {
+        effectiveTerms = ensureTermsHaveCashDealGstClause(effectiveTerms);
+      } else {
+        effectiveTerms = stripCashDealGstClause(effectiveTerms);
+      }
       return {
         doc: {
           kind: "quotation",
@@ -892,7 +908,37 @@ export function renderDocWhatsAppText(built: BuiltDocument): string {
   }
   if (doc.totals?.length) {
     lines.push("");
-    for (const t of doc.totals) {
+    const isCash = Boolean(
+      doc.isCashDeal || doc.saleMode === "cash" || doc.kind === "delivery_challan",
+    );
+    let totalsToRender = doc.totals.filter((t) => {
+      if (!isCash) return true;
+      const lbl = (t.label || "").toLowerCase();
+      return !(
+        lbl.includes("tax") ||
+        lbl.includes("gst") ||
+        lbl.includes("cgst") ||
+        lbl.includes("sgst") ||
+        lbl.includes("igst") ||
+        lbl.includes("vat")
+      );
+    });
+
+    if (isCash && totalsToRender.length === 2) {
+      const first = totalsToRender[0];
+      const second = totalsToRender[1];
+      const firstLbl = (first.label || "").toLowerCase();
+      const secondLbl = (second.label || "").toLowerCase();
+      if (
+        firstLbl.includes("subtotal") &&
+        secondLbl.includes("total") &&
+        first.value === second.value
+      ) {
+        totalsToRender = [second];
+      }
+    }
+
+    for (const t of totalsToRender) {
       lines.push(`${t.label}: *${t.value}*`);
     }
   }

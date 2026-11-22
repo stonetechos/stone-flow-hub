@@ -37,6 +37,7 @@ import {
   ShieldAlert,
   Sparkles,
   Trash2,
+  ReceiptText,
 } from "lucide-react";
 
 export interface QuoteTermsManagerProps {
@@ -51,6 +52,7 @@ export interface QuoteTermsManagerProps {
   onChangeClientProvidedSlab?: (clientProvided: boolean) => void;
   includePrepaymentOffer?: boolean;
   onChangeIncludePrepaymentOffer?: (include: boolean) => void;
+  isCashDeal?: boolean;
   onTimelineChange?: (timeline: {
     mode: DeliveryTimelineMode;
     days?: string;
@@ -73,6 +75,7 @@ export function QuoteTermsManager({
   onChangeClientProvidedSlab,
   includePrepaymentOffer,
   onChangeIncludePrepaymentOffer,
+  isCashDeal = false,
   onTimelineChange,
   className = "",
 }: QuoteTermsManagerProps) {
@@ -116,6 +119,7 @@ export function QuoteTermsManager({
       deliveryDate: date,
       clientProvidedSlab: isClientProvided,
       includePrepaymentOffer: isPrepaymentOffer,
+      isCashDeal,
     });
 
     onChangeTerms(generated);
@@ -538,6 +542,20 @@ export function QuoteTermsManager({
           </button>
         </div>
       </div>
+
+      {/* Cash Deal Notice */}
+      {isCashDeal && (
+        <div className="flex items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50/70 dark:bg-emerald-950/20 px-3 py-2 text-xs text-emerald-900 dark:text-emerald-200">
+          <ReceiptText className="h-4 w-4 shrink-0 text-emerald-600" />
+          <div>
+            <span className="font-semibold">Cash Deal (Challan Only):</span> Tax is completely
+            excluded from quotes. Statutory terms automatically state:{" "}
+            <span className="font-medium italic">
+              &quot;Taxes: GST will be applicable once the invoice is processed.&quot;
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Action Toolbar to Insert / Clear Terms */}
       <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-border/60">

@@ -347,4 +347,43 @@ describe("renderDocWhatsAppText", () => {
     expect(lines[2].label).toBe("ST-WC-080");
     expect(lines[2].notes).toBe("Wall: Compound Wall · 20x10 ft (200 sq.ft) · Wastage: 5%");
   });
+
+  it("suppresses tax from WhatsApp totals and includes statutory GST clause in cash deals", () => {
+    const cashBuiltDoc: BuiltDocument = {
+      doc: {
+        kind: "quotation",
+        title: "Quotation",
+        number: "QUO-000003",
+        date: "2026-11-22",
+        from: { name: "Stone Tech", address: "Ahmedabad" },
+        to: { name: "Suresh Bhai" },
+        isCashDeal: true,
+        saleMode: "cash",
+        lines: [{ label: "ST-WC-080", qty: 210, unit: "sq.ft", rate: "₹185", amount: "₹38,850" }],
+        totals: [
+          { label: "Subtotal", value: "₹38,850" },
+          { label: "Tax", value: "₹0" },
+          { label: "Total", value: "₹38,850" },
+        ],
+        terms:
+          "1. Delivery Timeline: 15 days.\n\n2. Taxes: GST will be applicable once the invoice is processed.",
+      },
+      meta: {
+        toName: "Suresh Bhai",
+        toEmail: null,
+        toPhone: "9876543210",
+        docNumber: "QUO-000003",
+        customerId: "c1",
+        vendorId: null,
+        projectId: null,
+      },
+    };
+
+    const text = renderDocWhatsAppText(cashBuiltDoc);
+    expect(text).not.toContain("Tax:");
+    expect(text).not.toContain("₹0");
+    expect(text).not.toContain("Subtotal: *₹38,850*");
+    expect(text).toContain("Total: *₹38,850*");
+    expect(text).toContain("GST will be applicable once the invoice is processed");
+  });
 });

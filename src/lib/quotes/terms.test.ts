@@ -9,6 +9,10 @@ import {
   detectDealScopeFromItems,
   ensureTermsHaveEarlyPaymentOffer,
   stripEarlyPaymentOffer,
+  ensureTermsHaveCashDealGstClause,
+  stripCashDealGstClause,
+  hasCashDealGstClause,
+  CASH_DEAL_GST_TERMS_CLAUSE,
   formatTimelineDate,
   generateQuoteTerms,
   getQuoteTermsList,
@@ -338,6 +342,67 @@ describe("Quote Terms & Conditions Engine", () => {
           },
         ),
       ).toBe(false);
+    });
+  });
+
+  describe("Cash Deal Terms & Statutory GST Clause", () => {
+    it("generates GST term clause when isCashDeal is true for supply only", () => {
+      const terms = generateQuoteTerms({
+        dealScope: "supply_only",
+        totalAmount: 100000,
+        isCashDeal: true,
+      });
+
+      expect(terms).toContain(CASH_DEAL_GST_TERMS_CLAUSE);
+      expect(terms).toContain("7. Taxes: GST will be applicable once the invoice is processed.");
+      expect(terms).toContain("8. Jurisdiction:");
+    });
+
+    it("generates GST term clause when isCashDeal is true for supply and installation", () => {
+      const terms = generateQuoteTerms({
+        dealScope: "supply_and_installation",
+        totalAmount: 120000,
+        isCashDeal: true,
+      });
+
+      expect(terms).toContain(CASH_DEAL_GST_TERMS_CLAUSE);
+      expect(terms).toContain("7. Taxes: GST will be applicable once the invoice is processed.");
+      expect(terms).toContain("8. Scaffolding & Site Facilities:");
+      expect(terms).toContain("9. Site & Surface Readiness:");
+      expect(terms).toContain("10. Jurisdiction:");
+    });
+
+    it("ensures terms have cash deal GST clause and renumbers cleanly", () => {
+      const standardTerms = generateQuoteTerms({
+        dealScope: "supply_only",
+        totalAmount: 100000,
+        isCashDeal: false,
+      });
+
+      expect(hasCashDealGstClause(standardTerms)).toBe(false);
+
+      const updated = ensureTermsHaveCashDealGstClause(standardTerms);
+      expect(hasCashDealGstClause(updated)).toBe(true);
+      expect(updated).toContain("8. Taxes: GST will be applicable once the invoice is processed.");
+
+      // Idempotent
+      const again = ensureTermsHaveCashDealGstClause(updated);
+      expect(again).toBe(updated);
+    });
+
+    it("strips cash deal GST clause when switched back to invoiced mode", () => {
+      const cashTerms = generateQuoteTerms({
+        dealScope: "supply_only",
+        totalAmount: 100000,
+        isCashDeal: true,
+      });
+
+      expect(hasCashDealGstClause(cashTerms)).toBe(true);
+
+      const stripped = stripCashDealGstClause(cashTerms);
+      expect(hasCashDealGstClause(stripped)).toBe(false);
+      expect(stripped).not.toContain("GST will be applicable");
+      expect(stripped).toContain("7. Jurisdiction:");
     });
   });
 

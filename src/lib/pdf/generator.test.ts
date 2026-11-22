@@ -292,6 +292,12 @@ describe("PDF Generator", () => {
       isCashDeal: true,
       saleMode: "cash",
       notes: "Cash deal agreed",
+      totals: [
+        { label: "Subtotal", value: "₹38,850" },
+        { label: "Tax", value: "₹0" },
+        { label: "Total", value: "₹38,850" },
+      ],
+      terms: "1. Delivery Timeline: 15 days.\n\n2. Payment Terms: 80% Advance, 20% on Delivery.",
       lines: [
         {
           label: "ST-WC-080",
@@ -320,6 +326,16 @@ describe("PDF Generator", () => {
     // HSN/SAC column header and values completely suppressed in cash deal
     expect(html).not.toContain("HSN/SAC");
     expect(html).not.toContain("68022190");
+    // Tax is never mentioned in totals block for cash deals
+    expect(html).not.toContain("Tax</span>");
+    expect(html).not.toContain("GST</span>");
+    expect(html).not.toContain("₹0");
+    // Subtotal equal to total is omitted, displaying only Total in totals block
+    expect(html).not.toContain("Subtotal");
+    expect(html).toContain("Total</span>");
+    expect(html).toContain("₹38,850");
+    // Statutory GST clause is included in terms
+    expect(html).toContain("GST will be applicable once the invoice is processed");
   });
 
   it("omits GSTIN, bank details, UPI QR, and printed signature on delivery challans", () => {

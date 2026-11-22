@@ -1720,6 +1720,7 @@ function QuoteDetailPage() {
               onChangeTerms={setEditingTerms}
               includePrepaymentOffer={editingOffer}
               onChangeIncludePrepaymentOffer={setEditingOffer}
+              isCashDeal={saleMode === "cash"}
               dealScope={editingScope}
               onChangeDealScope={setEditingScope}
               totalAmount={Number(quote.total) || 0}

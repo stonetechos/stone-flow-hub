@@ -24,6 +24,8 @@ export type DeliveryTimelineMode = "days" | "date";
 export const ADVANCE_PAYMENT_THRESHOLD_INR = 50000;
 export const EARLY_PAYMENT_DISCOUNT_DISCLAIMER =
   "✨ Special Website Prepayment Privilege Offer: Pre-make 100% advance payment upon quotation approval to avail a 5% instant discount, plus receive a Complimentary Certified Sacred 3D Shree Yantra (Worth ₹14,999) on natural stone product orders of ₹1 Lakh or above (excludes site installation and chemicals/adhesives).*";
+export const CASH_DEAL_GST_TERMS_CLAUSE =
+  "Taxes: GST will be applicable once the invoice is processed.";
 
 export interface QuoteTermsOptions {
   dealScope?: DealScope;
@@ -34,6 +36,7 @@ export interface QuoteTermsOptions {
   customTimelineText?: string;
   clientProvidedSlab?: boolean;
   includePrepaymentOffer?: boolean;
+  isCashDeal?: boolean;
 }
 
 /** Formats a date string (YYYY-MM-DD or readable) into Indian standard "DD MMM YYYY". */
@@ -152,6 +155,10 @@ export function getQuoteTermsList(options: QuoteTermsOptions = {}): string[] {
     `Non-Returnable: Material once sold, custom fabricated, cut, or dispatched will not be taken back, exchanged, or cancelled under any circumstances.`,
     `Transportation & Freight: Local transportation, freight, and unloading, if not explicitly itemized in this quotation, will be charged extra at actuals and conveyed during dispatch.`,
   );
+
+  if (options.isCashDeal) {
+    rawTerms.push(CASH_DEAL_GST_TERMS_CLAUSE);
+  }
 
   if (scope === "supply_and_installation") {
     rawTerms.push(
@@ -308,4 +315,55 @@ export function stripEarlyPaymentOffer(termsText?: string | null): string {
     .join("\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
+}
+
+/** Checks whether a terms text already contains the cash deal GST clause. */
+export function hasCashDealGstClause(termsText?: string | null): boolean {
+  if (!termsText) return false;
+  const lower = termsText.toLowerCase();
+  return (
+    lower.includes("gst will be applicable once the invoice is processed") ||
+    lower.includes("gst will be applicable once invoice is processed") ||
+    lower.includes("gst will be applicable once the tax invoice is processed") ||
+    lower.includes("gst will be applicable upon invoice")
+  );
+}
+
+/**
+ * Ensures that quotation terms for a cash deal mention that GST will be applicable once invoice is processed.
+ */
+export function ensureTermsHaveCashDealGstClause(termsText?: string | null): string {
+  if (!termsText || !termsText.trim()) {
+    return `1. ${CASH_DEAL_GST_TERMS_CLAUSE}`;
+  }
+  if (hasCashDealGstClause(termsText)) return termsText;
+
+  const trimmed = termsText.trim();
+  const lines = trimmed.split(/\n\s*\n/);
+  const count = lines.length;
+  const lastMatch = lines[count - 1]?.match(/^(\d+)\.\s*/);
+  if (lastMatch) {
+    const nextNum = parseInt(lastMatch[1], 10) + 1;
+    return `${trimmed}\n\n${nextNum}. ${CASH_DEAL_GST_TERMS_CLAUSE}`;
+  }
+  return `${trimmed}\n\n• ${CASH_DEAL_GST_TERMS_CLAUSE}`;
+}
+
+/**
+ * Strips the cash deal GST clause from terms text (e.g. when switched to tax invoiced mode).
+ */
+export function stripCashDealGstClause(termsText?: string | null): string {
+  if (!termsText || !termsText.trim()) return "";
+  const lines = termsText.split(/\n\s*\n/);
+  const filtered = lines.filter((line) => !hasCashDealGstClause(line));
+  let num = 1;
+  const renumbered = filtered.map((line) => {
+    if (/^\d+\.\s*/.test(line)) {
+      const updated = line.replace(/^\d+\.\s*/, `${num}. `);
+      num++;
+      return updated;
+    }
+    return line;
+  });
+  return renumbered.join("\n\n").trim();
 }

@@ -26,7 +26,10 @@ import {
 } from "@/lib/branding";
 import { STONE_TECH_UPI_ID, STONE_TECH_UPI_QR_DATA_URL } from "@/lib/branding/upi-qr-asset";
 import { amountToIndianWords } from "@/lib/format/words";
-import { hasEarlyPaymentDiscountDisclaimer } from "@/lib/quotes/terms";
+import {
+  hasEarlyPaymentDiscountDisclaimer,
+  ensureTermsHaveCashDealGstClause,
+} from "@/lib/quotes/terms";
 
 export type DocKind =
   | "quotation"
@@ -278,15 +281,41 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
     .join("");
 
   // Total in Words computation - strictly remove any balance or payment lines from invoices
-  const totalsToRender = (doc.totals ?? []).filter((t) => {
+  let totalsToRender = (doc.totals ?? []).filter((t) => {
     const lbl = (t.label || "").toLowerCase().trim();
     // Balance due belongs strictly in customer statements, never in an invoice PDF
     if (lbl.includes("balance")) return false;
     if (isInvoice && (lbl.includes("amount paid") || lbl.includes("paid"))) {
       return false;
     }
+    if (
+      isCash &&
+      (lbl.includes("tax") ||
+        lbl.includes("gst") ||
+        lbl.includes("cgst") ||
+        lbl.includes("sgst") ||
+        lbl.includes("igst") ||
+        lbl.includes("vat"))
+    ) {
+      return false;
+    }
     return true;
   });
+
+  // In cash mode, if subtotal matches total (no discounts or other adjustments), omit redundant subtotal
+  if (isCash && totalsToRender.length === 2) {
+    const first = totalsToRender[0];
+    const second = totalsToRender[1];
+    const firstLbl = (first.label || "").toLowerCase();
+    const secondLbl = (second.label || "").toLowerCase();
+    if (
+      firstLbl.includes("subtotal") &&
+      secondLbl.includes("total") &&
+      first.value === second.value
+    ) {
+      totalsToRender = [second];
+    }
+  }
 
   const totalMeta =
     totalsToRender.find((t) => {
@@ -385,7 +414,9 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
     </div>`;
 
   // Terms & Conditions: Compact 2-column grid when multi-item (quotes only, never invoices)
-  const rawTerms = (doc.terms || "").trim();
+  const rawTerms = (
+    isCash && !isInvoice ? ensureTermsHaveCashDealGstClause(doc.terms) : doc.terms || ""
+  ).trim();
   let termsHtml = "";
   if (rawTerms && !isInvoice) {
     const termLines = rawTerms
@@ -1066,14 +1097,39 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
 
   y += 6;
   // Totals - strictly remove any balance or payment lines from invoices
-  const totals = (doc.totals ?? []).filter((t) => {
+  let totals = (doc.totals ?? []).filter((t) => {
     const lbl = (t.label || "").toLowerCase().trim();
     if (lbl.includes("balance")) return false;
     if (isInvoice && (lbl.includes("amount paid") || lbl.includes("paid"))) {
       return false;
     }
+    if (
+      isCash &&
+      (lbl.includes("tax") ||
+        lbl.includes("gst") ||
+        lbl.includes("cgst") ||
+        lbl.includes("sgst") ||
+        lbl.includes("igst") ||
+        lbl.includes("vat"))
+    ) {
+      return false;
+    }
     return true;
   });
+
+  if (isCash && totals.length === 2) {
+    const first = totals[0];
+    const second = totals[1];
+    const firstLbl = (first.label || "").toLowerCase();
+    const secondLbl = (second.label || "").toLowerCase();
+    if (
+      firstLbl.includes("subtotal") &&
+      secondLbl.includes("total") &&
+      first.value === second.value
+    ) {
+      totals = [second];
+    }
+  }
   for (let i = 0; i < totals.length; i++) {
     const t = totals[i];
     if (y > 255) {
@@ -1206,7 +1262,10 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
   }
 
   // Terms & Notes
-  if (doc.terms || doc.notes) {
+  const effectivePdfTerms =
+    isCash && !isInvoice ? ensureTermsHaveCashDealGstClause(doc.terms) : doc.terms;
+
+  if (effectivePdfTerms || doc.notes) {
     y += 30;
     if (y < 275) {
       pdf.setFont("helvetica", "bold");
@@ -1216,7 +1275,7 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
       pdf.setFont("helvetica", "normal");
       pdf.setFontSize(7);
       pdf.setTextColor(71, 85, 105);
-      const textContent = [doc.notes, doc.terms].filter(Boolean).join("\n");
+      const textContent = [doc.notes, effectivePdfTerms].filter(Boolean).join("\n");
       const termLines = pdf.splitTextToSize(textContent, 175);
       pdf.text(termLines.slice(0, 4), 15, y + 4);
     }
@@ -1226,7 +1285,7 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(7);
   pdf.setTextColor(100, 116, 139);
-  const footerText = `${brand.company_name} — System Generated Document${brand.pan ? ` · PAN: ${brand.pan}` : ""}${brand.website ? ` · ${brand.website}` : ""}`;
+  const footerText = `${brand.company_name} — System Generated Document${!isCash && brand.pan ? ` · PAN: ${brand.pan}` : ""}${brand.website ? ` · ${brand.website}` : ""}`;
   pdf.text(footerText, 105, 290, { align: "center" });
 
   return pdf.output("blob");

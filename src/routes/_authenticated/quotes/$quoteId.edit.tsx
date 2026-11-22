@@ -40,6 +40,8 @@ import {
   detectClientProvidedSlabFromItems,
   hasClientBreakageDisclaimer,
   hasEarlyPaymentDiscountDisclaimer,
+  ensureTermsHaveCashDealGstClause,
+  stripCashDealGstClause,
 } from "@/lib/quotes/terms";
 import { useRoles } from "@/hooks/use-roles";
 import { toast } from "sonner";
@@ -162,7 +164,16 @@ function EditQuotePage() {
     setForm((f) => ({ ...f, [k]: v }));
 
   const mut = useMutation({
-    mutationFn: () => updateQuote(quoteId, form),
+    mutationFn: () => {
+      const payload: QuoteUpdateInput = {
+        ...form,
+        terms:
+          saleMode === "cash" && form.terms
+            ? ensureTermsHaveCashDealGstClause(form.terms)
+            : form.terms,
+      };
+      return updateQuote(quoteId, payload);
+    },
     onSuccess: () => {
       toast.success("Quote updated");
       invalidateQuote(qc, quoteId);
@@ -272,6 +283,9 @@ function EditQuotePage() {
                   onClick={() => {
                     setSaleMode("invoiced");
                     set("sale_mode", "invoiced");
+                    if (form.terms) {
+                      set("terms", stripCashDealGstClause(form.terms));
+                    }
                   }}
                   className={cn(
                     "flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
@@ -287,6 +301,9 @@ function EditQuotePage() {
                   onClick={() => {
                     setSaleMode("cash");
                     set("sale_mode", "cash");
+                    if (form.terms) {
+                      set("terms", ensureTermsHaveCashDealGstClause(form.terms));
+                    }
                   }}
                   className={cn(
                     "flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
@@ -389,6 +406,7 @@ function EditQuotePage() {
         onChangeTerms={(t) => set("terms", t || null)}
         includePrepaymentOffer={form.include_prepayment_offer}
         onChangeIncludePrepaymentOffer={(inc) => set("include_prepayment_offer", inc)}
+        isCashDeal={saleMode === "cash"}
         dealScope={
           form.category === "supply_and_installation" ? "supply_and_installation" : "supply_only"
         }
