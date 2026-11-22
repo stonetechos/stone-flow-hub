@@ -286,12 +286,23 @@ describe("PDF Generator", () => {
     );
   });
 
-  it("omits GSTIN, bank details, UPI QR, and printed signature on cash deal quotes", () => {
+  it("omits GSTIN, bank details, UPI QR, printed signature, and HSN/SAC column on cash deal quotes", () => {
     const cashQuote: PdfDoc = {
       ...sampleDoc,
       isCashDeal: true,
       saleMode: "cash",
       notes: "Cash deal agreed",
+      lines: [
+        {
+          label: "ST-WC-080",
+          qty: 210,
+          unit: "sq.ft",
+          rate: "₹185",
+          amount: "₹38,850",
+          hsn: "68022190",
+          notes: "Wall: Compound Wall · 20x10 ft (200 sq.ft) · Wastage: 5%",
+        },
+      ],
     };
     const html = renderDocHtml(cashQuote);
     // Company GSTIN omitted
@@ -306,6 +317,9 @@ describe("PDF Generator", () => {
     expect(html).not.toContain("PROPRIETOR");
     expect(html).not.toContain('alt="Authorized Signature"');
     expect(html).not.toContain("FOR: STONE TECH");
+    // HSN/SAC column header and values completely suppressed in cash deal
+    expect(html).not.toContain("HSN/SAC");
+    expect(html).not.toContain("68022190");
   });
 
   it("omits GSTIN, bank details, UPI QR, and printed signature on delivery challans", () => {

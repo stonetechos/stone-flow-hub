@@ -420,16 +420,24 @@ export function getLiveMasterProductCatalog(): CatalogItem[] {
   let websiteItems: CatalogItem[] = [];
   try {
     const activeProds = getActiveWebsiteProducts();
-    websiteItems = activeProds.map((p) => ({
-      id: p.id,
-      name: p.name,
-      category: "stone_product" as const,
-      defaultUnit: p.activePrice?.unit || p.unit || "sqft",
-      defaultPrice: p.activePrice?.price ?? p.price,
-      hsnCode: "68022190",
-      defaultTaxPct: 18,
-      description: `${p.name} — ${p.stoneType} (${p.thickness || "20-30mm"})`,
-    }));
+    websiteItems = activeProds.map((p) => {
+      const codeNum = p.index || (p.code ? parseInt(p.code.replace(/\D/g, ""), 10) : 0);
+      const paddedCode = codeNum > 0 ? String(codeNum).padStart(3, "0") : "";
+      const displayCode = p.code || (codeNum > 0 ? `ST-WC-${paddedCode}` : p.id);
+      return {
+        id: p.id,
+        code: displayCode,
+        name: p.name,
+        category: "stone_product" as const,
+        defaultUnit: p.activePrice?.unit || p.unit || "sqft",
+        defaultPrice: p.activePrice?.price ?? p.price,
+        hsnCode: "68022190",
+        defaultTaxPct: 18,
+        description: `${p.name} — ${p.stoneType} (${p.thickness || "20-30mm"})`,
+        image: p.image || (p.images && p.images[0]) || undefined,
+        patternIndex: codeNum > 0 ? codeNum : undefined,
+      };
+    });
   } catch {
     /* fallback to base catalog */
   }
@@ -446,11 +454,34 @@ export function getLiveMasterProductCatalog(): CatalogItem[] {
   return Array.from(map.values());
 }
 
-export function findCatalogItemByName(name: string): CatalogItem | undefined {
-  const clean = name.trim().toLowerCase();
+export function findCatalogItemByNameOrCode(nameOrCode: string): CatalogItem | undefined {
+  const clean = nameOrCode.trim().toLowerCase();
+  if (!clean) return undefined;
   const live = getLiveMasterProductCatalog();
+  // 1. Exact code match
+  const byExactCode = live.find((item) => (item.code || "").toLowerCase() === clean);
+  if (byExactCode) return byExactCode;
+  // 2. Exact name match
+  const byExactName = live.find((item) => item.name.toLowerCase() === clean);
+  if (byExactName) return byExactName;
+  // 3. Number match in code (e.g. "080" or "80")
+  const numMatch = clean.match(/\b\d{1,3}\b/);
+  if (numMatch) {
+    const padded = numMatch[0].padStart(3, "0");
+    const byNum = live.find(
+      (item) =>
+        item.code?.toLowerCase().endsWith(padded) ||
+        item.patternIndex === parseInt(numMatch[0], 10),
+    );
+    if (byNum) return byNum;
+  }
+  // 4. Substring code or name match
   return (
-    live.find((item) => item.name.toLowerCase() === clean) ||
+    live.find((item) => item.code && item.code.toLowerCase().includes(clean)) ||
     live.find((item) => item.name.toLowerCase().includes(clean))
   );
+}
+
+export function findCatalogItemByName(name: string): CatalogItem | undefined {
+  return findCatalogItemByNameOrCode(name);
 }

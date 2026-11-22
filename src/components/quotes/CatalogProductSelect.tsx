@@ -68,7 +68,8 @@ export const CatalogProductSelect = memo(function CatalogProductSelect({
   }, [websiteProducts, getProductPrice]);
 
   const handleSelect = (item: CatalogItem) => {
-    onChange(item.name);
+    const selectedTitle = item.code || item.name;
+    onChange(selectedTitle);
     if (onSelectCatalogItem) {
       onSelectCatalogItem(item);
     }
@@ -187,7 +188,9 @@ export const CatalogProductSelect = memo(function CatalogProductSelect({
                         <span className="rounded bg-cyan-50 text-cyan-800 border border-cyan-200 px-1.5 py-0.5 font-mono font-semibold">
                           {displayCode}
                         </span>
-                        {value === item.name && <Check className="h-3.5 w-3.5 text-primary" />}
+                        {(value === item.name || value === displayCode || value === item.code) && (
+                          <Check className="h-3.5 w-3.5 text-primary" />
+                        )}
                       </div>
                     </CommandItem>
                   );

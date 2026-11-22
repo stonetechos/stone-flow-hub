@@ -27,6 +27,8 @@ import {
   generateQuoteTerms,
 } from "@/lib/quotes/terms";
 import { getQuoteSaleMode } from "@/lib/quotes/sale-mode";
+import { findCatalogItemByNameOrCode } from "@/lib/quotes/catalog";
+import { categorizeQuoteItem } from "@/lib/quotes/quoteCategories";
 import { getInvoice, getInvoiceItems } from "@/lib/invoices/api";
 import { getReceipt, getReceiptAllocations } from "@/lib/receipts/api";
 import { RECEIPT_METHOD_LABELS, type ReceiptMethod } from "@/lib/receipts/schema";
@@ -265,12 +267,98 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
       const items = await getQuoteItems(id);
       const cust = await fetchCustomer(q.customer_id);
       const imageMap = await resolveAllQuoteImages(q, items);
+
+      const saleMode = getQuoteSaleMode(q);
+      const isCashDeal =
+        saleMode === "cash" || (q.notes?.toLowerCase().includes("cash deal") ?? false);
+
+      const wf = (q.workflow_state as Record<string, unknown> | null) ?? {};
+      const wallEst = (q.wall_estimate ?? wf.wall_estimate) as Record<string, unknown> | null;
+      const walls = (Array.isArray(wallEst?.walls) ? wallEst.walls : []) as Array<{
+        id: string;
+        name: string;
+        height: number;
+        length: number;
+        unit: string;
+        sqft: number;
+      }>;
+      const prods = (Array.isArray(wallEst?.products) ? wallEst.products : []) as Array<{
+        id: string;
+        wallId: string;
+        productName: string;
+        wastagePct?: number;
+      }>;
+
+      const matchedWallIds = new Set<string>();
+
       const lines: PdfLine[] = items.map((it) => {
         const itemPreTax = Number(it.quantity ?? 0) * Number(it.unit_price ?? 0);
+        let label = it.description ?? "";
+        let notes = (it as { notes?: string | null }).notes ?? undefined;
+        const hsn = isCashDeal
+          ? undefined
+          : ((it as { hsn_sac?: string | null }).hsn_sac ?? undefined);
+
+        // 1. Check if this line item matches a defined wall from wall_estimate
+        let matchedWall = walls.find((w) => {
+          if (matchedWallIds.has(w.id)) return false;
+          const wn = w.name.toLowerCase();
+          const d = (it.description || "").toLowerCase();
+          const n = (notes || "").toLowerCase();
+          return d.includes(`(${wn})`) || n.includes(`wall: ${wn}`);
+        });
+
+        // Fallback: match sequential stone cladding products to unmatched walls
+        if (!matchedWall && categorizeQuoteItem(it) === "product") {
+          matchedWall = walls.find((w) => !matchedWallIds.has(w.id));
+        }
+
+        if (matchedWall) {
+          matchedWallIds.add(matchedWall.id);
+          const matchedProd = prods.find((p) => p.wallId === matchedWall!.id);
+          const waste = matchedProd?.wastagePct ?? 5;
+          const wallNote = `Wall: ${matchedWall.name} · ${matchedWall.height}×${matchedWall.length} ${matchedWall.unit} (${matchedWall.sqft} sq.ft) · Wastage: ${waste}%`;
+
+          // Ensure wall detail is present in notes
+          if (!notes || !notes.toLowerCase().includes("wall:")) {
+            notes = notes ? `${notes}\n${wallNote}` : wallNote;
+          }
+
+          // 2. Resolve product code: check notes for "Catalog Code: ...", or check description, or search catalog
+          const codeMatch =
+            notes?.match(/Catalog Code:\s*(ST-WC-[A-Za-z0-9_-]+)/i) ||
+            label.match(/(ST-WC-[A-Za-z0-9_-]+)/i);
+          let resolvedCode = codeMatch ? codeMatch[1] : undefined;
+
+          if (!resolvedCode) {
+            // Strip any trailing wall name suffix in parentheses e.g. " (Compound Wall)"
+            const cleanName = label.replace(/\s*\([^)]*\)\s*$/, "").trim();
+            const foundCat =
+              findCatalogItemByNameOrCode(cleanName) ||
+              findCatalogItemByNameOrCode(matchedProd?.productName || "");
+            if (foundCat?.code) {
+              resolvedCode = foundCat.code;
+            }
+          }
+
+          if (resolvedCode) {
+            // Mention only the code as the product's name
+            label = resolvedCode;
+            // Clean redundant "Catalog Code: ST-WC-XXX" from notes since code is now the label
+            notes = notes
+              ?.replace(new RegExp(`Catalog Code:\\s*${resolvedCode}`, "gi"), "")
+              .replace(/\n\s*\n/g, "\n")
+              .trim();
+          } else {
+            // If no catalog code found, clean redundant wall name from title since wall details is in notes
+            label = label.replace(new RegExp(`\\s*\\(${matchedWall.name}\\)\\s*`, "i"), "").trim();
+          }
+        }
+
         return {
-          label: it.description,
-          notes: (it as { notes?: string | null }).notes ?? undefined,
-          hsn: (it as { hsn_sac?: string | null }).hsn_sac ?? undefined,
+          label,
+          notes: notes || undefined,
+          hsn,
           qty: it.quantity,
           unit: it.unit ?? "",
           rate: inr(it.unit_price),
@@ -321,7 +409,6 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
       const scope = detectDealScopeFromItems(items);
       const isClientSlab = detectClientProvidedSlabFromItems(items, q.wall_estimate);
       const rawTerms = q.terms && q.terms.trim() ? q.terms.trim() : null;
-      const wf = (q.workflow_state as Record<string, unknown> | null) ?? {};
       const termsHasOffer = hasEarlyPaymentDiscountDisclaimer(rawTerms);
       const includePrepaymentOffer =
         wf.include_prepayment_offer !== undefined
@@ -340,9 +427,6 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
             clientProvidedSlab: isClientSlab,
             includePrepaymentOffer,
           });
-      const saleMode = getQuoteSaleMode(q);
-      const isCashDeal =
-        saleMode === "cash" || (q.notes?.toLowerCase().includes("cash deal") ?? false);
       return {
         doc: {
           kind: "quotation",

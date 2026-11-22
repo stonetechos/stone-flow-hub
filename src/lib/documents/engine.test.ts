@@ -237,4 +237,114 @@ describe("renderDocWhatsAppText", () => {
 
     expect(cleanTerms2).toBe("Net 15");
   });
+
+  it("suppresses HSN codes in cash deal documents and formats wall details with product codes", () => {
+    const isCashDeal = true;
+    const walls = [
+      { id: "w1", name: "Suresh Bhai's Bedroom Wall", height: 5, length: 4, unit: "ft", sqft: 20 },
+      { id: "w2", name: "Living Area Wall", height: 14, length: 7, unit: "ft", sqft: 98 },
+      { id: "w3", name: "Compound Wall", height: 20, length: 10, unit: "ft", sqft: 200 },
+    ];
+    const prods = [
+      { id: "p1", wallId: "w1", productName: "Natural Stone Mosaics", wastagePct: 10 },
+      { id: "p2", wallId: "w2", productName: "Natural Stone Mosaics 3x3", wastagePct: 5 },
+      {
+        id: "p3",
+        wallId: "w3",
+        productName: "Teakwood Sandstone Veined Ashlar Modular Cladding",
+        wastagePct: 5,
+      },
+    ];
+
+    const rawItems = [
+      {
+        id: "i1",
+        description: "Natural Stone Mosaics (Suresh Bhai's Bedroom Wall)",
+        quantity: 22,
+        unit: "sq.ft",
+        unit_price: 275,
+        hsn_sac: "68022190",
+        notes: null,
+      },
+      {
+        id: "i2",
+        description: "Natural Stone Mosaics 3x3 (Living Area Wall)",
+        quantity: 103,
+        unit: "sq.ft",
+        unit_price: 340,
+        hsn_sac: "68022190",
+        notes: null,
+      },
+      {
+        id: "i3",
+        description: "Teakwood Sandstone Veined Ashlar Modular Cladding (Compound Wall)",
+        quantity: 210,
+        unit: "sq.ft",
+        unit_price: 185,
+        hsn_sac: "68022190",
+        notes: "Wall: Compound Wall · 20x10 ft (200 sq.ft) · Wastage: 5%\nCatalog Code: ST-WC-080",
+      },
+      {
+        id: "i4",
+        description: "Standard Cementitious Stone Adhesive Grey",
+        quantity: 8,
+        unit: "bag",
+        unit_price: 800,
+        hsn_sac: "32141000",
+        notes: null,
+      },
+    ];
+
+    const matchedWallIds = new Set<string>();
+    const lines = rawItems.map((it) => {
+      let label = it.description;
+      let notes = it.notes ?? undefined;
+      const hsn = isCashDeal ? undefined : (it.hsn_sac ?? undefined);
+
+      const matchedWall = walls.find((w) => {
+        if (matchedWallIds.has(w.id)) return false;
+        const wn = w.name.toLowerCase();
+        const d = (it.description || "").toLowerCase();
+        const n = (notes || "").toLowerCase();
+        return d.includes(`(${wn})`) || n.includes(`wall: ${wn}`);
+      });
+
+      if (matchedWall) {
+        matchedWallIds.add(matchedWall.id);
+        const matchedProd = prods.find((p) => p.wallId === matchedWall!.id);
+        const waste = matchedProd?.wastagePct ?? 5;
+        const wallNote = `Wall: ${matchedWall.name} · ${matchedWall.height}×${matchedWall.length} ${matchedWall.unit} (${matchedWall.sqft} sq.ft) · Wastage: ${waste}%`;
+
+        if (!notes || !notes.toLowerCase().includes("wall:")) {
+          notes = notes ? `${notes}\n${wallNote}` : wallNote;
+        }
+
+        const codeMatch = notes?.match(/Catalog Code:\s*(ST-WC-[A-Za-z0-9_-]+)/i);
+        if (codeMatch) {
+          label = codeMatch[1];
+          notes = notes
+            ?.replace(new RegExp(`Catalog Code:\\s*${codeMatch[1]}`, "gi"), "")
+            .replace(/\n\s*\n/g, "\n")
+            .trim();
+        } else {
+          label = label.replace(new RegExp(`\\s*\\(${matchedWall.name}\\)\\s*`, "i"), "").trim();
+        }
+      }
+
+      return { label, notes, hsn, qty: it.quantity };
+    });
+
+    // In cash deal, no HSN codes are exposed
+    expect(lines.every((l) => l.hsn === undefined)).toBe(true);
+
+    // Wall 1 and 2 now have Wall details populated
+    expect(lines[0].notes).toContain(
+      "Wall: Suresh Bhai's Bedroom Wall · 5×4 ft (20 sq.ft) · Wastage: 10%",
+    );
+    expect(lines[1].notes).toContain("Wall: Living Area Wall · 14×7 ft (98 sq.ft) · Wastage: 5%");
+
+    // Wall 3 uses the catalog code as the product title
+    expect(lines[2].label).toBe("ST-WC-080");
+    expect(lines[2].notes).toBe("Wall: Compound Wall · 20x10 ft (200 sq.ft) · Wastage: 5%");
+  });
 });

@@ -269,13 +269,11 @@ export function QuoteWallDetailsEditor({
         };
         updatedProducts.push(newProd);
 
-        // Add quote item to database
-        const desc = `${selectedCatalogProduct.name} (${newWall.name})`;
-        const codeText = selectedCatalogProduct.code
-          ? `Catalog Code: ${selectedCatalogProduct.code}`
-          : "";
+        // Add quote item to database: use catalog code as product name when available
+        const prodCode = selectedCatalogProduct.code || "";
+        const desc = prodCode || selectedCatalogProduct.name;
         const dimText = `Wall: ${newWall.name} · ${newWall.height}×${newWall.length} ${newWall.unit} (${finalSqft} sq.ft) · Wastage: ${wastagePct}%`;
-        const combinedNotes = codeText ? `${dimText}\n${codeText}` : dimText;
+        const combinedNotes = dimText;
 
         const newItem = await addQuoteItem(quoteId, {
           description: desc,
@@ -283,7 +281,7 @@ export function QuoteWallDetailsEditor({
           unit: "sq.ft",
           unit_price: rate,
           tax_pct: saleMode === "cash" ? 0 : 0,
-          hsn_sac: selectedCatalogProduct.hsnCode || "68022190",
+          hsn_sac: saleMode === "cash" ? null : selectedCatalogProduct.hsnCode || "68022190",
           notes: combinedNotes,
           fulfilment: defaultFulfilment,
         });
@@ -360,6 +358,26 @@ export function QuoteWallDetailsEditor({
       // Apply patches (e.g. decreasing or increasing product qty, labour, adhesive bags, PU buckets, sealers)
       for (const patch of consumableUpdates.itemPatches) {
         await updateQuoteItem(patch.id, { quantity: patch.newQuantity });
+      }
+
+      // Update wall dimension notes and clear cash HSN
+      const matchedProd = products.find((p) => p.wallId === updatedWall.id);
+      const waste = matchedProd?.wastagePct ?? 5;
+      const dimText = `Wall: ${updatedWall.name} · ${updatedWall.height}×${updatedWall.length} ${updatedWall.unit} (${updatedWall.sqft} sq.ft) · Wastage: ${waste}%`;
+      const matchedItem = currentItems.find((it) => {
+        const d = (it.description || "").toLowerCase();
+        const n = (it.notes || "").toLowerCase();
+        const wn = updatedWall.name.toLowerCase();
+        return d.includes(`(${wn})`) || n.includes(`wall: ${wn}`);
+      });
+      if (matchedItem) {
+        const itemPatch: Parameters<typeof updateQuoteItem>[1] = {
+          notes: dimText,
+        };
+        if (saleMode === "cash" && matchedItem.hsn_sac) {
+          itemPatch.hsn_sac = null;
+        }
+        await updateQuoteItem(matchedItem.id, itemPatch);
       }
 
       // Save updated worksheet
@@ -462,6 +480,44 @@ export function QuoteWallDetailsEditor({
         await updateQuoteItem(patch.id, { quantity: patch.newQuantity });
       }
 
+      // Ensure every wall product has clean wall details in notes & suppress cash HSN
+      for (const wall of walls) {
+        const wallProd = products.find((p) => p.wallId === wall.id);
+        const waste = wallProd?.wastagePct ?? 5;
+        const dimText = `Wall: ${wall.name} · ${wall.height}×${wall.length} ${wall.unit} (${wall.sqft} sq.ft) · Wastage: ${waste}%`;
+        const matchedItem = currentItems.find((it) => {
+          const d = (it.description || "").toLowerCase();
+          const n = (it.notes || "").toLowerCase();
+          const wn = wall.name.toLowerCase();
+          return d.includes(`(${wn})`) || n.includes(`wall: ${wn}`);
+        });
+        if (matchedItem) {
+          const patchObj: Parameters<typeof updateQuoteItem>[1] = {};
+          if (!matchedItem.notes || !matchedItem.notes.includes("Wall:")) {
+            patchObj.notes = dimText;
+          }
+          if (saleMode === "cash" && matchedItem.hsn_sac) {
+            patchObj.hsn_sac = null;
+          }
+          const codeMatch = matchedItem.notes?.match(/Catalog Code:\s*(ST-WC-[A-Za-z0-9_-]+)/i);
+          if (codeMatch && matchedItem.description !== codeMatch[1]) {
+            patchObj.description = codeMatch[1];
+            patchObj.notes = dimText;
+          }
+          if (Object.keys(patchObj).length > 0) {
+            await updateQuoteItem(matchedItem.id, patchObj);
+          }
+        }
+      }
+
+      if (saleMode === "cash") {
+        for (const it of currentItems) {
+          if (it.hsn_sac) {
+            await updateQuoteItem(it.id, { hsn_sac: null });
+          }
+        }
+      }
+
       await updateQuote(quoteId, {
         wall_estimate: consumableUpdates.updatedWorksheet as unknown as Record<string, unknown>,
       });
@@ -497,7 +553,7 @@ export function QuoteWallDetailsEditor({
           unit: "sq.ft",
           unit_price: 80,
           tax_pct: saleMode === "cash" ? 0 : 0,
-          hsn_sac: "9954",
+          hsn_sac: saleMode === "cash" ? null : "9954",
           notes: "Installation, alignment, scaffolding, and mortar/adhesive fixing",
           fulfilment: defaultFulfilment,
         });
@@ -511,7 +567,7 @@ export function QuoteWallDetailsEditor({
           unit: "bag",
           unit_price: 800,
           tax_pct: saleMode === "cash" ? 0 : 0,
-          hsn_sac: "3506",
+          hsn_sac: saleMode === "cash" ? null : "3506",
           notes: "Polymer-modified cementitious tile & stone adhesive (25 sq.ft coverage/bag)",
           fulfilment: defaultFulfilment,
         });
@@ -525,7 +581,7 @@ export function QuoteWallDetailsEditor({
           unit: "ltr",
           unit_price: 1700,
           tax_pct: saleMode === "cash" ? 0 : 0,
-          hsn_sac: "3208",
+          hsn_sac: saleMode === "cash" ? null : "3208",
           notes: "Silicone deep-penetrating water repellent sealer (550 sq.ft coverage/ltr)",
           fulfilment: defaultFulfilment,
         });
@@ -539,7 +595,7 @@ export function QuoteWallDetailsEditor({
           unit: "sq.ft",
           unit_price: 10,
           tax_pct: saleMode === "cash" ? 0 : 0,
-          hsn_sac: "9954",
+          hsn_sac: saleMode === "cash" ? null : "9954",
           notes: "Surface dust cleaning, dry wipe, and dual-coat sealer application",
           fulfilment: defaultFulfilment,
         });

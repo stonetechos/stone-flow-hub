@@ -212,7 +212,7 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
     ? resolveInvoicePaymentTerm(doc.terms, doc.date, dueDate)
     : doc.terms || "Due on Receipt";
 
-  const showHsn = (doc.lines ?? []).some((l) => l.hsn);
+  const showHsn = !isCash && (doc.lines ?? []).some((l) => Boolean(l.hsn));
   const showPhoto = (doc.lines ?? []).some((l) =>
     Boolean(l.image || (l.images && l.images.length > 0)),
   );
@@ -997,7 +997,7 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
 
   // Items Table Header - Centered vertically in deep turquoise bar (#083b43)
   const lines = doc.lines ?? [];
-  const hasHsnInLines = lines.some((l) => Boolean(l.hsn));
+  const hasHsnInLines = !isCash && lines.some((l) => Boolean(l.hsn));
 
   const headerHeight = 7.5;
   pdf.setFillColor(8, 59, 67); // #083b43 deep turquoise Zoho signature

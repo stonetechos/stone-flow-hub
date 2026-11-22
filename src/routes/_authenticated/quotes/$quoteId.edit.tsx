@@ -723,7 +723,7 @@ function LineItemsEditor({
         unit,
         unit_price: unitPrice,
         tax_pct: saleMode === "cash" ? 0 : 0,
-        hsn_sac: hsn,
+        hsn_sac: saleMode === "cash" ? null : hsn,
         fulfilment: defaultFulfilment,
       });
 
@@ -759,7 +759,7 @@ function LineItemsEditor({
         unit: "trip",
         unit_price: 1500,
         tax_pct: saleMode === "cash" ? 0 : 5,
-        hsn_sac: "9965",
+        hsn_sac: saleMode === "cash" ? null : "9965",
         notes: "Site delivery via tempo / pickup from yard to site",
         fulfilment: defaultFulfilment,
         sort_order: rows.length + 1,
@@ -1240,7 +1240,12 @@ function LineItemsEditor({
               return (
                 <div key={r.id} className="rounded-md border border-border p-3">
                   <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-12">
-                    <div className="col-span-2 md:col-span-4">
+                    <div
+                      className={cn(
+                        "col-span-2",
+                        saleMode === "cash" ? "md:col-span-6" : "md:col-span-4",
+                      )}
+                    >
                       <div className="mb-1 flex items-center justify-between gap-1 flex-wrap">
                         <div className="flex items-center gap-1.5">
                           {(() => {
@@ -1337,15 +1342,19 @@ function LineItemsEditor({
                               }
                             }}
                             onSelectCatalogItem={(prod) => {
-                              updateRow(r.id, "description", prod.name);
+                              const displayTitle = prod.code || prod.name;
+                              updateRow(r.id, "description", displayTitle);
                               const patchObj: Parameters<typeof updateQuoteItem>[1] = {
-                                description: prod.name,
+                                description: displayTitle,
                               };
                               if (prod.defaultUnit) {
                                 updateRow(r.id, "unit", prod.defaultUnit);
                                 patchObj.unit = prod.defaultUnit;
                               }
-                              if (prod.hsnCode) {
+                              if (saleMode === "cash") {
+                                updateRow(r.id, "hsn_sac", "");
+                                patchObj.hsn_sac = null;
+                              } else if (prod.hsnCode) {
                                 updateRow(r.id, "hsn_sac", prod.hsnCode);
                                 patchObj.hsn_sac = prod.hsnCode;
                               }
@@ -1378,7 +1387,7 @@ function LineItemsEditor({
                                 updateRow(r.id, "tax_pct", String(prod.defaultTaxPct));
                                 patchObj.tax_pct = prod.defaultTaxPct;
                               }
-                              if (prod.code) {
+                              if (prod.code && displayTitle !== prod.code) {
                                 const codeTag = `Catalog Code: ${prod.code}`;
                                 if (!r.notes || !r.notes.includes("Catalog Code")) {
                                   const newNotes = r.notes ? `${r.notes}\n${codeTag}` : codeTag;
@@ -1403,17 +1412,23 @@ function LineItemsEditor({
                         </div>
                       </div>
                     </div>
-                    <div className="col-span-2 sm:col-span-1 md:col-span-2">
-                      <label className="text-xs text-muted-foreground">HSN Code</label>
-                      <Input
-                        placeholder="4-8 digits"
-                        value={r.hsn_sac}
-                        onChange={(e) =>
-                          updateRow(r.id, "hsn_sac", e.target.value.replace(/\D/g, "").slice(0, 8))
-                        }
-                        onBlur={() => commit(r.id, "hsn_sac", original)}
-                      />
-                    </div>
+                    {saleMode !== "cash" && (
+                      <div className="col-span-2 sm:col-span-1 md:col-span-2">
+                        <label className="text-xs text-muted-foreground">HSN Code</label>
+                        <Input
+                          placeholder="4-8 digits"
+                          value={r.hsn_sac}
+                          onChange={(e) =>
+                            updateRow(
+                              r.id,
+                              "hsn_sac",
+                              e.target.value.replace(/\D/g, "").slice(0, 8),
+                            )
+                          }
+                          onBlur={() => commit(r.id, "hsn_sac", original)}
+                        />
+                      </div>
+                    )}
                     <div className="col-span-1 md:col-span-2">
                       <label className="text-xs text-muted-foreground">
                         Qty <span className="text-destructive font-bold">*</span>
