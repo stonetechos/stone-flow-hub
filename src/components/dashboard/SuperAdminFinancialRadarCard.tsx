@@ -55,7 +55,7 @@ export function SuperAdminFinancialRadarCard() {
   const deficitCount = data?.totalDeficitCount ?? 0;
 
   return (
-    <Card className="border-border/80 shadow-sm overflow-hidden bg-gradient-to-b from-card to-muted/10">
+    <Card className="border-border/80 shadow-sm overflow-hidden bg-gradient-to-b from-card to-muted/10 w-full max-w-full">
       <CardHeader className="p-4 sm:p-5 border-b border-border/70 bg-muted/20">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-1">

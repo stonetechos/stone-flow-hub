@@ -296,7 +296,12 @@ function DashboardPage() {
           ) : kpisQ.error ? (
             <ErrorBlock message={toUserMessage(kpisQ.error)} onRetry={() => void kpisQ.refetch()} />
           ) : (
-            <div className="grid grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-[minmax(0,1fr)_320px] w-full max-w-full min-w-0">
+            <div
+              className={cn(
+                "grid grid-cols-1 gap-4 sm:gap-6 w-full max-w-full min-w-0",
+                opsSubTab === "money" ? "xl:grid-cols-1" : "xl:grid-cols-[minmax(0,1fr)_320px]",
+              )}
+            >
               {/* MAIN COLUMN */}
               <div className="space-y-4 sm:space-y-6 w-full max-w-full min-w-0">
                 <ExecutiveHero
@@ -500,11 +505,13 @@ function DashboardPage() {
               </div>
 
               {/* RIGHT RAIL */}
-              <CopilotDock
-                topInsights={topInsights}
-                activity={activityQ.data ?? []}
-                activityLoading={activityQ.isLoading}
-              />
+              {opsSubTab !== "money" && (
+                <CopilotDock
+                  topInsights={topInsights}
+                  activity={activityQ.data ?? []}
+                  activityLoading={activityQ.isLoading}
+                />
+              )}
             </div>
           )}
         </div>
@@ -513,10 +520,8 @@ function DashboardPage() {
       {activeTab === "financial_radar" && (
         <div className="w-full max-w-full min-w-0 space-y-6 animate-in fade-in duration-200">
           <SuperAdminFinancialRadarCard />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <DueLiabilitiesPromptCard />
-            <DailyMoneyFlowCard />
-          </div>
+          <DueLiabilitiesPromptCard />
+          <DailyMoneyFlowCard />
           {kpisQ.data && <CashFlowSnapshot kpis={kpisQ.data} />}
           <SuperAdminWriteOffsCard />
         </div>
