@@ -3,13 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import {
   ShieldAlert,
-  ShieldCheck,
   AlertTriangle,
   FileSpreadsheet,
-  Wallet,
   Smartphone,
   Banknote,
-  ArrowRightLeft,
   PieChart,
   RefreshCw,
   Info,
@@ -17,9 +14,6 @@ import {
   TrendingUp,
   Receipt,
   Scale,
-  Sliders,
-  Sparkles,
-  ArrowRight,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -39,14 +33,15 @@ import {
   getSuperAdminFinanceReport,
   type SuperAdminFinanceReport,
   type HsnGroupSummary,
-  type PersonalAccountScrutiny,
 } from "@/lib/dashboard/superadmin-finance";
 import {
   SpeedometerGauge,
   MiniRadialMeter,
   HsnInteractiveSimulator,
   SftInflowSimulator,
+  THEME_GAUGE_PALETTES,
 } from "./StatutoryHealthGauge";
+import { useActiveTheme } from "@/components/global/ThemeSwitcher";
 
 const CANONICAL_CATEGORIES = [
   { hsn4: "6802", name: "Natural Stone Claddings & Murals", unit: "sq.ft", defaultRate: 250 },
@@ -58,6 +53,9 @@ const CANONICAL_CATEGORIES = [
 ];
 
 export function SuperAdminFinancialRadarCard() {
+  const activeThemeId = useActiveTheme();
+  const palette = THEME_GAUGE_PALETTES[activeThemeId] || THEME_GAUGE_PALETTES["st-og"];
+
   const [activeTab, setActiveTab] = useState<"hsn" | "upi" | "cash">("hsn");
   const [selectedHsnTile, setSelectedHsnTile] = useState<string>("6802");
 
@@ -125,40 +123,63 @@ export function SuperAdminFinancialRadarCard() {
   }, [data?.hsnSummary]);
 
   return (
-    <Card className="border-border/80 shadow-sm overflow-hidden bg-gradient-to-b from-card to-muted/10 w-full max-w-full">
+    <Card className="card-3d-milky w-full max-w-full overflow-hidden border-t-2 border-l-2 border-r border-b-3 border-t-white/95 dark:border-t-white/20 border-b-black/15 dark:border-b-black/50 shadow-[0_16px_36px_-6px_rgba(0,0,0,0.12),inset_0_1.5px_0_rgba(255,255,255,0.9)]">
       <CardHeader className="p-4 sm:p-5 border-b border-border/70 bg-muted/20 w-full">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-1">
             <div className="flex items-center gap-2 flex-wrap">
               <Badge
                 variant="outline"
-                className="bg-purple-100 text-purple-900 border-purple-300 dark:bg-purple-950 dark:text-purple-200 text-[11px] font-bold uppercase tracking-wider px-2 py-0.5"
+                className={cn(
+                  palette.badgeBg,
+                  palette.badgeText,
+                  palette.badgeBorder,
+                  "text-[11px] font-black uppercase tracking-wider px-2.5 py-0.5 shadow-2xs border-t border-b-2",
+                )}
               >
-                <ShieldAlert className="h-3 w-3 mr-1 text-purple-700" /> Super Admin Executive Radar
+                <ShieldAlert className="h-3.5 w-3.5 mr-1.5" style={{ color: palette.primary }} />
+                Super Admin Executive Radar
               </Badge>
               {data && (
-                <Badge variant="secondary" className="text-xs font-semibold">
-                  {data.fyLabel} (1 Apr – 31 Mar)
+                <Badge
+                  variant="secondary"
+                  className="text-xs font-bold border-t border-b-2 shadow-2xs"
+                >
+                  {data.fyLabel}
+                </Badge>
+              )}
+              {deficitCount > 0 ? (
+                <Badge
+                  variant="destructive"
+                  className="animate-pulse text-xs font-black shadow-2xs border-t border-b-2"
+                >
+                  <AlertTriangle className="h-3 w-3 mr-1" /> {deficitCount} HSN Inward Deficits (₹
+                  {formatInr(totalDeficit)})
+                </Badge>
+              ) : (
+                <Badge className="bg-emerald-600 text-white text-xs font-black shadow-2xs border-t border-b-2">
+                  <CheckCircle2 className="h-3 w-3 mr-1" /> 100% Inward Purchase Backed
                 </Badge>
               )}
             </div>
-            <CardTitle className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
-              <span>Financial Compliance &amp; Statutory Health Radar</span>
+
+            <CardTitle className="text-lg sm:text-xl font-black text-foreground tracking-tight pt-1">
+              Financial Compliance &amp; Statutory Health Radar
             </CardTitle>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Real-time interactive meters auditing 4-digit HSN purchase invoice deficits, personal
-              savings account ₹10L SFT statutory ceilings (Income Tax Sec 285BA), and cash deal
-              channel inflows.
+            <p className="text-xs text-muted-foreground">
+              Real-time interactive 3D meters auditing 4-digit HSN purchase invoice deficits,
+              personal savings account ₹10L SFT statutory ceilings (Income Tax Sec 285BA), and cash
+              deal channel inflows.
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 self-start sm:self-center">
             <Button
-              variant="outline"
               size="sm"
+              variant="outline"
               onClick={() => query.refetch()}
               disabled={query.isFetching}
-              className="h-8 text-xs cursor-pointer"
+              className="h-8 text-xs cursor-pointer font-bold border-t border-b-2 border-black/15 shadow-2xs hover:-translate-y-0.5 active:translate-y-0.5 transition-all"
             >
               <RefreshCw className={cn("h-3.5 w-3.5 mr-1.5", query.isFetching && "animate-spin")} />
               Refresh Radar
@@ -167,9 +188,20 @@ export function SuperAdminFinancialRadarCard() {
         </div>
 
         {/* ------------------------------------------------------------------ */}
-        {/* EXECUTIVE SPEEDOMETER & HEALTH METER COCKPIT HERO STRIP            */}
+        {/* EXECUTIVE SPEEDOMETER & HEALTH METER COCKPIT HERO STRIP (3D)       */}
         {/* ------------------------------------------------------------------ */}
-        <div className="mt-4 pt-4 border-t border-border/60 grid grid-cols-1 md:grid-cols-12 gap-4 items-center bg-card/60 rounded-2xl p-3 sm:p-4 border border-border/50 shadow-2xs">
+        <div
+          style={{
+            background: palette.cardBgGradient,
+            boxShadow:
+              "0 14px 28px -6px rgba(0,0,0,0.1), 0 4px 10px -2px rgba(0,0,0,0.06), inset 0 1.5px 0 rgba(255,255,255,0.9), inset 0 -2px 0 rgba(0,0,0,0.08)",
+          }}
+          className={cn(
+            "mt-4 pt-4 border-t-2 border-l border-r border-b-3 grid grid-cols-1 md:grid-cols-12 gap-4 items-center rounded-2xl p-3 sm:p-5 transition-all",
+            palette.cardBorder,
+            "border-t-white/95 dark:border-t-white/20 border-b-black/15 dark:border-b-black/50",
+          )}
+        >
           {/* Main Speedometer Gauge */}
           <div className="md:col-span-5 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-border/60 pb-3 md:pb-0 md:pr-4">
             <SpeedometerGauge
@@ -190,26 +222,41 @@ export function SuperAdminFinancialRadarCard() {
             />
           </div>
 
-          {/* Three Sub-meters Rollup */}
+          {/* Three Sub-meters Rollup in 3D */}
           <div className="md:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-3">
             {/* Meter 1: HSN Balancing */}
             <div
               onClick={() => setActiveTab("hsn")}
-              className={cn(
-                "p-3 rounded-xl border transition-all cursor-pointer text-center space-y-1",
+              style={
                 activeTab === "hsn"
-                  ? "bg-purple-50 dark:bg-purple-950/40 border-purple-400 ring-2 ring-purple-400/20 shadow-xs"
-                  : "bg-background/80 border-border/70 hover:bg-muted/40",
+                  ? {
+                      background: palette.cardBgGradient,
+                      boxShadow: palette.activePillShadow,
+                    }
+                  : undefined
+              }
+              className={cn(
+                "p-3.5 rounded-2xl border-t-2 border-l border-r border-b-3 transition-all cursor-pointer text-center space-y-1 hover:-translate-y-0.5 active:translate-y-0.5",
+                activeTab === "hsn"
+                  ? cn(
+                      palette.cardBorder,
+                      palette.cardRing,
+                      "ring-2 scale-[1.02] border-t-white/95 border-b-black/30",
+                    )
+                  : "bg-card border-border/80 shadow-2xs border-t-white/90 dark:border-t-white/10 border-b-black/15 hover:bg-muted/40",
               )}
             >
-              <div className="flex items-center justify-center text-purple-700 dark:text-purple-300">
-                <FileSpreadsheet className="h-4 w-4 mr-1" />
-                <span className="text-[11px] font-bold">HSN Inward Cover</span>
+              <div
+                className="flex items-center justify-center font-extrabold text-xs"
+                style={{ color: palette.primary }}
+              >
+                <FileSpreadsheet className="h-4 w-4 mr-1.5" />
+                <span>HSN Inward Cover</span>
               </div>
-              <div className="font-mono text-xl font-black text-foreground">
+              <div className="font-mono text-2xl font-black text-foreground drop-shadow-2xs">
                 {healthMetrics.hsnScore}%
               </div>
-              <div className="text-[10px] text-muted-foreground">
+              <div className="text-[10.5px] text-muted-foreground font-semibold">
                 {deficitCount === 0 ? "100% Covered" : `${deficitCount} Inward Deficits`}
               </div>
             </div>
@@ -217,65 +264,104 @@ export function SuperAdminFinancialRadarCard() {
             {/* Meter 2: SFT Personal UPI */}
             <div
               onClick={() => setActiveTab("upi")}
-              className={cn(
-                "p-3 rounded-xl border transition-all cursor-pointer text-center space-y-1",
+              style={
                 activeTab === "upi"
-                  ? "bg-amber-50 dark:bg-amber-950/40 border-amber-400 ring-2 ring-amber-400/20 shadow-xs"
-                  : "bg-background/80 border-border/70 hover:bg-muted/40",
+                  ? {
+                      background: palette.cardBgGradient,
+                      boxShadow: palette.activePillShadow,
+                    }
+                  : undefined
+              }
+              className={cn(
+                "p-3.5 rounded-2xl border-t-2 border-l border-r border-b-3 transition-all cursor-pointer text-center space-y-1 hover:-translate-y-0.5 active:translate-y-0.5",
+                activeTab === "upi"
+                  ? cn(
+                      palette.cardBorder,
+                      palette.cardRing,
+                      "ring-2 scale-[1.02] border-t-white/95 border-b-black/30",
+                    )
+                  : "bg-card border-border/80 shadow-2xs border-t-white/90 dark:border-t-white/10 border-b-black/15 hover:bg-muted/40",
               )}
             >
-              <div className="flex items-center justify-center text-amber-700 dark:text-amber-400">
-                <Smartphone className="h-4 w-4 mr-1" />
-                <span className="text-[11px] font-bold">SFT Headroom</span>
+              <div className="flex items-center justify-center font-extrabold text-xs text-amber-600 dark:text-amber-400">
+                <Smartphone className="h-4 w-4 mr-1.5" />
+                <span>SFT Headroom</span>
               </div>
-              <div className="font-mono text-xl font-black text-foreground">
+              <div className="font-mono text-2xl font-black text-foreground drop-shadow-2xs">
                 {healthMetrics.sftScore}%
               </div>
-              <div className="text-[10px] text-muted-foreground">₹10L Statutory Safe</div>
+              <div className="text-[10.5px] text-muted-foreground font-semibold">
+                ₹10L Statutory Safe
+              </div>
             </div>
 
             {/* Meter 3: Tax Invoiced Ratio */}
             <div
               onClick={() => setActiveTab("cash")}
-              className={cn(
-                "p-3 rounded-xl border transition-all cursor-pointer text-center space-y-1",
+              style={
                 activeTab === "cash"
-                  ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-400 ring-2 ring-emerald-400/20 shadow-xs"
-                  : "bg-background/80 border-border/70 hover:bg-muted/40",
+                  ? {
+                      background: palette.cardBgGradient,
+                      boxShadow: palette.activePillShadow,
+                    }
+                  : undefined
+              }
+              className={cn(
+                "p-3.5 rounded-2xl border-t-2 border-l border-r border-b-3 transition-all cursor-pointer text-center space-y-1 hover:-translate-y-0.5 active:translate-y-0.5",
+                activeTab === "cash"
+                  ? cn(
+                      palette.cardBorder,
+                      palette.cardRing,
+                      "ring-2 scale-[1.02] border-t-white/95 border-b-black/30",
+                    )
+                  : "bg-card border-border/80 shadow-2xs border-t-white/90 dark:border-t-white/10 border-b-black/15 hover:bg-muted/40",
               )}
             >
-              <div className="flex items-center justify-center text-emerald-700 dark:text-emerald-400">
-                <Receipt className="h-4 w-4 mr-1" />
-                <span className="text-[11px] font-bold">GST Invoicing</span>
+              <div className="flex items-center justify-center font-extrabold text-xs text-emerald-600 dark:text-emerald-400">
+                <Receipt className="h-4 w-4 mr-1.5" />
+                <span>GST Invoicing</span>
               </div>
-              <div className="font-mono text-xl font-black text-foreground">
+              <div className="font-mono text-2xl font-black text-foreground drop-shadow-2xs">
                 {healthMetrics.invoiceScore}%
               </div>
-              <div className="text-[10px] text-muted-foreground">Billed vs Cash Deals</div>
+              <div className="text-[10.5px] text-muted-foreground font-semibold">
+                Billed vs Cash Deals
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Navigation Tabs Bar */}
-        <div className="flex items-center gap-1.5 pt-3 border-t border-border/50 overflow-x-auto w-full">
+        {/* ------------------------------------------------------------------ */}
+        {/* NAVIGATION TABS BAR (3D TACTILE BUTTONS)                           */}
+        {/* ------------------------------------------------------------------ */}
+        <div className="flex items-center gap-2 pt-3 border-t border-border/50 overflow-x-auto w-full">
           <button
             type="button"
             onClick={() => setActiveTab("hsn")}
-            className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap",
+            style={
               activeTab === "hsn"
-                ? "bg-primary text-primary-foreground shadow-xs"
-                : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground",
+                ? {
+                    background: palette.activePillBg,
+                    color: palette.activePillText,
+                    boxShadow: palette.activePillShadow,
+                  }
+                : undefined
+            }
+            className={cn(
+              "flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap border-t border-b-2 hover:-translate-y-0.5 active:translate-y-0.5",
+              activeTab === "hsn"
+                ? "border-t-white/40 border-b-black/25"
+                : "bg-card text-muted-foreground border-border/80 hover:bg-muted hover:text-foreground shadow-2xs",
             )}
           >
             <FileSpreadsheet className="h-3.5 w-3.5" />
             <span>1. 4-Digit HSN Purchase Radar</span>
             {deficitCount > 0 ? (
-              <span className="rounded-full bg-rose-500 text-white px-1.5 py-0.2 text-[10px] font-bold">
+              <span className="rounded-full bg-rose-500 text-white px-2 py-0.5 text-[10px] font-bold">
                 {deficitCount} Deficits
               </span>
             ) : (
-              <span className="rounded-full bg-emerald-600 text-white px-1.5 py-0.2 text-[9px] font-bold">
+              <span className="rounded-full bg-emerald-600 text-white px-2 py-0.5 text-[9px] font-bold">
                 Balanced
               </span>
             )}
@@ -284,11 +370,20 @@ export function SuperAdminFinancialRadarCard() {
           <button
             type="button"
             onClick={() => setActiveTab("upi")}
-            className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap",
+            style={
               activeTab === "upi"
-                ? "bg-primary text-primary-foreground shadow-xs"
-                : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground",
+                ? {
+                    background: palette.activePillBg,
+                    color: palette.activePillText,
+                    boxShadow: palette.activePillShadow,
+                  }
+                : undefined
+            }
+            className={cn(
+              "flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap border-t border-b-2 hover:-translate-y-0.5 active:translate-y-0.5",
+              activeTab === "upi"
+                ? "border-t-white/40 border-b-black/25"
+                : "bg-card text-muted-foreground border-border/80 hover:bg-muted hover:text-foreground shadow-2xs",
             )}
           >
             <Smartphone className="h-3.5 w-3.5" />
@@ -298,11 +393,20 @@ export function SuperAdminFinancialRadarCard() {
           <button
             type="button"
             onClick={() => setActiveTab("cash")}
-            className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap",
+            style={
               activeTab === "cash"
-                ? "bg-primary text-primary-foreground shadow-xs"
-                : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground",
+                ? {
+                    background: palette.activePillBg,
+                    color: palette.activePillText,
+                    boxShadow: palette.activePillShadow,
+                  }
+                : undefined
+            }
+            className={cn(
+              "flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap border-t border-b-2 hover:-translate-y-0.5 active:translate-y-0.5",
+              activeTab === "cash"
+                ? "border-t-white/40 border-b-black/25"
+                : "bg-card text-muted-foreground border-border/80 hover:bg-muted hover:text-foreground shadow-2xs",
             )}
           >
             <PieChart className="h-3.5 w-3.5" />
@@ -327,7 +431,7 @@ export function SuperAdminFinancialRadarCard() {
             {/* -------------------------------------------------------------- */}
             {activeTab === "hsn" && (
               <div className="space-y-6 w-full">
-                {/* 1. Interactive Canonical Category Tiles with Mini Radial Dials */}
+                {/* 1. Interactive Canonical Category Tiles with 3D Mini Radial Dials */}
                 <div>
                   <div className="flex items-center justify-between text-xs font-bold text-foreground mb-2.5">
                     <span>
@@ -338,7 +442,7 @@ export function SuperAdminFinancialRadarCard() {
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                     {canonicalHsnList.map((item) => {
                       const isSelected = selectedHsnTile === item.hsn4;
                       const hasDeficit = item.status === "deficit" || item.deficitQty > 0;
@@ -351,47 +455,62 @@ export function SuperAdminFinancialRadarCard() {
                         <div
                           key={item.hsn4}
                           onClick={() => setSelectedHsnTile(item.hsn4)}
-                          className={cn(
-                            "p-3 rounded-xl border transition-all cursor-pointer text-left space-y-2 relative overflow-hidden",
+                          style={
                             isSelected
-                              ? "border-purple-600 bg-purple-50/70 dark:bg-purple-950/40 shadow-xs ring-2 ring-purple-600/20"
+                              ? {
+                                  background: palette.cardBgGradient,
+                                  boxShadow: palette.activePillShadow,
+                                }
+                              : undefined
+                          }
+                          className={cn(
+                            "p-3.5 rounded-2xl border-t-2 border-l border-r border-b-3 transition-all cursor-pointer text-left space-y-2 relative overflow-hidden shadow-2xs hover:-translate-y-0.5 active:translate-y-0.5",
+                            isSelected
+                              ? cn(
+                                  palette.cardBorder,
+                                  palette.cardRing,
+                                  "ring-2 scale-[1.02] border-t-white/95 border-b-black/30",
+                                )
                               : hasDeficit
-                                ? "border-rose-300 bg-rose-50/50 dark:bg-rose-950/20 hover:border-rose-400"
-                                : "border-border/70 bg-card hover:bg-muted/30 hover:border-border",
+                                ? "border-rose-300 bg-rose-50/50 dark:bg-rose-950/20 hover:border-rose-400 border-t-white/80 border-b-rose-400/80"
+                                : "border-border/80 bg-card hover:bg-muted/30 border-t-white/90 dark:border-t-white/10 border-b-black/15",
                           )}
                         >
                           <div className="flex items-center justify-between gap-1">
-                            <span className="font-mono font-bold text-xs text-primary">
+                            <span
+                              className="font-mono font-black text-xs"
+                              style={{ color: isSelected ? palette.primary : undefined }}
+                            >
                               HSN {item.hsn4}
                             </span>
                             <MiniRadialMeter
                               percentage={coveragePct}
-                              size={36}
-                              strokeWidth={4}
+                              size={38}
+                              strokeWidth={4.5}
                               status={hasDeficit ? "deficit" : "balanced"}
                             />
                           </div>
 
                           <div>
                             <div
-                              className="font-semibold text-xs text-foreground truncate"
+                              className="font-bold text-xs text-foreground truncate"
                               title={item.categoryName}
                             >
                               {item.categoryName}
                             </div>
-                            <div className="text-[10px] text-muted-foreground">
+                            <div className="text-[10px] text-muted-foreground font-mono">
                               {item.soldQty > 0 ? `${item.soldQty} ${item.unit} sold` : "0 billed"}
                             </div>
                           </div>
 
-                          <div className="pt-1 border-t border-border/40">
+                          <div className="pt-1.5 border-t border-border/40">
                             {hasDeficit ? (
-                              <span className="text-[10px] font-bold text-rose-700 dark:text-rose-400 flex items-center gap-1">
+                              <span className="text-[10px] font-extrabold text-rose-700 dark:text-rose-400 flex items-center gap-1">
                                 <AlertTriangle className="h-3 w-3" />
                                 Deficit: {item.deficitQty} {item.unit}
                               </span>
                             ) : (
-                              <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                              <span className="text-[10px] font-extrabold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
                                 <CheckCircle2 className="h-3 w-3" />
                                 100% Inward Covered
                               </span>
@@ -403,7 +522,7 @@ export function SuperAdminFinancialRadarCard() {
                   </div>
                 </div>
 
-                {/* 2. Interactive Live What-If Balancing Simulator */}
+                {/* 2. Interactive Live What-If Balancing Simulator (3D & Theme-Adaptive) */}
                 <HsnInteractiveSimulator
                   defaultHsn={selectedHsnTile}
                   defaultSold={318}
@@ -414,27 +533,29 @@ export function SuperAdminFinancialRadarCard() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs font-bold text-foreground">
                     <span>Itemized HSN Inward vs Outward Ledger ({data.fyLabel})</span>
-                    <Button asChild size="sm" variant="ghost" className="h-7 text-xs text-primary">
-                      <Link to="/purchase-invoices">Go to Purchase Invoices &rarr;</Link>
+                    <Button asChild size="sm" variant="ghost" className="h-7 text-xs font-bold">
+                      <Link to="/purchase-invoices" style={{ color: palette.primary }}>
+                        Go to Purchase Invoices &rarr;
+                      </Link>
                     </Button>
                   </div>
 
-                  <div className="rounded-xl border border-border overflow-hidden">
+                  <div className="rounded-2xl border-t-2 border-l border-r border-b-3 border-t-white/90 border-b-black/15 border-border/80 overflow-hidden shadow-2xs">
                     <Table>
-                      <TableHeader className="bg-muted/40">
+                      <TableHeader className="bg-muted/40 border-b">
                         <TableRow>
-                          <TableHead className="w-24 font-bold text-xs">HSN (4-Digit)</TableHead>
-                          <TableHead className="font-bold text-xs">Product Category</TableHead>
-                          <TableHead className="text-right font-bold text-xs">
+                          <TableHead className="w-24 font-black text-xs">HSN (4-Digit)</TableHead>
+                          <TableHead className="font-black text-xs">Product Category</TableHead>
+                          <TableHead className="text-right font-black text-xs">
                             Billed Outward (Sales)
                           </TableHead>
-                          <TableHead className="text-right font-bold text-xs">
+                          <TableHead className="text-right font-black text-xs">
                             Inward Covered (Purchases)
                           </TableHead>
-                          <TableHead className="text-right font-bold text-xs">
+                          <TableHead className="text-right font-black text-xs">
                             Purchase Invoices Deficit
                           </TableHead>
-                          <TableHead className="w-32 text-center font-bold text-xs">
+                          <TableHead className="w-32 text-center font-black text-xs">
                             Status
                           </TableHead>
                         </TableRow>
@@ -456,53 +577,61 @@ export function SuperAdminFinancialRadarCard() {
                               <div className="font-semibold text-xs text-foreground">
                                 {row.categoryName}
                               </div>
-                              <div className="text-[10px] text-muted-foreground">
+                              <div className="text-[10px] text-muted-foreground font-mono">
                                 Base Unit: {row.unit}
                               </div>
                             </TableCell>
-                            <TableCell className="text-right text-xs">
-                              <div className="font-semibold font-mono">
+                            <TableCell className="text-right">
+                              <div className="font-mono font-bold text-xs">
                                 {row.soldQty} {row.unit}
                               </div>
                               <div className="text-[10px] text-muted-foreground font-mono">
-                                {formatInr(row.soldValue)}
+                                ₹{formatInr(row.soldValue)}
                               </div>
                             </TableCell>
-                            <TableCell className="text-right text-xs">
-                              <div className="font-semibold font-mono text-emerald-700 dark:text-emerald-400">
+                            <TableCell className="text-right">
+                              <div className="font-mono font-bold text-xs text-emerald-700 dark:text-emerald-400">
                                 {row.purchasedQty} {row.unit}
                               </div>
                               <div className="text-[10px] text-muted-foreground font-mono">
-                                {formatInr(row.purchasedValue)}
+                                ₹{formatInr(row.purchasedValue)}
                               </div>
                             </TableCell>
-                            <TableCell className="text-right text-xs">
+                            <TableCell className="text-right">
                               {row.deficitQty > 0 ? (
-                                <div className="space-y-0.5">
-                                  <div className="font-bold font-mono text-rose-700 dark:text-rose-400">
+                                <div>
+                                  <div className="font-mono font-black text-xs text-rose-700 dark:text-rose-400">
                                     {row.deficitQty} {row.unit}
                                   </div>
                                   <div className="text-[10px] font-bold text-rose-600 font-mono">
-                                    {formatInr(row.deficitValue)}
+                                    ₹{formatInr(row.deficitValue)} needed
                                   </div>
                                 </div>
                               ) : (
-                                <span className="font-mono text-muted-foreground text-xs">—</span>
+                                <span className="text-xs text-muted-foreground font-mono">
+                                  &mdash;
+                                </span>
                               )}
                             </TableCell>
-                            <TableCell className="text-center text-xs">
+                            <TableCell className="text-center">
                               {row.status === "deficit" ? (
-                                <Badge className="bg-rose-600 text-white font-bold text-[10px] uppercase">
-                                  Needs Bills
+                                <Badge
+                                  variant="destructive"
+                                  className="text-[10px] font-black uppercase tracking-wider"
+                                >
+                                  🚨 Needs Inward
                                 </Badge>
                               ) : row.status === "surplus" ? (
-                                <Badge className="bg-emerald-600 text-white font-bold text-[10px]">
+                                <Badge
+                                  variant="outline"
+                                  className="text-emerald-700 dark:text-emerald-400 border-emerald-400 text-[10px] font-black"
+                                >
                                   Surplus Stock
                                 </Badge>
                               ) : (
                                 <Badge
                                   variant="outline"
-                                  className="text-slate-600 dark:text-slate-400 text-[10px]"
+                                  className="text-slate-600 dark:text-slate-400 text-[10px] font-bold"
                                 >
                                   Balanced
                                 </Badge>
@@ -518,13 +647,28 @@ export function SuperAdminFinancialRadarCard() {
             )}
 
             {/* -------------------------------------------------------------- */}
-            {/* TAB 2: PERSONAL ACCOUNTS SFT LIMITS (₹10L RULE 114E)           */}
+            {/* TAB 2: PERSONAL SAVINGS ACCOUNTS SFT COMPLIANCE RADAR          */}
             {/* -------------------------------------------------------------- */}
             {activeTab === "upi" && (
               <div className="space-y-6 w-full">
-                {/* 1. Speedometer Automotive Gauges for Raman & Rishi */}
+                {/* Statutory Protection Banner */}
+                <div className="p-4 rounded-2xl border-t-2 border-l border-r border-b-3 border-amber-300/80 bg-amber-50/70 dark:border-amber-800 dark:bg-amber-950/20 text-xs text-amber-950 dark:text-amber-200 space-y-1.5 shadow-2xs border-t-white/80 border-b-amber-400/80">
+                  <div className="flex items-center gap-2 font-black text-sm text-amber-900 dark:text-amber-100">
+                    <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
+                    <span>Statutory Law Protection: Income Tax Rule 114E (SFT-004 Reporting)</span>
+                  </div>
+                  <p className="leading-relaxed text-[11.5px]">
+                    Banks automatically report personal savings accounts where aggregate cash or
+                    electronic credits reach or exceed{" "}
+                    <strong>₹10,00,000 in a Financial Year</strong> under Section 285BA. Exceeding
+                    this ceiling triggers automated risk profiling, commercial-use freezes by the
+                    bank, and Section 68/69A scrutiny notices (taxable at up to 78%).
+                  </p>
+                </div>
+
+                {/* Individual Raman & Rishi 3D SFT Speedometer Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {data.personalAccounts.map((account: PersonalAccountScrutiny) => {
+                  {data.personalAccounts.map((account) => {
                     const isRaman = account.accountKey === "raman";
                     const isCritical = account.riskLevel === "critical";
                     const isHigh = account.riskLevel === "high_risk";
@@ -534,7 +678,7 @@ export function SuperAdminFinancialRadarCard() {
                       <Card
                         key={account.accountKey}
                         className={cn(
-                          "border-2 overflow-hidden shadow-xs",
+                          "rounded-2xl border-t-2 border-l border-r border-b-3 overflow-hidden shadow-[0_10px_20px_-4px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.8)] border-t-white/90 border-b-black/20",
                           isCritical
                             ? "border-rose-500 bg-rose-50/20"
                             : isHigh
@@ -547,11 +691,17 @@ export function SuperAdminFinancialRadarCard() {
                         <CardHeader className="p-4 pb-2 border-b bg-muted/10">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <div className="p-2 rounded-xl bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 font-black">
+                              <div
+                                style={{
+                                  background: palette.activePillBg,
+                                  color: palette.activePillText,
+                                }}
+                                className="p-2 rounded-xl font-black text-xs shadow-2xs border-t border-white/40"
+                              >
                                 {isRaman ? "R" : "Ri"}
                               </div>
                               <div>
-                                <CardTitle className="text-sm font-bold text-foreground">
+                                <CardTitle className="text-sm font-black text-foreground">
                                   {account.holderName}&apos;s Personal Account (UPI / Bank)
                                 </CardTitle>
                                 <p className="text-[11px] text-muted-foreground font-mono">
@@ -562,7 +712,7 @@ export function SuperAdminFinancialRadarCard() {
 
                             <Badge
                               className={cn(
-                                "text-[10px] font-bold uppercase",
+                                "text-[10px] font-black uppercase shadow-2xs border-t border-b-2",
                                 isCritical
                                   ? "bg-rose-600 text-white"
                                   : isHigh
@@ -578,7 +728,7 @@ export function SuperAdminFinancialRadarCard() {
                         </CardHeader>
 
                         <CardContent className="p-4 space-y-3">
-                          {/* Speedometer Gauge Visual */}
+                          {/* 3D Speedometer Gauge Visual */}
                           <div className="flex justify-center py-1">
                             <SpeedometerGauge
                               value={account.cumulativeInflowsInr}
@@ -592,34 +742,48 @@ export function SuperAdminFinancialRadarCard() {
                             />
                           </div>
 
-                          <div className="grid grid-cols-2 gap-2 text-center pt-1 border-t border-border/50">
-                            <div className="p-2 rounded-lg bg-card border border-border/60">
-                              <div className="text-[10px] text-muted-foreground">
+                          <div className="grid grid-cols-2 gap-2 text-center pt-2 border-t border-border/50">
+                            <div className="p-2.5 rounded-xl bg-card border-t-2 border-l border-r border-b-2 border-t-white/90 border-b-black/15 shadow-2xs">
+                              <div className="text-[10px] text-muted-foreground font-bold uppercase">
                                 Cumulative Credits
                               </div>
-                              <div className="text-xs font-mono font-bold text-foreground">
-                                {formatInr(account.cumulativeInflowsInr)}
+                              <div className="text-xs font-mono font-black text-foreground mt-0.5">
+                                ₹{formatInr(account.cumulativeInflowsInr)}
                               </div>
                             </div>
-                            <div className="p-2 rounded-lg bg-card border border-border/60">
-                              <div className="text-[10px] text-muted-foreground">
+                            <div className="p-2.5 rounded-xl bg-card border-t-2 border-l border-r border-b-2 border-t-white/90 border-b-black/15 shadow-2xs">
+                              <div className="text-[10px] text-muted-foreground font-bold uppercase">
                                 Safe Headroom Left
                               </div>
                               <div
                                 className={cn(
-                                  "text-xs font-mono font-bold",
+                                  "text-xs font-mono font-black mt-0.5",
                                   account.headroomInr > 250000
                                     ? "text-emerald-700 dark:text-emerald-400"
                                     : "text-rose-700 dark:text-rose-400",
                                 )}
                               >
-                                {formatInr(account.headroomInr)}
+                                ₹{formatInr(account.headroomInr)}
                               </div>
                             </div>
                           </div>
 
-                          <div className="text-[11px] text-muted-foreground p-2 rounded-lg bg-muted/40 border border-border/50">
-                            {account.recommendation}
+                          <div className="text-[11px] p-2.5 rounded-xl bg-muted/40 border border-border/60 text-muted-foreground">
+                            {isCritical ? (
+                              <strong className="text-rose-700 dark:text-rose-400">
+                                🚨 Action: Stop taking UPI in this account immediately. Divert to
+                                Current Account.
+                              </strong>
+                            ) : isHigh ? (
+                              <strong className="text-amber-700 dark:text-amber-400">
+                                ⚠️ Action: High volume. Route next receipts to other partner or
+                                direct vendor offset.
+                              </strong>
+                            ) : (
+                              <span>
+                                Headroom remaining is safe. Continue normal business monitoring.
+                              </span>
+                            )}
                           </div>
                         </CardContent>
                       </Card>
@@ -627,7 +791,7 @@ export function SuperAdminFinancialRadarCard() {
                   })}
                 </div>
 
-                {/* 2. Interactive SFT What-If Inflow Simulator */}
+                {/* Interactive 3D SFT Scrutiny Simulator */}
                 <SftInflowSimulator
                   ramanCurrent={
                     data.personalAccounts.find((a) => a.accountKey === "raman")
@@ -642,41 +806,20 @@ export function SuperAdminFinancialRadarCard() {
             )}
 
             {/* -------------------------------------------------------------- */}
-            {/* TAB 3: CASH DEALS & INFLOW CHANNEL BREAKDOWN                   */}
+            {/* TAB 3: CASH DEALS & INFLOW CHANNEL BREAKDOWN                    */}
             {/* -------------------------------------------------------------- */}
             {activeTab === "cash" && (
               <div className="space-y-6 w-full">
-                {/* 1. Commercial Pipeline Summary */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-                  <div className="md:col-span-5 p-3 rounded-2xl border bg-card flex flex-col items-center justify-center shadow-2xs">
-                    <SpeedometerGauge
-                      value={data.cashAnalytics.cashDealAdoptionRate}
-                      max={100}
-                      label="Cash Deal Penetration Meter"
-                      sublabel={`${data.cashAnalytics.cashDealsCount} of ${data.cashAnalytics.totalDealsCount} quotations opted for cash`}
-                      unit="%"
-                      size="md"
-                      mode="risk"
-                      statusText={`${data.cashAnalytics.cashDealAdoptionRate}% Cash Deals`}
-                    />
+                {/* 1. Commercial Adoption Radar */}
+                <div>
+                  <div className="text-xs font-bold text-foreground mb-2.5">
+                    Commercial Deal Structuring Penetration (Current Financial Year)
                   </div>
 
-                  <div className="md:col-span-7 grid grid-cols-2 gap-3">
-                    <div className="p-3.5 rounded-xl border bg-card shadow-2xs space-y-1">
-                      <div className="text-[11px] text-muted-foreground font-semibold">
-                        Total Quotes Evaluated
-                      </div>
-                      <div className="text-2xl font-black font-mono text-foreground">
-                        {data.cashAnalytics.totalDealsCount}
-                      </div>
-                      <div className="text-[10px] text-muted-foreground">
-                        All closed &amp; pipeline deals
-                      </div>
-                    </div>
-
-                    <div className="p-3.5 rounded-xl border bg-card shadow-2xs space-y-1">
-                      <div className="text-[11px] text-muted-foreground font-semibold">
-                        Proper GST Tax Deals
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="p-4 rounded-2xl border-t-2 border-l border-r border-b-3 border-emerald-300 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20 shadow-[0_8px_16px_-4px_rgba(0,0,0,0.06)] border-t-white/90 border-b-emerald-400 space-y-1">
+                      <div className="text-[11px] text-emerald-900 dark:text-emerald-200 font-bold">
+                        Proper GST Tax Invoiced Deals
                       </div>
                       <div className="text-2xl font-black font-mono text-emerald-700 dark:text-emerald-400">
                         {data.cashAnalytics.invoicedDealsCount}
@@ -686,33 +829,45 @@ export function SuperAdminFinancialRadarCard() {
                       </div>
                     </div>
 
-                    <div className="p-3.5 rounded-xl border bg-card shadow-2xs space-y-1">
-                      <div className="text-[11px] text-muted-foreground font-semibold">
+                    <div
+                      style={{
+                        background: palette.cardBgGradient,
+                      }}
+                      className={cn(
+                        "p-4 rounded-2xl border-t-2 border-l border-r border-b-3 shadow-[0_8px_16px_-4px_rgba(0,0,0,0.06)] space-y-1",
+                        palette.cardBorder,
+                        "border-t-white/90 border-b-black/15",
+                      )}
+                    >
+                      <div className="text-[11px] text-muted-foreground font-bold">
                         Cash Deals (Challan)
                       </div>
-                      <div className="text-2xl font-black font-mono text-purple-700 dark:text-purple-400">
+                      <div
+                        className="text-2xl font-black font-mono"
+                        style={{ color: palette.primary }}
+                      >
                         {data.cashAnalytics.cashDealsCount}
                       </div>
-                      <div className="text-[10px] text-purple-800 dark:text-purple-300 font-bold">
+                      <div className="text-[10px] text-muted-foreground font-bold">
                         {data.cashAnalytics.cashDealAdoptionRate}% of volume
                       </div>
                     </div>
 
-                    <div className="p-3.5 rounded-xl border bg-card shadow-2xs space-y-1">
-                      <div className="text-[11px] text-muted-foreground font-semibold">
+                    <div className="p-4 rounded-2xl border-t-2 border-l border-r border-b-3 border-border/80 bg-card shadow-[0_8px_16px_-4px_rgba(0,0,0,0.06)] border-t-white/90 border-b-black/15 space-y-1">
+                      <div className="text-[11px] text-muted-foreground font-bold">
                         Total Realized Cash Pool
                       </div>
                       <div className="text-2xl font-black font-mono text-foreground">
-                        {formatInr(data.cashAnalytics.inflows.totalCashPoolInr)}
+                        ₹{formatInr(data.cashAnalytics.inflows.totalCashPoolInr)}
                       </div>
-                      <div className="text-[10px] text-muted-foreground">
+                      <div className="text-[10px] text-muted-foreground font-medium">
                         Sum of all 4 cash channels
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* 2. Four Inflow Streams Decomposition */}
+                {/* 2. Four Inflow Streams Decomposition in 3D */}
                 <div>
                   <div className="text-xs font-bold text-foreground mb-2.5">
                     Realized Cash Pool Decomposition (4 Financial Channels)
@@ -720,28 +875,28 @@ export function SuperAdminFinancialRadarCard() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                     {/* Channel 1: Physical Currency Notes */}
-                    <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-card space-y-2 shadow-2xs">
+                    <div className="p-4 rounded-2xl border-t-2 border-l border-r border-b-3 border-slate-200 dark:border-slate-800 bg-card space-y-2.5 shadow-[0_8px_16px_-4px_rgba(0,0,0,0.06)] border-t-white/90 border-b-black/15">
                       <div className="flex items-center gap-2">
-                        <div className="p-2 rounded-lg bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                        <div className="p-2 rounded-xl bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 shadow-2xs">
                           <Banknote className="h-4 w-4" />
                         </div>
                         <div>
                           <div className="font-bold text-xs text-foreground">
                             Physical Currency Notes
                           </div>
-                          <div className="text-[10px] text-muted-foreground">
+                          <div className="text-[10px] text-muted-foreground font-mono">
                             Drawer &amp; cashbook receipts
                           </div>
                         </div>
                       </div>
-                      <div className="font-mono text-lg font-black text-foreground pt-1">
-                        {formatInr(data.cashAnalytics.inflows.currencyNotesInr)}
+                      <div className="font-mono text-xl font-black text-foreground pt-1">
+                        ₹{formatInr(data.cashAnalytics.inflows.currencyNotesInr)}
                       </div>
                       <Progress
                         value={data.cashAnalytics.inflowPercentages.currencyNotesPct}
-                        className="h-1.5"
+                        className="h-2 rounded-full"
                       />
-                      <div className="text-[10px] text-muted-foreground flex justify-between">
+                      <div className="text-[10px] text-muted-foreground flex justify-between font-mono">
                         <span>Share of cash pool</span>
                         <span className="font-bold">
                           {data.cashAnalytics.inflowPercentages.currencyNotesPct}%
@@ -750,28 +905,44 @@ export function SuperAdminFinancialRadarCard() {
                     </div>
 
                     {/* Channel 2: Personal UPI — Raman */}
-                    <div className="p-3.5 rounded-xl border border-purple-200 dark:border-purple-800/60 bg-card space-y-2 shadow-2xs">
+                    <div
+                      style={{ background: palette.cardBgGradient }}
+                      className={cn(
+                        "p-4 rounded-2xl border-t-2 border-l border-r border-b-3 space-y-2.5 shadow-[0_8px_16px_-4px_rgba(0,0,0,0.06)]",
+                        palette.cardBorder,
+                        "border-t-white/90 border-b-black/15",
+                      )}
+                    >
                       <div className="flex items-center gap-2">
-                        <div className="p-2 rounded-lg bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300">
+                        <div
+                          style={{
+                            background: palette.activePillBg,
+                            color: palette.activePillText,
+                          }}
+                          className="p-2 rounded-xl shadow-2xs border-t border-white/40"
+                        >
                           <Smartphone className="h-4 w-4" />
                         </div>
                         <div>
                           <div className="font-bold text-xs text-foreground">
                             Personal UPI — Raman
                           </div>
-                          <div className="text-[10px] text-muted-foreground">
+                          <div className="text-[10px] text-muted-foreground font-mono">
                             Customer UPI credits
                           </div>
                         </div>
                       </div>
-                      <div className="font-mono text-lg font-black text-purple-700 dark:text-purple-400 pt-1">
-                        {formatInr(data.cashAnalytics.inflows.personalUpiRamanInr)}
+                      <div
+                        className="font-mono text-xl font-black pt-1"
+                        style={{ color: palette.primary }}
+                      >
+                        ₹{formatInr(data.cashAnalytics.inflows.personalUpiRamanInr)}
                       </div>
                       <Progress
                         value={data.cashAnalytics.inflowPercentages.personalUpiRamanPct}
-                        className="h-1.5"
+                        className="h-2 rounded-full"
                       />
-                      <div className="text-[10px] text-muted-foreground flex justify-between">
+                      <div className="text-[10px] text-muted-foreground flex justify-between font-mono">
                         <span>Share of cash pool</span>
                         <span className="font-bold">
                           {data.cashAnalytics.inflowPercentages.personalUpiRamanPct}%
@@ -780,28 +951,44 @@ export function SuperAdminFinancialRadarCard() {
                     </div>
 
                     {/* Channel 3: Personal UPI — Rishi */}
-                    <div className="p-3.5 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-card space-y-2 shadow-2xs">
+                    <div
+                      style={{ background: palette.cardBgGradient }}
+                      className={cn(
+                        "p-4 rounded-2xl border-t-2 border-l border-r border-b-3 space-y-2.5 shadow-[0_8px_16px_-4px_rgba(0,0,0,0.06)]",
+                        palette.cardBorder,
+                        "border-t-white/90 border-b-black/15",
+                      )}
+                    >
                       <div className="flex items-center gap-2">
-                        <div className="p-2 rounded-lg bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
+                        <div
+                          style={{
+                            background: palette.activePillBg,
+                            color: palette.activePillText,
+                          }}
+                          className="p-2 rounded-xl shadow-2xs border-t border-white/40"
+                        >
                           <Smartphone className="h-4 w-4" />
                         </div>
                         <div>
                           <div className="font-bold text-xs text-foreground">
                             Personal UPI — Rishi
                           </div>
-                          <div className="text-[10px] text-muted-foreground">
+                          <div className="text-[10px] text-muted-foreground font-mono">
                             Customer UPI credits
                           </div>
                         </div>
                       </div>
-                      <div className="font-mono text-lg font-black text-blue-700 dark:text-blue-400 pt-1">
-                        {formatInr(data.cashAnalytics.inflows.personalUpiRishiInr)}
+                      <div
+                        className="font-mono text-xl font-black pt-1"
+                        style={{ color: palette.primary }}
+                      >
+                        ₹{formatInr(data.cashAnalytics.inflows.personalUpiRishiInr)}
                       </div>
                       <Progress
                         value={data.cashAnalytics.inflowPercentages.personalUpiRishiPct}
-                        className="h-1.5"
+                        className="h-2 rounded-full"
                       />
-                      <div className="text-[10px] text-muted-foreground flex justify-between">
+                      <div className="text-[10px] text-muted-foreground flex justify-between font-mono">
                         <span>Share of cash pool</span>
                         <span className="font-bold">
                           {data.cashAnalytics.inflowPercentages.personalUpiRishiPct}%
@@ -810,28 +997,28 @@ export function SuperAdminFinancialRadarCard() {
                     </div>
 
                     {/* Channel 4: Customer Direct Vendor Offsets */}
-                    <div className="p-3.5 rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50/30 dark:bg-emerald-950/20 space-y-2 shadow-2xs">
+                    <div className="p-4 rounded-2xl border-t-2 border-l border-r border-b-3 border-teal-200 dark:border-teal-800 bg-teal-50/40 dark:bg-teal-950/20 space-y-2.5 shadow-[0_8px_16px_-4px_rgba(0,0,0,0.06)] border-t-white/90 border-b-teal-400/80">
                       <div className="flex items-center gap-2">
-                        <div className="p-2 rounded-lg bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                          <ArrowRightLeft className="h-4 w-4" />
+                        <div className="p-2 rounded-xl bg-teal-600 text-white shadow-2xs">
+                          <Scale className="h-4 w-4" />
                         </div>
                         <div>
                           <div className="font-bold text-xs text-foreground">
                             Direct Quarry Offsets
                           </div>
-                          <div className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold">
-                            Zero SFT Risk (Bypasses Bank)
+                          <div className="text-[10px] text-teal-800 dark:text-teal-300 font-bold">
+                            Zero SFT audit risk!
                           </div>
                         </div>
                       </div>
-                      <div className="font-mono text-lg font-black text-emerald-800 dark:text-emerald-300 pt-1">
-                        {formatInr(data.cashAnalytics.inflows.directVendorOffsetsInr)}
+                      <div className="font-mono text-xl font-black text-teal-700 dark:text-teal-300 pt-1">
+                        ₹{formatInr(data.cashAnalytics.inflows.directVendorOffsetsInr)}
                       </div>
                       <Progress
                         value={data.cashAnalytics.inflowPercentages.directVendorOffsetsPct}
-                        className="h-1.5"
+                        className="h-2 rounded-full"
                       />
-                      <div className="text-[10px] text-muted-foreground flex justify-between">
+                      <div className="text-[10px] text-muted-foreground flex justify-between font-mono">
                         <span>Share of cash pool</span>
                         <span className="font-bold">
                           {data.cashAnalytics.inflowPercentages.directVendorOffsetsPct}%

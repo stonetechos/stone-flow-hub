@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { SpeedometerGauge, MiniRadialMeter } from "./StatutoryHealthGauge";
+import { THEME_GAUGE_PALETTES } from "./StatutoryHealthGauge";
 
 describe("StatutoryHealthGauge calculations", () => {
   it("computes gauge angles correctly within 0 to 180 degrees sweep", () => {
@@ -48,5 +48,20 @@ describe("StatutoryHealthGauge calculations", () => {
 
     expect(isRiskHealthy(35)).toBe(true);
     expect(isRiskHigh(85)).toBe(true);
+  });
+
+  it("provides comprehensive 3D theme palettes for all 4 themes", () => {
+    const themeKeys = ["st-og", "st-bw", "st-pop", "st-pastel"] as const;
+
+    for (const key of themeKeys) {
+      const palette = THEME_GAUGE_PALETTES[key];
+      expect(palette).toBeDefined();
+      expect(palette.id).toBe(key);
+      expect(palette.bezelLight).toBeDefined();
+      expect(palette.needleLight).toBeDefined();
+      expect(palette.digitalBoxBg).toBeDefined();
+      expect(palette.activePillBg).toBeDefined();
+      expect(palette.cardBgGradient).toBeDefined();
+    }
   });
 });
