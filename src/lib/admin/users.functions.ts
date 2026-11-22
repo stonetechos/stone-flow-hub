@@ -1043,6 +1043,30 @@ export const ensureUserRoleServerFn = createServerFn({ method: "POST" })
       return ["sales"];
     }
 
+    // Specific dedicated provisioning for Directors as super_admin & admin
+    const isDirector =
+      email.includes("raman") ||
+      email.includes("rishi") ||
+      email.includes("stonetech") ||
+      email === "raman.pupneja@gmail.com" ||
+      email === "stonetechrajasthan@gmail.com" ||
+      email === "rishirai@gmail.com";
+
+    if (isDirector) {
+      for (const role of ["super_admin", "admin"] as const) {
+        const { data: exRole } = await supabaseAdmin
+          .from("user_roles")
+          .select("id")
+          .eq("user_id", userId)
+          .eq("role", role)
+          .maybeSingle();
+        if (!exRole) {
+          await supabaseAdmin.from("user_roles").insert({ user_id: userId, role });
+        }
+      }
+      return ["super_admin", "admin"];
+    }
+
     // 1. Check existing roles
     const { data: existingRoles, error: rErr } = await supabaseAdmin
       .from("user_roles")
