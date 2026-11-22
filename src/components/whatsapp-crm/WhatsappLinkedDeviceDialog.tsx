@@ -33,9 +33,15 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSessionUpdated?: (session: WhatsappDeviceSession) => void;
+  onOpenSync?: () => void;
 }
 
-export function WhatsappLinkedDeviceDialog({ open, onOpenChange, onSessionUpdated }: Props) {
+export function WhatsappLinkedDeviceDialog({
+  open,
+  onOpenChange,
+  onSessionUpdated,
+  onOpenSync,
+}: Props) {
   const { t } = useTranslation();
   const [session, setSession] = useState<WhatsappDeviceSession>(getStoredDeviceSession);
   const [pairingTimer, setPairingTimer] = useState(30);
@@ -195,8 +201,8 @@ export function WhatsappLinkedDeviceDialog({ open, onOpenChange, onSessionUpdate
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    toast.success("Synchronizing active WhatsApp chats with STOS CRM records...");
                     onOpenChange(false);
+                    onOpenSync?.();
                   }}
                   className="gap-1.5 text-xs font-semibold cursor-pointer border-emerald-300 text-emerald-800 hover:bg-emerald-50 dark:text-emerald-300"
                 >

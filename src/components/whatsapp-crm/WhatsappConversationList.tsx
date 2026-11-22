@@ -1,8 +1,9 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Search, UserCheck, AlertCircle, MessageCircle, Clock } from "lucide-react";
+import { Search, UserCheck, AlertCircle, MessageCircle, Clock, Plus, Zap } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toIndicDigits } from "@/lib/format";
 import type { WhatsappConversation } from "./types";
@@ -11,12 +12,16 @@ interface WhatsappConversationListProps {
   conversations: WhatsappConversation[];
   activeId: string | null;
   onSelectConversation: (conv: WhatsappConversation) => void;
+  onOpenNewChat?: () => void;
+  onOpenSync?: () => void;
 }
 
 export function WhatsappConversationList({
   conversations,
   activeId,
   onSelectConversation,
+  onOpenNewChat,
+  onOpenSync,
 }: WhatsappConversationListProps) {
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
@@ -48,6 +53,36 @@ export function WhatsappConversationList({
     <div className="flex flex-col h-full border-r bg-muted/20">
       {/* Top Search & Filter Bar */}
       <div className="p-2.5 border-b space-y-2">
+        <div className="flex items-center justify-between gap-1.5 pb-0.5">
+          <span className="font-bold text-xs text-foreground flex items-center gap-1.5">
+            <span>Chats</span>
+            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">
+              {filtered.length}
+            </Badge>
+          </span>
+          <div className="flex items-center gap-1">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onOpenNewChat}
+              className="h-6 px-2 text-[10.5px] font-semibold gap-1 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 cursor-pointer"
+              title="Start a new WhatsApp chat with any customer"
+            >
+              <Plus className="h-3 w-3" />
+              <span>New</span>
+            </Button>
+            <Button
+              size="sm"
+              onClick={onOpenSync}
+              className="h-6 px-2 text-[10.5px] font-bold gap-1 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-2xs"
+              title="Open WhatsApp One-Time Synchronisation Center"
+            >
+              <Zap className="h-3 w-3" />
+              <span>One-Time Sync</span>
+            </Button>
+          </div>
+        </div>
+
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
           <Input

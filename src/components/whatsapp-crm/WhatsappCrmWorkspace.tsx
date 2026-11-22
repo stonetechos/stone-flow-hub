@@ -1,7 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { MessageSquare, PanelRightClose, PanelRightOpen, RefreshCw } from "lucide-react";
+import { MessageSquare, PanelRightClose, PanelRightOpen, RefreshCw, Zap, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +10,8 @@ import { WhatsappChatArea } from "./WhatsappChatArea";
 import { StosCrmMiniApp } from "./StosCrmMiniApp";
 import { StoneCatalogPicker } from "./StoneCatalogPicker";
 import { WhatsappDeviceStatusBadge } from "./WhatsappDeviceStatusBadge";
+import { WhatsappOneTimeSyncDialog } from "./WhatsappOneTimeSyncDialog";
+import { CreateNewWhatsappChatDialog } from "./CreateNewWhatsappChatDialog";
 import { useWhatsappCrmContext } from "./useWhatsappCrmContext";
 import type { WhatsappConversation, WhatsappMessage } from "./types";
 
@@ -146,15 +148,81 @@ function mapEnquiryLeadStage(stage?: string | null): WhatsappConversation["leadS
   return "qualified";
 }
 
+const CUSTOM_CONVERSATIONS_KEY = "stos_whatsapp_custom_conversations_v2";
+const CUSTOM_MESSAGES_KEY = "stos_whatsapp_custom_messages_v2";
+const HIDE_DEMO_KEY = "stos_whatsapp_hide_demo_chats_v2";
+
 export function WhatsappCrmWorkspace() {
   const { t } = useTranslation();
-  const [conversations, setConversations] = useState<WhatsappConversation[]>(SEED_CONVERSATIONS);
-  const [activeConvId, setActiveConvId] = useState<string>("conv-1");
-  const [messagesMap, setMessagesMap] =
-    useState<Record<string, WhatsappMessage[]>>(INITIAL_MESSAGES);
+
+  // Load custom/imported conversations from localStorage
+  const [customConvs, setCustomConvs] = useState<WhatsappConversation[]>(() => {
+    try {
+      const raw = localStorage.getItem(CUSTOM_CONVERSATIONS_KEY);
+      if (raw) return JSON.parse(raw) as WhatsappConversation[];
+    } catch {
+      // ignore
+    }
+    return [];
+  });
+
+  // Load custom/imported messages map from localStorage
+  const [messagesMap, setMessagesMap] = useState<Record<string, WhatsappMessage[]>>(() => {
+    try {
+      const raw = localStorage.getItem(CUSTOM_MESSAGES_KEY);
+      if (raw)
+        return { ...INITIAL_MESSAGES, ...(JSON.parse(raw) as Record<string, WhatsappMessage[]>) };
+    } catch {
+      // ignore
+    }
+    return INITIAL_MESSAGES;
+  });
+
+  // Toggle for hiding demo/sample data
+  const [hideDemo, setHideDemo] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(HIDE_DEMO_KEY) === "true";
+    } catch {
+      return false;
+    }
+  });
+
+  const [activeConvId, setActiveConvId] = useState<string>(() => {
+    try {
+      const raw = localStorage.getItem(CUSTOM_CONVERSATIONS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as WhatsappConversation[];
+        if (parsed.length > 0) return parsed[0].id;
+      }
+    } catch {
+      // fallback
+    }
+    return "conv-1";
+  });
+
   const [crmPanelOpen, setCrmPanelOpen] = useState(true);
   const [stonePickerOpen, setStonePickerOpen] = useState(false);
+  const [syncModalOpen, setSyncModalOpen] = useState(false);
+  const [newChatModalOpen, setNewChatModalOpen] = useState(false);
   const [stagedText, setStagedText] = useState("");
+
+  // Save custom conversations whenever changed
+  useEffect(() => {
+    try {
+      localStorage.setItem(CUSTOM_CONVERSATIONS_KEY, JSON.stringify(customConvs));
+    } catch {
+      // ignore
+    }
+  }, [customConvs]);
+
+  // Save custom messages whenever changed
+  useEffect(() => {
+    try {
+      localStorage.setItem(CUSTOM_MESSAGES_KEY, JSON.stringify(messagesMap));
+    } catch {
+      // ignore
+    }
+  }, [messagesMap]);
 
   // 1. Query all open CRM leads / enquiries from STOS
   const { data: openEnquiries } = useQuery({
@@ -213,12 +281,21 @@ export function WhatsappCrmWorkspace() {
     },
   });
 
-  // Merge live open CRM leads, active customers, and seed chats into conversation list
+  // Merge custom imported chats, live open CRM leads, active customers, and seed chats
   const mergedConversations = useMemo(() => {
     const list: WhatsappConversation[] = [];
     const seenPhones = new Set<string>();
 
-    // A. Add all open leads from CRM enquiries first
+    // Priority 1: User-imported or dynamically created conversations
+    for (const custom of customConvs) {
+      const key10 = custom.phone.replace(/\D/g, "").slice(-10);
+      if (!seenPhones.has(key10)) {
+        seenPhones.add(key10);
+        list.push(custom);
+      }
+    }
+
+    // Priority 2: Add all open leads from CRM enquiries
     if (openEnquiries && openEnquiries.length > 0) {
       for (const enq of openEnquiries) {
         const cust = enq.customer as {
@@ -257,7 +334,7 @@ export function WhatsappCrmWorkspace() {
       }
     }
 
-    // B. Add remaining active CRM customers who have phone numbers
+    // Priority 3: Add remaining active CRM customers who have phone numbers
     if (realCustomers && realCustomers.length > 0) {
       for (const cust of realCustomers) {
         const rawPhone = cust.whatsapp || cust.primary_phone || "";
@@ -284,17 +361,19 @@ export function WhatsappCrmWorkspace() {
       }
     }
 
-    // C. Include seed demo conversations if their phone isn't already in CRM
-    for (const seed of conversations) {
-      const key10 = seed.phone.replace(/\D/g, "").slice(-10);
-      if (!seenPhones.has(key10)) {
-        seenPhones.add(key10);
-        list.push(seed);
+    // Priority 4: Include seed demo conversations only if not hidden and no custom chats
+    if (!hideDemo) {
+      for (const seed of SEED_CONVERSATIONS) {
+        const key10 = seed.phone.replace(/\D/g, "").slice(-10);
+        if (!seenPhones.has(key10)) {
+          seenPhones.add(key10);
+          list.push(seed);
+        }
       }
     }
 
     return list;
-  }, [openEnquiries, realCustomers, conversations]);
+  }, [customConvs, openEnquiries, realCustomers, hideDemo]);
 
   const activeConv = useMemo(() => {
     return mergedConversations.find((c) => c.id === activeConvId) ?? mergedConversations[0];
@@ -338,14 +417,58 @@ export function WhatsappCrmWorkspace() {
       [activeConv.id]: [...(prev[activeConv.id] ?? []), newMsg],
     }));
 
-    // Update last message in conversation list
-    setConversations((prev) =>
-      prev.map((c) =>
-        c.id === activeConv.id
-          ? { ...c, lastMessage: text, lastMessageAt: "Just now", unreadCount: 0 }
-          : c,
-      ),
-    );
+    // Update last message in custom conversations if it exists there, or add it
+    setCustomConvs((prev) => {
+      const exists = prev.some((c) => c.id === activeConv.id);
+      if (exists) {
+        return prev.map((c) =>
+          c.id === activeConv.id
+            ? { ...c, lastMessage: text, lastMessageAt: "Just now", unreadCount: 0 }
+            : c,
+        );
+      }
+      return [
+        {
+          ...activeConv,
+          lastMessage: text,
+          lastMessageAt: "Just now",
+          unreadCount: 0,
+        },
+        ...prev,
+      ];
+    });
+  };
+
+  const handleImportConversation = (conv: WhatsappConversation, msgs: WhatsappMessage[]) => {
+    setCustomConvs((prev) => [conv, ...prev.filter((c) => c.id !== conv.id)]);
+    setMessagesMap((prev) => ({
+      ...prev,
+      [conv.id]: msgs,
+    }));
+    setActiveConvId(conv.id);
+  };
+
+  const handleClearDemoData = () => {
+    setHideDemo(true);
+    try {
+      localStorage.setItem(HIDE_DEMO_KEY, "true");
+    } catch {
+      // ignore
+    }
+    if (customConvs.length > 0) {
+      setActiveConvId(customConvs[0].id);
+    }
+  };
+
+  const handleCreateChat = (conv: WhatsappConversation, initialMsg?: WhatsappMessage) => {
+    setCustomConvs((prev) => [conv, ...prev.filter((c) => c.id !== conv.id)]);
+    if (initialMsg) {
+      setMessagesMap((prev) => ({
+        ...prev,
+        [conv.id]: [initialMsg],
+      }));
+    }
+    setActiveConvId(conv.id);
   };
 
   const handleAttachCatalogPdf = (
@@ -382,7 +505,17 @@ export function WhatsappCrmWorkspace() {
             <MessageSquare className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
             {t("communication.workspaceTitle", "STOS WhatsApp CRM Workspace")}
           </span>
-          <WhatsappDeviceStatusBadge />
+          <WhatsappDeviceStatusBadge onOpenSync={() => setSyncModalOpen(true)} />
+
+          <Button
+            size="sm"
+            onClick={() => setSyncModalOpen(true)}
+            className="h-7 px-2.5 text-xs font-bold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs cursor-pointer"
+            title="Open WhatsApp One-Time Synchronisation Center"
+          >
+            <Zap className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">One-Time Sync</span>
+          </Button>
         </div>
 
         <div className="flex items-center gap-2">
@@ -431,6 +564,8 @@ export function WhatsappCrmWorkspace() {
             conversations={mergedConversations}
             activeId={activeConv.id}
             onSelectConversation={(c) => setActiveConvId(c.id)}
+            onOpenNewChat={() => setNewChatModalOpen(true)}
+            onOpenSync={() => setSyncModalOpen(true)}
           />
         </div>
 
@@ -480,6 +615,24 @@ export function WhatsappCrmWorkspace() {
           />
         </DialogContent>
       </Dialog>
+
+      {/* WhatsApp One-Time Synchronisation Center */}
+      <WhatsappOneTimeSyncDialog
+        open={syncModalOpen}
+        onOpenChange={setSyncModalOpen}
+        onImportConversation={handleImportConversation}
+        onClearDemoData={handleClearDemoData}
+        onSyncCrmContacts={() => {
+          // forces refresh
+        }}
+      />
+
+      {/* New WhatsApp Chat Dialog */}
+      <CreateNewWhatsappChatDialog
+        open={newChatModalOpen}
+        onOpenChange={setNewChatModalOpen}
+        onCreateChat={handleCreateChat}
+      />
     </div>
   );
 }

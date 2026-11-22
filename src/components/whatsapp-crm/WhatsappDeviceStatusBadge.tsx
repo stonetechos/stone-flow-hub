@@ -5,7 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { WhatsappLinkedDeviceDialog } from "./WhatsappLinkedDeviceDialog";
 import { getStoredDeviceSession, type WhatsappDeviceSession } from "./device-session";
 
-export function WhatsappDeviceStatusBadge() {
+interface Props {
+  onOpenSync?: () => void;
+}
+
+export function WhatsappDeviceStatusBadge({ onOpenSync }: Props) {
   const [open, setOpen] = useState(false);
   const [session, setSession] = useState<WhatsappDeviceSession>(getStoredDeviceSession);
 
@@ -56,6 +60,7 @@ export function WhatsappDeviceStatusBadge() {
         open={open}
         onOpenChange={setOpen}
         onSessionUpdated={(updated) => setSession(updated)}
+        onOpenSync={onOpenSync}
       />
     </>
   );
