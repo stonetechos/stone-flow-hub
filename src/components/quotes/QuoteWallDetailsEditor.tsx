@@ -861,8 +861,11 @@ export function QuoteWallDetailsEditor({
                     <span className="text-sm font-bold text-slate-800 block">
                       {liveConsumables.summary.sealerBottles} Bottle(s)
                     </span>
-                    <span className="text-[10px] text-muted-foreground">
-                      550 sq.ft coverage/ltr
+                    <span
+                      className="text-[10px] text-muted-foreground truncate block"
+                      title={liveConsumables.summary.sealerLabel}
+                    >
+                      {liveConsumables.summary.sealerCoverageSqftPerLtr ?? 550} sq.ft coverage/ltr
                     </span>
                   </div>
 

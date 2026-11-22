@@ -222,10 +222,90 @@ export interface ProposedConsumableUpdates {
     cementAdhesiveBags: number;
     puAdhesiveBuckets: number;
     sealerBottles: number;
+    sealerCoverageSqftPerLtr?: number;
+    sealerLabel?: string;
     sealerLabourSqft: number;
   };
   // Recalculated worksheet
   updatedWorksheet: EstimateWorksheet;
+}
+
+/**
+ * Detects the sealer coverage (sq.ft / litre) and catalog information
+ * from a sealer item description or worksheet key.
+ */
+export function detectSealerCoverage(
+  sealerDescription?: string | null,
+  worksheetSealerKey?: string | null,
+): { coverage: number; label: string; key: string } {
+  const d = (sealerDescription || "").toLowerCase().trim();
+
+  if (d) {
+    if (d.includes("solvent") || d.includes("oil") || d.includes("dust")) {
+      return {
+        coverage: 50,
+        label: "Solvent Based Water Oil and Dust Repellent",
+        key: "solvent_based_oil_dust_repellent",
+      };
+    }
+    if (d.includes("wetlook") || d.includes("wet look")) {
+      return {
+        coverage: 60,
+        label: "Wetlook Sealer",
+        key: "wetlook_sealer",
+      };
+    }
+    if (d.includes("film forming")) {
+      return {
+        coverage: 60,
+        label: "Film Forming Surface Sealers",
+        key: "film_forming_surface_sealers",
+      };
+    }
+    if (d.includes("back coat") || d.includes("backcoat")) {
+      return {
+        coverage: 100,
+        label: "Back Coat",
+        key: "back_coat",
+      };
+    }
+    if (d.includes("anti-graffiti") || d.includes("antigraffiti")) {
+      return {
+        coverage: 60,
+        label: "Anti-Graffiti",
+        key: "anti_graffiti",
+      };
+    }
+    if (
+      d.includes("water based") ||
+      d.includes("water-based") ||
+      d.includes("repellent") ||
+      d.includes("sealer")
+    ) {
+      return {
+        coverage: 550,
+        label: "Water Based Water Repellent",
+        key: "water_based_repellent",
+      };
+    }
+  }
+
+  if (worksheetSealerKey) {
+    const matched = SEALER_CATALOG.find((s) => s.key === worksheetSealerKey);
+    if (matched) {
+      return {
+        coverage: matched.coverageSqftPerLtr,
+        label: matched.label,
+        key: matched.key,
+      };
+    }
+  }
+
+  return {
+    coverage: 550,
+    label: "Water Based Water Repellent",
+    key: "water_based_repellent",
+  };
 }
 
 /**
@@ -388,21 +468,21 @@ export function calculateConsumableUpdates(
 
   // 4. Sealers
   const sealerItem = existingItems.find((it) => categorizeQuoteItem(it) === "sealer");
-  if (sealerItem) {
-    const d = (sealerItem.description || "").toLowerCase();
-    let coverage = 550; // default water based
-    if (d.includes("solvent") || d.includes("dust")) coverage = 50;
-    else if (d.includes("wetlook") || d.includes("film forming")) coverage = 60;
-    else if (d.includes("back coat")) coverage = 100;
+  const sealerDetection = detectSealerCoverage(
+    sealerItem?.description,
+    currentWorksheet?.installation?.sealer?.key,
+  );
+  const sealerCoverage = sealerDetection.coverage;
+  const calculatedSealerBottles = ceilWhole(totalWallSqft / sealerCoverage);
 
-    const newBottles = ceilWhole(totalWallSqft / coverage);
-    if (Number(sealerItem.quantity) !== newBottles) {
+  if (sealerItem) {
+    if (Number(sealerItem.quantity) !== calculatedSealerBottles) {
       itemPatches.push({
         id: sealerItem.id,
         description: sealerItem.description || "Sealer Chemical",
         category: "sealer",
         currentQuantity: Number(sealerItem.quantity) || 0,
-        newQuantity: newBottles,
+        newQuantity: calculatedSealerBottles,
         unit: sealerItem.unit || "ltr",
       });
     }
@@ -465,7 +545,7 @@ export function calculateConsumableUpdates(
   const updatedSealer = baseWs.installation?.sealer
     ? (() => {
         const cat = SEALER_CATALOG.find((s) => s.key === baseWs.installation.sealer?.key);
-        const cov = cat?.coverageSqftPerLtr || 550;
+        const cov = cat?.coverageSqftPerLtr || sealerCoverage || 550;
         const newBottles = ceilWhole(totalWallSqft / cov);
         return {
           ...baseWs.installation.sealer,
@@ -526,7 +606,9 @@ export function calculateConsumableUpdates(
       labourSqft: totalWallSqft,
       cementAdhesiveBags: calculateAdhesiveUnits(ADHESIVE_CATALOG[1], wallBreakdown),
       puAdhesiveBuckets: ceilWhole(totalWallSqft / 20),
-      sealerBottles: ceilWhole(totalWallSqft / 550),
+      sealerBottles: calculatedSealerBottles,
+      sealerCoverageSqftPerLtr: sealerCoverage,
+      sealerLabel: `${sealerCoverage} sq.ft coverage/ltr (${sealerDetection.label})`,
       sealerLabourSqft: totalWallSqft,
     },
     updatedWorksheet,

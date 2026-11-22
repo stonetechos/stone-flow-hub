@@ -3,6 +3,7 @@ import {
   categorizeQuoteItem,
   sortQuoteItemsCategorically,
   calculateConsumableUpdates,
+  detectSealerCoverage,
   QUOTE_CATEGORY_ORDER,
 } from "../quoteCategories";
 import type { EstimateWall, EstimateProduct } from "../estimateSchema";
@@ -479,5 +480,97 @@ describe("quoteCategories", () => {
 
     const reducedSealerLabour = reducedUpdates.itemPatches.find((p) => p.id === "it_sealer_labour");
     expect(reducedSealerLabour?.newQuantity).toBe(218);
+  });
+
+  it("detects sealer coverage accurately across sealer types", () => {
+    expect(
+      detectSealerCoverage("Sealer Chemical — Solvent Based Water Oil and Dust Repellent"),
+    ).toEqual({
+      coverage: 50,
+      label: "Solvent Based Water Oil and Dust Repellent",
+      key: "solvent_based_oil_dust_repellent",
+    });
+
+    expect(detectSealerCoverage("Wetlook Sealer (Gloss Finish)")).toEqual({
+      coverage: 60,
+      label: "Wetlook Sealer",
+      key: "wetlook_sealer",
+    });
+
+    expect(detectSealerCoverage("Film Forming Surface Sealer")).toEqual({
+      coverage: 60,
+      label: "Film Forming Surface Sealers",
+      key: "film_forming_surface_sealers",
+    });
+
+    expect(detectSealerCoverage("Back Coat Sealer")).toEqual({
+      coverage: 100,
+      label: "Back Coat",
+      key: "back_coat",
+    });
+
+    expect(detectSealerCoverage("Anti-Graffiti Protective Sealer")).toEqual({
+      coverage: 60,
+      label: "Anti-Graffiti",
+      key: "anti_graffiti",
+    });
+
+    expect(detectSealerCoverage("Water Based Water Repellent")).toEqual({
+      coverage: 550,
+      label: "Water Based Water Repellent",
+      key: "water_based_repellent",
+    });
+
+    expect(detectSealerCoverage(undefined, "solvent_based_oil_dust_repellent")).toEqual({
+      coverage: 50,
+      label: "Solvent Based Water Oil and Dust Repellent",
+      key: "solvent_based_oil_dust_repellent",
+    });
+  });
+
+  it("calculates sealer bottles correctly for Solvent Based Sealer (318 sq.ft / 50 = 7 bottles) matching user screenshot", () => {
+    const walls: EstimateWall[] = [
+      { id: "w1", name: "Suresh Bhai's Bedroom Wall", height: 5, length: 4, unit: "ft", sqft: 20 },
+      { id: "w2", name: "Living Area Wall", height: 14, length: 7, unit: "ft", sqft: 98 },
+      { id: "w3", name: "Compound Wall", height: 20, length: 10, unit: "ft", sqft: 200 },
+    ];
+    // Total sqft = 318
+    const products: EstimateProduct[] = [];
+    const existingItems = [
+      {
+        id: "it_labour",
+        description: "Installation Labour",
+        quantity: 318,
+        unit: "sq.ft",
+      },
+      {
+        id: "it_adhesive",
+        description: "Adhesives & Chemicals",
+        quantity: 13,
+        unit: "bag",
+      },
+      {
+        id: "it_sealer",
+        description: "Sealer Chemical — Solvent Based Water Oil and Dust Repellent",
+        quantity: 7,
+        unit: "ltr",
+      },
+      {
+        id: "it_sealer_labour",
+        description: "Sealer Application Labour",
+        quantity: 318,
+        unit: "sq.ft",
+      },
+    ];
+
+    const updates = calculateConsumableUpdates(walls, products, existingItems);
+    expect(updates.totalWallSqft).toBe(318);
+
+    // Summary checks
+    expect(updates.summary.labourSqft).toBe(318);
+    expect(updates.summary.cementAdhesiveBags).toBe(13); // ceil(318/25) = 13
+    expect(updates.summary.sealerBottles).toBe(7); // ceil(318/50) = 7 (NOT 1!)
+    expect(updates.summary.sealerCoverageSqftPerLtr).toBe(50);
+    expect(updates.summary.sealerLabourSqft).toBe(318);
   });
 });
