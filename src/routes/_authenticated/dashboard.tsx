@@ -76,6 +76,7 @@ import { DueLiabilitiesPromptCard } from "@/components/dashboard/DueLiabilitiesP
 import { useDueLiabilityPrompts } from "@/lib/liabilities/liability-prompts";
 import { DailyMoneyFlowCard } from "@/components/dashboard/DailyMoneyFlowCard";
 import { SuperAdminWriteOffsCard } from "@/components/dashboard/SuperAdminWriteOffsCard";
+import { SuperAdminFinancialRadarCard } from "@/components/dashboard/SuperAdminFinancialRadarCard";
 import { SuperAdminQuoteChallanDiscrepancyCard } from "@/components/dashboard/SuperAdminQuoteChallanDiscrepancyCard";
 import { listQuoteChallanDiscrepancies } from "@/lib/dispatch/api";
 import { ProfitTargetDashboardCard } from "@/components/dashboard/ProfitTargetDashboardCard";
@@ -366,6 +367,7 @@ function DashboardPage() {
                   {/* TAB 2: Cash & Liabilities */}
                   {opsSubTab === "money" && (roles.isAdmin || roles.isSuperAdmin) && (
                     <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
+                      <SuperAdminFinancialRadarCard />
                       <DueLiabilitiesPromptCard />
                       <DailyMoneyFlowCard />
                       <CashFlowSnapshot kpis={kpisQ.data} />

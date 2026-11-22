@@ -283,9 +283,16 @@ function EditQuotePage() {
                   onClick={() => {
                     setSaleMode("invoiced");
                     set("sale_mode", "invoiced");
+                    const newTerms = form.terms ? stripCashDealGstClause(form.terms) : form.terms;
                     if (form.terms) {
-                      set("terms", stripCashDealGstClause(form.terms));
+                      set("terms", newTerms);
                     }
+                    updateQuote(quoteId, { ...form, sale_mode: "invoiced", terms: newTerms })
+                      .then(() => {
+                        toast.success("Billing mode updated to GST Deal (Tax Bill)");
+                        invalidateQuote(qc, quoteId);
+                      })
+                      .catch((err) => toast.error(toUserMessage(err)));
                   }}
                   className={cn(
                     "flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
@@ -301,9 +308,18 @@ function EditQuotePage() {
                   onClick={() => {
                     setSaleMode("cash");
                     set("sale_mode", "cash");
+                    const newTerms = form.terms
+                      ? ensureTermsHaveCashDealGstClause(form.terms)
+                      : form.terms;
                     if (form.terms) {
-                      set("terms", ensureTermsHaveCashDealGstClause(form.terms));
+                      set("terms", newTerms);
                     }
+                    updateQuote(quoteId, { ...form, sale_mode: "cash", terms: newTerms })
+                      .then(() => {
+                        toast.success("Billing mode updated to Cash Deal (Challan Only)");
+                        invalidateQuote(qc, quoteId);
+                      })
+                      .catch((err) => toast.error(toUserMessage(err)));
                   }}
                   className={cn(
                     "flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
@@ -319,6 +335,12 @@ function EditQuotePage() {
                   onClick={() => {
                     setSaleMode("hybrid");
                     set("sale_mode", "hybrid");
+                    updateQuote(quoteId, { ...form, sale_mode: "hybrid" })
+                      .then(() => {
+                        toast.success("Billing mode updated to Hybrid Deal (GST + Cash)");
+                        invalidateQuote(qc, quoteId);
+                      })
+                      .catch((err) => toast.error(toUserMessage(err)));
                   }}
                   className={cn(
                     "flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
@@ -571,13 +593,14 @@ function LineItemsEditor({
   }, [itemsQuery.data]);
 
   // Auto-sync sort_order in database if existing items are out of categorical order
-  const hasAutoOrderedRef = useRef(false);
+  const lastReorderedSigRef = useRef<string>("");
   useEffect(() => {
-    if (!itemsQuery.data || itemsQuery.data.length <= 1 || hasAutoOrderedRef.current) return;
+    if (!itemsQuery.data || itemsQuery.data.length <= 1) return;
     const sorted = sortQuoteItemsCategorically(itemsQuery.data);
-    const isOutOfOrder = sorted.some((item, idx) => item.id !== itemsQuery.data[idx]?.id);
-    if (isOutOfOrder) {
-      hasAutoOrderedRef.current = true;
+    const currentSig = itemsQuery.data.map((it) => it.id).join(",");
+    const sortedSig = sorted.map((it) => it.id).join(",");
+    if (currentSig !== sortedSig && lastReorderedSigRef.current !== sortedSig) {
+      lastReorderedSigRef.current = sortedSig;
       reorderQuoteItems(sorted.map((it) => it.id))
         .then(() => {
           qc.invalidateQueries({ queryKey: qk.quotes.items(quoteId) });
@@ -746,10 +769,11 @@ function LineItemsEditor({
       });
 
       // 2. Order items:
-      // If targetIndex is specified (e.g. from "+ Insert line below"), use it.
-      // Otherwise, sort categorically: Products -> Installation Labour -> Adhesives -> Sealers -> Sealer Labour -> Carting
+      // If targetIndex is specified (e.g. from "+ Insert line below") and not a stone product, use it.
+      // Stone products are ALWAYS placed categorically under stone products at top (e.g. under 1 & 2, placed at 3).
       let insertAt = targetIndex;
-      if (insertAt !== undefined) {
+      const isProduct = categorizeQuoteItem({ description, unit, hsn_sac: hsn }) === "product";
+      if (insertAt !== undefined && !isProduct) {
         const curIds = rows.map((r) => r.id).filter((id) => id !== newItem.id);
         curIds.splice(insertAt, 0, newItem.id);
         await reorderQuoteItems(curIds);
