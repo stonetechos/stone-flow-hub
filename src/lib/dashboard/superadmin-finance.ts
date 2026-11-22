@@ -38,6 +38,241 @@ export const HSN4_CANONICAL_NAMES: Record<string, { name: string; defaultUnit: s
   "9965": { name: "Local Carting & Freight Transportation", defaultUnit: "trip" },
 };
 
+export interface HsnVendorSpec {
+  vendorType: string;
+  description: string;
+  suggestedVendors: string[];
+  statutoryAdvice: string;
+  unitRate: number;
+}
+
+export const CANONICAL_HSN_VENDOR_SPECS: Record<string, HsnVendorSpec> = {
+  "6802": {
+    vendorType: "Natural Stone Quarry / Processing Atelier",
+    description:
+      "Quarries & fabrication units supplying natural stone slabs, architectural claddings & carved murals",
+    suggestedVendors: [
+      "Dholpur Stone Quarries & Fabricators",
+      "Gwalior Mint Sandstone Processing Unit",
+      "Makrana Marble Slabs Atelier",
+      "Rajasthan Stone Consortium",
+    ],
+    statutoryAdvice:
+      "Ensure inward invoice mentions 4-digit HSN 6802, stone variety (Gwalior Mint, Agra Red), thickness (30mm/40mm), and square footage.",
+    unitRate: 250,
+  },
+  "2516": {
+    vendorType: "Granite & Sandstone Mine Owner / Block Quarry",
+    description:
+      "Quarry mine owners supplying raw unworked rough stone blocks and dimensional blocks",
+    suggestedVendors: [
+      "Bijolia Sandstone Quarries",
+      "Jalore Granite Mines",
+      "Kishangarh Dimensional Stone Traders",
+    ],
+    statutoryAdvice: "Require transit pass (e-Ravanna) and GST purchase invoice under HSN 2516.",
+    unitRate: 180,
+  },
+  "3214": {
+    vendorType: "Specialized Construction Chemical & Adhesive Distributor",
+    description: "Authorized depots for polymer-modified stone adhesives, epoxy grout, and mastics",
+    suggestedVendors: [
+      "MAPEI Construction Chemicals Depot",
+      "Fosroc Chemicals India Authorized Agency",
+      "Kerakoll / Roff Distributor",
+    ],
+    statutoryAdvice:
+      "Inward bill must specify adhesive grade (e.g. C2TE S1 for stone cladding) under HSN 3214.",
+    unitRate: 900,
+  },
+  "3824": {
+    vendorType: "Stone Care & Chemical Sealant Distributor",
+    description:
+      "Distributors supplying solvent-based impregnating sealers, oleophobic coatings & anti-efflorescence liquids",
+    suggestedVendors: [
+      "Tenax Stone Care Distributor",
+      "Bellinzoni Surface Treatment Depot",
+      "Akemi India Specialty Chemicals",
+    ],
+    statutoryAdvice: "Require GST bill under HSN 3824 with batch number and litre volume.",
+    unitRate: 2500,
+  },
+  "9954": {
+    vendorType: "Specialized Stone Cladding Contractor / Labour Subcontractor",
+    description:
+      "Subcontractor agencies for on-site wall dry-cladding, wet-cladding & stone fixing",
+    suggestedVendors: [
+      "Stone Tech On-site Cladding Contractors",
+      "Elite Stone Masonry Guild",
+      "Gujarat Site Installation Crew",
+    ],
+    statutoryAdvice:
+      "Inward subcontract invoice or verified labour muster bill under SAC 9954 to equate client installation billing.",
+    unitRate: 80,
+  },
+  "9965": {
+    vendorType: "Freight Logistics & Carting Agency",
+    description:
+      "Transport unions, crane operators, and multi-axle truck agencies handling quarry-to-site freight",
+    suggestedVendors: [
+      "Gujarat-Rajasthan Roadways",
+      "Ambaji Express Freight Carriers",
+      "Local Tempo & Crane Transport Union",
+    ],
+    statutoryAdvice:
+      "Keep Transporter Consignment Note (Bilty / LR) or Freight Agency GST bill under SAC 9965.",
+    unitRate: 2500,
+  },
+};
+
+export interface TotalMismatchResult {
+  totalSoldValue: number;
+  totalPurchasedValue: number;
+  netMismatchValue: number; // positive = sales unbacked (+), negative = purchases ahead (-)
+  mismatchSign: "+" | "-" | "";
+  formattedMismatch: string;
+  totalSoldQty: number;
+  totalPurchasedQty: number;
+  deficitCategoriesCount: number;
+  isDeficit: boolean;
+  statusText: string;
+}
+
+export function computeTotalMismatch(hsnSummary: HsnGroupSummary[]): TotalMismatchResult {
+  let totalSoldValue = 0;
+  let totalPurchasedValue = 0;
+  let totalSoldQty = 0;
+  let totalPurchasedQty = 0;
+  let deficitCategoriesCount = 0;
+
+  for (const h of hsnSummary) {
+    totalSoldValue += h.soldValue;
+    totalPurchasedValue += h.purchasedValue;
+    totalSoldQty += h.soldQty;
+    totalPurchasedQty += h.purchasedQty;
+    if (h.status === "deficit" || h.soldQty > h.purchasedQty || h.soldValue > h.purchasedValue) {
+      deficitCategoriesCount++;
+    }
+  }
+
+  const netMismatchValue = totalSoldValue - totalPurchasedValue;
+  const isDeficit = netMismatchValue > 0;
+  const mismatchSign = netMismatchValue > 0 ? "+" : netMismatchValue < 0 ? "-" : "";
+
+  const absVal = Math.abs(netMismatchValue);
+  const formattedMismatch =
+    netMismatchValue === 0 ? "₹0" : `${mismatchSign}₹${absVal.toLocaleString("en-IN")}`;
+
+  const statusText =
+    netMismatchValue > 0
+      ? `Sales exceed purchase bills by ₹${absVal.toLocaleString("en-IN")}. Missing inward supplier bills!`
+      : netMismatchValue < 0
+        ? `Purchase bills exceed sales by ₹${absVal.toLocaleString("en-IN")}. Safe inward stock buffer.`
+        : "Sales and purchase bills are completely balanced.";
+
+  return {
+    totalSoldValue,
+    totalPurchasedValue,
+    netMismatchValue,
+    mismatchSign,
+    formattedMismatch,
+    totalSoldQty,
+    totalPurchasedQty,
+    deficitCategoriesCount,
+    isDeficit,
+    statusText,
+  };
+}
+
+export interface FinancialAiSuggestion {
+  id: string;
+  type: "direct_agency_offset" | "partner_rebalance" | "current_account_route" | "scrutiny_alert";
+  title: string;
+  summary: string;
+  impactInr?: number;
+  headroomSavedInr?: number;
+  priority: "high" | "critical" | "recommended";
+  actionLabel: string;
+  actionType: "offset" | "rebalance" | "invoice";
+  details: string;
+}
+
+export function generateFinancialAiSuggestions(
+  personalAccounts: PersonalAccountScrutiny[],
+  cashAnalytics?: CashDealAnalytics,
+): FinancialAiSuggestion[] {
+  const suggestions: FinancialAiSuggestion[] = [];
+
+  const raman = personalAccounts.find((a) => a.accountKey === "raman");
+  const rishi = personalAccounts.find((a) => a.accountKey === "rishi");
+
+  const ramanHeadroom = raman?.headroomInr ?? 10_00_000;
+  const rishiHeadroom = rishi?.headroomInr ?? 10_00_000;
+  const ramanUsage = raman?.usagePercentage ?? 0;
+  const rishiUsage = rishi?.usagePercentage ?? 0;
+
+  // 1. Core Rule: Direct Customer-to-Agency/Vendor Offsets (Preserves personal savings limit)
+  suggestions.push({
+    id: "sug-direct-vendor-offset",
+    type: "direct_agency_offset",
+    title: "Route Customer Cash Directly to Quarry / Transporter",
+    summary:
+      "Instruct customers opting for cash deals to pay directly to quarry or transport agency accounts against Stone Tech payables. This completely bypasses personal savings accounts.",
+    headroomSavedInr: 150000,
+    impactInr: 150000,
+    priority: "critical",
+    actionLabel: "Record Direct Agency Offset",
+    actionType: "offset",
+    details:
+      "Under Income Tax Rule 114E (SFT-004), cash/credits into personal savings accounts are monitored at ₹10 Lakhs/year. When a customer pays ₹1.5L directly to a transport driver or quarry supplier on our behalf, ₹0 enters personal accounts, saving ₹1.5L of statutory headroom while immediately settling vendor liabilities.",
+  });
+
+  // 2. Partner UPI Rebalancing
+  if (Math.abs(ramanUsage - rishiUsage) >= 15) {
+    const higher = ramanUsage > rishiUsage ? "Raman" : "Rishi";
+    const lower = ramanUsage > rishiUsage ? "Rishi" : "Raman";
+    const lowerHeadroom = ramanUsage > rishiUsage ? rishiHeadroom : ramanHeadroom;
+    suggestions.push({
+      id: "sug-partner-rebalance",
+      type: "partner_rebalance",
+      title: `Switch Inbound UPI QR to ${lower} (+₹${lowerHeadroom.toLocaleString("en-IN")} Headroom Advantage)`,
+      summary: `${higher}'s personal account has reached ${Math.max(ramanUsage, rishiUsage)}% of the ₹10L limit, while ${lower} has ₹${lowerHeadroom.toLocaleString("en-IN")} headroom left. Divert upcoming customer QR payments to ${lower}.`,
+      priority: "high",
+      actionLabel: `Activate ${lower}'s UPI QR`,
+      actionType: "rebalance",
+      details: `Rebalancing personal UPI inflow avoids triggering high-risk scrutiny brackets (75%-90%) on a single partner account, keeping both partners within the safe statutory corridor.`,
+    });
+  } else {
+    suggestions.push({
+      id: "sug-partner-balanced",
+      type: "partner_rebalance",
+      title: "Maintain Equalized Personal UPI Rotation",
+      summary: `Both Raman (₹${ramanHeadroom.toLocaleString("en-IN")} left) and Rishi (₹${rishiHeadroom.toLocaleString("en-IN")} left) are in balanced parity. Alternate UPI QR presentations evenly.`,
+      priority: "recommended",
+      actionLabel: "View UPI Allocation",
+      actionType: "rebalance",
+      details:
+        "Even distribution prevents one partner from hitting the ₹10 Lakh annual ceiling prematurely.",
+    });
+  }
+
+  // 3. Corporate Current Account Routing for High-Value Invoices
+  suggestions.push({
+    id: "sug-current-account-route",
+    type: "current_account_route",
+    title: "Divert Transactions > ₹1.5L to Company Current Account",
+    summary:
+      "For orders exceeding ₹1,50,000, issue an official GST tax invoice and accept RTGS into the Bank of Baroda Company Current Account (zero personal SFT cap).",
+    priority: "recommended",
+    actionLabel: "Generate GST Quote / Bill",
+    actionType: "invoice",
+    details:
+      "Corporate current accounts have no ₹10L personal SFT limits and enhance the company's formal banking turnover for future credit lines.",
+  });
+
+  return suggestions;
+}
+
 export interface PersonalAccountScrutiny {
   accountKey: "raman" | "rishi";
   accountName: string;

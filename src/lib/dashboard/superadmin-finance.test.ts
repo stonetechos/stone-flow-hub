@@ -5,7 +5,11 @@ import {
   evaluateSftRisk,
   computeHsnBalancing,
   computeCashDealAnalytics,
+  computeTotalMismatch,
+  generateFinancialAiSuggestions,
   SFT_SAVINGS_ANNUAL_LIMIT_INR,
+  type HsnGroupSummary,
+  type PersonalAccountScrutiny,
 } from "./superadmin-finance";
 
 describe("superadmin-finance", () => {
@@ -182,6 +186,110 @@ describe("superadmin-finance", () => {
 
       expect(res.inflowPercentages.personalUpiRamanPct).toBe(33.3);
       expect(res.inflowPercentages.directVendorOffsetsPct).toBe(26.7);
+    });
+  });
+
+  describe("computeTotalMismatch", () => {
+    it("returns + sign when outward sales exceed inward purchase bills", () => {
+      const summary: HsnGroupSummary[] = [
+        {
+          hsn4: "6802",
+          categoryName: "Natural Stone Claddings",
+          soldQty: 100,
+          soldValue: 50000,
+          purchasedQty: 40,
+          purchasedValue: 20000,
+          deficitQty: 60,
+          deficitValue: 30000,
+          unit: "sq.ft",
+          status: "deficit",
+        },
+      ];
+
+      const res = computeTotalMismatch(summary);
+      expect(res.isDeficit).toBe(true);
+      expect(res.mismatchSign).toBe("+");
+      expect(res.netMismatchValue).toBe(30000);
+      expect(res.formattedMismatch).toBe("+₹30,000");
+      expect(res.deficitCategoriesCount).toBe(1);
+    });
+
+    it("returns - sign when inward purchase bills exceed outward sales", () => {
+      const summary: HsnGroupSummary[] = [
+        {
+          hsn4: "6802",
+          categoryName: "Natural Stone Claddings",
+          soldQty: 50,
+          soldValue: 25000,
+          purchasedQty: 100,
+          purchasedValue: 40000,
+          deficitQty: 0,
+          deficitValue: 0,
+          unit: "sq.ft",
+          status: "surplus",
+        },
+      ];
+
+      const res = computeTotalMismatch(summary);
+      expect(res.isDeficit).toBe(false);
+      expect(res.mismatchSign).toBe("-");
+      expect(res.netMismatchValue).toBe(-15000);
+      expect(res.formattedMismatch).toBe("-₹15,000");
+      expect(res.deficitCategoriesCount).toBe(0);
+    });
+
+    it("returns ₹0 when sales and purchases are balanced", () => {
+      const summary: HsnGroupSummary[] = [];
+      const res = computeTotalMismatch(summary);
+      expect(res.netMismatchValue).toBe(0);
+      expect(res.mismatchSign).toBe("");
+      expect(res.formattedMismatch).toBe("₹0");
+    });
+  });
+
+  describe("generateFinancialAiSuggestions", () => {
+    it("generates core direct vendor offset strategy and partner balancing", () => {
+      const accounts: PersonalAccountScrutiny[] = [
+        {
+          accountKey: "raman",
+          accountName: "Personal Savings",
+          holderName: "Raman",
+          upiVpa: "Personal UPI",
+          sftLimitInr: 1000000,
+          fyLabel: "FY 2026-27",
+          cumulativeInflowsInr: 720000,
+          headroomInr: 280000,
+          usagePercentage: 72,
+          riskLevel: "caution",
+          transactionCount: 14,
+          recommendation: "Moderate",
+        },
+        {
+          accountKey: "rishi",
+          accountName: "Personal Savings",
+          holderName: "Rishi",
+          upiVpa: "Personal UPI",
+          sftLimitInr: 1000000,
+          fyLabel: "FY 2026-27",
+          cumulativeInflowsInr: 310000,
+          headroomInr: 690000,
+          usagePercentage: 31,
+          riskLevel: "safe",
+          transactionCount: 8,
+          recommendation: "Safe",
+        },
+      ];
+
+      const suggestions = generateFinancialAiSuggestions(accounts);
+      expect(suggestions.length).toBeGreaterThanOrEqual(3);
+
+      const offsetSug = suggestions.find((s) => s.type === "direct_agency_offset");
+      expect(offsetSug).toBeDefined();
+      expect(offsetSug?.summary).toContain("pay directly to quarry or transport agency");
+
+      const rebalanceSug = suggestions.find((s) => s.type === "partner_rebalance");
+      expect(rebalanceSug).toBeDefined();
+      expect(rebalanceSug?.title).toContain("Switch Inbound UPI QR to Rishi");
     });
   });
 });

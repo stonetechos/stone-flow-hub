@@ -80,6 +80,7 @@ import { useDueLiabilityPrompts } from "@/lib/liabilities/liability-prompts";
 import { DailyMoneyFlowCard } from "@/components/dashboard/DailyMoneyFlowCard";
 import { SuperAdminWriteOffsCard } from "@/components/dashboard/SuperAdminWriteOffsCard";
 import { SuperAdminFinancialRadarCard } from "@/components/dashboard/SuperAdminFinancialRadarCard";
+import { SuperAdminFinancialCockpitBoxes } from "@/components/dashboard/SuperAdminFinancialCockpitBoxes";
 import { SuperAdminQuoteChallanDiscrepancyCard } from "@/components/dashboard/SuperAdminQuoteChallanDiscrepancyCard";
 import { listQuoteChallanDiscrepancies } from "@/lib/dispatch/api";
 import { ProfitTargetDashboardCard } from "@/components/dashboard/ProfitTargetDashboardCard";
@@ -313,6 +314,13 @@ function DashboardPage() {
                   nocturnalQuip={nocturnalQuip}
                   kpis={kpisQ.data}
                 />
+
+                {/* Super Admin Executive Statutory & Financial Cockpit Boxes: Mismatch & UPI SFT Headroom (AI Engine) */}
+                {isSuperAdminOrDirector && (
+                  <SuperAdminFinancialCockpitBoxes
+                    onOpenRadarFullscreen={() => setActiveTab("financial_radar")}
+                  />
+                )}
 
                 {/* 50 Lakh Profit Target & Salesperson Leaderboard Radar */}
                 <div id="profit-target-card">
