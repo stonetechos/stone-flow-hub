@@ -172,6 +172,13 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     group: "overview",
     allowedRoles: ["admin", "super_admin"],
   },
+  {
+    id: "home-whatsapp",
+    to: "/communication",
+    label: "WhatsApp CRM",
+    icon: MessageSquare,
+    group: "overview",
+  },
 
   // 2. Items & Inventory
   {
@@ -213,6 +220,15 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     label: "Website Leads & CRM",
     icon: Globe,
     group: "sales",
+    allowedRoles: ["admin", "super_admin", "sales_manager", "sales"],
+  },
+  {
+    id: "whatsapp",
+    to: "/communication",
+    label: "WhatsApp Web & CRM",
+    icon: MessageSquare,
+    group: "sales",
+    quickCreateTo: "/communication",
     allowedRoles: ["admin", "super_admin", "sales_manager", "sales"],
   },
   {
@@ -497,7 +513,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   {
     id: "communication",
     to: "/communication",
-    label: "Communication Center",
+    label: "WhatsApp & Communication Hub",
     icon: MessageSquare,
     group: "settings",
   },

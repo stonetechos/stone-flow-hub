@@ -26,6 +26,7 @@ import {
   RotateCcw,
   Copy,
   ExternalLink,
+  MessageSquare,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -1432,6 +1433,18 @@ export function AppShell({ children }: { children: ReactNode }) {
               <div className="hidden sm:inline-flex">
                 <SyncStatusIndicator />
               </div>
+              <Link
+                to="/communication"
+                className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2 sm:px-2.5 text-xs font-bold bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/50 border border-emerald-300/80 dark:border-emerald-800 transition-all shadow-2xs cursor-pointer"
+                title="Open WhatsApp Web & CRM (Option B: Linked Device · Chat Only)"
+              >
+                <MessageSquare className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span className="hidden md:inline">WhatsApp</span>
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+              </Link>
               <div className="inline-flex items-center">
                 <ThemeSwitcher />
               </div>
