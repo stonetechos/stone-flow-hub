@@ -813,8 +813,7 @@ export function HsnInteractiveSimulator({
                   <>
                     <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0" />
                     <span>
-                      Inward Purchase Deficit: {deficitQty} {meta.unit} (~₹{formatInr(deficitValue)}
-                      )
+                      Inward Purchase Deficit: {deficitQty} {meta.unit} (~{formatInr(deficitValue)})
                     </span>
                   </>
                 ) : (
@@ -1005,7 +1004,7 @@ export function SftInflowSimulator({
                 Simulate Customer UPI Deposit to {targetAccount === "raman" ? "Raman" : "Rishi"}
               </span>
               <span className="font-mono font-black text-amber-600 dark:text-amber-400 text-sm">
-                + ₹{formatInr(simDepositAmount)}
+                + {formatInr(simDepositAmount)}
               </span>
             </div>
             <input
@@ -1031,7 +1030,7 @@ export function SftInflowSimulator({
                 Existing Credits
               </div>
               <div className="text-sm font-mono font-black text-foreground mt-0.5">
-                ₹{formatInr(baseCurrent)}
+                {formatInr(baseCurrent)}
               </div>
             </div>
             <div className="p-3 rounded-2xl border-t-2 border-l border-r border-b-3 border-t-white/90 border-b-black/15 bg-card shadow-2xs">
@@ -1039,7 +1038,7 @@ export function SftInflowSimulator({
                 Projected Total
               </div>
               <div className="text-sm font-mono font-black text-amber-600 dark:text-amber-400 mt-0.5">
-                ₹{formatInr(projectedTotal)}
+                {formatInr(projectedTotal)}
               </div>
             </div>
             <div className="p-3 rounded-2xl border-t-2 border-l border-r border-b-3 border-t-white/90 border-b-black/15 bg-card shadow-2xs">
@@ -1054,7 +1053,7 @@ export function SftInflowSimulator({
                     : "text-rose-700 dark:text-rose-400",
                 )}
               >
-                ₹{formatInr(projectedHeadroom)}
+                {formatInr(projectedHeadroom)}
               </div>
             </div>
           </div>

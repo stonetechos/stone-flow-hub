@@ -1,20 +1,28 @@
 import { PAYMENT_METHOD_LABELS, type PaymentMethod } from "./schema";
 
-export type PaymentAccountCategory = "bob_current" | "upi_rishi" | "upi_raman" | "cash" | "other";
+export type PaymentAccountCategory =
+  | "bob_current"
+  | "upi_rishi"
+  | "upi_raman"
+  | "cash"
+  | "agency_offset"
+  | "other";
 
 export interface PaymentMethodRowInput {
   method?: string | null;
   account_used?: string | null;
   bank_name?: string | null;
   notes?: string | null;
+  remarks?: string | null;
 }
 
 /**
  * Categorizes a customer payment / receipt into its underlying financial account:
  * - `bob_current`: Bank of Baroda corporate current account (via Bank Transfer, NEFT, RTGS, IMPS, or Stone Tech UPI)
- * - `upi_rishi`: Personal UPI account belonging to Rishi
- * - `upi_raman`: Personal UPI account belonging to Raman
+ * - `upi_rishi`: Personal UPI account belonging to Rishi (SBI / 7742090866)
+ * - `upi_raman`: Personal UPI account belonging to Raman (ICICI)
  * - `cash`: Cash counter collection
+ * - `agency_offset`: Direct payment by customer to external quarry/transporter/agency
  * - `other`: Unspecified personal UPI or other payment mode
  */
 export function getPaymentAccountCategory(row: PaymentMethodRowInput): PaymentAccountCategory {
@@ -22,23 +30,54 @@ export function getPaymentAccountCategory(row: PaymentMethodRowInput): PaymentAc
   const account = (row.account_used || "").toLowerCase().trim();
   const bank = (row.bank_name || "").toLowerCase().trim();
   const notes = (row.notes || "").toLowerCase().trim();
+  const remarks = (row.remarks || "").toLowerCase().trim();
+  const combinedText = `${notes} ${remarks}`.trim();
 
-  // 1. Rishi check
-  if (method === "upi_rishi" || account.includes("rishi") || notes.includes("rishi")) {
+  // 1. Direct Vendor / Agency Offset check (eliminates SFT exposure)
+  if (
+    method.includes("offset") ||
+    account.includes("offset") ||
+    combinedText.includes("offset") ||
+    combinedText.includes("quarry") ||
+    combinedText.includes("transporter") ||
+    combinedText.includes("driver") ||
+    combinedText.includes("tempo") ||
+    combinedText.includes("direct vendor")
+  ) {
+    return "agency_offset";
+  }
+
+  // 2. Rishi check
+  if (
+    method === "upi_rishi" ||
+    account.includes("rishi") ||
+    bank.includes("rishi") ||
+    bank.includes("sbi") ||
+    account.includes("sbi") ||
+    combinedText.includes("rishi") ||
+    combinedText.includes("7742090866")
+  ) {
     return "upi_rishi";
   }
 
-  // 2. Raman check
-  if (method === "upi_raman" || account.includes("raman") || notes.includes("raman")) {
+  // 3. Raman check
+  if (
+    method === "upi_raman" ||
+    account.includes("raman") ||
+    bank.includes("raman") ||
+    bank.includes("icici") ||
+    account.includes("icici") ||
+    combinedText.includes("raman")
+  ) {
     return "upi_raman";
   }
 
-  // 3. Cash check
-  if (method === "cash" || account.includes("cash")) {
+  // 4. Cash check
+  if (method === "cash" || account.includes("cash") || combinedText.includes("cash")) {
     return "cash";
   }
 
-  // 4. BOB Current Account check
+  // 5. BOB Current Account check
   // Matches upi_bob_current, upi_stone_tech, current_bob, bank_transfer, neft, rtgs, imps,
   // or account_used / bank_name / notes mentioning BOB or Bank of Baroda or Stone Tech
   if (
@@ -56,10 +95,22 @@ export function getPaymentAccountCategory(row: PaymentMethodRowInput): PaymentAc
     account.includes("current account") ||
     bank.includes("bob") ||
     bank.includes("baroda") ||
-    notes.includes("bob") ||
-    notes.includes("bank of baroda")
+    combinedText.includes("bob") ||
+    combinedText.includes("bank of baroda")
   ) {
     return "bob_current";
+  }
+
+  // 6. Generic personal UPI fallback
+  if (
+    method === "upi_personal" ||
+    method === "upi_manual" ||
+    method === "upi" ||
+    method.includes("gpay") ||
+    method.includes("phonepe") ||
+    method.includes("paytm")
+  ) {
+    return "upi_rishi";
   }
 
   return "other";

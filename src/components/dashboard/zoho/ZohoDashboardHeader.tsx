@@ -14,20 +14,18 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAnnouncements } from "./announcements-state";
 
-export type DashboardViewTab = "operations" | "financial_radar" | "announcements" | "help";
+export type DashboardViewTab = "operations" | "announcements" | "help";
 
 export function ZohoDashboardHeader({
   activeTab,
   onTabChange,
   onRefresh,
   isRefreshing,
-  showRadarTab = false,
 }: {
   activeTab: DashboardViewTab;
   onTabChange: (tab: DashboardViewTab) => void;
   onRefresh: () => void;
   isRefreshing?: boolean;
-  showRadarTab?: boolean;
 }) {
   const { t } = useTranslation();
   const { hasUnread } = useAnnouncements();
@@ -101,25 +99,6 @@ export function ZohoDashboardHeader({
           <Gauge className="h-4 w-4" />
           <span>{t("dashboard.zoho.operationsTab", "Operations Cockpit")}</span>
         </button>
-
-        {showRadarTab && (
-          <button
-            type="button"
-            onClick={() => onTabChange("financial_radar")}
-            className={cn(
-              "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 sm:px-3.5 py-1.5 font-bold transition-all shrink-0 cursor-pointer",
-              activeTab === "financial_radar"
-                ? "bg-purple-700 text-white shadow-md shadow-purple-900/30 border-t border-white/30"
-                : "text-purple-900 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/40",
-            )}
-          >
-            <ShieldAlert className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-            <span>{t("dashboard.zoho.radarTab", "HSN & Financial Radar")}</span>
-            <span className="rounded-full bg-purple-100 text-purple-900 dark:bg-purple-900 dark:text-purple-100 px-1.5 py-0.2 text-[9px] font-black uppercase tracking-wider">
-              Super Admin
-            </span>
-          </button>
-        )}
 
         <button
           type="button"

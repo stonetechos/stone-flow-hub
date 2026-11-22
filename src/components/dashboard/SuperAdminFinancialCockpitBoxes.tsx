@@ -63,12 +63,10 @@ import { THEME_GAUGE_PALETTES } from "./StatutoryHealthGauge";
 const CANONICAL_HSN_CODES = ["6802", "2516", "3214", "3824", "9954", "9965"];
 
 interface SuperAdminFinancialCockpitBoxesProps {
-  onOpenRadarFullscreen?: () => void;
   className?: string;
 }
 
 export function SuperAdminFinancialCockpitBoxes({
-  onOpenRadarFullscreen,
   className,
 }: SuperAdminFinancialCockpitBoxesProps) {
   const activeThemeId = useActiveTheme();
@@ -177,18 +175,6 @@ export function SuperAdminFinancialCockpitBoxes({
             </p>
           </div>
         </div>
-
-        {onOpenRadarFullscreen && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onOpenRadarFullscreen}
-            className="h-7 text-xs font-bold text-primary hover:text-primary/80 cursor-pointer"
-          >
-            <Scale className="h-3.5 w-3.5 mr-1" />
-            Open Full Radar
-          </Button>
-        )}
       </div>
 
       {/* TWO PROMINENT EXECUTIVE BOXES GRID */}
@@ -285,7 +271,7 @@ export function SuperAdminFinancialCockpitBoxes({
                   Billed Outward (Sales)
                 </span>
                 <span className="font-mono font-black text-foreground">
-                  ₹{formatInr(mismatch.totalSoldValue)}
+                  {formatInr(mismatch.totalSoldValue)}
                 </span>
                 <span className="text-[10px] text-muted-foreground block">
                   {mismatch.totalSoldQty.toLocaleString("en-IN")} units billed
@@ -296,7 +282,7 @@ export function SuperAdminFinancialCockpitBoxes({
                   Inward Covered (Purchases)
                 </span>
                 <span className="font-mono font-black text-foreground">
-                  ₹{formatInr(mismatch.totalPurchasedValue)}
+                  {formatInr(mismatch.totalPurchasedValue)}
                 </span>
                 <span className="text-[10px] text-muted-foreground block">
                   {mismatch.totalPurchasedQty.toLocaleString("en-IN")} units covered
@@ -390,7 +376,7 @@ export function SuperAdminFinancialCockpitBoxes({
 
             <div className="mt-1 flex items-baseline gap-2 flex-wrap">
               <span className="font-display text-2xl sm:text-3xl font-black tabular-nums tracking-tight text-foreground drop-shadow-2xs">
-                ₹{formatInr(minHeadroom)} Left
+                {formatInr(minHeadroom)} Left
               </span>
               <span className="text-xs font-semibold text-muted-foreground">
                 before ₹10L statutory reporting limit
@@ -404,8 +390,8 @@ export function SuperAdminFinancialCockpitBoxes({
                 <div className="flex items-center justify-between font-semibold text-[11px]">
                   <span className="text-foreground">Raman Personal UPI</span>
                   <span className="font-mono tabular-nums text-muted-foreground">
-                    ₹{formatInr(raman?.cumulativeInflowsInr ?? 0)} / ₹10L (
-                    {raman?.headroomInr ? `₹${formatInr(raman.headroomInr)} left` : "₹10L left"})
+                    {formatInr(raman?.cumulativeInflowsInr ?? 0)} / ₹10L (
+                    {raman?.headroomInr ? `${formatInr(raman.headroomInr)} left` : "₹10L left"})
                   </span>
                 </div>
                 <Progress
@@ -419,8 +405,8 @@ export function SuperAdminFinancialCockpitBoxes({
                 <div className="flex items-center justify-between font-semibold text-[11px]">
                   <span className="text-foreground">Rishi Personal UPI</span>
                   <span className="font-mono tabular-nums text-muted-foreground">
-                    ₹{formatInr(rishi?.cumulativeInflowsInr ?? 0)} / ₹10L (
-                    {rishi?.headroomInr ? `₹${formatInr(rishi.headroomInr)} left` : "₹10L left"})
+                    {formatInr(rishi?.cumulativeInflowsInr ?? 0)} / ₹10L (
+                    {rishi?.headroomInr ? `${formatInr(rishi.headroomInr)} left` : "₹10L left"})
                   </span>
                 </div>
                 <Progress
@@ -486,7 +472,7 @@ export function SuperAdminFinancialCockpitBoxes({
                 Total Billed Outward
               </span>
               <span className="font-mono font-black text-foreground text-sm sm:text-base">
-                ₹{formatInr(mismatch.totalSoldValue)}
+                {formatInr(mismatch.totalSoldValue)}
               </span>
               <span className="text-[10px] text-muted-foreground block">
                 {mismatch.totalSoldQty.toLocaleString("en-IN")} units sold
@@ -498,7 +484,7 @@ export function SuperAdminFinancialCockpitBoxes({
                 Total Inward Covered
               </span>
               <span className="font-mono font-black text-foreground text-sm sm:text-base">
-                ₹{formatInr(mismatch.totalPurchasedValue)}
+                {formatInr(mismatch.totalPurchasedValue)}
               </span>
               <span className="text-[10px] text-muted-foreground block">
                 {mismatch.totalPurchasedQty.toLocaleString("en-IN")} units purchased
@@ -596,7 +582,7 @@ export function SuperAdminFinancialCockpitBoxes({
                             {item.soldQty.toLocaleString("en-IN")} {item.unit}
                           </div>
                           <div className="text-[10px] text-muted-foreground font-mono">
-                            ₹{formatInr(item.soldValue)}
+                            {formatInr(item.soldValue)}
                           </div>
                         </TableCell>
 
@@ -606,7 +592,7 @@ export function SuperAdminFinancialCockpitBoxes({
                             {item.purchasedQty.toLocaleString("en-IN")} {item.unit}
                           </div>
                           <div className="text-[10px] text-muted-foreground font-mono">
-                            ₹{formatInr(item.purchasedValue)}
+                            {formatInr(item.purchasedValue)}
                           </div>
                         </TableCell>
 
@@ -627,7 +613,7 @@ export function SuperAdminFinancialCockpitBoxes({
                         <TableCell className="text-right py-3">
                           {isDef && requiredValue > 0 ? (
                             <div className="font-mono font-black text-rose-600 dark:text-rose-400">
-                              ₹{formatInr(requiredValue)}
+                              {formatInr(requiredValue)}
                             </div>
                           ) : (
                             <span className="font-mono text-muted-foreground">₹0</span>
@@ -750,7 +736,7 @@ export function SuperAdminFinancialCockpitBoxes({
                   Customer Cash Deal Amount
                 </span>
                 <div className="mt-1 font-mono font-black text-base text-foreground">
-                  ₹{formatInr(simOffsetAmount)}
+                  {formatInr(simOffsetAmount)}
                 </div>
                 <div className="flex gap-1.5 mt-2">
                   {[50000, 120000, 250000].map((amt) => (
@@ -776,7 +762,7 @@ export function SuperAdminFinancialCockpitBoxes({
                   If Deposited Personally (UPI)
                 </span>
                 <div className="mt-1 font-mono font-black text-base text-rose-600">
-                  -₹{formatInr(simOffsetAmount)}
+                  -{formatInr(simOffsetAmount)}
                 </div>
                 <span className="text-[10px] text-rose-600 block mt-1 font-medium">
                   Directly burns personal ₹10L limit
@@ -791,7 +777,7 @@ export function SuperAdminFinancialCockpitBoxes({
                   ₹0 Impact
                 </div>
                 <span className="text-[10px] text-emerald-700 dark:text-emerald-300 block mt-1 font-medium">
-                  Saves ₹{formatInr(simOffsetAmount)} headroom!
+                  Saves {formatInr(simOffsetAmount)} headroom!
                 </span>
               </div>
             </div>
@@ -845,11 +831,11 @@ export function SuperAdminFinancialCockpitBoxes({
               <div className="p-2.5 rounded-lg bg-card border border-border/60">
                 <div className="flex justify-between font-bold">
                   <span>Raman Personal Savings</span>
-                  <span className="font-mono">₹{formatInr(raman?.cumulativeInflowsInr ?? 0)}</span>
+                  <span className="font-mono">{formatInr(raman?.cumulativeInflowsInr ?? 0)}</span>
                 </div>
                 <div className="text-[10.5px] text-muted-foreground mt-1">
                   Remaining headroom:{" "}
-                  <strong className="text-foreground">₹{formatInr(ramanHeadroom)}</strong> (
+                  <strong className="text-foreground">{formatInr(ramanHeadroom)}</strong> (
                   {ramanUsage}% used)
                 </div>
               </div>
@@ -857,11 +843,11 @@ export function SuperAdminFinancialCockpitBoxes({
               <div className="p-2.5 rounded-lg bg-card border border-border/60">
                 <div className="flex justify-between font-bold">
                   <span>Rishi Personal Savings</span>
-                  <span className="font-mono">₹{formatInr(rishi?.cumulativeInflowsInr ?? 0)}</span>
+                  <span className="font-mono">{formatInr(rishi?.cumulativeInflowsInr ?? 0)}</span>
                 </div>
                 <div className="text-[10.5px] text-muted-foreground mt-1">
                   Remaining headroom:{" "}
-                  <strong className="text-foreground">₹{formatInr(rishiHeadroom)}</strong> (
+                  <strong className="text-foreground">{formatInr(rishiHeadroom)}</strong> (
                   {rishiUsage}% used)
                 </div>
               </div>

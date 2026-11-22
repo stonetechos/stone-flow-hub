@@ -79,7 +79,6 @@ import { DueLiabilitiesPromptCard } from "@/components/dashboard/DueLiabilitiesP
 import { useDueLiabilityPrompts } from "@/lib/liabilities/liability-prompts";
 import { DailyMoneyFlowCard } from "@/components/dashboard/DailyMoneyFlowCard";
 import { SuperAdminWriteOffsCard } from "@/components/dashboard/SuperAdminWriteOffsCard";
-import { SuperAdminFinancialRadarCard } from "@/components/dashboard/SuperAdminFinancialRadarCard";
 import { SuperAdminFinancialCockpitBoxes } from "@/components/dashboard/SuperAdminFinancialCockpitBoxes";
 import { SuperAdminQuoteChallanDiscrepancyCard } from "@/components/dashboard/SuperAdminQuoteChallanDiscrepancyCard";
 import { listQuoteChallanDiscrepancies } from "@/lib/dispatch/api";
@@ -156,9 +155,6 @@ function DashboardPage() {
       Boolean(profileQ.data?.full_name?.toLowerCase().includes("vijay")));
 
   const [activeTab, setActiveTab] = useState<DashboardViewTab>(() => {
-    if (search.tab === "financial_radar" || search.tab === "radar" || search.tab === "money") {
-      return "financial_radar";
-    }
     if (search.tab === "announcements" || search.tab === "help") {
       return search.tab;
     }
@@ -286,7 +282,6 @@ function DashboardPage() {
         onTabChange={setActiveTab}
         onRefresh={handleRefresh}
         isRefreshing={isRefreshing}
-        showRadarTab={isSuperAdminOrDirector}
       />
 
       {/* Main Tab Views */}
@@ -316,64 +311,12 @@ function DashboardPage() {
                 />
 
                 {/* Super Admin Executive Statutory & Financial Cockpit Boxes: Mismatch & UPI SFT Headroom (AI Engine) */}
-                {isSuperAdminOrDirector && (
-                  <SuperAdminFinancialCockpitBoxes
-                    onOpenRadarFullscreen={() => setActiveTab("financial_radar")}
-                  />
-                )}
+                {isSuperAdminOrDirector && <SuperAdminFinancialCockpitBoxes />}
 
                 {/* 50 Lakh Profit Target & Salesperson Leaderboard Radar */}
                 <div id="profit-target-card">
                   <ProfitTargetDashboardCard />
                 </div>
-
-                {/* Super Admin Executive Statutory & Financial Compliance Quick-Launch Bar */}
-                {isSuperAdminOrDirector && (
-                  <div className="p-4 rounded-xl border border-purple-200/80 bg-gradient-to-r from-purple-50/90 via-slate-50 to-emerald-50/70 dark:from-purple-950/30 dark:via-slate-900 dark:to-emerald-950/20 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2.5 rounded-xl bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 shrink-0">
-                        <ShieldAlert className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-xs font-black uppercase tracking-wider text-purple-950 dark:text-purple-200">
-                            Super Admin Statutory & Financial Radar
-                          </span>
-                          <span className="rounded-full bg-purple-200/80 dark:bg-purple-900 text-purple-800 dark:text-purple-200 px-2 py-0.2 text-[10px] font-bold">
-                            Live FY 2026-27
-                          </span>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          Auditing 4-digit HSN purchase invoice deficits, personal savings account
-                          ₹10L SFT ceilings (Raman & Rishi), and cash deal channel penetration.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <Button
-                        size="sm"
-                        onClick={() => setActiveTab("financial_radar")}
-                        className="bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold h-8 cursor-pointer shadow-xs"
-                      >
-                        <Scale className="h-3.5 w-3.5 mr-1.5" />
-                        View Radar Fullscreen
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setOpsSubTab("money");
-                          const el = document.getElementById("superadmin-financial-radar");
-                          el?.scrollIntoView({ behavior: "smooth" });
-                        }}
-                        className="text-xs font-semibold h-8 cursor-pointer border-purple-300 text-purple-900 hover:bg-purple-100/50 dark:text-purple-200"
-                      >
-                        <Wallet className="h-3.5 w-3.5 mr-1.5 text-emerald-600" />
-                        Jump to Cash & Liabilities
-                      </Button>
-                    </div>
-                  </div>
-                )}
 
                 {/* Interactive Operations Console Tabs */}
                 <div className="w-full max-w-full min-w-0 mt-6">
@@ -482,7 +425,6 @@ function DashboardPage() {
                       id="superadmin-financial-radar"
                       className="space-y-4 sm:space-y-6 animate-in fade-in duration-200"
                     >
-                      <SuperAdminFinancialRadarCard />
                       <DueLiabilitiesPromptCard />
                       <DailyMoneyFlowCard />
                       <CashFlowSnapshot kpis={kpisQ.data} />
@@ -522,16 +464,6 @@ function DashboardPage() {
               )}
             </div>
           )}
-        </div>
-      )}
-
-      {activeTab === "financial_radar" && (
-        <div className="w-full max-w-full min-w-0 space-y-6 animate-in fade-in duration-200">
-          <SuperAdminFinancialRadarCard />
-          <DueLiabilitiesPromptCard />
-          <DailyMoneyFlowCard />
-          {kpisQ.data && <CashFlowSnapshot kpis={kpisQ.data} />}
-          <SuperAdminWriteOffsCard />
         </div>
       )}
 
