@@ -9,6 +9,7 @@ import { WhatsappConversationList } from "./WhatsappConversationList";
 import { WhatsappChatArea } from "./WhatsappChatArea";
 import { StosCrmMiniApp } from "./StosCrmMiniApp";
 import { StoneCatalogPicker } from "./StoneCatalogPicker";
+import { WhatsappDeviceStatusBadge } from "./WhatsappDeviceStatusBadge";
 import { useWhatsappCrmContext } from "./useWhatsappCrmContext";
 import type { WhatsappConversation, WhatsappMessage } from "./types";
 
@@ -381,6 +382,7 @@ export function WhatsappCrmWorkspace() {
             <MessageSquare className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
             {t("communication.workspaceTitle", "STOS WhatsApp CRM Workspace")}
           </span>
+          <WhatsappDeviceStatusBadge />
         </div>
 
         <div className="flex items-center gap-2">

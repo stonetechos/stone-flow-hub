@@ -1273,7 +1273,7 @@ function LineItemsEditor({
           <EmptyState title="No line items yet" message="Use “Add line” to add one." />
         ) : (
           <div className="space-y-3">
-            {rows.map((r, i) => {
+            {sortQuoteItemsCategorically(rows).map((r, i) => {
               const original = originalsById.get(r.id);
               const lineImg = getLineItemImage(r, quoteImages.data ?? new Map());
               const lineTaxPct = saleMode === "cash" ? 0 : Number(r.tax_pct) || 0;
@@ -1285,7 +1285,7 @@ function LineItemsEditor({
                     <div
                       className={cn(
                         "col-span-2",
-                        saleMode === "cash" ? "md:col-span-6" : "md:col-span-4",
+                        saleMode === "cash" ? "md:col-span-7" : "md:col-span-4",
                       )}
                     >
                       <div className="mb-1 flex items-center justify-between gap-1 flex-wrap">
@@ -1506,23 +1506,16 @@ function LineItemsEditor({
                         allowDecimal
                       />
                     </div>
-                    <div className="col-span-1 md:col-span-1">
-                      <label className="text-xs text-muted-foreground">GST %</label>
-                      {saleMode === "cash" ? (
-                        <div
-                          title="Cash sale: 0% GST (Challan only)"
-                          className="h-9 px-2 flex items-center justify-center text-xs font-semibold text-slate-400 bg-slate-50 border border-slate-200 rounded-md cursor-not-allowed"
-                        >
-                          0%
-                        </div>
-                      ) : (
+                    {saleMode !== "cash" && (
+                      <div className="col-span-1 md:col-span-1">
+                        <label className="text-xs text-muted-foreground">GST %</label>
                         <PercentInput
                           value={r.tax_pct}
                           onChange={(val) => updateRow(r.id, "tax_pct", val)}
                           onBlur={() => commit(r.id, "tax_pct", original)}
                         />
-                      )}
-                    </div>
+                      </div>
+                    )}
                     <div className="col-span-2 md:col-span-12 mt-1 pt-2 border-t border-dashed border-border/70">
                       <div className="flex items-center justify-between mb-1">
                         <label className="text-xs font-medium text-muted-foreground">

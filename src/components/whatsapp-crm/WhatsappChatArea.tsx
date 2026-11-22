@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import {
   Send,
   ExternalLink,
-  Phone,
+  PhoneOff,
   FileText,
   CheckCheck,
   Check,
@@ -126,16 +126,18 @@ export function WhatsappChatArea({
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
-          <Button size="sm" variant="outline" className="h-7 text-xs gap-1" asChild>
-            <a href={`tel:${conversation.phone}`} title="Call Phone">
-              <Phone className="h-3 w-3" /> Call
-            </a>
-          </Button>
+          <span
+            className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10.5px] font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700"
+            title="VoIP calls are suppressed in STOS. Communication is chat and media only."
+          >
+            <PhoneOff className="h-3 w-3 text-slate-500" />
+            <span className="hidden sm:inline">Chat Only (Calls Suppressed)</span>
+          </span>
 
           <Button
             size="sm"
             variant="outline"
-            className="h-7 text-xs gap-1 border-emerald-500/40 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/40"
+            className="h-7 text-xs gap-1 border-emerald-500/40 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/40 cursor-pointer"
             onClick={() => openWhatsappToContact(conversation.phone, "")}
             title="Launch WhatsApp Web or Desktop App"
           >

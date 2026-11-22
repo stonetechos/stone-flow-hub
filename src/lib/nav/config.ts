@@ -52,7 +52,6 @@ export type NavGroupId =
   | "purchase"
   | "executions"
   | "time"
-  | "compliance"
   | "accountant"
   | "reports"
   | "documents"
@@ -105,13 +104,6 @@ export const NAV_GROUPS: ReadonlyArray<NavGroupDef> = [
     icon: Users,
     to: "/workforce-intelligence",
     allowedRoles: ["admin", "super_admin", "hr", "sales_manager"],
-  },
-  {
-    id: "compliance",
-    label: "Filing & Compliance",
-    icon: ShieldCheck,
-    to: "/gst",
-    allowedRoles: ["admin", "super_admin"],
   },
   {
     id: "accountant",
@@ -417,17 +409,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     group: "time",
   },
 
-  // 7. Filing & Compliance
-  {
-    id: "gst",
-    to: "/gst",
-    label: "Pay GST & Filing",
-    icon: ShieldCheck,
-    group: "compliance",
-    allowedRoles: ["admin", "super_admin"],
-  },
-
-  // 8. Accountant
+  // 7. Accountant
   {
     id: "ledger",
     to: "/ledger?tab=sales",
@@ -474,6 +456,14 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     to: "/personal-transfers",
     label: "Personal Transfers",
     icon: ArrowLeftRight,
+    group: "accountant",
+    allowedRoles: ["admin", "super_admin"],
+  },
+  {
+    id: "gst",
+    to: "/gst",
+    label: "Filing & Compliance",
+    icon: ShieldCheck,
     group: "accountant",
     allowedRoles: ["admin", "super_admin"],
   },

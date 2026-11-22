@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { findNavItemForPath, isNavItemActive, NAV_ITEMS_BY_ID } from "./config";
+import { findNavItemForPath, isNavItemActive, NAV_ITEMS_BY_ID, NAV_GROUPS } from "./config";
 
 describe("Navigation active item resolution", () => {
   const employeesItem = NAV_ITEMS_BY_ID["wf-employees"];
@@ -69,5 +69,25 @@ describe("Navigation active item resolution", () => {
     const mfPath = "/money-flow";
     expect(isNavItemActive(moneyFlowItem, mfPath)).toBe(true);
     expect(isNavItemActive(personalTransfersItem, mfPath)).toBe(false);
+  });
+
+  test("places Filing & Compliance inside Accountant tab and removes top-level compliance group", () => {
+    const gstItem = NAV_ITEMS_BY_ID["gst"];
+    expect(gstItem).toBeDefined();
+    expect(gstItem.group).toBe("accountant");
+    expect(gstItem.to).toBe("/gst");
+    expect(gstItem.label).toBe("Filing & Compliance");
+
+    // Compliance must no longer be an independent top-level group
+    const hasTopLevelCompliance = (NAV_GROUPS as readonly { id: string }[]).some(
+      (g) => g.id === "compliance",
+    );
+    expect(hasTopLevelCompliance).toBe(false);
+
+    // Accountant group must exist
+    const accountantGroup = (NAV_GROUPS as readonly { id: string }[]).find(
+      (g) => g.id === "accountant",
+    );
+    expect(accountantGroup).toBeDefined();
   });
 });

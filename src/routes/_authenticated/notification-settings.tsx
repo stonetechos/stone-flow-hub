@@ -38,6 +38,7 @@ import {
   setVibrationAlertEnabled,
 } from "@/lib/notifications/sound";
 import { Volume2, Smartphone, BellRing } from "lucide-react";
+import { WhatsappDeviceStatusBadge } from "@/components/whatsapp-crm/WhatsappDeviceStatusBadge";
 
 export const Route = createFileRoute("/_authenticated/notification-settings")({
   ssr: false,
@@ -555,53 +556,79 @@ function WhatsAppProviderCard() {
         </div>
       </CardHeader>
       <CardContent className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-1.5">
-          <Label>Provider</Label>
+        <div className="space-y-1.5 md:col-span-2">
+          <Label>Provider Architecture</Label>
           <Select
-            value={cfg.provider ?? "meta_cloud"}
+            value={cfg.provider ?? "linked_device"}
             onValueChange={(v) => setCfg({ ...cfg, provider: v })}
           >
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="meta_cloud">Meta WhatsApp Business Cloud (recommended)</SelectItem>
+              <SelectItem value="linked_device">
+                Option B: WhatsApp Web Linked Device (QR Scan · Multi-Device Engine)
+              </SelectItem>
+              <SelectItem value="meta_cloud">
+                Option A: Meta WhatsApp Business Cloud API (BSP / Webhooks)
+              </SelectItem>
               <SelectItem value="twilio_whatsapp">Twilio WhatsApp</SelectItem>
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-1.5">
-          <Label>Phone Number ID</Label>
-          <Input
-            value={cfg.phone_number_id ?? ""}
-            onChange={(e) => setCfg({ ...cfg, phone_number_id: e.target.value })}
-            placeholder="from WHATSAPP_PHONE_NUMBER_ID secret"
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label>Business Account ID</Label>
-          <Input
-            value={cfg.business_account_id ?? ""}
-            onChange={(e) => setCfg({ ...cfg, business_account_id: e.target.value })}
-            placeholder="from WHATSAPP_BUSINESS_ACCOUNT_ID secret"
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label>Webhook Verify Token</Label>
-          <Input
-            value={cfg.verify_token ?? ""}
-            onChange={(e) => setCfg({ ...cfg, verify_token: e.target.value })}
-            placeholder="from WHATSAPP_VERIFY_TOKEN secret"
-          />
-        </div>
-        <div className="space-y-1.5 md:col-span-2">
-          <Label>Permanent access token secret name</Label>
-          <Input
-            value={cfg.access_token_secret_name ?? ""}
-            onChange={(e) => setCfg({ ...cfg, access_token_secret_name: e.target.value })}
-            placeholder="WHATSAPP_ACCESS_TOKEN"
-          />
-        </div>
+
+        {cfg.provider === "linked_device" ? (
+          <div className="md:col-span-2 rounded-xl border border-emerald-300 bg-emerald-50/60 p-4 dark:border-emerald-900/50 dark:bg-emerald-950/20 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h4 className="font-bold text-emerald-950 dark:text-emerald-200 text-sm flex items-center gap-2">
+                  <span>WhatsApp Business Linked Device (Web Terminal)</span>
+                  <Badge className="bg-emerald-600 text-white text-[10px]">Option B Active</Badge>
+                </h4>
+                <p className="text-xs text-emerald-900/80 dark:text-emerald-300/80 mt-1 leading-relaxed">
+                  Permanently linked via QR code to your phone. Incoming voice and video calls are
+                  suppressed so only customer chats, quotes, PDFs, and media arrive in STOS.
+                </p>
+              </div>
+              <WhatsappDeviceStatusBadge />
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="space-y-1.5">
+              <Label>Phone Number ID</Label>
+              <Input
+                value={cfg.phone_number_id ?? ""}
+                onChange={(e) => setCfg({ ...cfg, phone_number_id: e.target.value })}
+                placeholder="from WHATSAPP_PHONE_NUMBER_ID secret"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Business Account ID</Label>
+              <Input
+                value={cfg.business_account_id ?? ""}
+                onChange={(e) => setCfg({ ...cfg, business_account_id: e.target.value })}
+                placeholder="from WHATSAPP_BUSINESS_ACCOUNT_ID secret"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Webhook Verify Token</Label>
+              <Input
+                value={cfg.verify_token ?? ""}
+                onChange={(e) => setCfg({ ...cfg, verify_token: e.target.value })}
+                placeholder="from WHATSAPP_VERIFY_TOKEN secret"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Permanent access token secret name</Label>
+              <Input
+                value={cfg.access_token_secret_name ?? ""}
+                onChange={(e) => setCfg({ ...cfg, access_token_secret_name: e.target.value })}
+                placeholder="WHATSAPP_ACCESS_TOKEN"
+              />
+            </div>
+          </>
+        )}
 
         <div className="md:col-span-2 grid gap-2 rounded-md border p-3 text-xs text-muted-foreground">
           <div>

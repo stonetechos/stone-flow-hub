@@ -288,16 +288,17 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
     if (isInvoice && (lbl.includes("amount paid") || lbl.includes("paid"))) {
       return false;
     }
-    if (
-      isCash &&
-      (lbl.includes("tax") ||
-        lbl.includes("gst") ||
-        lbl.includes("cgst") ||
-        lbl.includes("sgst") ||
-        lbl.includes("igst") ||
-        lbl.includes("vat"))
-    ) {
-      return false;
+    const isTax =
+      lbl.includes("tax") ||
+      lbl.includes("gst") ||
+      lbl.includes("cgst") ||
+      lbl.includes("sgst") ||
+      lbl.includes("igst") ||
+      lbl.includes("vat");
+    if (isTax) {
+      if (isCash) return false;
+      const num = parseFloat(String(t.value ?? "").replace(/[^0-9.-]/g, ""));
+      if (isNaN(num) || num <= 0) return false;
     }
     return true;
   });
@@ -1103,16 +1104,17 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
     if (isInvoice && (lbl.includes("amount paid") || lbl.includes("paid"))) {
       return false;
     }
-    if (
-      isCash &&
-      (lbl.includes("tax") ||
-        lbl.includes("gst") ||
-        lbl.includes("cgst") ||
-        lbl.includes("sgst") ||
-        lbl.includes("igst") ||
-        lbl.includes("vat"))
-    ) {
-      return false;
+    const isTax =
+      lbl.includes("tax") ||
+      lbl.includes("gst") ||
+      lbl.includes("cgst") ||
+      lbl.includes("sgst") ||
+      lbl.includes("igst") ||
+      lbl.includes("vat");
+    if (isTax) {
+      if (isCash) return false;
+      const num = parseFloat(String(t.value ?? "").replace(/[^0-9.-]/g, ""));
+      if (isNaN(num) || num <= 0) return false;
     }
     return true;
   });

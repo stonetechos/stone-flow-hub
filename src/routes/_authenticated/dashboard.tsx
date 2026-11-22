@@ -123,16 +123,29 @@ function DashboardPage() {
   const isSuperAdminOrDirector = useMemo(() => {
     if (roles.isAdmin || roles.isSuperAdmin) return true;
     const email = user?.email?.toLowerCase() || "";
-    const fullName = profileQ.data?.full_name?.toLowerCase() || "";
-    return (
+    const meta = (user?.user_metadata ?? {}) as Record<string, unknown>;
+    const metaName = String(meta.full_name ?? meta.name ?? "").toLowerCase();
+    const fullName = String(profileQ.data?.full_name || metaName || "").toLowerCase();
+    const dName = displayName(user).toLowerCase();
+    const isOwnerOrDirector =
       email.includes("raman") ||
       email.includes("rishi") ||
       email.includes("stonetech") ||
       email.includes("admin") ||
+      email.includes("owner") ||
       fullName.includes("raman") ||
-      fullName.includes("rishi")
-    );
-  }, [roles.isAdmin, roles.isSuperAdmin, user?.email, profileQ.data?.full_name]);
+      fullName.includes("rishi") ||
+      dName.includes("raman") ||
+      dName.includes("rishi");
+    if (isOwnerOrDirector) return true;
+    // Anyone logged into STOS who is not restricted to sales staff gets executive radar access
+    const isSalesOnly =
+      roles.hasRole("sales") ||
+      roles.roles.includes("sales") ||
+      email.includes("vijay") ||
+      fullName.includes("vijay");
+    return !isSalesOnly;
+  }, [roles, user, profileQ.data?.full_name]);
 
   const isSalesStaff =
     !isSuperAdminOrDirector &&

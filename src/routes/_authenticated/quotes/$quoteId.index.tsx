@@ -1091,11 +1091,12 @@ function QuoteDetailPage() {
                             </p>
                           )}
                           <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                            {(it as unknown as { hsn_sac?: string | null }).hsn_sac && (
-                              <span className="font-mono text-[10px] text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">
-                                HSN: {(it as unknown as { hsn_sac?: string | null }).hsn_sac}
-                              </span>
-                            )}
+                            {saleMode !== "cash" &&
+                              (it as unknown as { hsn_sac?: string | null }).hsn_sac && (
+                                <span className="font-mono text-[10px] text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">
+                                  HSN: {(it as unknown as { hsn_sac?: string | null }).hsn_sac}
+                                </span>
+                              )}
                             {it.unit && (
                               <span className="text-[10px] text-muted-foreground bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
                                 {t("quotes.unit", "Unit")}: {autoTranslate(it.unit, currentLang)}
@@ -1131,7 +1132,7 @@ function QuoteDetailPage() {
                         <div className="text-right">
                           <span className="text-[10px] uppercase text-muted-foreground block font-medium">
                             {t("quotes.amount", "Amount")}{" "}
-                            {it.tax_pct ? `(${it.tax_pct}% GST)` : ""}
+                            {saleMode !== "cash" && it.tax_pct ? `(${it.tax_pct}% GST)` : ""}
                           </span>
                           <span className="font-bold text-primary">{formatInr(linePreTax)}</span>
                         </div>
@@ -1150,11 +1151,13 @@ function QuoteDetailPage() {
                         {t("quotes.photo", "Photo")}
                       </TableHead>
                       <TableHead>{t("quotes.description", "Description")}</TableHead>
-                      <TableHead>{t("quotes.hsn", "HSN")}</TableHead>
+                      {saleMode !== "cash" && <TableHead>{t("quotes.hsn", "HSN")}</TableHead>}
                       <TableHead className="text-right">{t("quotes.qty", "Qty")}</TableHead>
                       <TableHead>{t("quotes.unit", "Unit")}</TableHead>
                       <TableHead className="text-right">{t("quotes.rate", "Rate")}</TableHead>
-                      <TableHead className="text-right">{t("quotes.taxPct", "Tax %")}</TableHead>
+                      {saleMode !== "cash" && (
+                        <TableHead className="text-right">{t("quotes.taxPct", "Tax %")}</TableHead>
+                      )}
                       <TableHead className="text-right">{t("quotes.amount", "Amount")}</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -1269,15 +1272,19 @@ function QuoteDetailPage() {
                               )}
                             </div>
                           </TableCell>
-                          <TableCell className="font-mono text-xs text-muted-foreground">
-                            {(it as unknown as { hsn_sac?: string | null }).hsn_sac || "—"}
-                          </TableCell>
+                          {saleMode !== "cash" && (
+                            <TableCell className="font-mono text-xs text-muted-foreground">
+                              {(it as unknown as { hsn_sac?: string | null }).hsn_sac || "—"}
+                            </TableCell>
+                          )}
                           <TableCell className="text-right">{it.quantity}</TableCell>
                           <TableCell>
                             {it.unit ? autoTranslate(it.unit, currentLang) : "—"}
                           </TableCell>
                           <TableCell className="text-right">{formatInr(it.unit_price)}</TableCell>
-                          <TableCell className="text-right">{it.tax_pct}%</TableCell>
+                          {saleMode !== "cash" && (
+                            <TableCell className="text-right">{it.tax_pct}%</TableCell>
+                          )}
                           <TableCell className="text-right">{formatInr(linePreTax)}</TableCell>
                         </TableRow>
                       );
@@ -1292,12 +1299,7 @@ function QuoteDetailPage() {
                   <span>{t("quotes.subtotal", "Subtotal")}:</span>
                   <span className="font-medium text-foreground">{formatInr(quote.subtotal)}</span>
                 </div>
-                {saleMode === "cash" ? (
-                  <div className="flex justify-between items-center text-xs text-emerald-700 font-medium">
-                    <span>{t("quotes.gstCashDeal", "GST (Cash Deal · Challan Only)")}:</span>
-                    <span className="font-semibold">0% (₹0)</span>
-                  </div>
-                ) : (
+                {saleMode !== "cash" && (
                   <div className="flex justify-between items-center text-muted-foreground">
                     <span>{t("quotes.gstTax", "GST Tax")}:</span>
                     <span className="font-medium text-foreground">

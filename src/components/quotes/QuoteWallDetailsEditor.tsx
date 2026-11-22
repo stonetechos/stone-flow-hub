@@ -615,6 +615,42 @@ export function QuoteWallDetailsEditor({
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
+  // Bifurcate / Split Adhesive Mutation (e.g. adding Grey adhesive to complement White)
+  const addSplitAdhesiveMut = useMutation({
+    mutationFn: async ({
+      color = "Grey",
+      bags = 1,
+    }: {
+      color?: "Grey" | "White";
+      bags?: number;
+    }) => {
+      const isGrey = color === "Grey";
+      const desc = isGrey
+        ? "Standard Cementitious Stone Adhesive Grey"
+        : "Standard Cement Based Stone Adhesive White";
+      const rate = isGrey ? 800 : 900;
+      await addQuoteItem(quoteId, {
+        description: desc,
+        quantity: bags,
+        unit: "bag",
+        unit_price: rate,
+        tax_pct: saleMode === "cash" ? 0 : 0,
+        hsn_sac: saleMode === "cash" ? null : "32141000",
+        notes: `Polymer-modified cementitious tile & stone adhesive (${color})`,
+        fulfilment: defaultFulfilment,
+      });
+
+      const finalItems = await getQuoteItems(quoteId);
+      const sorted = sortQuoteItemsCategorically(finalItems);
+      await reorderQuoteItems(sorted.map((it) => it.id));
+    },
+    onSuccess: () => {
+      invalidateAll();
+      toast.success("Bifurcated adhesive line added under Adhesives category");
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+
   return (
     <>
       <Card className="mb-4 shadow-1 border-slate-200">
@@ -882,12 +918,48 @@ export function QuoteWallDetailsEditor({
                         </span>
                       )}
                     </span>
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-[10px] text-muted-foreground block">
                       {liveConsumables.summary.actualCementBagsInQuote != null &&
                       liveConsumables.summary.actualCementBagsInQuote !==
-                        liveConsumables.summary.cementAdhesiveBags
-                        ? `Required: ${liveConsumables.summary.cementAdhesiveBags} bags (25 sq.ft/bag)`
-                        : `25 sq.ft/bag (or PU: ${liveConsumables.summary.puAdhesiveBuckets} buckets)`}
+                        liveConsumables.summary.cementAdhesiveBags ? (
+                        <>
+                          <span>
+                            Required: {liveConsumables.summary.cementAdhesiveBags} bags (25
+                            sq.ft/bag)
+                          </span>
+                          {liveConsumables.summary.actualCementBagsInQuote <
+                            liveConsumables.summary.cementAdhesiveBags && (
+                            <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+                              <span className="text-amber-800 font-medium">
+                                (Need{" "}
+                                {liveConsumables.summary.cementAdhesiveBags -
+                                  liveConsumables.summary.actualCementBagsInQuote}{" "}
+                                more)
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  addSplitAdhesiveMut.mutate({
+                                    color: "Grey",
+                                    bags:
+                                      liveConsumables.summary.cementAdhesiveBags -
+                                      (liveConsumables.summary.actualCementBagsInQuote ?? 0),
+                                  })
+                                }
+                                disabled={addSplitAdhesiveMut.isPending}
+                                className="text-[9.5px] bg-amber-100 hover:bg-amber-200 text-amber-900 font-semibold px-1.5 py-0.5 rounded cursor-pointer transition shadow-2xs"
+                              >
+                                + Add{" "}
+                                {liveConsumables.summary.cementAdhesiveBags -
+                                  liveConsumables.summary.actualCementBagsInQuote}{" "}
+                                Bags Grey
+                              </button>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        `25 sq.ft/bag (or PU: ${liveConsumables.summary.puAdhesiveBuckets} buckets)`
+                      )}
                     </span>
                   </div>
 
@@ -910,13 +982,24 @@ export function QuoteWallDetailsEditor({
                       </Badge>
                     </div>
                     <span className="text-sm font-bold text-slate-800 block">
-                      {liveConsumables.summary.sealerBottles} Bottle(s)
+                      {liveConsumables.summary.actualSealerBottlesInQuote ??
+                        liveConsumables.summary.sealerBottles}{" "}
+                      Bottle(s)
+                      {liveConsumables.summary.sealerBreakdownText && (
+                        <span className="ml-1 text-[11px] font-medium text-purple-800 block">
+                          ({liveConsumables.summary.sealerBreakdownText})
+                        </span>
+                      )}
                     </span>
                     <span
                       className="text-[10px] text-muted-foreground truncate block"
                       title={liveConsumables.summary.sealerLabel}
                     >
-                      {liveConsumables.summary.sealerCoverageSqftPerLtr ?? 550} sq.ft coverage/ltr
+                      {liveConsumables.summary.actualSealerBottlesInQuote != null &&
+                      liveConsumables.summary.actualSealerBottlesInQuote !==
+                        liveConsumables.summary.sealerBottles
+                        ? `Formula: ${liveConsumables.summary.sealerBottles} Bottle(s) (${liveConsumables.summary.sealerCoverageSqftPerLtr ?? 550} sq.ft/ltr)`
+                        : `${liveConsumables.summary.sealerCoverageSqftPerLtr ?? 550} sq.ft coverage/ltr`}
                     </span>
                   </div>
 

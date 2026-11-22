@@ -224,6 +224,8 @@ export interface ProposedConsumableUpdates {
     cementBreakdownText?: string;
     puAdhesiveBuckets: number;
     sealerBottles: number;
+    actualSealerBottlesInQuote?: number;
+    sealerBreakdownText?: string;
     sealerCoverageSqftPerLtr?: number;
     sealerLabel?: string;
     sealerLabourSqft: number;
@@ -494,43 +496,82 @@ export function calculateConsumableUpdates(
           .join(" + ")
       : undefined;
 
+  // Check if wall area changed from previous worksheet
+  const previousSqft = currentWorksheet?.totalWallSqft;
+  const wallAreaChanged = previousSqft !== undefined && previousSqft !== totalWallSqft;
+
   // Single-item vs Multi-item (Split / Bifurcated) Adhesives:
-  // If there is exactly ONE cement item, keep that item's quantity in sync with calculated total.
+  // If there is exactly ONE cement item:
+  // Only patch if its current quantity is 0, or if wall area changed (e.g. new wall added).
+  // If wall area is unchanged and user manually edited/split the quantity (curQty < calculatedCementBags),
+  // NEVER force it back to calculatedCementBags so the user has full freedom to bifurcate!
   if (cementItems.length === 1) {
     const singleCement = cementItems[0];
-    if (Number(singleCement.quantity) !== calculatedCementBags) {
+    const curQty = Number(singleCement.quantity) || 0;
+    const shouldPatch =
+      curQty === 0 ||
+      wallAreaChanged ||
+      previousSqft === undefined ||
+      (curQty > calculatedCementBags && walls.length > 0);
+    if (shouldPatch && curQty !== calculatedCementBags) {
       itemPatches.push({
         id: singleCement.id,
         description: singleCement.description || "Adhesives & Chemicals",
         category: "adhesive",
-        currentQuantity: Number(singleCement.quantity) || 0,
+        currentQuantity: curQty,
         newQuantity: calculatedCementBags,
         unit: singleCement.unit || "bag",
       });
     }
   }
   // When there are MULTIPLE cement items (e.g. user bifurcated into 5 bags White + 8 bags Grey):
-  // We NEVER overwrite the individual lines to calculatedCementBags (which would make each 13!).
+  // We NEVER overwrite the individual lines to calculatedCementBags.
   // If total bags in quote matches calculatedCementBags (13 === 13), it is in 100% balance.
 
-  // 4. Sealers
-  const sealerItem = existingItems.find((it) => categorizeQuoteItem(it) === "sealer");
+  // 4. Sealers & Chemical Repellents
+  const sealerItems = existingItems.filter((it) => categorizeQuoteItem(it) === "sealer");
+  const actualSealerBottlesInQuote = sealerItems.reduce(
+    (sum, it) => sum + (Number(it.quantity) || 0),
+    0,
+  );
+  const primarySealer = sealerItems[0];
   const sealerDetection = detectSealerCoverage(
-    sealerItem?.description,
+    primarySealer?.description,
     currentWorksheet?.installation?.sealer?.key,
   );
   const sealerCoverage = sealerDetection.coverage;
   const calculatedSealerBottles = ceilWhole(totalWallSqft / sealerCoverage);
 
-  if (sealerItem) {
-    if (Number(sealerItem.quantity) !== calculatedSealerBottles) {
+  const sealerBreakdownText =
+    sealerItems.length > 1
+      ? sealerItems
+          .map((it) => {
+            const d = (it.description || "").toLowerCase();
+            const color = d.includes("solvent")
+              ? "Solvent"
+              : d.includes("water")
+                ? "Water-based"
+                : d.includes("wetlook")
+                  ? "Wetlook"
+                  : "Sealer";
+            return `${Number(it.quantity) || 0} ${color}`;
+          })
+          .join(" + ")
+      : undefined;
+
+  // Only auto-patch single sealer if quantity is 0, unassigned, or wall area changed
+  if (sealerItems.length === 1) {
+    const singleSealer = sealerItems[0];
+    const curQty = Number(singleSealer.quantity) || 0;
+    const shouldPatch = curQty === 0 || wallAreaChanged || previousSqft === undefined;
+    if (shouldPatch && curQty !== calculatedSealerBottles) {
       itemPatches.push({
-        id: sealerItem.id,
-        description: sealerItem.description || "Sealer Chemical",
+        id: singleSealer.id,
+        description: singleSealer.description || "Sealer Chemical",
         category: "sealer",
-        currentQuantity: Number(sealerItem.quantity) || 0,
+        currentQuantity: curQty,
         newQuantity: calculatedSealerBottles,
-        unit: sealerItem.unit || "ltr",
+        unit: singleSealer.unit || "ltr",
       });
     }
   }
@@ -656,6 +697,8 @@ export function calculateConsumableUpdates(
       cementBreakdownText,
       puAdhesiveBuckets: ceilWhole(totalWallSqft / 20),
       sealerBottles: calculatedSealerBottles,
+      actualSealerBottlesInQuote,
+      sealerBreakdownText,
       sealerCoverageSqftPerLtr: sealerCoverage,
       sealerLabel: `${sealerCoverage} sq.ft coverage/ltr (${sealerDetection.label})`,
       sealerLabourSqft: totalWallSqft,
