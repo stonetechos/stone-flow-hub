@@ -294,7 +294,7 @@ function DashboardPage() {
           ) : (
             <div
               className={cn(
-                "grid grid-cols-1 gap-4 sm:gap-6 w-full max-w-full min-w-0",
+                "grid grid-cols-1 gap-4 sm:gap-6 w-full max-w-full min-w-0 items-start",
                 opsSubTab === "money" ? "xl:grid-cols-1" : "xl:grid-cols-[minmax(0,1fr)_320px]",
               )}
             >
@@ -1276,7 +1276,10 @@ function CopilotDock({
   const { t, i18n } = useTranslation();
   const suggestions = buildSuggestions(topInsights, t, i18n.language);
   return (
-    <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start">
+    <aside
+      className="space-y-4 xl:sticky xl:top-0 xl:self-start xl:max-h-[calc(100dvh-5.5rem)] xl:overflow-y-auto xl:pr-1 overscroll-contain"
+      style={{ scrollbarWidth: "thin" }}
+    >
       {/* Critical Action Hub — Zero Truncation */}
       <SurfaceCard
         icon={<AlertTriangle className="h-3.5 w-3.5 text-rose-600" />}

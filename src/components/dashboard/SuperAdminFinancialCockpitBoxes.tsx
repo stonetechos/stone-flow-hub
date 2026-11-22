@@ -3,10 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   Scale,
-  ShieldAlert,
   AlertTriangle,
   FileSpreadsheet,
-  Smartphone,
   Banknote,
   Sparkles,
   ArrowRight,
@@ -150,33 +148,7 @@ export function SuperAdminFinancialCockpitBoxes({
   const topOffsetSuggestion = aiSuggestions.find((s) => s.type === "direct_agency_offset");
 
   return (
-    <div className={cn("space-y-3 w-full max-w-full min-w-0 select-none", className)}>
-      {/* Subheader Title & Radar Jump */}
-      <div className="flex flex-wrap items-center justify-between gap-2 px-1">
-        <div className="flex items-center gap-2">
-          <div
-            style={{ background: palette.activePillBg, boxShadow: palette.activePillShadow }}
-            className="p-1.5 rounded-lg text-white"
-          >
-            <ShieldAlert className="h-4 w-4" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-display text-sm font-black tracking-tight text-foreground">
-                Super Admin Statutory & Tax Governance
-              </span>
-              <span className="rounded-full bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 px-2 py-0.2 text-[10px] font-bold border border-purple-300 dark:border-purple-800">
-                FY 2026–27
-              </span>
-            </div>
-            <p className="text-[11px] text-muted-foreground">
-              Real-time radar balancing 4-digit HSN inward purchases against outward sales &amp;
-              guarding personal savings UPI headroom.
-            </p>
-          </div>
-        </div>
-      </div>
-
+    <div className={cn("w-full max-w-full min-w-0 select-none", className)}>
       {/* TWO PROMINENT EXECUTIVE BOXES GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 w-full">
         {/* ========================================================================= */}
@@ -199,44 +171,8 @@ export function SuperAdminFinancialCockpitBoxes({
               : "ring-1 ring-emerald-500/20",
           )}
         >
-          {/* Top Pill & Category Tag */}
-          <div className="flex items-center justify-between gap-2 border-b border-border/60 pb-2.5">
-            <div className="flex items-center gap-1.5">
-              <span className="p-1 rounded-md bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300">
-                <Scale className="h-3.5 w-3.5" />
-              </span>
-              <span className="font-mono text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-                4-Digit HSN Benchmark Rule
-              </span>
-            </div>
-
-            {mismatch.isDeficit ? (
-              <Badge
-                variant="outline"
-                className="bg-rose-50 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-800 text-[10px] font-extrabold animate-pulse"
-              >
-                🚨 Needs Inward Bills ({mismatch.mismatchSign}
-                {formatInr(mismatch.netMismatchValue)})
-              </Badge>
-            ) : mismatch.netMismatchValue < 0 ? (
-              <Badge
-                variant="outline"
-                className="bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 text-[10px] font-extrabold"
-              >
-                ✅ Inward Surplus (-{formatInr(Math.abs(mismatch.netMismatchValue))} Buffer)
-              </Badge>
-            ) : (
-              <Badge
-                variant="outline"
-                className="bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 text-[10px] font-extrabold"
-              >
-                ✅ 100% Inward Covered
-              </Badge>
-            )}
-          </div>
-
           {/* Big Amount & Mismatch State */}
-          <div className="mt-3">
+          <div>
             <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
               Sales &amp; Purchase Invoicing Mismatch
             </div>
@@ -342,34 +278,8 @@ export function SuperAdminFinancialCockpitBoxes({
             minHeadroom < 250000 ? "ring-2 ring-amber-500/25" : "ring-1 ring-primary/20",
           )}
         >
-          {/* Top Pill & SFT Limit Rule */}
-          <div className="flex items-center justify-between gap-2 border-b border-border/60 pb-2.5">
-            <div className="flex items-center gap-1.5">
-              <span className="p-1 rounded-md bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300">
-                <Smartphone className="h-3.5 w-3.5" />
-              </span>
-              <span className="font-mono text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-                Income Tax Sec 285BA · ₹10L Ceiling
-              </span>
-            </div>
-
-            <Badge
-              variant="outline"
-              className={cn(
-                "text-[10px] font-extrabold",
-                minHeadroom < 100000
-                  ? "bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-950 dark:text-rose-300"
-                  : minHeadroom < 250000
-                    ? "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950 dark:text-amber-300"
-                    : "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300",
-              )}
-            >
-              {minHeadroom < 250000 ? "⚠️ Scrutiny Radar" : "🟢 SFT Safe Zone"}
-            </Badge>
-          </div>
-
           {/* Big Amount: Headroom Left */}
-          <div className="mt-3">
+          <div>
             <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
               Remaining Personal Savings / UPI Headroom
             </div>
