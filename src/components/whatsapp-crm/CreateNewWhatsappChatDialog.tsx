@@ -79,16 +79,16 @@ export function CreateNewWhatsappChatDialog({ open, onOpenChange, onCreateChat }
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md p-0 overflow-hidden sm:rounded-2xl">
-        <DialogHeader className="p-5 pb-3 bg-gradient-to-r from-emerald-800 to-teal-900 text-white">
+        <DialogHeader className="p-5 pb-3 bg-gradient-to-r from-[#015474] to-[#00597b] text-white">
           <div className="flex items-center gap-2.5">
             <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center backdrop-blur-xs">
-              <MessageSquarePlus className="h-4 w-4 text-emerald-300" />
+              <MessageSquarePlus className="h-4 w-4 text-[#e0f1f5]" />
             </div>
             <div>
               <DialogTitle className="text-base font-bold text-white">
                 New WhatsApp Conversation
               </DialogTitle>
-              <DialogDescription className="text-emerald-100/80 text-xs mt-0.5">
+              <DialogDescription className="text-[#e0f1f5]/85 text-xs mt-0.5">
                 Open a direct WhatsApp CRM channel with an architect or client
               </DialogDescription>
             </div>
@@ -156,7 +156,7 @@ export function CreateNewWhatsappChatDialog({ open, onOpenChange, onCreateChat }
             <Button
               size="sm"
               onClick={handleCreate}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs gap-1.5 shadow-xs cursor-pointer"
+              className="bg-[#006788] hover:bg-[#00597b] text-white font-bold text-xs gap-1.5 shadow-xs cursor-pointer"
             >
               <MessageSquarePlus className="h-3.5 w-3.5" />
               Start Conversation

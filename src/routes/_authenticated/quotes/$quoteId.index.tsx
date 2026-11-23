@@ -667,11 +667,11 @@ function QuoteDetailPage() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="hidden sm:inline-flex text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800 border-emerald-300 dark:border-emerald-700/60 dark:text-emerald-400 font-semibold shadow-xs"
+                  className="hidden sm:inline-flex text-[#015474] hover:bg-[#e0f1f5] border-[#c9d1d4] font-semibold shadow-xs"
                   onClick={() => setAskUpdateOpen(true)}
                   title="Ask for status update via WhatsApp with quotation details & negotiation options"
                 >
-                  <MessageCircle className="mr-1.5 h-4 w-4 text-emerald-600" />
+                  <MessageCircle className="mr-1.5 h-4 w-4 text-[#006788]" />
                   Ask for Update
                 </Button>
 
@@ -681,19 +681,19 @@ function QuoteDetailPage() {
                   className={cn(
                     "hidden sm:inline-flex font-semibold shadow-xs",
                     discountAmount > 0
-                      ? "text-emerald-700 bg-emerald-50/70 border-emerald-300 hover:bg-emerald-100 dark:border-emerald-700/60 dark:text-emerald-300"
+                      ? "text-[#015474] bg-[#e0f1f5] border-[#c9d1d4] hover:bg-[#e0f1f5]/80"
                       : "text-slate-700 hover:bg-slate-100 border-slate-300 dark:border-slate-700 dark:text-slate-300",
                   )}
                   onClick={() => setDiscountDialogOpen(true)}
                   title="Apply or adjust negotiated lumpsum discount"
                 >
-                  <Tag className="mr-1.5 h-4 w-4 text-emerald-600" />
+                  <Tag className="mr-1.5 h-4 w-4 text-[#006788]" />
                   {discountAmount > 0 ? `Discount: -${formatInr(discountAmount)}` : "Discount"}
                 </Button>
 
                 <Button
                   size="sm"
-                  className="hidden lg:inline-flex bg-emerald-600 hover:bg-emerald-700 text-white font-medium shadow-xs"
+                  className="hidden lg:inline-flex bg-[#006788] hover:bg-[#00597b] text-white font-medium shadow-xs"
                   onClick={() => setRfqOpen(true)}
                   title="Send WhatsApp RFQ to category partners with product images & assign order"
                 >
@@ -1687,7 +1687,7 @@ function QuoteDetailPage() {
                     className="w-full text-xs border-dashed text-slate-700 hover:text-slate-900 hover:bg-slate-50 justify-start"
                     onClick={() => setAssignVendorOpen(true)}
                   >
-                    <Boxes className="mr-1.5 h-3.5 w-3.5 text-emerald-600" />+ Assign Vendor or Live
+                    <Boxes className="mr-1.5 h-3.5 w-3.5 text-[#006788]" />+ Assign Vendor or Live
                     Stock
                   </Button>
                 )}
@@ -1696,7 +1696,7 @@ function QuoteDetailPage() {
             <div className="border-t border-border pt-3 space-y-2">
               <Button
                 size="sm"
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium shadow-xs"
+                className="w-full bg-[#006788] hover:bg-[#00597b] text-white font-medium shadow-xs"
                 onClick={() => setAskUpdateOpen(true)}
               >
                 <MessageCircle className="mr-1.5 h-4 w-4" />
@@ -1705,10 +1705,10 @@ function QuoteDetailPage() {
               <Button
                 size="sm"
                 variant="outline"
-                className="w-full text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800 border-emerald-300 dark:border-emerald-700/60 dark:text-emerald-400 font-medium"
+                className="w-full text-[#015474] hover:bg-[#e0f1f5] border-[#c9d1d4] font-medium"
                 onClick={() => setRfqOpen(true)}
               >
-                <MessageCircle className="mr-1.5 h-4 w-4 text-emerald-600" />
+                <MessageCircle className="mr-1.5 h-4 w-4 text-[#006788]" />
                 WhatsApp RFQ to Vendors (Optional)
               </Button>
             </div>

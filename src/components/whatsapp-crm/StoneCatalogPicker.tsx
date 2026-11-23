@@ -59,7 +59,7 @@ export function StoneCatalogPicker({ onInsertText, onAttachCatalogPdf }: StoneCa
             <Button
               size="sm"
               variant="outline"
-              className="h-7 text-[11px] gap-1 text-emerald-700 dark:text-emerald-400 border-emerald-500/40"
+              className="h-7 text-[11px] gap-1 text-[#015474] border-[#c9d1d4] hover:bg-[#e0f1f5]"
             >
               <FileText className="h-3.5 w-3.5" />
               Attach Catalog PDF

@@ -551,9 +551,9 @@ export function WhatsappCrmWorkspace() {
       {/* Subheader / Status Bar */}
       <div className="px-4 py-2 bg-muted/40 border-b flex items-center justify-between text-xs">
         <div className="flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="h-2 w-2 rounded-full bg-[#006788] animate-pulse" />
           <span className="font-semibold text-foreground flex items-center gap-1.5">
-            <MessageSquare className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+            <MessageSquare className="h-3.5 w-3.5 text-[#006788] dark:text-[#38bdf8]" />
             {t("communication.workspaceTitle", "STOS WhatsApp CRM Workspace")}
           </span>
           <WhatsappDeviceStatusBadge onOpenSync={() => setSyncModalOpen(true)} />
@@ -561,7 +561,7 @@ export function WhatsappCrmWorkspace() {
           <Button
             size="sm"
             onClick={() => setSyncModalOpen(true)}
-            className="h-7 px-2.5 text-xs font-bold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs cursor-pointer"
+            className="h-7 px-2.5 text-xs font-bold gap-1.5 bg-[#006788] hover:bg-[#00597b] text-white shadow-2xs cursor-pointer"
             title="Open WhatsApp One-Time Synchronisation Center"
           >
             <Zap className="h-3.5 w-3.5" />
@@ -575,10 +575,10 @@ export function WhatsappCrmWorkspace() {
               window.open("https://web.whatsapp.com", "_blank", "noopener,noreferrer");
               toast.success("Launching Official WhatsApp Web (+91 77420 90866)...");
             }}
-            className="h-7 px-2.5 text-xs font-semibold gap-1.5 border-emerald-500/40 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/40 cursor-pointer shadow-2xs"
+            className="h-7 px-2.5 text-xs font-semibold gap-1.5 border-[#c9d1d4] dark:border-[#00597b] text-[#015474] hover:bg-[#e0f1f5] dark:text-[#67e8f9] dark:hover:bg-[#015474]/40 cursor-pointer shadow-2xs"
             title="Open Official WhatsApp Web in browser (+91 77420 90866)"
           >
-            <ExternalLink className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+            <ExternalLink className="h-3.5 w-3.5 text-[#006788] dark:text-[#38bdf8]" />
             <span className="hidden sm:inline">WhatsApp Web</span>
           </Button>
         </div>

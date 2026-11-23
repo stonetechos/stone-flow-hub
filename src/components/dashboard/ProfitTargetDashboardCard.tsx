@@ -170,12 +170,12 @@ export function ProfitTargetDashboardCard() {
   const progressPct = Math.round(data.overallTargetProgressPct);
 
   return (
-    <Card className="border-2 border-emerald-500/20 bg-linear-to-br from-emerald-50/40 via-card to-amber-50/30 dark:from-emerald-950/20 dark:via-card dark:to-amber-950/15 shadow-sm overflow-hidden">
+    <Card className="border-2 border-[#c9d1d4] bg-linear-to-br from-[#e0f1f5]/50 via-card to-[#e0f1f5]/20 shadow-sm overflow-hidden">
       <CardContent className="p-4 sm:p-5 space-y-4">
         {/* Header Strip */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-xs">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#006788] text-white shadow-xs">
               <TrendingUp className="h-5 w-5" />
             </div>
             <div>
@@ -189,7 +189,7 @@ export function ProfitTargetDashboardCard() {
               asChild
               size="sm"
               variant="outline"
-              className="h-8 text-xs font-semibold gap-1.5 border-emerald-500/40 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/50"
+              className="h-8 text-xs font-semibold gap-1.5 border-[#c9d1d4] text-[#015474] hover:bg-[#e0f1f5]"
             >
               <Link to="/dashboards/profitability">
                 {t.leaderboard}
@@ -203,7 +203,7 @@ export function ProfitTargetDashboardCard() {
               className="h-8 text-xs font-semibold gap-1.5 text-muted-foreground hover:text-foreground"
             >
               <Link to="/projects">
-                <Building2 className="h-3.5 w-3.5 text-amber-600" />
+                <Building2 className="h-3.5 w-3.5 text-[#006788]" />
                 {t.profitDiary}
               </Link>
             </Button>
@@ -211,10 +211,10 @@ export function ProfitTargetDashboardCard() {
         </div>
 
         {/* Progress Bar & KPI Rollup */}
-        <div className="rounded-xl border border-emerald-500/20 bg-card/80 p-3.5 space-y-2.5 backdrop-blur-xs">
+        <div className="rounded-xl border border-[#c9d1d4] bg-card/80 p-3.5 space-y-2.5 backdrop-blur-xs">
           <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 text-sm">
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-black text-emerald-700 dark:text-emerald-400 tabular-nums">
+              <span className="text-2xl font-black text-[#015474] tabular-nums">
                 {formatInr(data.totalNetProfit, lang)}
               </span>
               <span className="text-xs text-muted-foreground font-medium">
@@ -223,13 +223,13 @@ export function ProfitTargetDashboardCard() {
             </div>
             <div className="text-xs font-bold text-muted-foreground">
               {toIndicDigits(progressPct, lang)}% {t.achieved} · {t.gap}:{" "}
-              <span className="text-rose-600 dark:text-rose-400 font-bold tabular-nums">
+              <span className="text-[#015474] font-bold tabular-nums">
                 {formatInr(data.overallTargetGap, lang)}
               </span>
             </div>
           </div>
 
-          <Progress value={progressPct} className="h-2.5 bg-emerald-100 dark:bg-emerald-950/40" />
+          <Progress value={progressPct} className="h-2.5 bg-[#e0f1f5]" />
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs">
             <div className="border-r border-border/50 pr-2">
@@ -246,7 +246,7 @@ export function ProfitTargetDashboardCard() {
             </div>
             <div className="border-r border-border/50 pr-2">
               <span className="text-muted-foreground block text-[11px]">{t.overallMargin}</span>
-              <span className="font-bold text-emerald-700 dark:text-emerald-400 tabular-nums">
+              <span className="font-bold text-[#015474] tabular-nums">
                 {toIndicDigits(data.overallMarginPct.toFixed(1), lang)}%
               </span>
             </div>

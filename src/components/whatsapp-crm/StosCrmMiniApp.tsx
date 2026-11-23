@@ -96,11 +96,13 @@ export function StosCrmMiniApp({
   if (!customer) {
     return (
       <div className="p-4 flex flex-col gap-4 text-xs h-full overflow-y-auto">
-        <Card className="border-dashed border-amber-500/50 bg-amber-50/40 dark:bg-amber-950/20">
+        <Card className="border-dashed border-[#c9d1d4] bg-[#e0f1f5]/60">
           <CardHeader className="pb-2">
-            <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
-              <HelpCircle className="h-4 w-4 shrink-0" />
-              <CardTitle className="text-xs font-semibold">Unregistered Inbound Contact</CardTitle>
+            <div className="flex items-center gap-2 text-[#015474]">
+              <HelpCircle className="h-4 w-4 shrink-0 text-[#006788]" />
+              <CardTitle className="text-xs font-semibold text-[#015474]">
+                Unregistered Inbound Contact
+              </CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -111,7 +113,7 @@ export function StosCrmMiniApp({
             </p>
             <Button
               size="sm"
-              className="w-full gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-8"
+              className="w-full gap-1.5 bg-[#006788] hover:bg-[#00597b] text-white text-xs h-8"
               onClick={() => setCreateLeadOpen(true)}
             >
               <UserPlus className="h-3.5 w-3.5" />
@@ -185,14 +187,14 @@ export function StosCrmMiniApp({
               </div>
               <div className="p-1 rounded bg-muted/50">
                 <span className="text-muted-foreground block text-[9px]">Received</span>
-                <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                <span className="font-semibold text-[#006788]">
                   {formatInr(ledgerSummary.totalCredit)}
                 </span>
               </div>
               <div className="p-1 rounded bg-muted/50">
                 <span className="text-muted-foreground block text-[9px]">Due</span>
                 <span
-                  className={`font-bold ${ledgerSummary.balance > 0 ? "text-amber-600 dark:text-amber-400" : "text-foreground"}`}
+                  className={`font-bold ${ledgerSummary.balance > 0 ? "text-[#015474]" : "text-foreground"}`}
                 >
                   {formatInr(ledgerSummary.balance)}
                 </span>
@@ -231,7 +233,7 @@ export function StosCrmMiniApp({
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="h-6 text-[10px] px-1.5 gap-1 text-emerald-700 dark:text-emerald-400"
+                  className="h-6 text-[10px] px-1.5 gap-1 text-[#015474] hover:bg-[#e0f1f5]"
                   onClick={() => handleShareQuoteOnWhatsapp(q)}
                   title="Insert quote details into WhatsApp chat"
                 >

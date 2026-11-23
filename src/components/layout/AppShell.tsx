@@ -966,7 +966,7 @@ function UserMenu({
           {(isAdmin || isSuperAdmin) && (
             <DropdownMenuItem onClick={() => void navigate({ to: "/admin/users" })}>
               <ShieldCheck
-                className="mr-2 h-4 w-4 text-emerald-600 dark:text-emerald-400"
+                className="mr-2 h-4 w-4 text-[#006788] dark:text-[#38bdf8]"
                 aria-hidden
               />
               <span>{t("admin.usersTitle", "User & Role Management")}</span>
@@ -1512,26 +1512,26 @@ export function AppShell({ children }: { children: ReactNode }) {
                 href="/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2 sm:px-2.5 text-xs font-bold bg-sky-50 text-sky-800 hover:bg-sky-100 dark:bg-sky-950/40 dark:text-sky-300 dark:hover:bg-sky-900/50 border border-sky-300/80 dark:border-sky-800 transition-all shadow-2xs cursor-pointer"
+                className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2 sm:px-2.5 text-xs font-bold bg-[#e0f1f5] text-[#015474] hover:bg-[#d0eaf1] dark:bg-[#015474]/30 dark:text-[#67e8f9] dark:hover:bg-[#015474]/50 border border-[#c9d1d4] dark:border-[#00597b] transition-all shadow-2xs cursor-pointer"
                 title={t(
                   "header.openWebsite",
                   "Visit Stone Tech Public Website (opens in new browser tab)",
                 )}
               >
-                <Globe className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
+                <Globe className="h-3.5 w-3.5 text-[#006788] dark:text-[#38bdf8]" />
                 <span className="hidden md:inline">{t("header.website", "Website")}</span>
-                <ExternalLink className="h-3 w-3 text-sky-600/70 dark:text-sky-400/70" />
+                <ExternalLink className="h-3 w-3 text-[#006788]/70 dark:text-[#38bdf8]/70" />
               </a>
               <Link
                 to="/communication"
-                className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2 sm:px-2.5 text-xs font-bold bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/50 border border-emerald-300/80 dark:border-emerald-800 transition-all shadow-2xs cursor-pointer"
+                className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2 sm:px-2.5 text-xs font-bold bg-[#e0f1f5] text-[#015474] hover:bg-[#d0eaf1] dark:bg-[#015474]/30 dark:text-[#67e8f9] dark:hover:bg-[#015474]/50 border border-[#c9d1d4] dark:border-[#00597b] transition-all shadow-2xs cursor-pointer"
                 title="Open WhatsApp Web & CRM (Option B: Linked Device · Chat Only)"
               >
-                <MessageSquare className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                <MessageSquare className="h-3.5 w-3.5 text-[#006788] dark:text-[#38bdf8]" />
                 <span className="hidden md:inline">WhatsApp</span>
                 <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#006788] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#006788]"></span>
                 </span>
               </Link>
               <div className="inline-flex items-center">

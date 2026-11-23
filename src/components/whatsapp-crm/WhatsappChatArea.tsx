@@ -106,7 +106,7 @@ export function WhatsappChatArea({
       {/* 1. Chat Header */}
       <div className="p-3 border-b bg-background flex items-center justify-between gap-2 shadow-xs">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="h-9 w-9 rounded-full bg-emerald-600/10 text-emerald-700 dark:text-emerald-400 font-bold text-xs flex items-center justify-center shrink-0 border border-emerald-500/20">
+          <div className="h-9 w-9 rounded-full bg-[#e0f1f5] text-[#015474] dark:bg-[#015474]/30 dark:text-[#67e8f9] font-bold text-xs flex items-center justify-center shrink-0 border border-[#c9d1d4] dark:border-[#00597b]">
             {conversation.contactName.slice(0, 2).toUpperCase()}
           </div>
           <div className="min-w-0">
@@ -136,7 +136,7 @@ export function WhatsappChatArea({
           <Button
             size="sm"
             variant="outline"
-            className="h-7 text-xs gap-1 border-emerald-500/40 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/40 cursor-pointer"
+            className="h-7 text-xs gap-1 border-[#c9d1d4] dark:border-[#00597b] text-[#015474] hover:bg-[#e0f1f5] dark:text-[#67e8f9] dark:hover:bg-[#015474]/40 cursor-pointer"
             onClick={() => {
               openWhatsappToContact(conversation.phone, inputText.trim(), null, { mode: "web" });
               toast.success(`Opening WhatsApp Web for ${conversation.contactName}...`);
@@ -158,8 +158,8 @@ export function WhatsappChatArea({
               <div
                 className={`max-w-[80%] sm:max-w-[70%] rounded-2xl px-3.5 py-2 text-xs shadow-xs ${
                   isMe
-                    ? "bg-emerald-700 text-white dark:bg-emerald-600 rounded-br-xs"
-                    : "bg-white text-foreground border dark:bg-slate-900 rounded-bl-xs"
+                    ? "bg-[#015474] text-white dark:bg-[#00597b] rounded-br-xs"
+                    : "bg-white text-foreground border border-[#c9d1d4] dark:bg-slate-900 dark:border-slate-800 rounded-bl-xs"
                 }`}
               >
                 {/* Text Content */}
@@ -170,7 +170,7 @@ export function WhatsappChatArea({
                   <div
                     className={`mt-2 p-2 rounded-lg border text-xs flex items-center justify-between gap-2 ${
                       isMe
-                        ? "bg-emerald-800/60 border-emerald-600/60 text-white"
+                        ? "bg-[#00597b]/60 border-[#006788]/60 text-white"
                         : "bg-muted border-border text-foreground"
                     }`}
                   >
@@ -194,7 +194,7 @@ export function WhatsappChatArea({
                 {/* Footer: Timestamp and Status Receipt */}
                 <div
                   className={`flex items-center justify-end gap-1 mt-1 text-[9px] ${
-                    isMe ? "text-emerald-100/80" : "text-muted-foreground"
+                    isMe ? "text-[#e0f1f5]/85" : "text-muted-foreground"
                   }`}
                 >
                   <span>{msg.timestamp}</span>
@@ -237,7 +237,7 @@ export function WhatsappChatArea({
               <Button
                 size="sm"
                 variant="outline"
-                className="h-7 text-[11px] gap-1 text-emerald-700 dark:text-emerald-400 border-emerald-500/40"
+                className="h-7 text-[11px] gap-1 text-[#015474] dark:text-[#67e8f9] border-[#c9d1d4] dark:border-[#00597b] hover:bg-[#e0f1f5]"
               >
                 <FileText className="h-3.5 w-3.5" />{" "}
                 {t("communication.shareCatalogPdf", "Share Catalog PDF")}
@@ -315,7 +315,7 @@ export function WhatsappChatArea({
             size="icon"
             onClick={handleSend}
             disabled={!inputText.trim()}
-            className="h-9 w-9 shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-xs"
+            className="h-9 w-9 shrink-0 bg-[#006788] hover:bg-[#00597b] text-white rounded-xl shadow-xs cursor-pointer"
             title="Send Message"
           >
             <Send className="h-4 w-4" />

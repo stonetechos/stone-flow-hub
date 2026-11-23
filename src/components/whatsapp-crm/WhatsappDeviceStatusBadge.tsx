@@ -20,20 +20,20 @@ export function WhatsappDeviceStatusBadge({ onOpenSync }: Props) {
           variant="outline"
           size="sm"
           onClick={() => setOpen(true)}
-          className="h-7 text-xs font-medium gap-1.5 border-emerald-300 bg-emerald-50/50 hover:bg-emerald-100/60 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 cursor-pointer shadow-2xs"
+          className="h-7 text-xs font-medium gap-1.5 border-[#c9d1d4] bg-[#e0f1f5] hover:bg-[#d0eaf1] text-[#015474] dark:border-[#00597b] dark:bg-[#015474]/30 dark:text-[#67e8f9] cursor-pointer shadow-2xs"
           title="Manage WhatsApp Linked Device & Web Bridge"
         >
           {session.isLinked ? (
             <>
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#006788] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#006788]"></span>
               </span>
-              <Smartphone className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+              <Smartphone className="h-3 w-3 text-[#006788] dark:text-[#38bdf8]" />
               <span className="font-semibold hidden sm:inline">
                 {session.phoneNumber || "WA Linked"}
               </span>
-              <Badge className="bg-emerald-600/20 text-emerald-800 dark:text-emerald-200 border-none text-[9px] px-1 py-0 font-bold">
+              <Badge className="bg-[#006788]/20 text-[#015474] dark:text-[#67e8f9] border-none text-[9px] px-1 py-0 font-bold">
                 Online
               </Badge>
             </>

@@ -171,20 +171,20 @@ export function WhatsappOneTimeSyncDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl p-0 overflow-hidden sm:rounded-2xl">
-        <DialogHeader className="p-5 pb-3 bg-gradient-to-r from-emerald-800 to-teal-900 text-white">
+        <DialogHeader className="p-5 pb-3 bg-gradient-to-r from-[#015474] to-[#00597b] text-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="h-9 w-9 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-xs">
-                <Zap className="h-5 w-5 text-emerald-300" />
+                <Zap className="h-5 w-5 text-[#e0f1f5]" />
               </div>
               <div>
                 <DialogTitle className="text-base font-bold text-white flex items-center gap-2">
                   <span>WhatsApp One-Time Synchronisation Center</span>
-                  <Badge className="bg-emerald-500/30 text-emerald-100 border-emerald-400/30 text-[10px]">
+                  <Badge className="bg-white/20 text-[#e0f1f5] border-white/30 text-[10px]">
                     {OFFICIAL_STONE_TECH_WHATSAPP}
                   </Badge>
                 </DialogTitle>
-                <DialogDescription className="text-emerald-100/80 text-xs mt-0.5">
+                <DialogDescription className="text-[#e0f1f5]/85 text-xs mt-0.5">
                   Synchronize your real chats, messages, and customer conversations into STOS CRM
                 </DialogDescription>
               </div>
@@ -203,33 +203,33 @@ export function WhatsappOneTimeSyncDialog({
                 value="web-dock"
                 className="gap-1.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs font-semibold"
               >
-                <ExternalLink className="h-3.5 w-3.5 text-emerald-600" />
+                <ExternalLink className="h-3.5 w-3.5 text-[#006788]" />
                 <span>Web Dock (Option B)</span>
               </TabsTrigger>
               <TabsTrigger
                 value="crm-sync"
                 className="gap-1.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs font-semibold"
               >
-                <Users className="h-3.5 w-3.5 text-emerald-600" />
+                <Users className="h-3.5 w-3.5 text-[#006788]" />
                 <span>Sync CRM Directory</span>
               </TabsTrigger>
               <TabsTrigger
                 value="import"
                 className="gap-1.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs font-semibold"
               >
-                <UploadCloud className="h-3.5 w-3.5 text-emerald-600" />
+                <UploadCloud className="h-3.5 w-3.5 text-[#006788]" />
                 <span>Import Chat (.txt)</span>
               </TabsTrigger>
             </TabsList>
 
             {/* TAB 1: ONE-TIME CHAT IMPORT */}
             <TabsContent value="import" className="space-y-4 pt-1 text-xs">
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-3.5 dark:border-emerald-900/50 dark:bg-emerald-950/20 space-y-2">
-                <div className="flex items-center gap-2 font-bold text-emerald-950 dark:text-emerald-200 text-xs">
-                  <Smartphone className="h-4 w-4 text-emerald-600" />
+              <div className="rounded-xl border border-[#c9d1d4] bg-[#e0f1f5]/60 p-3.5 space-y-2">
+                <div className="flex items-center gap-2 font-bold text-[#015474] text-xs">
+                  <Smartphone className="h-4 w-4 text-[#006788]" />
                   <span>How to export & sync a chat from your phone (30 Seconds):</span>
                 </div>
-                <ol className="list-decimal pl-4 space-y-1 text-emerald-900/90 dark:text-emerald-300/90 text-[11px] leading-relaxed">
+                <ol className="list-decimal pl-4 space-y-1 text-[#015474]/90 text-[11px] leading-relaxed">
                   <li>
                     Open WhatsApp on your phone (<b>{OFFICIAL_STONE_TECH_WHATSAPP}</b>)
                   </li>
@@ -255,9 +255,9 @@ export function WhatsappOneTimeSyncDialog({
 
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className="border-2 border-dashed border-emerald-300 dark:border-emerald-800 rounded-xl p-5 text-center bg-slate-50/50 dark:bg-slate-900/40 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 transition-all cursor-pointer space-y-1.5"
+                  className="border-2 border-dashed border-[#c9d1d4] rounded-xl p-5 text-center bg-[#f0f3f4]/50 hover:bg-[#e0f1f5]/60 transition-all cursor-pointer space-y-1.5"
                 >
-                  <UploadCloud className="h-8 w-8 text-emerald-600 mx-auto" />
+                  <UploadCloud className="h-8 w-8 text-[#006788] mx-auto" />
                   <p className="font-bold text-foreground text-xs">
                     Click to select exported WhatsApp chat (<code>.txt</code>)
                   </p>
@@ -295,13 +295,13 @@ export function WhatsappOneTimeSyncDialog({
 
               {/* Parsed Preview Card */}
               {parsedPreview && (
-                <div className="rounded-xl border border-emerald-200 bg-emerald-50/40 p-3 dark:border-emerald-900/40 dark:bg-emerald-950/20 space-y-1.5">
-                  <div className="flex items-center justify-between text-xs font-bold text-emerald-900 dark:text-emerald-300">
+                <div className="rounded-xl border border-[#c9d1d4] bg-[#e0f1f5]/60 p-3 space-y-1.5">
+                  <div className="flex items-center justify-between text-xs font-bold text-[#015474]">
                     <span className="flex items-center gap-1.5">
-                      <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                      <CheckCircle2 className="h-4 w-4 text-[#006788]" />
                       <span>Ready to sync {parsedPreview.count} messages</span>
                     </span>
-                    <Badge className="bg-emerald-600 text-white text-[10px]">Validated</Badge>
+                    <Badge className="bg-[#006788] text-white text-[10px]">Validated</Badge>
                   </div>
                   <pre className="text-[10px] text-muted-foreground bg-white dark:bg-slate-950 p-2 rounded border max-h-20 overflow-y-auto whitespace-pre-wrap font-mono">
                     {parsedPreview.preview}
@@ -344,7 +344,7 @@ export function WhatsappOneTimeSyncDialog({
                 <Button
                   size="sm"
                   onClick={handleExecuteSync}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs gap-1.5 shadow-xs cursor-pointer"
+                  className="bg-[#006788] hover:bg-[#00597b] text-white font-bold text-xs gap-1.5 shadow-xs cursor-pointer"
                   disabled={!rawText.trim()}
                 >
                   <Sparkles className="h-3.5 w-3.5" />
@@ -357,7 +357,7 @@ export function WhatsappOneTimeSyncDialog({
             <TabsContent value="web-dock" className="space-y-4 pt-1 text-xs">
               <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4 dark:border-slate-800 dark:bg-slate-900/40 space-y-3">
                 <div className="flex items-start gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                  <div className="h-10 w-10 rounded-xl bg-[#006788] text-white flex items-center justify-center shrink-0 shadow-xs">
                     <ExternalLink className="h-5 w-5" />
                   </div>
                   <div className="space-y-1">
@@ -374,12 +374,12 @@ export function WhatsappOneTimeSyncDialog({
                 </div>
 
                 {/* 3-Step Scan Instructions */}
-                <div className="rounded-lg border border-emerald-200/80 bg-emerald-50/50 dark:border-emerald-900/40 dark:bg-emerald-950/20 p-3 space-y-1.5 text-[11px]">
-                  <div className="font-bold text-emerald-950 dark:text-emerald-200 flex items-center gap-1.5">
-                    <Smartphone className="h-3.5 w-3.5 text-emerald-600" />
+                <div className="rounded-lg border border-[#c9d1d4] bg-[#e0f1f5]/60 p-3 space-y-1.5 text-[11px]">
+                  <div className="font-bold text-[#015474] flex items-center gap-1.5">
+                    <Smartphone className="h-3.5 w-3.5 text-[#006788]" />
                     <span>How to connect in 30 seconds:</span>
                   </div>
-                  <ol className="list-decimal pl-4 space-y-1 text-emerald-900/90 dark:text-emerald-300/90">
+                  <ol className="list-decimal pl-4 space-y-1 text-[#015474]/90">
                     <li>
                       Click <b>Launch Official WhatsApp Web</b> below
                     </li>
@@ -402,7 +402,7 @@ export function WhatsappOneTimeSyncDialog({
                         window.open("https://web.whatsapp.com", "_blank", "noopener,noreferrer");
                         toast.success("WhatsApp Web opened in new tab. Point your phone to scan!");
                       }}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs gap-1.5 shadow-xs cursor-pointer"
+                      className="bg-[#006788] hover:bg-[#00597b] text-white font-bold text-xs gap-1.5 shadow-xs cursor-pointer"
                     >
                       <ExternalLink className="h-3.5 w-3.5" />
                       Launch Official WhatsApp Web
@@ -411,20 +411,20 @@ export function WhatsappOneTimeSyncDialog({
                       size="sm"
                       variant="outline"
                       onClick={handleLaunchWebDock}
-                      className="border-emerald-300 text-emerald-800 hover:bg-emerald-50 dark:text-emerald-300 font-bold text-xs gap-1.5 cursor-pointer"
+                      className="border-[#c9d1d4] text-[#015474] hover:bg-[#e0f1f5] font-bold text-xs gap-1.5 cursor-pointer"
                     >
-                      <Zap className="h-3.5 w-3.5" />
+                      <Zap className="h-3.5 w-3.5 text-[#006788]" />
                       Launch Companion Window
                     </Button>
                   </div>
                 </div>
               </div>
 
-              <div className="rounded-xl border border-indigo-200 bg-indigo-50/50 p-3.5 space-y-1 dark:border-indigo-900/40 dark:bg-indigo-950/20 text-[11px]">
-                <div className="font-bold text-indigo-950 dark:text-indigo-200">
+              <div className="rounded-xl border border-[#c9d1d4] bg-[#e0f1f5]/40 p-3.5 space-y-1 text-[11px]">
+                <div className="font-bold text-[#015474]">
                   How the Web Dock &amp; STOS Work Together:
                 </div>
-                <p className="text-indigo-900/80 dark:text-indigo-300/80 leading-relaxed">
+                <p className="text-[#015474]/90 leading-relaxed">
                   You can keep WhatsApp Web open alongside STOS. Whenever you click{" "}
                   <b>Attach Catalog PDF</b>, <b>Share Quotation</b>, or send a message inside STOS,
                   it formats the client message and dispatches it directly through your logged-in
@@ -437,7 +437,7 @@ export function WhatsappOneTimeSyncDialog({
             <TabsContent value="crm-sync" className="space-y-4 pt-1 text-xs">
               <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4 dark:border-slate-800 dark:bg-slate-900/40 space-y-3">
                 <div className="flex items-start gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                  <div className="h-10 w-10 rounded-xl bg-[#006788] text-white flex items-center justify-center shrink-0 shadow-xs">
                     <Users className="h-5 w-5" />
                   </div>
                   <div className="space-y-1">
@@ -462,21 +462,21 @@ export function WhatsappOneTimeSyncDialog({
                       onSyncCrmContacts?.();
                       onOpenChange(false);
                     }}
-                    className="border-indigo-300 text-indigo-700 hover:bg-indigo-50 dark:text-indigo-300 font-bold text-xs gap-1.5 cursor-pointer"
+                    className="border-[#c9d1d4] text-[#015474] hover:bg-[#e0f1f5] font-bold text-xs gap-1.5 cursor-pointer"
                   >
-                    <RefreshCw className="h-3.5 w-3.5" />
+                    <RefreshCw className="h-3.5 w-3.5 text-[#006788]" />
                     Sync CRM Directory
                   </Button>
                 </div>
               </div>
 
               {/* Clear sample conversations card */}
-              <div className="rounded-xl border border-rose-200 bg-rose-50/50 p-4 dark:border-rose-900/40 dark:bg-rose-950/20 flex items-center justify-between">
+              <div className="rounded-xl border border-[#c9d1d4] bg-[#f0f3f4] p-4 flex items-center justify-between">
                 <div>
-                  <h5 className="font-bold text-rose-950 dark:text-rose-200 text-xs">
+                  <h5 className="font-bold text-[#015474] text-xs">
                     Clear Sample / Demo Conversations
                   </h5>
-                  <p className="text-[11px] text-rose-900/80 dark:text-rose-300/80 mt-0.5">
+                  <p className="text-[11px] text-[#015474]/80 mt-0.5">
                     Hide the placeholder conversations (Ar. Mehul Panchal, Jigar Patel) so only your
                     real customer chats appear.
                   </p>
@@ -489,9 +489,9 @@ export function WhatsappOneTimeSyncDialog({
                     toast.info("Sample conversations removed from workspace.");
                     onOpenChange(false);
                   }}
-                  className="border-rose-300 text-rose-700 hover:bg-rose-100/60 dark:text-rose-300 text-xs font-semibold gap-1.5 shrink-0 cursor-pointer"
+                  className="border-[#c9d1d4] text-[#015474] hover:bg-[#e0f1f5] text-xs font-semibold gap-1.5 shrink-0 cursor-pointer"
                 >
-                  <Trash2 className="h-3.5 w-3.5 text-rose-500" />
+                  <Trash2 className="h-3.5 w-3.5 text-[#006788]" />
                   Clear Demo Chats
                 </Button>
               </div>

@@ -212,7 +212,7 @@ export function CreateLeadFromWhatsappDialog({
             size="sm"
             onClick={() => mutation.mutate()}
             disabled={mutation.isPending || !name.trim()}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+            className="bg-[#006788] hover:bg-[#00597b] text-white"
           >
             {mutation.isPending ? "Creating..." : "Save Customer & Link Chat"}
           </Button>

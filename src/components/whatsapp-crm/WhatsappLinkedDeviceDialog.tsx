@@ -131,30 +131,30 @@ export function WhatsappLinkedDeviceDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg p-0 overflow-hidden sm:rounded-2xl">
-        <DialogHeader className="p-5 pb-3 bg-gradient-to-r from-emerald-800 to-teal-900 text-white">
+        <DialogHeader className="p-5 pb-3 bg-gradient-to-r from-[#015474] to-[#00597b] text-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center backdrop-blur-xs">
-                <Smartphone className="h-4 w-4 text-emerald-300" />
+                <Smartphone className="h-4 w-4 text-[#e0f1f5]" />
               </div>
               <div>
                 <DialogTitle className="text-base font-bold text-white flex items-center gap-2">
                   <span>WhatsApp Business Web Terminal</span>
-                  <Badge className="bg-emerald-500/20 text-emerald-200 border-emerald-400/30 text-[10px]">
+                  <Badge className="bg-white/20 text-[#e0f1f5] border-white/30 text-[10px]">
                     Option B · Linked Device
                   </Badge>
                 </DialogTitle>
-                <DialogDescription className="text-emerald-100/80 text-xs mt-0.5">
+                <DialogDescription className="text-[#e0f1f5]/85 text-xs mt-0.5">
                   Operate WhatsApp inside STOS without keeping desktop app open
                 </DialogDescription>
               </div>
             </div>
             {session.isLinked ? (
-              <Badge className="bg-emerald-500 text-white font-semibold flex items-center gap-1 text-[11px] px-2 py-0.5">
+              <Badge className="bg-[#006788] text-white font-semibold flex items-center gap-1 text-[11px] px-2 py-0.5">
                 <Wifi className="h-3 w-3" /> Online
               </Badge>
             ) : (
-              <Badge className="bg-amber-500 text-white font-semibold flex items-center gap-1 text-[11px] px-2 py-0.5">
+              <Badge className="bg-[#015474] text-white font-semibold flex items-center gap-1 text-[11px] px-2 py-0.5">
                 <WifiOff className="h-3 w-3" /> Waiting for Scan
               </Badge>
             )}
@@ -165,16 +165,16 @@ export function WhatsappLinkedDeviceDialog({
           {session.isLinked ? (
             /* Connected State */
             <div className="space-y-4">
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-4 dark:border-emerald-900/50 dark:bg-emerald-950/20 space-y-3">
+              <div className="rounded-xl border border-[#c9d1d4] bg-[#e0f1f5]/60 p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <div className="h-10 w-10 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black text-sm shadow-xs">
+                    <div className="h-10 w-10 rounded-full bg-[#006788] text-white flex items-center justify-center font-black text-sm shadow-xs">
                       WA
                     </div>
                     <div>
                       <div className="font-bold text-sm text-foreground flex items-center gap-1.5">
                         <span>{session.accountName}</span>
-                        <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                        <CheckCircle2 className="h-4 w-4 text-[#006788] shrink-0" />
                       </div>
                       <div className="text-muted-foreground font-mono text-xs">
                         {session.phoneNumber}
@@ -183,36 +183,34 @@ export function WhatsappLinkedDeviceDialog({
                   </div>
                   <Badge
                     variant="outline"
-                    className="border-emerald-400 text-emerald-700 bg-white font-semibold dark:bg-emerald-950 dark:text-emerald-300"
+                    className="border-[#c9d1d4] text-[#015474] bg-white font-semibold"
                   >
                     Linked Multi-Device
                   </Badge>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-emerald-200/60 dark:border-emerald-900/40 text-[11px]">
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#c9d1d4] text-[11px]">
                   <div>
                     <span className="text-muted-foreground block">Client Session:</span>
                     <span className="font-medium text-foreground">{session.platform}</span>
                   </div>
                   <div>
                     <span className="text-muted-foreground block">Session Security:</span>
-                    <span className="font-medium text-emerald-700 dark:text-emerald-300">
-                      End-to-End Encrypted
-                    </span>
+                    <span className="font-medium text-[#006788]">End-to-End Encrypted</span>
                   </div>
                 </div>
               </div>
 
               {/* Call Suppression Policy Callout */}
-              <div className="rounded-xl border border-indigo-200 bg-indigo-50/50 dark:border-indigo-900/40 dark:bg-indigo-950/20 p-3.5 space-y-1.5">
-                <div className="flex items-center gap-2 font-bold text-indigo-950 dark:text-indigo-200">
-                  <PhoneOff className="h-4 w-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+              <div className="rounded-xl border border-[#c9d1d4] bg-[#e0f1f5]/40 p-3.5 space-y-1.5">
+                <div className="flex items-center gap-2 font-bold text-[#015474]">
+                  <PhoneOff className="h-4 w-4 text-[#006788] shrink-0" />
                   <span>Call Suppression Protocol Active</span>
-                  <Badge className="bg-indigo-600 text-white text-[9px] px-1.5 py-0 uppercase tracking-wider">
+                  <Badge className="bg-[#006788] text-white text-[9px] px-1.5 py-0 uppercase tracking-wider">
                     Chat Only
                   </Badge>
                 </div>
-                <p className="text-[11px] text-indigo-900/80 dark:text-indigo-300/80 leading-relaxed">
+                <p className="text-[11px] text-[#015474]/90 leading-relaxed">
                   Incoming WhatsApp voice and video calls are automatically rejected and silenced
                   inside STOS to keep your sales and billing environment distraction-free. Only text
                   chats, photos, PDFs, and customer quotes flow through.
@@ -225,7 +223,7 @@ export function WhatsappLinkedDeviceDialog({
                   <Button
                     size="sm"
                     onClick={handleLaunchWebDock}
-                    className="gap-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs cursor-pointer"
+                    className="gap-1.5 text-xs font-semibold bg-[#006788] hover:bg-[#00597b] text-white shadow-2xs cursor-pointer"
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
                     Launch WhatsApp Web
@@ -238,9 +236,9 @@ export function WhatsappLinkedDeviceDialog({
                       onOpenChange(false);
                       onOpenSync?.();
                     }}
-                    className="gap-1.5 text-xs font-semibold cursor-pointer border-emerald-300 text-emerald-800 hover:bg-emerald-50 dark:text-emerald-300"
+                    className="gap-1.5 text-xs font-semibold cursor-pointer border-[#c9d1d4] text-[#015474] hover:bg-[#e0f1f5]"
                   >
-                    <RefreshCw className="h-3.5 w-3.5 text-emerald-600" />
+                    <RefreshCw className="h-3.5 w-3.5 text-[#006788]" />
                     Sync Messages Now
                   </Button>
                 </div>
@@ -249,9 +247,9 @@ export function WhatsappLinkedDeviceDialog({
                   variant="outline"
                   size="sm"
                   onClick={handleUnlink}
-                  className="gap-1.5 text-xs font-semibold text-rose-600 border-rose-200 hover:bg-rose-50 dark:text-rose-400 dark:border-rose-900 cursor-pointer"
+                  className="gap-1.5 text-xs font-semibold text-[#015474] border-[#c9d1d4] hover:bg-[#e0f1f5] cursor-pointer"
                 >
-                  <Trash2 className="h-3.5 w-3.5 text-rose-500" />
+                  <Trash2 className="h-3.5 w-3.5 text-[#015474]" />
                   Unlink Device
                 </Button>
               </div>
@@ -259,8 +257,8 @@ export function WhatsappLinkedDeviceDialog({
           ) : (
             /* Pairing QR Code State */
             <div className="space-y-4">
-              <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-gradient-to-b from-emerald-50/70 to-teal-50/40 border border-emerald-200 dark:from-emerald-950/30 dark:to-teal-950/20 dark:border-emerald-900/60 space-y-4">
-                <div className="h-16 w-16 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-md">
+              <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-[#e0f1f5]/60 border border-[#c9d1d4] space-y-4">
+                <div className="h-16 w-16 rounded-2xl bg-[#006788] text-white flex items-center justify-center shadow-md">
                   <QrCode className="h-8 w-8" />
                 </div>
 
@@ -280,7 +278,7 @@ export function WhatsappLinkedDeviceDialog({
                   <Button
                     size="default"
                     onClick={handleLaunchWebDock}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs gap-2 shadow-sm cursor-pointer"
+                    className="bg-[#006788] hover:bg-[#00597b] text-white font-bold text-xs gap-2 shadow-sm cursor-pointer"
                   >
                     <ExternalLink className="h-4 w-4" />
                     <span>Launch Official WhatsApp Web</span>
@@ -290,9 +288,9 @@ export function WhatsappLinkedDeviceDialog({
                     size="default"
                     variant="outline"
                     onClick={handleSimulateScanAndLink}
-                    className="border-emerald-300 text-emerald-800 hover:bg-emerald-100/70 dark:border-emerald-700 dark:text-emerald-200 font-bold text-xs gap-2 cursor-pointer"
+                    className="border-[#c9d1d4] text-[#015474] hover:bg-[#e0f1f5] font-bold text-xs gap-2 cursor-pointer"
                   >
-                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                    <CheckCircle2 className="h-4 w-4 text-[#006788]" />
                     <span>Confirm Device Linked (+91 77420 90866)</span>
                   </Button>
                 </div>
@@ -301,7 +299,7 @@ export function WhatsappLinkedDeviceDialog({
               {/* Instructions */}
               <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40 space-y-2.5">
                 <h5 className="font-bold text-foreground text-xs flex items-center gap-1.5">
-                  <Smartphone className="h-4 w-4 text-emerald-600" />
+                  <Smartphone className="h-4 w-4 text-[#006788]" />
                   <span>Step-by-Step 30-Second Setup:</span>
                 </h5>
                 <ol className="list-decimal pl-4 space-y-1.5 text-muted-foreground text-[11px] leading-relaxed">
@@ -322,12 +320,12 @@ export function WhatsappLinkedDeviceDialog({
               </div>
 
               {/* Zero-calls guarantee card */}
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-3 space-y-1 dark:border-emerald-900/50 dark:bg-emerald-950/20">
-                <div className="flex items-center gap-1.5 font-bold text-emerald-950 dark:text-emerald-200 text-xs">
-                  <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              <div className="rounded-xl border border-[#c9d1d4] bg-[#e0f1f5]/60 p-3 space-y-1">
+                <div className="flex items-center gap-1.5 font-bold text-[#015474] text-xs">
+                  <ShieldCheck className="h-4 w-4 text-[#006788]" />
                   <span>Permanent Session · Zero Incoming Calls</span>
                 </div>
-                <p className="text-[11px] text-emerald-900/80 dark:text-emerald-300/80 leading-relaxed">
+                <p className="text-[11px] text-[#015474]/90 leading-relaxed">
                   Once paired, STOS keeps the Multi-Device bridge alive in the background without
                   needing your phone to stay unlocked. All WhatsApp calls are explicitly suppressed
                   so only chats, quotations, and media arrive in STOS.

@@ -65,7 +65,7 @@ export function WhatsappConversationList({
               size="sm"
               variant="outline"
               onClick={onOpenNewChat}
-              className="h-6 px-2 text-[10.5px] font-semibold gap-1 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 cursor-pointer"
+              className="h-6 px-2 text-[10.5px] font-semibold gap-1 text-[#015474] border-[#c9d1d4] hover:bg-[#e0f1f5] cursor-pointer"
               title="Start a new WhatsApp chat with any customer"
             >
               <Plus className="h-3 w-3" />
@@ -74,7 +74,7 @@ export function WhatsappConversationList({
             <Button
               size="sm"
               onClick={onOpenSync}
-              className="h-6 px-2 text-[10.5px] font-bold gap-1 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-2xs"
+              className="h-6 px-2 text-[10.5px] font-bold gap-1 bg-[#006788] hover:bg-[#00597b] text-white cursor-pointer shadow-2xs"
               title="Open WhatsApp One-Time Synchronisation Center"
             >
               <Zap className="h-3 w-3" />
@@ -132,11 +132,11 @@ export function WhatsappConversationList({
             className={cn(
               "px-2 py-0.5 rounded-full whitespace-nowrap transition-colors flex items-center gap-1",
               filter === "gone-quiet"
-                ? "bg-amber-600 text-white font-semibold"
-                : "bg-amber-500/10 text-amber-700 dark:text-amber-400 hover:bg-amber-500/20",
+                ? "bg-[#015474] text-white font-semibold"
+                : "bg-[#e0f1f5] text-[#015474] hover:bg-[#e0f1f5]/80 border border-[#c9d1d4]",
             )}
           >
-            <AlertCircle className="h-3 w-3" />
+            <AlertCircle className="h-3 w-3 text-[#006788]" />
             {t("communication.filterGoneQuiet", "Gone Quiet (>3d)")}
           </button>
         </div>
@@ -159,12 +159,11 @@ export function WhatsappConversationList({
               onClick={() => onSelectConversation(conv)}
               className={cn(
                 "p-3 flex items-start gap-2.5 cursor-pointer transition-colors relative hover:bg-accent/40",
-                isSelected &&
-                  "bg-accent/70 border-l-4 border-l-emerald-600 dark:border-l-emerald-400",
+                isSelected && "bg-accent/70 border-l-4 border-l-[#006788]",
               )}
             >
               {/* Avatar circle */}
-              <div className="h-9 w-9 rounded-full bg-emerald-700/10 text-emerald-800 dark:text-emerald-300 font-bold text-xs flex items-center justify-center shrink-0 border border-emerald-500/20">
+              <div className="h-9 w-9 rounded-full bg-[#e0f1f5] text-[#015474] font-bold text-xs flex items-center justify-center shrink-0 border border-[#c9d1d4]">
                 {initials || "ST"}
               </div>
 
@@ -182,7 +181,7 @@ export function WhatsappConversationList({
                 <div className="flex items-center justify-between text-[11px] text-muted-foreground mt-0.5 gap-1">
                   <span className="truncate">{conv.companyName || conv.phone}</span>
                   {conv.unreadCount > 0 && (
-                    <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white text-[9px] px-1.5 py-0 h-4 min-w-[16px] flex items-center justify-center rounded-full shrink-0">
+                    <Badge className="bg-[#006788] hover:bg-[#00597b] text-white text-[9px] px-1.5 py-0 h-4 min-w-[16px] flex items-center justify-center rounded-full shrink-0">
                       {conv.unreadCount}
                     </Badge>
                   )}
@@ -197,9 +196,9 @@ export function WhatsappConversationList({
                   {conv.isGoneQuiet && (
                     <Badge
                       variant="outline"
-                      className="text-[9px] px-1 py-0 border-amber-500/50 text-amber-700 dark:text-amber-400 bg-amber-500/10"
+                      className="text-[9px] px-1 py-0 border-[#c9d1d4] text-[#015474] bg-[#e0f1f5]"
                     >
-                      <Clock className="h-2.5 w-2.5 mr-0.5" /> Gone Quiet
+                      <Clock className="h-2.5 w-2.5 mr-0.5 text-[#006788]" /> Gone Quiet
                     </Badge>
                   )}
                   {conv.leadStage && conv.leadStage !== "unregistered" && (
