@@ -31,6 +31,7 @@ import { formatInr } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import {
   getSuperAdminFinanceReport,
+  getCachedSuperAdminFinanceReport,
   type SuperAdminFinanceReport,
   type HsnGroupSummary,
 } from "@/lib/dashboard/superadmin-finance";
@@ -59,14 +60,20 @@ export function SuperAdminFinancialRadarCard() {
   const [activeTab, setActiveTab] = useState<"hsn" | "upi" | "cash">("hsn");
   const [selectedHsnTile, setSelectedHsnTile] = useState<string>("6802");
 
+  const [initialData] = useState<SuperAdminFinanceReport | undefined>(() =>
+    getCachedSuperAdminFinanceReport(),
+  );
+
   const query = useQuery<SuperAdminFinanceReport>({
     queryKey: ["superadmin-finance-report"],
     queryFn: () => getSuperAdminFinanceReport(),
+    initialData,
     staleTime: 60_000,
   });
 
   const data = query.data;
-  const isLoading = query.isLoading;
+  const isDataReady = Boolean(data);
+  const isLoading = query.isLoading && !isDataReady;
 
   const totalDeficit = data?.totalDeficitValueInr ?? 0;
   const deficitCount = data?.totalDeficitCount ?? 0;

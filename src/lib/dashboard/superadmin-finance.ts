@@ -698,29 +698,86 @@ export function computeCashDealAnalytics(
   };
 }
 
+export const SUPERADMIN_FINANCE_STORAGE_KEY = "stos_superadmin_finance_cache";
+
+/**
+ * Retrieves the last-calculated Super Admin Finance Report from local storage.
+ * Enables 0ms instantaneous rendering on the dashboard without waiting for network round-trips.
+ */
+export function getCachedSuperAdminFinanceReport(): SuperAdminFinanceReport | undefined {
+  if (typeof window === "undefined") return undefined;
+  try {
+    const raw = localStorage.getItem(SUPERADMIN_FINANCE_STORAGE_KEY);
+    if (!raw) return undefined;
+    const parsed = JSON.parse(raw);
+    if (
+      parsed &&
+      typeof parsed === "object" &&
+      Array.isArray(parsed.hsnSummary) &&
+      Array.isArray(parsed.personalAccounts)
+    ) {
+      return parsed as SuperAdminFinanceReport;
+    }
+  } catch {
+    /* ignore parsing errors */
+  }
+  return undefined;
+}
+
+/**
+ * Persists the latest calculated report into local storage for immediate re-use.
+ */
+export function setCachedSuperAdminFinanceReport(report: SuperAdminFinanceReport): void {
+  if (typeof window === "undefined" || !report) return;
+  try {
+    localStorage.setItem(SUPERADMIN_FINANCE_STORAGE_KEY, JSON.stringify(report));
+  } catch {
+    /* ignore storage errors */
+  }
+}
+
 /**
  * Main query function fetching live data and compiling the Super Admin Financial Report.
+ * All independent queries run concurrently via Promise.all to ensure sub-second response times.
  */
 export async function getSuperAdminFinanceReport(): Promise<SuperAdminFinanceReport> {
   const fy = getIndianFinancialYear();
 
-  // 1. Fetch Sales Invoices (All non-cancelled invoices created till now)
-  const { data: invoiceRows, error: invErr } = await supabase
-    .from("invoices")
-    .select("id, invoice_no, total, subtotal, status, issue_date, created_at, workflow_state")
-    .neq("status", "cancelled")
-    .order("created_at", { ascending: false });
+  // 1. Fetch all datasets concurrently in a single Promise.all batch
+  const [invRes, itemsRes, grnRes, regRes, recRes, payRes, quoteRes] = await Promise.all([
+    supabase
+      .from("invoices")
+      .select("id, invoice_no, total, subtotal, status, issue_date, created_at, workflow_state")
+      .neq("status", "cancelled")
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("invoice_items")
+      .select(
+        "id, invoice_id, description, hsn_sac, quantity, unit, unit_price, line_total, created_at",
+      ),
+    supabase
+      .from("grn_items" as never)
+      .select(
+        "id, quantity_accepted, unit, unit_cost, products!grn_items_product_id_fkey(hsn_code)",
+      ),
+    supabase
+      .from("payment_register" as never)
+      .select("id, amount, method, account_used, bank_name, notes, status"),
+    supabase
+      .from("receipts" as never)
+      .select("id, amount, method, account_used, bank_name, remarks, status"),
+    supabase.from("payments" as never).select("id, amount, method, notes"),
+    supabase
+      .from("quotes")
+      .select("id, status, notes, workflow_state, created_at")
+      .not("status", "eq", "cancelled"),
+  ]);
 
-  if (invErr) console.warn("[superadmin-finance] Invoices query:", invErr);
+  const invoiceRows = invRes.data;
+  if (invRes.error) console.warn("[superadmin-finance] Invoices query:", invRes.error);
 
-  // Fetch invoice line items directly to prevent relation join syntax issues
-  const { data: invoiceItemsRows, error: itemsErr } = await supabase
-    .from("invoice_items")
-    .select(
-      "id, invoice_id, description, hsn_sac, quantity, unit, unit_price, line_total, created_at",
-    );
-
-  if (itemsErr) console.warn("[superadmin-finance] Invoice items query:", itemsErr);
+  const invoiceItemsRows = itemsRes.data;
+  if (itemsRes.error) console.warn("[superadmin-finance] Invoice items query:", itemsRes.error);
 
   const soldItems: Array<{
     hsn?: string | null;
@@ -822,7 +879,7 @@ export async function getSuperAdminFinanceReport(): Promise<SuperAdminFinanceRep
     }
   }
 
-  // 2. Fetch Inward Purchases (GRN Items and Purchase Invoices)
+  // 2. Process Inward Purchases (GRN Items and Purchase Invoices)
   const purchasedItems: Array<{
     hsn?: string | null;
     quantity?: number | null;
@@ -831,11 +888,8 @@ export async function getSuperAdminFinanceReport(): Promise<SuperAdminFinanceRep
   }> = [];
 
   try {
-    const { data: grnItemsRows } = await supabase
-      .from("grn_items" as never)
-      .select(
-        "id, quantity_accepted, unit, unit_cost, products!grn_items_product_id_fkey(hsn_code)",
-      );
+    const grnItemsRows = grnRes.data;
+    if (grnRes.error) console.warn("[superadmin-finance] GRN query non-critical:", grnRes.error);
 
     for (const row of (grnItemsRows ?? []) as Array<Record<string, unknown>>) {
       const prod = row.products as { hsn_code?: string } | null;
@@ -847,7 +901,7 @@ export async function getSuperAdminFinanceReport(): Promise<SuperAdminFinanceRep
       });
     }
   } catch (gErr) {
-    console.warn("[superadmin-finance] GRN query non-critical:", gErr);
+    console.warn("[superadmin-finance] GRN processing non-critical:", gErr);
   }
 
   // 3. Compute 4-Digit HSN balancing
@@ -856,7 +910,7 @@ export async function getSuperAdminFinanceReport(): Promise<SuperAdminFinanceRep
     purchasedItems,
   );
 
-  // 4. Fetch Receipts & Payments for Personal Accounts SFT Monitoring
+  // 4. Process Receipts & Payments for Personal Accounts SFT Monitoring
   const seenTxIds = new Set<string>();
   let ramanTotal = 0;
   let ramanTxCount = 0;
@@ -865,11 +919,10 @@ export async function getSuperAdminFinanceReport(): Promise<SuperAdminFinanceRep
   let currencyNotesInr = 0;
   let directVendorOffsetsInr = 0;
 
-  // 4A. Query payment_register (unions receipts and legacy payments)
+  // 4A. Process payment_register
   try {
-    const { data: regRows } = await supabase
-      .from("payment_register" as never)
-      .select("id, amount, method, account_used, bank_name, notes, status");
+    const regRows = regRes.data;
+    if (regRes.error) console.warn("[superadmin-finance] payment_register query:", regRes.error);
 
     for (const r of (regRows ?? []) as Array<{
       id: string;
@@ -905,14 +958,13 @@ export async function getSuperAdminFinanceReport(): Promise<SuperAdminFinanceRep
       }
     }
   } catch (regErr) {
-    console.warn("[superadmin-finance] payment_register query:", regErr);
+    console.warn("[superadmin-finance] payment_register parsing:", regErr);
   }
 
-  // 4B. Query receipts directly (using correct 'remarks' column)
+  // 4B. Process receipts directly (using remarks column)
   try {
-    const { data: receiptRows } = await supabase
-      .from("receipts" as never)
-      .select("id, amount, method, account_used, bank_name, remarks, status");
+    const receiptRows = recRes.data;
+    if (recRes.error) console.warn("[superadmin-finance] Receipts query:", recRes.error);
 
     for (const r of (receiptRows ?? []) as Array<{
       id: string;
@@ -948,14 +1000,13 @@ export async function getSuperAdminFinanceReport(): Promise<SuperAdminFinanceRep
       }
     }
   } catch (recErr) {
-    console.warn("[superadmin-finance] Receipts query:", recErr);
+    console.warn("[superadmin-finance] Receipts parsing:", recErr);
   }
 
-  // 4C. Query payments directly
+  // 4C. Process payments directly
   try {
-    const { data: paymentRows } = await supabase
-      .from("payments" as never)
-      .select("id, amount, method, notes");
+    const paymentRows = payRes.data;
+    if (payRes.error) console.warn("[superadmin-finance] Payments query:", payRes.error);
 
     for (const p of (paymentRows ?? []) as Array<{
       id: string;
@@ -986,7 +1037,7 @@ export async function getSuperAdminFinanceReport(): Promise<SuperAdminFinanceRep
       }
     }
   } catch (payErr) {
-    console.warn("[superadmin-finance] Payments query:", payErr);
+    console.warn("[superadmin-finance] Payments parsing:", payErr);
   }
 
   const ramanRisk = evaluateSftRisk(ramanTotal, SFT_SAVINGS_ANNUAL_LIMIT_INR);
@@ -1023,13 +1074,9 @@ export async function getSuperAdminFinanceReport(): Promise<SuperAdminFinanceRep
     },
   ];
 
-  // 5. Fetch Quotations for Cash Deal Penetration
-  const { data: quoteRows, error: quoteErr } = await supabase
-    .from("quotes")
-    .select("id, status, notes, workflow_state, created_at")
-    .not("status", "eq", "cancelled");
-
-  if (quoteErr) console.warn("[superadmin-finance] Quotes query failed:", quoteErr);
+  // 5. Process Quotations for Cash Deal Penetration
+  const quoteRows = quoteRes.data;
+  if (quoteRes.error) console.warn("[superadmin-finance] Quotes query failed:", quoteRes.error);
 
   const totalCashPoolInr = currencyNotesInr + ramanTotal + rishiTotal + directVendorOffsetsInr;
   const pct = (val: number) =>
@@ -1062,7 +1109,7 @@ export async function getSuperAdminFinanceReport(): Promise<SuperAdminFinanceRep
     },
   };
 
-  return {
+  const finalReport: SuperAdminFinanceReport = {
     fyLabel: fy.label,
     fyStartDate: fy.startDate,
     fyEndDate: fy.endDate,
@@ -1072,4 +1119,9 @@ export async function getSuperAdminFinanceReport(): Promise<SuperAdminFinanceRep
     personalAccounts,
     cashAnalytics,
   };
+
+  // Cache final report in local storage for instant 0ms restoration on next load
+  setCachedSuperAdminFinanceReport(finalReport);
+
+  return finalReport;
 }

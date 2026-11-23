@@ -47,6 +47,7 @@ import { formatInr, formatMoneyCompact } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import {
   getSuperAdminFinanceReport,
+  getCachedSuperAdminFinanceReport,
   computeTotalMismatch,
   generateFinancialAiSuggestions,
   CANONICAL_HSN_VENDOR_SPECS,
@@ -76,14 +77,20 @@ export function SuperAdminFinancialCockpitBoxes({
   const [selectedHsnFilter, setSelectedHsnFilter] = useState<string | "all">("all");
   const [simOffsetAmount, setSimOffsetAmount] = useState<number>(120000);
 
+  const [initialData] = useState<SuperAdminFinanceReport | undefined>(() =>
+    getCachedSuperAdminFinanceReport(),
+  );
+
   const query = useQuery<SuperAdminFinanceReport>({
     queryKey: ["superadmin-finance-report"],
     queryFn: () => getSuperAdminFinanceReport(),
+    initialData,
     staleTime: 60_000,
   });
 
   const report = query.data;
-  const isLoading = query.isLoading;
+  const isDataReady = Boolean(report);
+  const isLoading = query.isLoading && !isDataReady;
 
   // Merge canonical HSN categories with live DB summary to guarantee all 6 key HSNs exist
   const completeHsnSummary = useMemo<HsnGroupSummary[]>(() => {
@@ -166,9 +173,11 @@ export function SuperAdminFinancialCockpitBoxes({
             "hover:-translate-y-1 hover:shadow-xl active:translate-y-0.5",
             palette.cardBorder,
             "border-t-white/95 dark:border-t-white/20 border-b-black/15 dark:border-b-black/50",
-            mismatch.isDeficit
-              ? "ring-2 ring-rose-500/25 dark:ring-rose-500/35"
-              : "ring-1 ring-emerald-500/20",
+            !isDataReady
+              ? "ring-1 ring-border/50"
+              : mismatch.isDeficit
+                ? "ring-2 ring-rose-500/25 dark:ring-rose-500/35"
+                : "ring-1 ring-emerald-500/20",
           )}
         >
           {/* Big Amount & Mismatch State */}
@@ -177,28 +186,35 @@ export function SuperAdminFinancialCockpitBoxes({
               Sales &amp; Purchase Invoicing Mismatch
             </div>
 
-            <div className="mt-1 flex items-baseline gap-2 flex-wrap">
-              <span
-                className={cn(
-                  "font-display text-2xl sm:text-3xl font-black tabular-nums tracking-tight drop-shadow-2xs",
-                  mismatch.isDeficit
-                    ? "text-rose-600 dark:text-rose-400"
-                    : mismatch.netMismatchValue < 0
-                      ? "text-emerald-600 dark:text-emerald-400"
-                      : "text-foreground",
-                )}
-              >
-                {mismatch.formattedMismatch}
-              </span>
+            {!isDataReady ? (
+              <div className="mt-1 space-y-1.5 py-1">
+                <div className="h-8 sm:h-9 w-40 bg-slate-200/80 dark:bg-slate-700/80 rounded-md animate-pulse" />
+                <div className="h-4 w-56 bg-slate-200/60 dark:bg-slate-700/60 rounded animate-pulse" />
+              </div>
+            ) : (
+              <div className="mt-1 flex items-baseline gap-2 flex-wrap">
+                <span
+                  className={cn(
+                    "font-display text-2xl sm:text-3xl font-black tabular-nums tracking-tight drop-shadow-2xs",
+                    mismatch.isDeficit
+                      ? "text-rose-600 dark:text-rose-400"
+                      : mismatch.netMismatchValue < 0
+                        ? "text-emerald-600 dark:text-emerald-400"
+                        : "text-foreground",
+                  )}
+                >
+                  {mismatch.formattedMismatch}
+                </span>
 
-              <span className="text-xs font-semibold text-muted-foreground">
-                {mismatch.isDeficit
-                  ? "unbacked sales (missing purchase invoices)"
-                  : mismatch.netMismatchValue < 0
-                    ? "inward bills ahead of sales (stock buffer)"
-                    : "sales and purchases fully equated"}
-              </span>
-            </div>
+                <span className="text-xs font-semibold text-muted-foreground">
+                  {mismatch.isDeficit
+                    ? "unbacked sales (missing purchase invoices)"
+                    : mismatch.netMismatchValue < 0
+                      ? "inward bills ahead of sales (stock buffer)"
+                      : "sales and purchases fully equated"}
+                </span>
+              </div>
+            )}
 
             {/* Inward vs Outward Metric Breakdown */}
             <div className="mt-3 grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-card/80 border border-border/60 text-xs">
@@ -206,47 +222,72 @@ export function SuperAdminFinancialCockpitBoxes({
                 <span className="text-[10px] uppercase font-bold text-muted-foreground block">
                   Billed Outward (Sales)
                 </span>
-                <span className="font-mono font-black text-foreground">
-                  {formatInr(mismatch.totalSoldValue)}
-                </span>
-                <span className="text-[10px] text-muted-foreground block">
-                  {mismatch.totalSoldQty.toLocaleString("en-IN")} units billed
-                </span>
+                {!isDataReady ? (
+                  <div className="space-y-1 mt-1">
+                    <div className="h-4 w-20 bg-slate-200/80 dark:bg-slate-700/80 rounded animate-pulse" />
+                    <div className="h-3 w-16 bg-slate-200/60 dark:bg-slate-700/60 rounded animate-pulse" />
+                  </div>
+                ) : (
+                  <>
+                    <span className="font-mono font-black text-foreground">
+                      {formatInr(mismatch.totalSoldValue)}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground block">
+                      {mismatch.totalSoldQty.toLocaleString("en-IN")} units billed
+                    </span>
+                  </>
+                )}
               </div>
               <div className="border-l border-border/60 pl-2.5">
                 <span className="text-[10px] uppercase font-bold text-muted-foreground block">
                   Inward Covered (Purchases)
                 </span>
-                <span className="font-mono font-black text-foreground">
-                  {formatInr(mismatch.totalPurchasedValue)}
-                </span>
-                <span className="text-[10px] text-muted-foreground block">
-                  {mismatch.totalPurchasedQty.toLocaleString("en-IN")} units covered
-                </span>
+                {!isDataReady ? (
+                  <div className="space-y-1 mt-1">
+                    <div className="h-4 w-20 bg-slate-200/80 dark:bg-slate-700/80 rounded animate-pulse" />
+                    <div className="h-3 w-16 bg-slate-200/60 dark:bg-slate-700/60 rounded animate-pulse" />
+                  </div>
+                ) : (
+                  <>
+                    <span className="font-mono font-black text-foreground">
+                      {formatInr(mismatch.totalPurchasedValue)}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground block">
+                      {mismatch.totalPurchasedQty.toLocaleString("en-IN")} units covered
+                    </span>
+                  </>
+                )}
               </div>
             </div>
 
             {/* Canonical HSN Ticker preview */}
             <div className="mt-3 flex items-center gap-1.5 flex-wrap">
-              {completeHsnSummary.slice(0, 4).map((h) => {
-                const isDef = h.status === "deficit" || h.soldQty > h.purchasedQty;
-                return (
-                  <span
-                    key={h.hsn4}
-                    className={cn(
-                      "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border",
-                      isDef
-                        ? "bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800"
-                        : "bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800",
-                    )}
-                  >
-                    <span>HSN {h.hsn4}</span>
-                    <span className="font-mono font-normal">
-                      {isDef ? `+${h.deficitQty} ${h.unit} needed` : "✓"}
-                    </span>
-                  </span>
-                );
-              })}
+              {!isDataReady
+                ? [1, 2, 3, 4].map((i) => (
+                    <div
+                      key={i}
+                      className="h-5 w-20 bg-slate-200/60 dark:bg-slate-700/60 rounded-md animate-pulse"
+                    />
+                  ))
+                : completeHsnSummary.slice(0, 4).map((h) => {
+                    const isDef = h.status === "deficit" || h.soldQty > h.purchasedQty;
+                    return (
+                      <span
+                        key={h.hsn4}
+                        className={cn(
+                          "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border",
+                          isDef
+                            ? "bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800"
+                            : "bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800",
+                        )}
+                      >
+                        <span>HSN {h.hsn4}</span>
+                        <span className="font-mono font-normal">
+                          {isDef ? `+${h.deficitQty} ${h.unit} needed` : "✓"}
+                        </span>
+                      </span>
+                    );
+                  })}
             </div>
 
             {/* Click to inspect footer */}
@@ -275,7 +316,11 @@ export function SuperAdminFinancialCockpitBoxes({
             "hover:-translate-y-1 hover:shadow-xl active:translate-y-0.5",
             palette.cardBorder,
             "border-t-white/95 dark:border-t-white/20 border-b-black/15 dark:border-b-black/50",
-            minHeadroom < 250000 ? "ring-2 ring-amber-500/25" : "ring-1 ring-primary/20",
+            !isDataReady
+              ? "ring-1 ring-border/50"
+              : minHeadroom < 250000
+                ? "ring-2 ring-amber-500/25"
+                : "ring-1 ring-primary/20",
           )}
         >
           {/* Big Amount: Headroom Left */}
@@ -284,46 +329,74 @@ export function SuperAdminFinancialCockpitBoxes({
               Remaining Personal Savings / UPI Headroom
             </div>
 
-            <div className="mt-1 flex items-baseline gap-2 flex-wrap">
-              <span className="font-display text-2xl sm:text-3xl font-black tabular-nums tracking-tight text-foreground drop-shadow-2xs">
-                {formatInr(minHeadroom)} Left
-              </span>
-              <span className="text-xs font-semibold text-muted-foreground">
-                before ₹10L statutory reporting limit
-              </span>
-            </div>
+            {!isDataReady ? (
+              <div className="mt-1 space-y-1.5 py-1">
+                <div className="h-8 sm:h-9 w-44 bg-slate-200/80 dark:bg-slate-700/80 rounded-md animate-pulse" />
+                <div className="h-4 w-52 bg-slate-200/60 dark:bg-slate-700/60 rounded animate-pulse" />
+              </div>
+            ) : (
+              <div className="mt-1 flex items-baseline gap-2 flex-wrap">
+                <span className="font-display text-2xl sm:text-3xl font-black tabular-nums tracking-tight text-foreground drop-shadow-2xs">
+                  {formatInr(minHeadroom)} Left
+                </span>
+                <span className="text-xs font-semibold text-muted-foreground">
+                  before ₹10L statutory reporting limit
+                </span>
+              </div>
+            )}
 
             {/* Partner Split Progress */}
             <div className="mt-3 space-y-2 p-2.5 rounded-xl bg-card/80 border border-border/60 text-xs">
-              {/* Raman */}
-              <div>
-                <div className="flex items-center justify-between font-semibold text-[11px]">
-                  <span className="text-foreground">Raman Personal UPI</span>
-                  <span className="font-mono tabular-nums text-muted-foreground">
-                    {formatInr(raman?.cumulativeInflowsInr ?? 0)} / ₹10L (
-                    {raman?.headroomInr ? `${formatInr(raman.headroomInr)} left` : "₹10L left"})
-                  </span>
+              {!isDataReady ? (
+                <div className="space-y-2.5 py-0.5">
+                  <div className="space-y-1">
+                    <div className="flex justify-between">
+                      <div className="h-3 w-28 bg-slate-200/80 dark:bg-slate-700/80 rounded animate-pulse" />
+                      <div className="h-3 w-32 bg-slate-200/60 dark:bg-slate-700/60 rounded animate-pulse" />
+                    </div>
+                    <div className="h-1.5 w-full bg-slate-200/60 dark:bg-slate-700/60 rounded animate-pulse" />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex justify-between">
+                      <div className="h-3 w-28 bg-slate-200/80 dark:bg-slate-700/80 rounded animate-pulse" />
+                      <div className="h-3 w-32 bg-slate-200/60 dark:bg-slate-700/60 rounded animate-pulse" />
+                    </div>
+                    <div className="h-1.5 w-full bg-slate-200/60 dark:bg-slate-700/60 rounded animate-pulse" />
+                  </div>
                 </div>
-                <Progress
-                  value={ramanUsage}
-                  className="h-1.5 mt-1 bg-slate-200 dark:bg-slate-800"
-                />
-              </div>
+              ) : (
+                <>
+                  {/* Raman */}
+                  <div>
+                    <div className="flex items-center justify-between font-semibold text-[11px]">
+                      <span className="text-foreground">Raman Personal UPI</span>
+                      <span className="font-mono tabular-nums text-muted-foreground">
+                        {formatInr(raman?.cumulativeInflowsInr ?? 0)} / ₹10L (
+                        {raman?.headroomInr ? `${formatInr(raman.headroomInr)} left` : "₹10L left"})
+                      </span>
+                    </div>
+                    <Progress
+                      value={ramanUsage}
+                      className="h-1.5 mt-1 bg-slate-200 dark:bg-slate-800"
+                    />
+                  </div>
 
-              {/* Rishi */}
-              <div>
-                <div className="flex items-center justify-between font-semibold text-[11px]">
-                  <span className="text-foreground">Rishi Personal UPI</span>
-                  <span className="font-mono tabular-nums text-muted-foreground">
-                    {formatInr(rishi?.cumulativeInflowsInr ?? 0)} / ₹10L (
-                    {rishi?.headroomInr ? `${formatInr(rishi.headroomInr)} left` : "₹10L left"})
-                  </span>
-                </div>
-                <Progress
-                  value={rishiUsage}
-                  className="h-1.5 mt-1 bg-slate-200 dark:bg-slate-800"
-                />
-              </div>
+                  {/* Rishi */}
+                  <div>
+                    <div className="flex items-center justify-between font-semibold text-[11px]">
+                      <span className="text-foreground">Rishi Personal UPI</span>
+                      <span className="font-mono tabular-nums text-muted-foreground">
+                        {formatInr(rishi?.cumulativeInflowsInr ?? 0)} / ₹10L (
+                        {rishi?.headroomInr ? `${formatInr(rishi.headroomInr)} left` : "₹10L left"})
+                      </span>
+                    </div>
+                    <Progress
+                      value={rishiUsage}
+                      className="h-1.5 mt-1 bg-slate-200 dark:bg-slate-800"
+                    />
+                  </div>
+                </>
+              )}
             </div>
 
             {/* FINANCIAL ANALYTICAL AI ADVISOR INSIGHT (EMBEDDED) */}
@@ -332,10 +405,14 @@ export function SuperAdminFinancialCockpitBoxes({
                 <Sparkles className="h-3.5 w-3.5 text-cyan-600 dark:text-cyan-400" />
                 <span>Financial Analytical AI Recommendation</span>
               </div>
-              <p className="mt-1 text-[11px] text-muted-foreground leading-relaxed line-clamp-2">
-                {topOffsetSuggestion?.summary ||
-                  "Direct customer cash payments to quarry or transport agency accounts to avoid hitting personal savings accounts."}
-              </p>
+              {!isDataReady ? (
+                <div className="h-3 w-4/5 bg-slate-200/60 dark:bg-slate-700/60 rounded animate-pulse mt-1.5" />
+              ) : (
+                <p className="mt-1 text-[11px] text-muted-foreground leading-relaxed line-clamp-2">
+                  {topOffsetSuggestion?.summary ||
+                    "Direct customer cash payments to quarry or transport agency accounts to avoid hitting personal savings accounts."}
+                </p>
+              )}
             </div>
 
             {/* Click to inspect footer */}
