@@ -1,16 +1,4 @@
-import {
-  ChevronDown,
-  RefreshCw,
-  HelpCircle,
-  CheckCircle2,
-  Megaphone,
-  Gauge,
-  ShieldAlert,
-  MessageSquare,
-  Globe,
-  ExternalLink,
-} from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { RefreshCw, HelpCircle, Megaphone, Gauge } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -55,39 +43,11 @@ export function ZohoDashboardHeader({
 
         <div className="flex items-center gap-2 shrink-0 ml-auto sm:ml-0">
           <Button
-            asChild
-            variant="outline"
-            size="sm"
-            className="engraved-well h-8 sm:h-9 gap-1.5 rounded-xl px-2.5 sm:px-3 text-xs font-bold text-sky-800 dark:text-sky-300 border-sky-300 dark:border-sky-800 bg-sky-50/50 hover:bg-sky-100/70 shadow-xs transition-all hover:scale-[1.02] cursor-pointer"
-            title="Open Stone Tech Public Website (opens in new browser tab)"
-          >
-            <a href="/" target="_blank" rel="noopener noreferrer">
-              <Globe className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
-              <span className="hidden sm:inline">Website</span>
-              <ExternalLink className="h-3 w-3 text-sky-600/70 dark:text-sky-400/70" />
-            </a>
-          </Button>
-
-          <Button
-            asChild
-            variant="outline"
-            size="sm"
-            className="engraved-well h-8 sm:h-9 gap-1.5 rounded-xl px-2.5 sm:px-3 text-xs font-bold text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 bg-emerald-50/50 hover:bg-emerald-100/70 shadow-xs transition-all hover:scale-[1.02] cursor-pointer"
-            title="Open WhatsApp Web & CRM (Option B: Linked Device · Chat Only)"
-          >
-            <Link to="/communication">
-              <MessageSquare className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-              <span className="hidden sm:inline">WhatsApp Web</span>
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            </Link>
-          </Button>
-
-          <Button
             variant="outline"
             size="sm"
             onClick={onRefresh}
             disabled={isRefreshing}
-            className="engraved-well h-8 sm:h-9 gap-1.5 rounded-xl px-2.5 sm:px-3 text-xs font-bold text-engraved-blue shadow-xs transition-all hover:scale-[1.02] hover:border-primary/60"
+            className="engraved-well h-8 sm:h-9 gap-1.5 rounded-xl px-2.5 sm:px-3 text-xs font-bold text-engraved-blue shadow-xs transition-all hover:scale-[1.02] hover:border-primary/60 cursor-pointer"
             title={t("common.refresh", "Refresh")}
           >
             <RefreshCw className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin text-primary")} />
