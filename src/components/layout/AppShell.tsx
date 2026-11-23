@@ -143,6 +143,7 @@ function NavLinkRow({
   collapsed,
   onNavigate,
   isChild = false,
+  external = false,
   onStartRename,
   onResetRename,
   onOpenCustomizeNav,
@@ -156,6 +157,7 @@ function NavLinkRow({
   collapsed?: boolean;
   onNavigate?: () => void;
   isChild?: boolean;
+  external?: boolean;
   onStartRename?: (target: RenameTarget) => void;
   onResetRename?: (id: string) => void;
   onOpenCustomizeNav?: () => void;
@@ -183,7 +185,45 @@ function NavLinkRow({
     }
   };
 
-  const link = (
+  const link = external ? (
+    <a
+      href={to}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`${label} (opens website in new tab)`}
+      onClick={() => onNavigate?.()}
+      className={cn(
+        "relative flex flex-1 items-center gap-2.5 rounded-lg outline-none cursor-pointer",
+        "transition-all duration-150 focus-visible:ring-2 focus-visible:ring-white/40",
+        collapsed
+          ? "justify-center p-2"
+          : isChild
+            ? "py-1.5 px-2.5 text-[12.5px]"
+            : "py-2 px-3 text-[13px]",
+        "text-sidebar-foreground/85 hover:bg-white/12 hover:text-white font-medium transition-all duration-150",
+      )}
+    >
+      {Icon && (
+        <Icon
+          className={cn(
+            "shrink-0 transition-all",
+            isChild ? "h-3.5 w-3.5 opacity-80" : "h-4 w-4",
+            "text-sidebar-foreground/80 group-hover:text-sidebar-foreground group-hover:opacity-100",
+          )}
+          aria-hidden
+        />
+      )}
+      {!collapsed && (
+        <>
+          <span className="min-w-0 flex-1 truncate">{label}</span>
+          <ExternalLink
+            className="h-3 w-3 text-sidebar-foreground/60 shrink-0 ml-auto"
+            aria-hidden
+          />
+        </>
+      )}
+    </a>
+  ) : (
     <Link
       to={toPath as never}
       search={(searchParams || undefined) as never}
@@ -408,6 +448,27 @@ function NavGroupRow({
                       const searchObj = itemQuery
                         ? Object.fromEntries(new URLSearchParams(itemQuery).entries())
                         : undefined;
+                      const labelText = getLabel(
+                        item.id,
+                        t(`nav.items.${item.id}`, item.label),
+                        item.label,
+                      );
+                      if (item.external) {
+                        return (
+                          <a
+                            key={item.id}
+                            href={item.to}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={onNavigate}
+                            className="flex items-center gap-2 rounded px-2 py-1 text-[11.5px] transition-colors text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                          >
+                            <item.icon className="h-3 w-3 shrink-0 opacity-80" />
+                            <span className="truncate">{labelText}</span>
+                            <ExternalLink className="h-2.5 w-2.5 ml-auto text-sidebar-foreground/60" />
+                          </a>
+                        );
+                      }
                       return (
                         <Link
                           key={item.id}
@@ -422,9 +483,7 @@ function NavGroupRow({
                           )}
                         >
                           <item.icon className="h-3 w-3 shrink-0 opacity-80" />
-                          <span className="truncate">
-                            {getLabel(item.id, t(`nav.items.${item.id}`, item.label), item.label)}
-                          </span>
+                          <span className="truncate">{labelText}</span>
                         </Link>
                       );
                     })}
@@ -642,6 +701,7 @@ function NavGroupRow({
                 collapsed={collapsed}
                 onNavigate={onNavigate}
                 isChild
+                external={item.external}
                 onStartRename={onStartRename}
                 onResetRename={onResetRename}
                 onOpenCustomizeNav={onOpenCustomizeNav}
@@ -880,6 +940,21 @@ function UserMenu({
         </div>
 
         <div className="bg-surface-card py-1">
+          <DropdownMenuItem asChild>
+            <a
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center w-full cursor-pointer text-xs"
+            >
+              <Globe className="mr-2 h-4 w-4 text-sky-600 dark:text-sky-400" aria-hidden />
+              <span className="flex-1 font-medium">
+                {t("user.visitWebsite", "Visit Public Website")}
+              </span>
+              <ExternalLink className="ml-auto h-3.5 w-3.5 text-muted-foreground" aria-hidden />
+            </a>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => void navigate({ to: "/settings" })}>
             <UserIcon className="mr-2 h-4 w-4" aria-hidden />
             {t("user.profile", "Profile")}
@@ -1433,6 +1508,20 @@ export function AppShell({ children }: { children: ReactNode }) {
               <div className="hidden sm:inline-flex">
                 <SyncStatusIndicator />
               </div>
+              <a
+                href="/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2 sm:px-2.5 text-xs font-bold bg-sky-50 text-sky-800 hover:bg-sky-100 dark:bg-sky-950/40 dark:text-sky-300 dark:hover:bg-sky-900/50 border border-sky-300/80 dark:border-sky-800 transition-all shadow-2xs cursor-pointer"
+                title={t(
+                  "header.openWebsite",
+                  "Visit Stone Tech Public Website (opens in new browser tab)",
+                )}
+              >
+                <Globe className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
+                <span className="hidden md:inline">{t("header.website", "Website")}</span>
+                <ExternalLink className="h-3 w-3 text-sky-600/70 dark:text-sky-400/70" />
+              </a>
               <Link
                 to="/communication"
                 className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2 sm:px-2.5 text-xs font-bold bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/50 border border-emerald-300/80 dark:border-emerald-800 transition-all shadow-2xs cursor-pointer"

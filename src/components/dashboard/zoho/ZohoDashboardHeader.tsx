@@ -7,6 +7,8 @@ import {
   Gauge,
   ShieldAlert,
   MessageSquare,
+  Globe,
+  ExternalLink,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
@@ -52,6 +54,20 @@ export function ZohoDashboardHeader({
         </div>
 
         <div className="flex items-center gap-2 shrink-0 ml-auto sm:ml-0">
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="engraved-well h-8 sm:h-9 gap-1.5 rounded-xl px-2.5 sm:px-3 text-xs font-bold text-sky-800 dark:text-sky-300 border-sky-300 dark:border-sky-800 bg-sky-50/50 hover:bg-sky-100/70 shadow-xs transition-all hover:scale-[1.02] cursor-pointer"
+            title="Open Stone Tech Public Website (opens in new browser tab)"
+          >
+            <a href="/" target="_blank" rel="noopener noreferrer">
+              <Globe className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
+              <span className="hidden sm:inline">Website</span>
+              <ExternalLink className="h-3 w-3 text-sky-600/70 dark:text-sky-400/70" />
+            </a>
+          </Button>
+
           <Button
             asChild
             variant="outline"

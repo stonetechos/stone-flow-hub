@@ -145,6 +145,7 @@ export interface NavItemDef {
   adminOnly?: boolean;
   superAdminOnly?: boolean;
   allowedRoles?: readonly AppRole[];
+  external?: boolean;
 }
 
 export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
@@ -547,6 +548,14 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     group: "settings",
   },
   {
+    id: "public-website",
+    to: "/",
+    label: "Visit Public Website",
+    icon: Globe,
+    group: "settings",
+    external: true,
+  },
+  {
     id: "settings",
     to: "/settings",
     label: "Profile & Preferences",
@@ -572,6 +581,7 @@ export function findNavItemForPath(pathname: string): NavItemDef | undefined {
   let bestScore = -1;
 
   for (const item of NAV_ITEMS) {
+    if (item.external) continue;
     const [itemPath, itemSearch] = item.to.split("?");
     const itemParams = itemSearch ? new URLSearchParams(itemSearch) : null;
 
@@ -617,6 +627,7 @@ export function findNavItemForPath(pathname: string): NavItemDef | undefined {
  * only the most specific nav item is active, preventing both tabs from highlighting together.
  */
 export function isNavItemActive(item: NavItemDef, currentPath: string): boolean {
+  if (item.external) return false;
   const activeDef = findNavItemForPath(currentPath);
   if (activeDef) {
     return activeDef.id === item.id;

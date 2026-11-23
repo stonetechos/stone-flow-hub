@@ -90,4 +90,20 @@ describe("Navigation active item resolution", () => {
     );
     expect(accountantGroup).toBeDefined();
   });
+
+  test("defines external public-website link that opens in a new tab and does not falsely activate on software routes", () => {
+    const websiteItem = NAV_ITEMS_BY_ID["public-website"];
+    expect(websiteItem).toBeDefined();
+    expect(websiteItem.to).toBe("/");
+    expect(websiteItem.group).toBe("settings");
+    expect(websiteItem.external).toBe(true);
+
+    // It should never be active when navigating inside STOS
+    expect(isNavItemActive(websiteItem, "/dashboard")).toBe(false);
+    expect(isNavItemActive(websiteItem, "/settings")).toBe(false);
+
+    // findNavItemForPath should not match external items
+    const match = findNavItemForPath("/");
+    expect(match?.id).not.toBe("public-website");
+  });
 });
