@@ -59,6 +59,7 @@ import {
 import { TransferOwnershipDialog } from "@/components/ownership/TransferOwnershipDialog";
 import { ReassignCustomerDialog } from "@/components/quotes/ReassignCustomerDialog";
 import { QuoteSendRfqDialog } from "@/components/rfqs/QuoteSendRfqDialog";
+import { AskQuoteUpdateDialog } from "@/components/quotes/AskQuoteUpdateDialog";
 import { AssignQuoteVendorDialog } from "@/components/quotes/AssignQuoteVendorDialog";
 import { CustomerAssigneeSelect } from "@/components/customers/CustomerAssigneeSelect";
 import { parseQuoteVendorAssignment } from "@/lib/quotes/vendor-assignment";
@@ -135,6 +136,7 @@ function QuoteDetailPage() {
   const [reassignOpen, setReassignOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
   const [rfqOpen, setRfqOpen] = useState(false);
+  const [askUpdateOpen, setAskUpdateOpen] = useState(false);
   const [assignVendorOpen, setAssignVendorOpen] = useState(false);
   const roles = useRoles();
   const canReassign = roles.isAdmin || roles.isSalesManager;
@@ -658,6 +660,17 @@ function QuoteDetailPage() {
 
                 <Button
                   size="sm"
+                  variant="outline"
+                  className="hidden sm:inline-flex text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800 border-emerald-300 dark:border-emerald-700/60 dark:text-emerald-400 font-semibold shadow-xs"
+                  onClick={() => setAskUpdateOpen(true)}
+                  title="Ask for status update via WhatsApp with quotation details & negotiation options"
+                >
+                  <MessageCircle className="mr-1.5 h-4 w-4 text-emerald-600" />
+                  Ask for Update
+                </Button>
+
+                <Button
+                  size="sm"
                   className="hidden lg:inline-flex bg-emerald-600 hover:bg-emerald-700 text-white font-medium shadow-xs"
                   onClick={() => setRfqOpen(true)}
                   title="Send WhatsApp RFQ to category partners with product images & assign order"
@@ -761,6 +774,11 @@ function QuoteDetailPage() {
                   : "Assign Live Stock / Partner",
                 icon: <Boxes className="h-4 w-4 text-emerald-600" />,
                 onSelect: () => setAssignVendorOpen(true),
+              },
+              {
+                label: "Ask for Update (WhatsApp)",
+                icon: <MessageCircle className="h-4 w-4 text-emerald-600" />,
+                onSelect: () => setAskUpdateOpen(true),
               },
               {
                 label: "WhatsApp RFQ to Partners",
@@ -1610,7 +1628,15 @@ function QuoteDetailPage() {
                 )}
               </div>
             </div>
-            <div className="border-t border-border pt-3">
+            <div className="border-t border-border pt-3 space-y-2">
+              <Button
+                size="sm"
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium shadow-xs"
+                onClick={() => setAskUpdateOpen(true)}
+              >
+                <MessageCircle className="mr-1.5 h-4 w-4" />
+                Ask for Update via WhatsApp
+              </Button>
               <Button
                 size="sm"
                 variant="outline"
@@ -1809,6 +1835,15 @@ function QuoteDetailPage() {
         enquiryId={quote.enquiry_id}
         projectId={quote.project_id}
         customerId={quote.customer_id}
+      />
+
+      <AskQuoteUpdateDialog
+        open={askUpdateOpen}
+        onOpenChange={setAskUpdateOpen}
+        quote={quote}
+        onSuccess={() => {
+          invalidateQuote(qc, quoteId);
+        }}
       />
 
       <Dialog open={Boolean(previewImage)} onOpenChange={(open) => !open && setPreviewImage(null)}>

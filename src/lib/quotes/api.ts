@@ -22,6 +22,8 @@ export type QuoteListItem = QuoteRow & {
     id: string;
     name: string;
     customer_code: string;
+    primary_phone?: string | null;
+    whatsapp?: string | null;
     workflow_state?: unknown;
     external_ref?: unknown;
   } | null;
@@ -35,7 +37,7 @@ export type QuoteListItem = QuoteRow & {
 };
 
 const SELECT_WITH_JOINS =
-  "*, customer:customers!quotes_customer_id_fkey(id,name,customer_code,workflow_state,external_ref), project:projects!quotes_project_id_fkey(id,name,project_code), invoices:invoices!invoices_quote_id_fkey(id,invoice_no,status,total)";
+  "*, customer:customers!quotes_customer_id_fkey(id,name,customer_code,primary_phone,whatsapp,workflow_state,external_ref), project:projects!quotes_project_id_fkey(id,name,project_code), invoices:invoices!invoices_quote_id_fkey(id,invoice_no,status,total)";
 
 /**
  * Lightweight projection for list views and picker dropdowns — excludes heavy
@@ -43,7 +45,7 @@ const SELECT_WITH_JOINS =
  * transfer kilobytes instead of megabytes over the network.
  */
 const SELECT_LIST_FIELDS =
-  "id,quote_no,customer_id,project_id,enquiry_id,status,category,valid_until,issue_date,created_at,subtotal,tax_amount,total,notes,workflow_state, customer:customers!quotes_customer_id_fkey(id,name,customer_code,workflow_state), project:projects!quotes_project_id_fkey(id,name,project_code), invoices:invoices!invoices_quote_id_fkey(id,invoice_no,status,total)";
+  "id,quote_no,customer_id,project_id,enquiry_id,status,category,valid_until,issue_date,created_at,subtotal,tax_amount,total,notes,workflow_state, customer:customers!quotes_customer_id_fkey(id,name,customer_code,primary_phone,whatsapp,workflow_state), project:projects!quotes_project_id_fkey(id,name,project_code), invoices:invoices!invoices_quote_id_fkey(id,invoice_no,status,total)";
 
 function reconcileQuoteItem(quote: QuoteListItem, persistHeal = false): QuoteListItem {
   if (quote.workflow_state && typeof quote.workflow_state === "object") {

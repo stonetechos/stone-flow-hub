@@ -26,6 +26,7 @@ import {
 import { parseQuoteVendorAssignment, assignVendorToQuote } from "@/lib/quotes/vendor-assignment";
 import { AssignQuoteVendorDialog } from "@/components/quotes/AssignQuoteVendorDialog";
 import { QuoteSendRfqDialog } from "@/components/rfqs/QuoteSendRfqDialog";
+import { AskQuoteUpdateDialog } from "@/components/quotes/AskQuoteUpdateDialog";
 import { CustomerAssigneeSelect } from "@/components/customers/CustomerAssigneeSelect";
 import { QuoteTermsManager } from "@/components/quotes/QuoteTermsManager";
 import {
@@ -159,6 +160,7 @@ function QuotesPage() {
   );
   const [assigningQuote, setAssigningQuote] = useState<QuoteListItem | null>(null);
   const [rfqQuote, setRfqQuote] = useState<QuoteListItem | null>(null);
+  const [askUpdateQuote, setAskUpdateQuote] = useState<QuoteListItem | null>(null);
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
@@ -620,6 +622,68 @@ function QuotesPage() {
                       </Badge>
                       <RowActions
                         canEdit={true}
+                        canDelete={true}
+                        extra={
+                          <>
+                            <DropdownMenuItem
+                              onClick={() => setAskUpdateQuote(r)}
+                              className="text-emerald-700 dark:text-emerald-400 font-semibold cursor-pointer"
+                            >
+                              <MessageCircle className="mr-2 h-4 w-4 text-emerald-600" />
+                              Ask for Update
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                nav({
+                                  to: "/dispatch/new",
+                                  search: { quote: r.id, customer: r.customer_id },
+                                })
+                              }
+                            >
+                              <Truck className="mr-2 h-4 w-4 text-emerald-600" />
+                              Issue Delivery Challan
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setRfqQuote(r)}>
+                              <MessageCircle className="mr-2 h-4 w-4 text-emerald-600" />
+                              WhatsApp RFQ / Sourcing
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setAssigningQuote(r)}>
+                              <Building2 className="mr-2 h-4 w-4" />
+                              Assign Vendor / Delivery Date
+                            </DropdownMenuItem>
+                            {r.status !== "rejected" && r.status !== "converted" && (
+                              <DropdownMenuItem
+                                className="text-rose-600 focus:text-rose-600 focus:bg-rose-50"
+                                onClick={() =>
+                                  changeStatusMut.mutate({ id: r.id, status: "rejected" })
+                                }
+                              >
+                                <XCircle className="mr-2 h-4 w-4 text-rose-600" />
+                                Mark as Declined
+                              </DropdownMenuItem>
+                            )}
+                            {r.status === "rejected" && (
+                              <DropdownMenuItem
+                                className="text-sky-600 focus:text-sky-600 focus:bg-sky-50"
+                                onClick={() => changeStatusMut.mutate({ id: r.id, status: "sent" })}
+                              >
+                                <RefreshCw className="mr-2 h-4 w-4 text-sky-600" />
+                                Reopen (Mark as Sent)
+                              </DropdownMenuItem>
+                            )}
+                            {r.status !== "accepted" && r.status !== "converted" && (
+                              <DropdownMenuItem
+                                className="text-emerald-600 focus:text-emerald-600 focus:bg-emerald-50"
+                                onClick={() =>
+                                  changeStatusMut.mutate({ id: r.id, status: "accepted" })
+                                }
+                              >
+                                <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-600" />
+                                Mark as Accepted
+                              </DropdownMenuItem>
+                            )}
+                          </>
+                        }
                         onEdit={() =>
                           nav({ to: "/quotes/$quoteId/edit", params: { quoteId: r.id } })
                         }
@@ -1115,6 +1179,13 @@ function QuotesPage() {
                           extra={
                             <>
                               <DropdownMenuItem
+                                onClick={() => setAskUpdateQuote(r)}
+                                className="text-emerald-700 dark:text-emerald-400 font-semibold cursor-pointer"
+                              >
+                                <MessageCircle className="mr-2 h-4 w-4 text-emerald-600" />
+                                Ask for Update
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
                                 onClick={() =>
                                   nav({
                                     to: "/dispatch/new",
@@ -1246,6 +1317,19 @@ function QuotesPage() {
           customerId={rfqQuote.customer_id}
           enquiryId={rfqQuote.enquiry_id}
           onAssigned={() => {
+            invalidateQuote(qc);
+          }}
+        />
+      )}
+
+      {askUpdateQuote && (
+        <AskQuoteUpdateDialog
+          open={!!askUpdateQuote}
+          onOpenChange={(o) => {
+            if (!o) setAskUpdateQuote(null);
+          }}
+          quote={askUpdateQuote}
+          onSuccess={() => {
             invalidateQuote(qc);
           }}
         />
