@@ -49,7 +49,7 @@ export function WhatsappOneTimeSyncDialog({
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [activeTab, setActiveTab] = useState<"import" | "web-dock" | "crm-sync">("import");
+  const [activeTab, setActiveTab] = useState<"web-dock" | "crm-sync" | "import">("web-dock");
   const [rawText, setRawText] = useState("");
   const [contactName, setContactName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -200,25 +200,25 @@ export function WhatsappOneTimeSyncDialog({
           >
             <TabsList className="grid grid-cols-3 bg-muted/60 p-1 rounded-xl text-xs">
               <TabsTrigger
-                value="import"
-                className="gap-1.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs font-semibold"
-              >
-                <UploadCloud className="h-3.5 w-3.5 text-emerald-600" />
-                <span>Import Chat Export</span>
-              </TabsTrigger>
-              <TabsTrigger
                 value="web-dock"
                 className="gap-1.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs font-semibold"
               >
                 <ExternalLink className="h-3.5 w-3.5 text-emerald-600" />
-                <span>Launch Web Dock</span>
+                <span>Web Dock (Option B)</span>
               </TabsTrigger>
               <TabsTrigger
                 value="crm-sync"
                 className="gap-1.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs font-semibold"
               >
                 <Users className="h-3.5 w-3.5 text-emerald-600" />
-                <span>CRM Contacts Sync</span>
+                <span>Sync CRM Directory</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="import"
+                className="gap-1.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs font-semibold"
+              >
+                <UploadCloud className="h-3.5 w-3.5 text-emerald-600" />
+                <span>Import Chat (.txt)</span>
               </TabsTrigger>
             </TabsList>
 
@@ -353,7 +353,7 @@ export function WhatsappOneTimeSyncDialog({
               </div>
             </TabsContent>
 
-            {/* TAB 2: OFFICIAL WHATSAPP WEB LIVE DOCK */}
+            {/* TAB 1: OFFICIAL WHATSAPP WEB LIVE DOCK (OPTION B) */}
             <TabsContent value="web-dock" className="space-y-4 pt-1 text-xs">
               <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4 dark:border-slate-800 dark:bg-slate-900/40 space-y-3">
                 <div className="flex items-start gap-3">
@@ -362,40 +362,73 @@ export function WhatsappOneTimeSyncDialog({
                   </div>
                   <div className="space-y-1">
                     <h4 className="font-bold text-sm text-foreground">
-                      Official WhatsApp Web Live Dock
+                      Official WhatsApp Web Live Dock (Option B)
                     </h4>
                     <p className="text-muted-foreground text-xs leading-relaxed">
-                      Launch WhatsApp Web in an independent, distraction-free companion window. Once
-                      you scan the QR code once on <code>web.whatsapp.com</code>, Safari/Chrome
-                      keeps your business session permanently active without needing the MacBook
-                      desktop app.
+                      Launch WhatsApp Web in an independent, distraction-free companion window or
+                      browser tab. Once you scan the QR code once on <code>web.whatsapp.com</code>{" "}
+                      using <b>{OFFICIAL_STONE_TECH_WHATSAPP}</b>, your browser keeps your business
+                      session permanently active without needing the MacBook desktop app.
                     </p>
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                {/* 3-Step Scan Instructions */}
+                <div className="rounded-lg border border-emerald-200/80 bg-emerald-50/50 dark:border-emerald-900/40 dark:bg-emerald-950/20 p-3 space-y-1.5 text-[11px]">
+                  <div className="font-bold text-emerald-950 dark:text-emerald-200 flex items-center gap-1.5">
+                    <Smartphone className="h-3.5 w-3.5 text-emerald-600" />
+                    <span>How to connect in 30 seconds:</span>
+                  </div>
+                  <ol className="list-decimal pl-4 space-y-1 text-emerald-900/90 dark:text-emerald-300/90">
+                    <li>
+                      Click <b>Launch Official WhatsApp Web</b> below
+                    </li>
+                    <li>
+                      On your phone (<b>{OFFICIAL_STONE_TECH_WHATSAPP}</b>), open WhatsApp →{" "}
+                      <b>Settings</b> / <b>⋮</b> → <b>Linked Devices</b> → <b>Link a Device</b>
+                    </li>
+                    <li>Scan the official QR code on screen. That&apos;s all!</li>
+                  </ol>
+                </div>
+
+                <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
                   <span className="text-[11px] text-muted-foreground">
                     Connected Business Line: <b>{OFFICIAL_STONE_TECH_WHATSAPP}</b>
                   </span>
-                  <Button
-                    size="sm"
-                    onClick={handleLaunchWebDock}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs gap-1.5 shadow-xs cursor-pointer"
-                  >
-                    <ExternalLink className="h-3.5 w-3.5" />
-                    Launch WhatsApp Web Dock
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        window.open("https://web.whatsapp.com", "_blank", "noopener,noreferrer");
+                        toast.success("WhatsApp Web opened in new tab. Point your phone to scan!");
+                      }}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs gap-1.5 shadow-xs cursor-pointer"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      Launch Official WhatsApp Web
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleLaunchWebDock}
+                      className="border-emerald-300 text-emerald-800 hover:bg-emerald-50 dark:text-emerald-300 font-bold text-xs gap-1.5 cursor-pointer"
+                    >
+                      <Zap className="h-3.5 w-3.5" />
+                      Launch Companion Window
+                    </Button>
+                  </div>
                 </div>
               </div>
 
               <div className="rounded-xl border border-indigo-200 bg-indigo-50/50 p-3.5 space-y-1 dark:border-indigo-900/40 dark:bg-indigo-950/20 text-[11px]">
                 <div className="font-bold text-indigo-950 dark:text-indigo-200">
-                  How the Web Dock & STOS Work Together:
+                  How the Web Dock &amp; STOS Work Together:
                 </div>
                 <p className="text-indigo-900/80 dark:text-indigo-300/80 leading-relaxed">
-                  You can keep the WhatsApp Web Dock open alongside STOS. Whenever you click{" "}
-                  <b>Attach Catalog PDF</b> or <b>Share Quotation</b> inside STOS, it formats the
-                  client message and dispatches it directly through your logged-in WhatsApp session!
+                  You can keep WhatsApp Web open alongside STOS. Whenever you click{" "}
+                  <b>Attach Catalog PDF</b>, <b>Share Quotation</b>, or send a message inside STOS,
+                  it formats the client message and dispatches it directly through your logged-in
+                  WhatsApp session!
                 </p>
               </div>
             </TabsContent>
@@ -427,7 +460,6 @@ export function WhatsappOneTimeSyncDialog({
                     variant="outline"
                     onClick={() => {
                       onSyncCrmContacts?.();
-                      toast.success("Synchronized real CRM customers into WhatsApp workspace!");
                       onOpenChange(false);
                     }}
                     className="border-indigo-300 text-indigo-700 hover:bg-indigo-50 dark:text-indigo-300 font-bold text-xs gap-1.5 cursor-pointer"

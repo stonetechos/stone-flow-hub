@@ -75,7 +75,7 @@ export function buildWhatsappWaMeUrl(phone: string, text: string): string {
 
 /**
  * Reads user's stored WhatsApp mode preference ("app" | "web" | "wa.me").
- * Defaults to "app" (WhatsApp Desktop / WhatsApp for Business).
+ * Defaults to "web" (WhatsApp Web direct) for immediate browser compatibility.
  */
 export function getWhatsappModePreference(): WhatsappMode {
   try {
@@ -88,7 +88,7 @@ export function getWhatsappModePreference(): WhatsappMode {
   } catch {
     /* ignore localStorage errors */
   }
-  return "app";
+  return "web";
 }
 
 /**

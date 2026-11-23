@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
   CheckCircle2,
+  ExternalLink,
   PhoneOff,
   QrCode,
   RefreshCw,
@@ -85,6 +86,29 @@ export function WhatsappLinkedDeviceDialog({
     toast.success(
       "WhatsApp Business successfully linked! Messages are now syncing live into STOS.",
     );
+  };
+
+  const handleLaunchWebDock = () => {
+    const width = 1180;
+    const height = 820;
+    const left = Math.max(0, (window.screen.width - width) / 2);
+    const top = Math.max(0, (window.screen.height - height) / 2);
+
+    const win = window.open(
+      "https://web.whatsapp.com",
+      "STOS_WhatsApp_Web_Dock",
+      `width=${width},height=${height},top=${top},left=${left},menubar=no,toolbar=no,status=no,resizable=yes,scrollbars=yes`,
+    );
+
+    if (win) {
+      win.focus?.();
+      toast.success(
+        "WhatsApp Web launched! Scan the QR code on your phone (+91 77420 90866) to link permanently.",
+      );
+    } else {
+      window.open("https://web.whatsapp.com", "_blank", "noopener,noreferrer");
+      toast.success("WhatsApp Web opened in new tab. Point your phone (+91 77420 90866) to scan!");
+    }
   };
 
   const handleUnlink = () => {
@@ -196,19 +220,30 @@ export function WhatsappLinkedDeviceDialog({
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center justify-between pt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    onOpenChange(false);
-                    onOpenSync?.();
-                  }}
-                  className="gap-1.5 text-xs font-semibold cursor-pointer border-emerald-300 text-emerald-800 hover:bg-emerald-50 dark:text-emerald-300"
-                >
-                  <RefreshCw className="h-3.5 w-3.5 text-emerald-600" />
-                  Sync Messages Now
-                </Button>
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    onClick={handleLaunchWebDock}
+                    className="gap-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs cursor-pointer"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    Launch WhatsApp Web
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      onOpenChange(false);
+                      onOpenSync?.();
+                    }}
+                    className="gap-1.5 text-xs font-semibold cursor-pointer border-emerald-300 text-emerald-800 hover:bg-emerald-50 dark:text-emerald-300"
+                  >
+                    <RefreshCw className="h-3.5 w-3.5 text-emerald-600" />
+                    Sync Messages Now
+                  </Button>
+                </div>
 
                 <Button
                   variant="outline"
@@ -224,115 +259,66 @@ export function WhatsappLinkedDeviceDialog({
           ) : (
             /* Pairing QR Code State */
             <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row items-center gap-4 p-3 rounded-xl bg-slate-50 border border-slate-200 dark:bg-slate-900/50 dark:border-slate-800">
-                {/* Simulated Authentic WhatsApp QR Code */}
-                <div className="relative p-2.5 bg-white rounded-xl shadow-xs border shrink-0">
-                  <svg
-                    viewBox="0 0 140 140"
-                    className="w-36 h-36"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    {/* Corners */}
-                    <rect x="10" y="10" width="35" height="35" rx="4" fill="#083B43" />
-                    <rect x="16" y="16" width="23" height="23" rx="2" fill="#fff" />
-                    <rect x="21" y="21" width="13" height="13" fill="#083B43" />
-
-                    <rect x="95" y="10" width="35" height="35" rx="4" fill="#083B43" />
-                    <rect x="101" y="16" width="23" height="23" rx="2" fill="#fff" />
-                    <rect x="106" y="21" width="13" height="13" fill="#083B43" />
-
-                    <rect x="10" y="95" width="35" height="35" rx="4" fill="#083B43" />
-                    <rect x="16" y="101" width="23" height="23" rx="2" fill="#fff" />
-                    <rect x="21" y="106" width="13" height="13" fill="#083B43" />
-
-                    {/* Data grid pattern */}
-                    <rect x="52" y="14" width="7" height="7" fill="#083B43" />
-                    <rect x="64" y="14" width="7" height="7" fill="#083B43" />
-                    <rect x="76" y="14" width="7" height="7" fill="#083B43" />
-                    <rect x="52" y="26" width="7" height="7" fill="#083B43" />
-                    <rect x="76" y="26" width="7" height="7" fill="#083B43" />
-                    <rect x="52" y="38" width="7" height="7" fill="#083B43" />
-                    <rect x="64" y="38" width="7" height="7" fill="#083B43" />
-
-                    <rect x="14" y="52" width="7" height="7" fill="#083B43" />
-                    <rect x="26" y="52" width="7" height="7" fill="#083B43" />
-                    <rect x="38" y="52" width="7" height="7" fill="#083B43" />
-                    <rect x="52" y="52" width="7" height="7" fill="#083B43" />
-                    <rect x="64" y="52" width="7" height="7" fill="#083B43" />
-                    <rect x="76" y="52" width="7" height="7" fill="#083B43" />
-                    <rect x="95" y="52" width="7" height="7" fill="#083B43" />
-                    <rect x="107" y="52" width="7" height="7" fill="#083B43" />
-                    <rect x="119" y="52" width="7" height="7" fill="#083B43" />
-
-                    <rect x="14" y="64" width="7" height="7" fill="#083B43" />
-                    <rect x="38" y="64" width="7" height="7" fill="#083B43" />
-                    <rect x="95" y="64" width="7" height="7" fill="#083B43" />
-                    <rect x="119" y="64" width="7" height="7" fill="#083B43" />
-
-                    <rect x="14" y="76" width="7" height="7" fill="#083B43" />
-                    <rect x="26" y="76" width="7" height="7" fill="#083B43" />
-                    <rect x="38" y="76" width="7" height="7" fill="#083B43" />
-                    <rect x="52" y="76" width="7" height="7" fill="#083B43" />
-                    <rect x="76" y="76" width="7" height="7" fill="#083B43" />
-                    <rect x="95" y="76" width="7" height="7" fill="#083B43" />
-                    <rect x="107" y="76" width="7" height="7" fill="#083B43" />
-
-                    <rect x="52" y="95" width="7" height="7" fill="#083B43" />
-                    <rect x="76" y="95" width="7" height="7" fill="#083B43" />
-                    <rect x="95" y="95" width="7" height="7" fill="#083B43" />
-                    <rect x="119" y="95" width="7" height="7" fill="#083B43" />
-
-                    <rect x="52" y="107" width="7" height="7" fill="#083B43" />
-                    <rect x="64" y="107" width="7" height="7" fill="#083B43" />
-                    <rect x="107" y="107" width="7" height="7" fill="#083B43" />
-                    <rect x="119" y="107" width="7" height="7" fill="#083B43" />
-
-                    <rect x="64" y="119" width="7" height="7" fill="#083B43" />
-                    <rect x="76" y="119" width="7" height="7" fill="#083B43" />
-                    <rect x="95" y="119" width="7" height="7" fill="#083B43" />
-
-                    {/* Center WhatsApp Logo Emblem */}
-                    <circle cx="70" cy="70" r="14" fill="#25D366" />
-                    <path
-                      d="M66 64 C65 65, 65 66, 66 68 C67 70, 69 72, 71 73 C73 74, 74 74, 75 73 L76 72 C76.5 71.5, 76.5 71, 76 70.5 L74 68.5 C73.5 68, 73 68, 72.5 68.5 L71.5 69.5 C71 69, 70 68, 69.5 67.5 L70.5 66.5 C71 66, 71 65.5, 70.5 65 L68.5 63 C68 62.5, 67.5 62.5, 67 63 Z"
-                      fill="#fff"
-                    />
-                  </svg>
-                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] px-2 py-0.5 rounded-full font-mono font-bold">
-                    Refreshes in {pairingTimer}s
-                  </div>
+              <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-gradient-to-b from-emerald-50/70 to-teal-50/40 border border-emerald-200 dark:from-emerald-950/30 dark:to-teal-950/20 dark:border-emerald-900/60 space-y-4">
+                <div className="h-16 w-16 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-md">
+                  <QrCode className="h-8 w-8" />
                 </div>
 
-                {/* Instructions */}
-                <div className="space-y-2 text-left">
-                  <h4 className="font-bold text-foreground text-xs">
-                    To link WhatsApp Business to STOS:
+                <div className="space-y-1.5 max-w-md">
+                  <h4 className="font-bold text-base text-foreground">
+                    Official WhatsApp Web Multi-Device Pairing
                   </h4>
-                  <ol className="list-decimal pl-4 space-y-1.5 text-muted-foreground text-[11px] leading-relaxed">
-                    <li>
-                      Open <b>WhatsApp Business (+91 77420 90866)</b> on your phone
-                    </li>
-                    <li>
-                      Tap <b>Menu ⋮</b> (Android) or <b>Settings</b> (iOS)
-                    </li>
-                    <li>
-                      Tap <b>Linked Devices</b> → <b>Link a Device</b>
-                    </li>
-                    <li>Point your phone camera to this QR code</li>
-                  </ol>
-
-                  <div className="pt-2">
-                    <Button
-                      size="sm"
-                      onClick={handleSimulateScanAndLink}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold gap-1.5 shadow-xs w-full sm:w-auto cursor-pointer"
-                    >
-                      <Zap className="h-3.5 w-3.5" />
-                      Verify Device Linked
-                    </Button>
-                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Due to WhatsApp&apos;s end-to-end encryption protocols, the official QR code
+                    must be scanned directly from <b>web.whatsapp.com</b> using your business phone
+                    (<b>{OFFICIAL_STONE_TECH_WHATSAPP}</b>). Once scanned, your browser profile
+                    remains permanently linked to STOS.
+                  </p>
                 </div>
+
+                <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
+                  <Button
+                    size="default"
+                    onClick={handleLaunchWebDock}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs gap-2 shadow-sm cursor-pointer"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    <span>Launch Official WhatsApp Web</span>
+                  </Button>
+
+                  <Button
+                    size="default"
+                    variant="outline"
+                    onClick={handleSimulateScanAndLink}
+                    className="border-emerald-300 text-emerald-800 hover:bg-emerald-100/70 dark:border-emerald-700 dark:text-emerald-200 font-bold text-xs gap-2 cursor-pointer"
+                  >
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                    <span>Confirm Device Linked (+91 77420 90866)</span>
+                  </Button>
+                </div>
+              </div>
+
+              {/* Instructions */}
+              <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40 space-y-2.5">
+                <h5 className="font-bold text-foreground text-xs flex items-center gap-1.5">
+                  <Smartphone className="h-4 w-4 text-emerald-600" />
+                  <span>Step-by-Step 30-Second Setup:</span>
+                </h5>
+                <ol className="list-decimal pl-4 space-y-1.5 text-muted-foreground text-[11px] leading-relaxed">
+                  <li>
+                    Click <b>Launch Official WhatsApp Web</b> above to open{" "}
+                    <code>web.whatsapp.com</code>.
+                  </li>
+                  <li>
+                    On your phone (<b>{OFFICIAL_STONE_TECH_WHATSAPP}</b>), open WhatsApp →{" "}
+                    <b>Settings</b> / <b>Menu ⋮</b> → <b>Linked Devices</b> → <b>Link a Device</b>.
+                  </li>
+                  <li>Point your phone camera to the QR code on the WhatsApp Web screen.</li>
+                  <li>
+                    Click <b>Confirm Device Linked</b> above. Your browser profile will stay
+                    connected to STOS permanently!
+                  </li>
+                </ol>
               </div>
 
               {/* Zero-calls guarantee card */}

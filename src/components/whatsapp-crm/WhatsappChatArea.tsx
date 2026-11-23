@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import {
   Send,
   ExternalLink,
@@ -90,8 +91,6 @@ export function WhatsappChatArea({
   const handleSend = () => {
     if (!inputText.trim()) return;
     onSendMessage(inputText.trim());
-    // Also trigger assisted open in WhatsApp
-    openWhatsappToContact(conversation.phone, inputText.trim());
     setInputText("");
   };
 
@@ -138,10 +137,13 @@ export function WhatsappChatArea({
             size="sm"
             variant="outline"
             className="h-7 text-xs gap-1 border-emerald-500/40 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/40 cursor-pointer"
-            onClick={() => openWhatsappToContact(conversation.phone, "")}
-            title="Launch WhatsApp Web or Desktop App"
+            onClick={() => {
+              openWhatsappToContact(conversation.phone, inputText.trim(), null, { mode: "web" });
+              toast.success(`Opening WhatsApp Web for ${conversation.contactName}...`);
+            }}
+            title="Launch WhatsApp Web (+91 77420 90866)"
           >
-            <ExternalLink className="h-3 w-3" /> Open in WhatsApp
+            <ExternalLink className="h-3 w-3" /> Open in WhatsApp Web
           </Button>
         </div>
       </div>

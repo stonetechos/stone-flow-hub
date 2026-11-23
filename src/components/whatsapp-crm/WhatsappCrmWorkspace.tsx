@@ -1,10 +1,22 @@
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { MessageSquare, PanelRightClose, PanelRightOpen, RefreshCw, Zap, Plus } from "lucide-react";
+import {
+  MessageSquare,
+  PanelRightClose,
+  PanelRightOpen,
+  RefreshCw,
+  Zap,
+  Plus,
+  ExternalLink,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { openWhatsappToContact } from "@/lib/whatsapp";
 import { WhatsappConversationList } from "./WhatsappConversationList";
 import { WhatsappChatArea } from "./WhatsappChatArea";
 import { StosCrmMiniApp } from "./StosCrmMiniApp";
@@ -225,7 +237,7 @@ export function WhatsappCrmWorkspace() {
   }, [messagesMap]);
 
   // 1. Query all open CRM leads / enquiries from STOS
-  const { data: openEnquiries } = useQuery({
+  const { data: openEnquiries, refetch: refetchEnquiries } = useQuery({
     queryKey: ["enquiries", "whatsapp-command-center"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -245,7 +257,7 @@ export function WhatsappCrmWorkspace() {
             name,
             primary_phone,
             whatsapp,
-            company_name,
+            customer_code,
             customer_type
           )
         `,
@@ -263,12 +275,12 @@ export function WhatsappCrmWorkspace() {
   });
 
   // 2. Query all active CRM customers from STOS with contact numbers
-  const { data: realCustomers } = useQuery({
+  const { data: realCustomers, refetch: refetchCustomers } = useQuery({
     queryKey: ["customers", "whatsapp-command-center"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("customers")
-        .select("id, name, primary_phone, whatsapp, customer_type, company_name, updated_at")
+        .select("id, name, primary_phone, whatsapp, customer_type, customer_code, updated_at")
         .or("primary_phone.not.is.null,whatsapp.not.is.null")
         .order("updated_at", { ascending: false })
         .limit(100);
@@ -303,7 +315,7 @@ export function WhatsappCrmWorkspace() {
           name: string;
           primary_phone?: string | null;
           whatsapp?: string | null;
-          company_name?: string | null;
+          customer_code?: string | null;
           customer_type?: string | null;
         } | null;
 
@@ -320,7 +332,9 @@ export function WhatsappCrmWorkspace() {
               id: `enq-${enq.id}`,
               phone: digits.length === 10 ? `91${digits}` : digits,
               contactName: cust?.name || "Prospective Lead",
-              companyName: cust?.company_name || undefined,
+              companyName: cust?.customer_type
+                ? cust.customer_type.replace(/_/g, " ")
+                : cust?.customer_code || undefined,
               lastMessage: enq.requirement ? enq.requirement : `Open Lead (${enq.enquiry_no})`,
               lastMessageAt: formatChatTime(enq.created_at),
               unreadCount: enq.stage === "new_lead" ? 1 : 0,
@@ -347,7 +361,9 @@ export function WhatsappCrmWorkspace() {
               id: `cust-${cust.id}`,
               phone: digits.length === 10 ? `91${digits}` : digits,
               contactName: cust.name,
-              companyName: cust.company_name || undefined,
+              companyName: cust.customer_type
+                ? cust.customer_type.replace(/_/g, " ")
+                : cust.customer_code || undefined,
               lastMessage: "Customer record synced from STOS CRM",
               lastMessageAt: formatChatTime(cust.updated_at),
               unreadCount: 0,
@@ -376,7 +392,22 @@ export function WhatsappCrmWorkspace() {
   }, [customConvs, openEnquiries, realCustomers, hideDemo]);
 
   const activeConv = useMemo(() => {
-    return mergedConversations.find((c) => c.id === activeConvId) ?? mergedConversations[0];
+    return (
+      mergedConversations.find((c) => c.id === activeConvId) ??
+      mergedConversations[0] ?? {
+        id: "conv-empty-terminal",
+        phone: "917742090866",
+        contactName: "Stone Tech Architectural Atelier",
+        companyName: "+91 77420 90866",
+        lastMessage: "Click '+ New' or 'One-Time Sync' to connect client chats.",
+        lastMessageAt: "Just now",
+        unreadCount: 0,
+        leadStage: "qualified" as const,
+        assignedTo: "Rishi",
+        isGoneQuiet: false,
+        tags: ["Official Terminal"],
+      }
+    );
   }, [mergedConversations, activeConvId]);
 
   const activeMessages = useMemo(() => {
@@ -403,6 +434,7 @@ export function WhatsappCrmWorkspace() {
   const crmContext = useWhatsappCrmContext(activeConv?.phone);
 
   const handleSendMessage = (text: string) => {
+    if (!activeConv) return;
     const newMsg: WhatsappMessage = {
       id: `m-${Date.now()}`,
       conversationId: activeConv.id,
@@ -416,6 +448,10 @@ export function WhatsappCrmWorkspace() {
       ...prev,
       [activeConv.id]: [...(prev[activeConv.id] ?? []), newMsg],
     }));
+
+    // Trigger WhatsApp Web dispatch directly
+    openWhatsappToContact(activeConv.phone, text, null, { mode: "web" });
+    toast.success(`Opening WhatsApp Web for ${activeConv.contactName}...`);
 
     // Update last message in custom conversations if it exists there, or add it
     setCustomConvs((prev) => {
@@ -437,6 +473,21 @@ export function WhatsappCrmWorkspace() {
         ...prev,
       ];
     });
+  };
+
+  const handleSyncCrmDirectory = async () => {
+    setHideDemo(true);
+    try {
+      localStorage.setItem(HIDE_DEMO_KEY, "true");
+    } catch {
+      // ignore
+    }
+    const [enqRes, custRes] = await Promise.all([refetchEnquiries(), refetchCustomers()]);
+    const enqCount = enqRes.data?.length ?? 0;
+    const custCount = custRes.data?.length ?? 0;
+    toast.success(
+      `Synchronized ${custCount} CRM customer(s) & ${enqCount} lead(s) into WhatsApp Workspace!`,
+    );
   };
 
   const handleImportConversation = (conv: WhatsappConversation, msgs: WhatsappMessage[]) => {
@@ -516,9 +567,52 @@ export function WhatsappCrmWorkspace() {
             <Zap className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">One-Time Sync</span>
           </Button>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              window.open("https://web.whatsapp.com", "_blank", "noopener,noreferrer");
+              toast.success("Launching Official WhatsApp Web (+91 77420 90866)...");
+            }}
+            className="h-7 px-2.5 text-xs font-semibold gap-1.5 border-emerald-500/40 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/40 cursor-pointer shadow-2xs"
+            title="Open Official WhatsApp Web in browser (+91 77420 90866)"
+          >
+            <ExternalLink className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+            <span className="hidden sm:inline">WhatsApp Web</span>
+          </Button>
         </div>
 
         <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 text-xs gap-1 text-muted-foreground hover:text-foreground"
+            onClick={() => {
+              const next = !hideDemo;
+              setHideDemo(next);
+              try {
+                localStorage.setItem(HIDE_DEMO_KEY, String(next));
+              } catch {
+                // ignore
+              }
+              toast.info(next ? "Sample demo chats hidden." : "Sample demo chats visible.");
+            }}
+            title={hideDemo ? "Show sample/demo chats" : "Hide sample/demo chats"}
+          >
+            {hideDemo ? (
+              <>
+                <Eye className="h-3.5 w-3.5" />
+                <span className="hidden md:inline">Show Samples</span>
+              </>
+            ) : (
+              <>
+                <EyeOff className="h-3.5 w-3.5" />
+                <span className="hidden md:inline">Hide Samples</span>
+              </>
+            )}
+          </Button>
+
           <Button
             size="sm"
             variant="ghost"
@@ -622,9 +716,7 @@ export function WhatsappCrmWorkspace() {
         onOpenChange={setSyncModalOpen}
         onImportConversation={handleImportConversation}
         onClearDemoData={handleClearDemoData}
-        onSyncCrmContacts={() => {
-          // forces refresh
-        }}
+        onSyncCrmContacts={handleSyncCrmDirectory}
       />
 
       {/* New WhatsApp Chat Dialog */}
