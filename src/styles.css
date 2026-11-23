@@ -408,21 +408,21 @@
   --input: oklch(0.9 0.006 250);
   --ring: var(--intent-focus-ring);
 
-  --chart-1: #0891b2;
-  --chart-2: var(--stone-slate-500);
-  --chart-3: var(--hue-warning-500);
-  --chart-4: var(--hue-info-500);
-  --chart-5: var(--hue-danger-500);
-  --chart-6: oklch(0.55 0.08 300);
+  --chart-1: #015474;
+  --chart-2: #00597b;
+  --chart-3: #006788;
+  --chart-4: #c9d1d4;
+  --chart-5: #5a6b73;
+  --chart-6: #8c9ba1;
 
-  --sidebar: #083b43;
+  --sidebar: #014860;
   --sidebar-foreground: #ffffff;
-  --sidebar-primary: #22d3ee;
-  --sidebar-primary-foreground: #083344;
+  --sidebar-primary: #006788;
+  --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: rgba(255, 255, 255, 0.15);
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: rgba(255, 255, 255, 0.12);
-  --sidebar-ring: #0891b2;
+  --sidebar-ring: #006788;
 }
 
 /* Alias: explicit Quarry class matches :root */
@@ -1279,59 +1279,59 @@ body[data-scroll-locked] {
  * STOS Themes — ST OG, ST BW, ST POP, ST Pastel
  * ============================================================== */
 
-/* ST OG (Original Signature Stone Tech Atelier Theme) */
+/* ST OG (Original Signature Stone Tech Atelier Theme — Calibrated to Deep, Medium & Light Turquoise + Mineral Grey) */
 .theme-st-og {
   color-scheme: light;
-  --surface-base: #f8fafc;
-  --surface-panel: #f1f5f9;
+  --surface-base: #f0f3f4;
+  --surface-panel: #e2e8ea;
   --surface-card: #ffffff;
-  --surface-card-hover: #f8fafc;
+  --surface-card-hover: #f0f3f4;
   --surface-header: #ffffff;
-  --surface-nav: #083b43;
+  --surface-nav: #014860;
   --surface-nav-hover: rgba(255, 255, 255, 0.15);
-  --surface-nav-active: rgba(8, 145, 178, 0.35);
-  --sidebar: #083b43;
+  --surface-nav-active: rgba(0, 103, 136, 0.35);
+  --sidebar: #014860;
   --sidebar-foreground: #ffffff;
-  --sidebar-primary: #0891b2;
+  --sidebar-primary: #006788;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: rgba(255, 255, 255, 0.15);
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: rgba(255, 255, 255, 0.12);
-  --sidebar-ring: #22d3ee;
-  --primary: #0891b2;
+  --sidebar-ring: #006788;
+  --primary: #006788;
   --primary-foreground: #ffffff;
-  --background: #f8fafc;
+  --background: #f0f3f4;
   --foreground: #0f172a;
   --card: #ffffff;
   --card-foreground: #0f172a;
-  --border: #e2e8f0;
-  --border-subtle: #f1f5f9;
-  --border-default: #e2e8f0;
-  --border-strong: #0891b2;
-  --accent: #f0fdfa;
-  --accent-foreground: #0f766e;
-  --ring: #0891b2;
-  --intent-primary: #0891b2;
-  --intent-primary-hover: #0e7490;
+  --border: #c9d1d4;
+  --border-subtle: rgba(201, 209, 212, 0.45);
+  --border-default: #c9d1d4;
+  --border-strong: #00597b;
+  --accent: #e0f1f5;
+  --accent-foreground: #015474;
+  --ring: #006788;
+  --intent-primary: #006788;
+  --intent-primary-hover: #00597b;
   --card-top-glow: radial-gradient(
     ellipse 100% 60% at 50% -15%,
-    rgba(207, 250, 254, 0.45),
+    rgba(0, 103, 136, 0.12),
     transparent 70%
   );
-  --card-shadow-1: rgba(8, 59, 67, 0.08);
-  --card-shadow-2: rgba(8, 59, 67, 0.09);
-  --card-hover-glow: rgba(165, 243, 252, 0.6);
-  --card-hover-shadow: rgba(14, 116, 144, 0.14);
-  --card-hover-border: rgba(34, 211, 238, 0.7);
-  --card-border-bottom: rgba(148, 163, 184, 0.7);
-  --card-border-right: rgba(203, 213, 225, 0.8);
-  --paper-dot-color: rgba(150, 130, 115, 0.13);
-  --paper-dot-color-subtle: rgba(150, 130, 115, 0.08);
-  --text-engraved-title: #083344;
-  --text-engraved-primary: #0e7490;
+  --card-shadow-1: rgba(1, 84, 116, 0.08);
+  --card-shadow-2: rgba(1, 84, 116, 0.12);
+  --card-hover-glow: rgba(0, 103, 136, 0.35);
+  --card-hover-shadow: rgba(1, 84, 116, 0.18);
+  --card-hover-border: #006788;
+  --card-border-bottom: #c9d1d4;
+  --card-border-right: #c9d1d4;
+  --paper-dot-color: rgba(201, 209, 212, 0.4);
+  --paper-dot-color-subtle: rgba(201, 209, 212, 0.2);
+  --text-engraved-title: #015474;
+  --text-engraved-primary: #006788;
   --text-engraved-dark: #0f172a;
-  --well-glow-bg: linear-gradient(180deg, #e0f2fe 0%, #f0fdfa 100%);
-  --well-glow-border: rgba(103, 232, 249, 0.9);
+  --well-glow-bg: linear-gradient(180deg, #e0f1f5 0%, #f0f3f4 100%);
+  --well-glow-border: #c9d1d4;
 }
 
 /* ST BW (Black & White — Elegant Monochrome Architectural Luxury) */

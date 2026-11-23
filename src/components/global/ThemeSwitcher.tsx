@@ -32,8 +32,8 @@ export const THEMES: ReadonlyArray<{
   {
     id: "st-og",
     label: "ST OG",
-    description: "Original Stone Tech Atelier (Quarry Deep Teal)",
-    swatch: "linear-gradient(135deg, #083b43 0%, #0d9488 50%, #22d3ee 100%)",
+    description: "Signature Stone Tech Atelier (Deep Turquoise & Mineral Grey)",
+    swatch: "linear-gradient(135deg, #015474 0%, #00597b 35%, #006788 70%, #c9d1d4 100%)",
     dark: false,
   },
   {
@@ -73,7 +73,7 @@ const ALL_THEME_CLASSES = [
 ];
 
 const THEME_META_COLORS: Record<ThemeId, string> = {
-  "st-og": "#083b43",
+  "st-og": "#015474",
   "st-bw": "#09090b",
   "st-pop": "#1e1b4b",
   "st-pastel": "#283e39",
@@ -85,7 +85,7 @@ export function removeThemes(): void {
   ALL_THEME_CLASSES.forEach((cls) => root.classList.remove(cls));
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) {
-    meta.setAttribute("content", "#083b43");
+    meta.setAttribute("content", "#015474");
   }
 }
 
@@ -98,7 +98,7 @@ export function applyTheme(id: ThemeId): void {
   if (dark) root.classList.add("dark");
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) {
-    meta.setAttribute("content", THEME_META_COLORS[id] || "#083b43");
+    meta.setAttribute("content", THEME_META_COLORS[id] || "#015474");
   }
 }
 
