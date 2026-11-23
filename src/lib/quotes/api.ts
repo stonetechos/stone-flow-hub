@@ -55,6 +55,34 @@ function reconcileQuoteItem(quote: QuoteListItem, persistHeal = false): QuoteLis
     }
   }
 
+  // Auto-heal discount total reflection if database trigger recalculated total = subtotal + tax without discount
+  const wf = (quote.workflow_state as Record<string, unknown> | null) ?? {};
+  const discountVal = wf.discount_amount ?? wf.discount;
+  if (discountVal !== undefined && discountVal !== null && discountVal !== "") {
+    const discount = Number(discountVal);
+    if (!isNaN(discount) && discount > 0) {
+      const isCash = wf.sale_mode === "cash" || quote.notes?.includes("[CASH_SALE]");
+      const effectiveTax = isCash ? 0 : (quote.tax_amount ?? 0);
+      const expectedTotal = Math.max(
+        0,
+        Math.round(((quote.subtotal ?? 0) + effectiveTax - discount) * 100) / 100,
+      );
+      if (Math.abs((quote.total ?? 0) - expectedTotal) > 0.01) {
+        quote.total = expectedTotal;
+        if (persistHeal) {
+          void getDb()
+            .from("quotes")
+            .update({ total: expectedTotal })
+            .eq("id", quote.id)
+            .then(
+              () => {},
+              (err) => console.warn("[quotes] auto-heal quote discount total failed", err),
+            );
+        }
+      }
+    }
+  }
+
   if (quote.status === "converted") {
     const hasActiveInvoice =
       Array.isArray(quote.invoices) &&
@@ -293,6 +321,9 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
     ...(parsed.hybrid_invoiced_amount !== undefined
       ? { hybrid_invoiced_amount: parsed.hybrid_invoiced_amount }
       : {}),
+    ...(parsed.discount_amount !== undefined && parsed.discount_amount !== null
+      ? { discount_amount: parsed.discount_amount }
+      : {}),
     ...(Object.keys(lineItemImages).length > 0 ? { line_item_images: lineItemImages } : {}),
     ...(Object.keys(lineItemNotes).length > 0 ? { line_item_notes: lineItemNotes } : {}),
   };
@@ -442,10 +473,29 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
     console.warn("[createQuote] broadcastQuoteFloated non-fatal error:", bErr);
   }
 
-  // Reload to reflect totals
+  // Reload to reflect totals, applying lumpsum discount if specified
   try {
     const { data: reloaded } = await getDb().from("quotes").select("*").eq("id", quote.id).single();
-    return reloaded ?? quote;
+    if (reloaded) {
+      if (parsed.discount_amount && Number(parsed.discount_amount) > 0) {
+        const disc = Number(parsed.discount_amount);
+        const calcTotal = Math.max(
+          0,
+          Math.round(
+            ((reloaded.subtotal ?? 0) + (isCashSale ? 0 : (reloaded.tax_amount ?? 0)) - disc) * 100,
+          ) / 100,
+        );
+        if (Math.abs((reloaded.total ?? 0) - calcTotal) > 0.01) {
+          await getDb()
+            .from("quotes")
+            .update({ total: calcTotal } as never)
+            .eq("id", quote.id);
+          reloaded.total = calcTotal;
+        }
+      }
+      return reloaded;
+    }
+    return quote;
   } catch {
     return quote;
   }
@@ -591,6 +641,25 @@ export async function convertQuoteToInvoice(input: ConvertQuoteInput) {
       };
     }
 
+    // Carry over lumpsum quotation discount to created invoice
+    const discountVal = qWf.discount_amount ?? qWf.discount;
+    if (discountVal !== undefined && discountVal !== null && Number(discountVal) > 0) {
+      const disc = Math.round(Number(discountVal) * 100) / 100;
+      const curWf = (invUpdate.workflow_state as Record<string, unknown> | null) ?? {};
+      invUpdate.workflow_state = {
+        ...curWf,
+        discount_amount: disc,
+      };
+      const invSub = Number(invoice.subtotal) || 0;
+      const invTax = Number(invoice.tax_amount) || 0;
+      const invTotal = Math.max(0, Math.round((invSub + invTax - disc) * 100) / 100);
+      invUpdate.total = invTotal;
+      invUpdate.balance_due = Math.max(
+        0,
+        Math.round((invTotal - (Number(invoice.amount_paid) || 0)) * 100) / 100,
+      );
+    }
+
     // Auto-link Delivery Challan number to invoice
     let linkedDispatchNo = parsed.dispatch_no;
     let linkedDispatchId = parsed.dispatch_id;
@@ -717,6 +786,7 @@ export async function updateQuote(id: string, input: QuoteUpdateInput): Promise<
     ...(parsed.hybrid_invoiced_amount !== undefined
       ? { hybrid_invoiced_amount: parsed.hybrid_invoiced_amount }
       : {}),
+    ...(parsed.discount_amount !== undefined ? { discount_amount: parsed.discount_amount } : {}),
     ...(parsed.include_prepayment_offer !== undefined
       ? { include_prepayment_offer: parsed.include_prepayment_offer }
       : {}),
@@ -749,7 +819,35 @@ export async function updateQuote(id: string, input: QuoteUpdateInput): Promise<
       .eq("quote_id", id);
     // Reload quote to reflect new zero-tax totals
     const { data: reloaded } = await getDb().from("quotes").select("*").eq("id", id).single();
-    if (reloaded) return reloaded;
+    if (reloaded) {
+      const discNum = Number(nextWf.discount_amount ?? 0);
+      const calcTotal = Math.max(0, Math.round(((reloaded.subtotal ?? 0) - discNum) * 100) / 100);
+      if (Math.abs((reloaded.total ?? 0) - calcTotal) > 0.01) {
+        await getDb()
+          .from("quotes")
+          .update({ total: calcTotal } as never)
+          .eq("id", id);
+        reloaded.total = calcTotal;
+      }
+      return reloaded;
+    }
+  }
+
+  // Adjust total for lumpsum discount if specified
+  const discNum = Number(nextWf.discount_amount ?? 0);
+  const isCash =
+    parsed.sale_mode === "cash" ||
+    (parsed.sale_mode === undefined &&
+      (currentWf.sale_mode === "cash" || data.notes?.includes("[CASH_SALE]")));
+  const effSub = Number(data.subtotal) || 0;
+  const effTax = isCash ? 0 : Number(data.tax_amount) || 0;
+  const calcTotal = Math.max(0, Math.round((effSub + effTax - discNum) * 100) / 100);
+  if (Math.abs((Number(data.total) || 0) - calcTotal) > 0.01) {
+    await getDb()
+      .from("quotes")
+      .update({ total: calcTotal } as never)
+      .eq("id", id);
+    data.total = calcTotal;
   }
 
   return data;
@@ -769,20 +867,38 @@ export async function convertQuoteToSalesOrder(quoteId: string): Promise<DbTable
   });
   if (error) throw new AppError(mapDbError(error));
 
-  // Sync 6-digit tracking token from quotation to created sales order
+  // Sync 6-digit tracking token and lumpsum discount from quotation to created sales order
   try {
     const { data: qData } = await getDb()
       .from("quotes")
       .select("workflow_state")
       .eq("id", quoteId)
       .single();
-    const token = (qData?.workflow_state as Record<string, unknown> | null)?.tracking_token;
-    if (token && data?.id) {
+    const qWf = (qData?.workflow_state as Record<string, unknown> | null) ?? {};
+    const token = qWf.tracking_token;
+    const discountVal = qWf.discount_amount ?? qWf.discount;
+    const soPatch: Record<string, unknown> = {};
+
+    if (token) {
+      soPatch.workflow_state = JSON.stringify({ tracking_token: token });
+    }
+    if (discountVal !== undefined && discountVal !== null && Number(discountVal) > 0 && data?.id) {
+      const disc = Math.round(Number(discountVal) * 100) / 100;
+      const soTotal = Math.max(
+        0,
+        Math.round(((Number(data.subtotal) || 0) + (Number(data.tax_amount) || 0) - disc) * 100) /
+          100,
+      );
+      soPatch.discount = disc;
+      soPatch.total = soTotal;
+      (data as { discount?: number }).discount = disc;
+      (data as { total?: number }).total = soTotal;
+    }
+
+    if (Object.keys(soPatch).length > 0 && data?.id) {
       await getDb()
         .from("sales_orders")
-        .update({
-          workflow_state: JSON.stringify({ tracking_token: token }),
-        })
+        .update(soPatch as never)
         .eq("id", data.id);
     }
   } catch {
@@ -1087,4 +1203,76 @@ export async function updateQuoteItemImage(
     .eq("id", quoteId);
   if (error) throw new AppError(mapDbError(error));
   return { workflow_state: updatedWf };
+}
+
+/**
+ * Applies or updates a negotiated lumpsum discount amount on a quotation.
+ * Persists the discount into quotes.workflow_state.discount_amount,
+ * immediately recalculates and saves the reduced grand total:
+ *   Total = Math.max(0, Subtotal + Tax - Discount)
+ * and records an entry in the activity audit log.
+ */
+export async function updateQuoteDiscount(
+  quoteId: string,
+  discountAmount: number | null,
+): Promise<QuoteRow> {
+  const { data: current, error: fetchErr } = await getDb()
+    .from("quotes")
+    .select("id, quote_no, subtotal, tax_amount, total, workflow_state, notes")
+    .eq("id", quoteId)
+    .single();
+  if (fetchErr || !current) throw new AppError(mapDbError(fetchErr));
+
+  const currentWf = (current.workflow_state as Record<string, unknown> | null) ?? {};
+  const numDiscount =
+    discountAmount != null && !isNaN(Number(discountAmount))
+      ? Math.max(0, Math.round(Number(discountAmount) * 100) / 100)
+      : 0;
+
+  const updatedWf = pruneOversizedDataUrls({
+    ...currentWf,
+    discount_amount: numDiscount > 0 ? numDiscount : null,
+  });
+
+  const isCash = currentWf.sale_mode === "cash" || current.notes?.includes("[CASH_SALE]");
+  const subtotal = Number(current.subtotal) || 0;
+  const taxAmount = isCash ? 0 : Number(current.tax_amount) || 0;
+  const newTotal = Math.max(0, Math.round((subtotal + taxAmount - numDiscount) * 100) / 100);
+
+  const { data, error } = await getDb()
+    .from("quotes")
+    .update({
+      workflow_state: updatedWf,
+      total: newTotal,
+    } as never)
+    .eq("id", quoteId)
+    .select(SELECT_WITH_JOINS)
+    .single();
+
+  if (error || !data) throw new AppError(mapDbError(error));
+
+  // Maintain audit trail in activity_log
+  try {
+    await getDb()
+      .from("activity_log")
+      .insert({
+        entity_type: "quote",
+        entity_id: quoteId,
+        action: "note_added",
+        old_value: { total: current.total, discount: currentWf.discount_amount ?? 0 },
+        new_value: {
+          action: "discount_applied",
+          discount_amount: numDiscount,
+          new_total: newTotal,
+          note:
+            numDiscount > 0
+              ? `Negotiated lumpsum discount of ₹${numDiscount.toLocaleString("en-IN")} applied. Total revised to ₹${newTotal.toLocaleString("en-IN")}.`
+              : `Negotiated lumpsum discount removed. Total restored to ₹${newTotal.toLocaleString("en-IN")}.`,
+        },
+      } as never);
+  } catch (err) {
+    console.warn("[quotes] non-fatal activity_log error on updateQuoteDiscount:", err);
+  }
+
+  return reconcileQuoteItem(data as QuoteListItem, true) as QuoteRow;
 }

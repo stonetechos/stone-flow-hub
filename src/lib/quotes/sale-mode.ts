@@ -82,3 +82,5 @@ export function getQuoteHybridSplit(quote?: { workflow_state?: unknown } | null)
     invoicedAmount: Number(wf.hybrid_invoiced_amount ?? 0),
   };
 }
+
+export { getQuoteDiscount, calculateEffectiveQuoteTotal } from "./discount";

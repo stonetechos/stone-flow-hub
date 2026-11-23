@@ -22,6 +22,7 @@ import {
   RefreshCw,
   ChevronDown,
   ExternalLink,
+  Tag,
 } from "lucide-react";
 import { parseQuoteVendorAssignment, assignVendorToQuote } from "@/lib/quotes/vendor-assignment";
 import { AssignQuoteVendorDialog } from "@/components/quotes/AssignQuoteVendorDialog";
@@ -54,6 +55,7 @@ import { CatalogProductSelect } from "@/components/quotes/CatalogProductSelect";
 import {
   getQuoteSaleMode,
   getQuoteHybridSplit,
+  getQuoteDiscount,
   SALE_MODE_CONFIG,
   type SaleMode,
 } from "@/lib/quotes/sale-mode";
@@ -757,6 +759,17 @@ function QuotesPage() {
                         {r.issue_date ? formatDate(r.issue_date) : "Total Quote"}
                       </span>
                       <span className="font-bold text-sm text-primary">{formatInr(r.total)}</span>
+                      {(() => {
+                        const disc = getQuoteDiscount(r);
+                        if (disc > 0) {
+                          return (
+                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                              (-{formatInr(disc)} discount)
+                            </span>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Link
@@ -1164,7 +1177,22 @@ function QuotesPage() {
                       )}
                       {!isHidden("total") && (
                         <TableCell className="text-right tabular-nums">
-                          {formatInr(r.total)}
+                          <div className="flex flex-col items-end">
+                            <span className="font-semibold text-foreground">
+                              {formatInr(r.total)}
+                            </span>
+                            {(() => {
+                              const disc = getQuoteDiscount(r);
+                              if (disc > 0) {
+                                return (
+                                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                                    (-{formatInr(disc)} discount)
+                                  </span>
+                                );
+                              }
+                              return null;
+                            })()}
+                          </div>
                         </TableCell>
                       )}
                       {!isHidden("valid") && (
@@ -1427,6 +1455,7 @@ function CreateQuoteDialog({
   const [calcResult, setCalcResult] = useState<EstimateStudioResult | StoneMuralResult | null>(
     null,
   );
+  const [manualDiscount, setManualDiscount] = useState<string>("");
 
   useEffect(() => {
     if (open) {
@@ -1449,6 +1478,7 @@ function CreateQuoteDialog({
       else if (initialStudio === "cladding") setMode("wall_cladding");
       else setMode("manual");
       setCalcResult(null);
+      setManualDiscount("");
     }
   }, [open, initialProjectId, initialCustomerId, initialStudio]);
 
@@ -1469,10 +1499,15 @@ function CreateQuoteDialog({
     };
   }, [items, saleMode]);
 
+  const effectiveManualTotal = useMemo(() => {
+    const disc = manualDiscount ? Number(manualDiscount) : 0;
+    return Math.max(0, totals.total - (isNaN(disc) ? 0 : disc));
+  }, [totals.total, manualDiscount]);
+
   const effectiveTotal = useMemo(() => {
-    if (mode === "manual") return totals.total;
+    if (mode === "manual") return effectiveManualTotal;
     return calcResult ? calcResult.total : totals.total;
-  }, [mode, totals.total, calcResult]);
+  }, [mode, effectiveManualTotal, calcResult, totals.total]);
 
   useEffect(() => {
     if (mode === "manual") {
@@ -1570,9 +1605,13 @@ function CreateQuoteDialog({
         return toast.error("Complete the calculation in the studio first");
       }
       const discount = "discount" in calcResult.worksheet ? calcResult.worksheet.discount : null;
+      const discountAmountVal =
+        discount && discount.applied && discount.eligible && Number(discount.amount) > 0
+          ? Number(discount.amount)
+          : undefined;
       const discountNote =
-        discount && discount.applied && discount.eligible
-          ? `Estimate Studio: ${discount.pct}% discount applied (${formatInr(discount.amount)} off) — final estimate total ${formatInr(calcResult.total)}. This quote's own stored total below is the pre-discount subtotal, since quotations have no discount field yet.`
+        discount && discountAmountVal
+          ? `Estimate Studio: ${discount.pct}% discount applied (${formatInr(discountAmountVal)} off) — final estimate total ${formatInr(calcResult.total)}.`
           : null;
       const sceneNote =
         calcResult &&
@@ -1605,6 +1644,7 @@ function CreateQuoteDialog({
           saleMode === "hybrid" && hybridCashAmount ? Number(hybridCashAmount) : undefined,
         hybrid_invoiced_amount:
           saleMode === "hybrid" && hybridInvoicedAmount ? Number(hybridInvoicedAmount) : undefined,
+        discount_amount: discountAmountVal,
         items: calcResult.items.map((it) => ({
           ...it,
           quantity: Math.round(Number(it.quantity) * 100) / 100,
@@ -1676,6 +1716,8 @@ function CreateQuoteDialog({
         saleMode === "hybrid" && hybridCashAmount ? Number(hybridCashAmount) : undefined,
       hybrid_invoiced_amount:
         saleMode === "hybrid" && hybridInvoicedAmount ? Number(hybridInvoicedAmount) : undefined,
+      discount_amount:
+        manualDiscount && Number(manualDiscount) > 0 ? Number(manualDiscount) : undefined,
       items: parsedItems,
     });
   }
@@ -2077,7 +2119,7 @@ function CreateQuoteDialog({
                     </div>
                   )}
 
-                  <div className="mt-2 flex justify-end gap-6 text-sm">
+                  <div className="mt-3 flex flex-wrap items-center justify-end gap-5 text-xs sm:text-sm pt-2 border-t border-border/60">
                     <div>
                       Subtotal: <span className="font-medium">{formatInr(totals.sub)}</span>
                     </div>
@@ -2086,9 +2128,26 @@ function CreateQuoteDialog({
                         Tax: <span className="font-medium">{formatInr(totals.tax)}</span>
                       </div>
                     )}
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-medium text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                        <Tag className="h-3 w-3" /> Discount (₹):
+                      </span>
+                      <div className="w-24">
+                        <NumericInput
+                          placeholder="0"
+                          value={manualDiscount}
+                          onChange={(v) => setManualDiscount(v)}
+                          min={0}
+                          allowDecimal={false}
+                          className="h-7 text-xs font-semibold bg-white dark:bg-slate-900"
+                        />
+                      </div>
+                    </div>
                     <div>
                       Total:{" "}
-                      <span className="font-bold text-slate-900">{formatInr(totals.total)}</span>
+                      <span className="font-bold text-slate-900 dark:text-slate-100">
+                        {formatInr(effectiveManualTotal)}
+                      </span>
                       {saleMode === "cash" && (
                         <span className="text-[11px] text-emerald-700 ml-1.5 font-semibold">
                           (Cash · No GST)

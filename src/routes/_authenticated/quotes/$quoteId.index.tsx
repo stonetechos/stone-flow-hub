@@ -32,6 +32,8 @@ import {
   RefreshCw,
   Sparkles,
   Layers,
+  Tag,
+  Plus,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { autoTranslate } from "@/lib/i18n/auto-translator";
@@ -60,7 +62,9 @@ import { TransferOwnershipDialog } from "@/components/ownership/TransferOwnershi
 import { ReassignCustomerDialog } from "@/components/quotes/ReassignCustomerDialog";
 import { QuoteSendRfqDialog } from "@/components/rfqs/QuoteSendRfqDialog";
 import { AskQuoteUpdateDialog } from "@/components/quotes/AskQuoteUpdateDialog";
+import { EditQuoteDiscountDialog } from "@/components/quotes/EditQuoteDiscountDialog";
 import { AssignQuoteVendorDialog } from "@/components/quotes/AssignQuoteVendorDialog";
+import { getQuoteDiscount } from "@/lib/quotes/discount";
 import { CustomerAssigneeSelect } from "@/components/customers/CustomerAssigneeSelect";
 import { parseQuoteVendorAssignment } from "@/lib/quotes/vendor-assignment";
 import { useRoles } from "@/hooks/use-roles";
@@ -138,6 +142,7 @@ function QuoteDetailPage() {
   const [rfqOpen, setRfqOpen] = useState(false);
   const [askUpdateOpen, setAskUpdateOpen] = useState(false);
   const [assignVendorOpen, setAssignVendorOpen] = useState(false);
+  const [discountDialogOpen, setDiscountDialogOpen] = useState(false);
   const roles = useRoles();
   const canReassign = roles.isAdmin || roles.isSalesManager;
 
@@ -472,6 +477,7 @@ function QuoteDetailPage() {
   const saleMode = getQuoteSaleMode(quote);
   const hybridSplit = getQuoteHybridSplit(quote);
   const assignment = parseQuoteVendorAssignment(quote, linkedSo.data);
+  const discountAmount = getQuoteDiscount(quote);
 
   return (
     <div>
@@ -671,6 +677,22 @@ function QuoteDetailPage() {
 
                 <Button
                   size="sm"
+                  variant="outline"
+                  className={cn(
+                    "hidden sm:inline-flex font-semibold shadow-xs",
+                    discountAmount > 0
+                      ? "text-emerald-700 bg-emerald-50/70 border-emerald-300 hover:bg-emerald-100 dark:border-emerald-700/60 dark:text-emerald-300"
+                      : "text-slate-700 hover:bg-slate-100 border-slate-300 dark:border-slate-700 dark:text-slate-300",
+                  )}
+                  onClick={() => setDiscountDialogOpen(true)}
+                  title="Apply or adjust negotiated lumpsum discount"
+                >
+                  <Tag className="mr-1.5 h-4 w-4 text-emerald-600" />
+                  {discountAmount > 0 ? `Discount: -${formatInr(discountAmount)}` : "Discount"}
+                </Button>
+
+                <Button
+                  size="sm"
                   className="hidden lg:inline-flex bg-emerald-600 hover:bg-emerald-700 text-white font-medium shadow-xs"
                   onClick={() => setRfqOpen(true)}
                   title="Send WhatsApp RFQ to category partners with product images & assign order"
@@ -779,6 +801,14 @@ function QuoteDetailPage() {
                 label: "Ask for Update (WhatsApp)",
                 icon: <MessageCircle className="h-4 w-4 text-emerald-600" />,
                 onSelect: () => setAskUpdateOpen(true),
+              },
+              {
+                label:
+                  discountAmount > 0
+                    ? `Edit Discount (-${formatInr(discountAmount)})`
+                    : "Add Negotiated Discount",
+                icon: <Tag className="h-4 w-4 text-emerald-600" />,
+                onSelect: () => setDiscountDialogOpen(true),
               },
               {
                 label: "WhatsApp RFQ to Partners",
@@ -1325,6 +1355,41 @@ function QuoteDetailPage() {
                     </span>
                   </div>
                 )}
+                {discountAmount > 0 ? (
+                  <div className="flex justify-between items-center text-emerald-600 dark:text-emerald-400 font-semibold">
+                    <span className="flex items-center gap-1.5">
+                      <Tag className="h-3.5 w-3.5" />
+                      {t("quotes.discount", "Discount")}:
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="tabular-nums font-bold">- {formatInr(discountAmount)}</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-1.5 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                        onClick={() => setDiscountDialogOpen(true)}
+                        title="Edit negotiated discount"
+                      >
+                        <Pencil className="h-3 w-3 mr-1" /> Edit
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex justify-between items-center pt-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setDiscountDialogOpen(true)}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 hover:underline cursor-pointer"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      {t("quotes.addDiscount", "Add Negotiated Discount")}
+                    </button>
+                    <span className="text-[11px] text-muted-foreground/70">
+                      Lumpsum amount reduction
+                    </span>
+                  </div>
+                )}
                 <div className="border-t border-border pt-2 flex justify-between items-center text-sm sm:text-base font-bold text-foreground">
                   <span>{t("quotes.totalQuotation", "Total Quotation")}:</span>
                   <span className="text-primary font-black">{formatInr(quote.total)}</span>
@@ -1844,6 +1909,17 @@ function QuoteDetailPage() {
         onSuccess={() => {
           invalidateQuote(qc, quoteId);
         }}
+      />
+
+      <EditQuoteDiscountDialog
+        open={discountDialogOpen}
+        onOpenChange={setDiscountDialogOpen}
+        quoteId={quoteId}
+        quoteNo={quote.quote_no}
+        subtotal={quote.subtotal}
+        taxAmount={quote.tax_amount}
+        currentDiscount={discountAmount}
+        saleMode={saleMode}
       />
 
       <Dialog open={Boolean(previewImage)} onOpenChange={(open) => !open && setPreviewImage(null)}>

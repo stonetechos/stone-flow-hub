@@ -342,13 +342,16 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
   const totalsHtml = totalsToRender
     .map((t, i, arr) => {
       const isTotal = t.label.toLowerCase() === "total" || (arr.length > 0 && i === arr.length - 1);
+      const isDiscount = t.label.toLowerCase().includes("discount");
       return `<div style="display:flex;justify-content:space-between;align-items:center;padding:3.5px 0;${
         isTotal
           ? `border-top:1.5px solid ${deepTurquoise};border-bottom:1.5px solid ${deepTurquoise};margin:4px 0;padding:6px 0;font-weight:800;font-size:12px;color:${deepTurquoise};`
-          : "color:#475569;font-size:9.5px;"
+          : isDiscount
+            ? "color:#059669;font-size:9.5px;font-weight:700;"
+            : "color:#475569;font-size:9.5px;"
       }">
-        <span style="${isTotal ? "font-weight:800;" : ""}">${esc(t.label)}</span>
-        <span style="white-space:nowrap;${isTotal ? "font-weight:800;" : ""}">${esc(t.value ?? "")}</span>
+        <span style="${isTotal ? "font-weight:800;" : isDiscount ? "font-weight:700;" : ""}">${esc(t.label)}</span>
+        <span style="white-space:nowrap;${isTotal ? "font-weight:800;" : isDiscount ? "font-weight:700;" : ""}">${esc(t.value ?? "")}</span>
       </div>`;
     })
     .join("");

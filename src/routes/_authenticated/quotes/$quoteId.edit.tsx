@@ -17,6 +17,7 @@ import {
   Package,
   ShieldCheck,
   ChevronDown,
+  Tag,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -43,6 +44,7 @@ import {
   ensureTermsHaveCashDealGstClause,
   stripCashDealGstClause,
 } from "@/lib/quotes/terms";
+import { getQuoteDiscount } from "@/lib/quotes/discount";
 import { useRoles } from "@/hooks/use-roles";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -128,6 +130,7 @@ function EditQuotePage() {
     sale_mode: "invoiced",
     hybrid_cash_amount: null,
     hybrid_invoiced_amount: null,
+    discount_amount: null,
   });
 
   useEffect(() => {
@@ -138,6 +141,7 @@ function EditQuotePage() {
         : null;
       const mode = getQuoteSaleMode(query.data);
       const split = getQuoteHybridSplit(query.data);
+      const disc = getQuoteDiscount(query.data);
       setSaleMode(mode);
       const wf = (query.data.workflow_state as Record<string, unknown> | null) ?? {};
       const offerActive =
@@ -155,6 +159,7 @@ function EditQuotePage() {
         sale_mode: mode,
         hybrid_cash_amount: split.cashAmount,
         hybrid_invoiced_amount: split.invoicedAmount,
+        discount_amount: disc > 0 ? disc : null,
         include_prepayment_offer: offerActive,
       });
     }
@@ -271,9 +276,9 @@ function EditQuotePage() {
             </div>
           </div>
 
-          {/* Second Row: Billing Deal Type & Validity */}
+          {/* Second Row: Billing Deal Type, Discount & Validity */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-3 pt-2 border-t border-border/60">
-            <div className="md:col-span-8">
+            <div className="md:col-span-6">
               <label className="text-xs font-semibold text-foreground block mb-1.5">
                 Deal Type (Billing)
               </label>
@@ -393,7 +398,31 @@ function EditQuotePage() {
                 </div>
               )}
             </div>
-            <div className="md:col-span-4">
+            <div className="md:col-span-3">
+              <label className="text-xs font-semibold text-foreground flex items-center justify-between mb-1.5">
+                <span className="flex items-center gap-1">
+                  <Tag className="h-3.5 w-3.5 text-emerald-600" />
+                  Discount (₹)
+                </span>
+                {form.discount_amount != null && Number(form.discount_amount) > 0 && (
+                  <span className="text-[10px] text-emerald-600 font-semibold">
+                    -{formatInr(form.discount_amount)}
+                  </span>
+                )}
+              </label>
+              <NumericInput
+                placeholder="0"
+                value={form.discount_amount != null ? String(form.discount_amount) : ""}
+                onChange={(v) => set("discount_amount", v ? Number(v) : null)}
+                min={0}
+                allowDecimal={false}
+                className="h-8.5 text-xs bg-white font-semibold"
+              />
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                Lumpsum reduction subtracted from total
+              </p>
+            </div>
+            <div className="md:col-span-3">
               <label className="text-xs font-semibold text-foreground block mb-1.5">
                 Valid until
               </label>

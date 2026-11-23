@@ -56,6 +56,7 @@ export const quoteCreateSchema = z
     sale_mode: z.enum(["invoiced", "cash", "hybrid"]).default("invoiced").optional(),
     hybrid_cash_amount: z.coerce.number().min(0).nullable().optional(),
     hybrid_invoiced_amount: z.coerce.number().min(0).nullable().optional(),
+    discount_amount: z.coerce.number().min(0).nullable().optional(),
     include_prepayment_offer: z.boolean().optional(),
     items: z.array(quoteItemInputSchema).min(1, "Add at least one line item"),
     /** Estimate Studio calculator worksheet (walls, products, installation,
@@ -101,6 +102,7 @@ export const quoteUpdateSchema = z.object({
   sale_mode: z.enum(["invoiced", "cash", "hybrid"]).optional(),
   hybrid_cash_amount: z.coerce.number().min(0).nullable().optional(),
   hybrid_invoiced_amount: z.coerce.number().min(0).nullable().optional(),
+  discount_amount: z.coerce.number().min(0).nullable().optional(),
   include_prepayment_offer: z.boolean().optional(),
   wall_estimate: z.record(z.unknown()).nullable().optional(),
 });

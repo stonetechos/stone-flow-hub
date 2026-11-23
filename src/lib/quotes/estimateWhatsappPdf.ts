@@ -29,6 +29,7 @@ export interface EstimateWhatsappMessageInput {
   sealerApplicationAmount: number;
   cartingAmount?: number;
   cartingLocation?: string;
+  discountAmount?: number;
   totalEstimate: number;
   estimatedDeliveryDate?: string;
   deliveryTimelineDays?: number | string;
@@ -81,6 +82,9 @@ export function buildEstimateWhatsappMessage(
       ? [
           `Local Carting: ${formatInr(input.cartingAmount)}${input.cartingLocation ? ` (${input.cartingLocation})` : ""}`,
         ]
+      : []),
+    ...(input.discountAmount && input.discountAmount > 0
+      ? [`Discount: -${formatInr(input.discountAmount)}`]
       : []),
     `Total Estimate: ${formatInr(input.totalEstimate)}`,
     `Notes:`,
@@ -274,6 +278,7 @@ export interface MuralEstimateWhatsappInput {
   goldLeafingSummary?: string;
   cartingAmount: number;
   cartingLocation?: string;
+  discountAmount?: number;
   totalEstimate: number;
   estimatedDeliveryDate?: string;
   deliveryTimelineDays?: number | string;
@@ -337,6 +342,9 @@ export function buildMuralEstimateWhatsappMessage(
     input.cartingAmount > 0
       ? `• Carting / Freight: ${formatInr(input.cartingAmount)}${input.cartingLocation ? ` (${input.cartingLocation})` : ""}`
       : `• Carting / Freight: To be confirmed with carting agency as per location`,
+    input.discountAmount && input.discountAmount > 0
+      ? `• Discount: -${formatInr(input.discountAmount)}`
+      : null,
     `Total Estimate: ${formatInr(input.totalEstimate)}`,
     `Notes:`,
     input.baseStoneSourcing === "client_provided"

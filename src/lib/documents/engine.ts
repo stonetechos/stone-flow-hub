@@ -403,16 +403,29 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
         }
       }
       const gstSplit = gstTotalsFromItems(items as unknown as GstItem[]);
+      const discountVal = wf.discount_amount ?? wf.discount;
+      const discountAmount =
+        discountVal !== undefined && discountVal !== null && !isNaN(Number(discountVal))
+          ? Number(discountVal)
+          : 0;
+
       const totals: PdfMeta[] = isCashDeal
         ? [
-            ...(Number(q.subtotal) !== Number(q.total) && Number(q.subtotal) > 0
+            ...(discountAmount > 0 ||
+            (Number(q.subtotal) !== Number(q.total) && Number(q.subtotal) > 0)
               ? [{ label: "Subtotal", value: inr(q.subtotal) }]
+              : []),
+            ...(discountAmount > 0
+              ? [{ label: "Discount", value: `- ${inr(discountAmount)}` }]
               : []),
             { label: "Total", value: inr(q.total) },
           ]
         : [
             { label: "Subtotal", value: inr(q.subtotal) },
             ...(gstSplit.length ? gstSplit : [{ label: "Tax", value: inr(q.tax_amount) }]),
+            ...(discountAmount > 0
+              ? [{ label: "Discount", value: `- ${inr(discountAmount)}` }]
+              : []),
             { label: "Total", value: inr(q.total) },
           ];
       const scope = detectDealScopeFromItems(items);
@@ -628,9 +641,12 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
         }
       }
       const gstSplit = gstTotalsFromItems(items as unknown as GstItem[]);
+      const invWf = (i.workflow_state as Record<string, unknown> | null) ?? {};
+      const invDiscount = Number(invWf.discount_amount ?? invWf.discount ?? 0);
       const totals: PdfMeta[] = [
         { label: "Subtotal", value: inr(i.subtotal) },
         ...(gstSplit.length ? gstSplit : [{ label: "Tax", value: inr(i.tax_amount) }]),
+        ...(invDiscount > 0 ? [{ label: "Discount", value: `- ${inr(invDiscount)}` }] : []),
         { label: "Total", value: inr(i.total) },
       ];
       const invAny = i as unknown as {
