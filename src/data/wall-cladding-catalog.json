@@ -28,9 +28,13 @@
     "unit": "sq.ft",
     "badge": "Natural Split Cleft",
     "notes": "3D Origami Prism Agra Red Sandstone - Agra Red Sandstone",
-    "price": 450,
+    "price": 440,
     "isActive": true,
-    "leadTime": "In Stock - Ready to Ship"
+    "leadTime": "In Stock - Ready to Ship",
+    "images": [
+      "/images/catalog/wall-cladding/cladding-14-3d-prism-origami-pink-sandstone.jpg"
+    ],
+    "rotation": 0
   },
   {
     "id": "ST-WC-009",
@@ -61,9 +65,13 @@
     "unit": "sq.ft",
     "badge": "Natural Split Cleft",
     "notes": "3D Origami Prism Teakwood Sandstone - Teakwood Sandstone",
-    "price": 450,
+    "price": 440,
     "isActive": true,
-    "leadTime": "In Stock - Ready to Ship"
+    "leadTime": "In Stock - Ready to Ship",
+    "images": [
+      "/images/catalog/wall-cladding/cladding-12-3d-prism-origami-teakwood-gold.jpg"
+    ],
+    "rotation": 0
   },
   {
     "id": "ST-WC-007",
@@ -94,9 +102,13 @@
     "unit": "sq.ft",
     "badge": "Natural Split Cleft",
     "notes": "3D Origami Prism Mint Sandstone - Natural Sandstone",
-    "price": 450,
+    "price": 440,
     "isActive": true,
-    "leadTime": "In Stock - Ready to Ship"
+    "leadTime": "In Stock - Ready to Ship",
+    "images": [
+      "/images/catalog/wall-cladding/cladding-11-3d-prism-origami-white-sandstone.jpg"
+    ],
+    "rotation": 0
   },
   {
     "id": "ST-WC-002",
@@ -127,9 +139,13 @@
     "unit": "sq.ft",
     "badge": "Natural Split Cleft",
     "notes": "Dual-Tone Mint Sandstone Pyramid Pitched Mosaic",
-    "price": 450,
+    "price": 370,
     "isActive": true,
-    "leadTime": "In Stock - Ready to Ship"
+    "leadTime": "In Stock - Ready to Ship",
+    "images": [
+      "/images/catalog/wall-cladding/cladding-119-dualtone-white-gold-pyramid-pitched-mosaic.jpg"
+    ],
+    "rotation": 0
   },
   {
     "id": "ST-WC-204",
@@ -154,7 +170,18 @@
       "Shot-blasted"
     ],
     "code": "ST-WC-005",
-    "patternCategory": "Circular Motifs, Sunburst Chakras & Pebble Mosaics"
+    "patternCategory": "Circular Motifs, Sunburst Chakras & Pebble Mosaics",
+    "mrp": 540,
+    "unit": "sq.ft",
+    "badge": "Natural Split Cleft",
+    "notes": "Botanical Leaf & Lotus Rosette Mosaic Stone Cladding - White Mint & Teakwood Sandstone",
+    "price": 380,
+    "images": [
+      "/images/catalog/wall-cladding/cladding-206-botanical-leaf-lotus-rosette-mosaic-stone-cladding.jpg"
+    ],
+    "isActive": true,
+    "leadTime": "In Stock - Ready to Ship",
+    "rotation": 0
   },
   {
     "id": "ST-WC-257",
@@ -179,7 +206,18 @@
       "Rockface"
     ],
     "code": "ST-WC-006",
-    "patternCategory": "Architectural Relief Murals, Royal Jharokha & Carved Flora"
+    "patternCategory": "Architectural Relief Murals, Royal Jharokha & Carved Flora",
+    "mrp": 550,
+    "unit": "sq.ft",
+    "badge": "Natural Split Cleft",
+    "notes": "Architectural Geometric Sampler & Tribal Relief Sandstone Mural - Dholpur Beige & White Mint Sandstone",
+    "price": 470,
+    "images": [
+      "/images/catalog/wall-cladding/cladding-257-architectural-geometric-sampler-tribal-relief-sandstone-mural.jpg"
+    ],
+    "isActive": true,
+    "leadTime": "In Stock - Ready to Ship",
+    "rotation": 0
   },
   {
     "id": "ST-WC-017",
@@ -210,9 +248,13 @@
     "unit": "sq.ft",
     "badge": "Natural Split Cleft",
     "notes": "Mint Sandstone Rosette Jharokha Ashlar - Mint Sandstone",
-    "price": 450,
+    "price": 470,
     "isActive": true,
-    "leadTime": "In Stock - Ready to Ship"
+    "leadTime": "In Stock - Ready to Ship",
+    "images": [
+      "/images/catalog/wall-cladding/cladding-26-jodhpur-sandstone-rosette-jharokha-ashlar.jpg"
+    ],
+    "rotation": 0
   },
   {
     "id": "ST-WC-010",
@@ -243,9 +285,13 @@
     "unit": "sq.ft",
     "badge": "Natural Split Cleft",
     "notes": "White Mint Sandstone Radial Sunburst Relief - Natural Sandstone",
-    "price": 450,
+    "price": 470,
     "isActive": true,
-    "leadTime": "In Stock - Ready to Ship"
+    "leadTime": "In Stock - Ready to Ship",
+    "images": [
+      "/images/catalog/wall-cladding/cladding-29-white-mint-sandstone-radial-sunburst-relief.jpg"
+    ],
+    "rotation": 0
   },
   {
     "id": "ST-WC-011",
@@ -276,9 +322,13 @@
     "unit": "sq.ft",
     "badge": "Natural Split Cleft",
     "notes": "Rainbow Sandstone Radial Sunburst Relief - Rainbow Sandstone",
-    "price": 450,
+    "price": 470,
     "isActive": true,
-    "leadTime": "In Stock - Ready to Ship"
+    "leadTime": "In Stock - Ready to Ship",
+    "images": [
+      "/images/catalog/wall-cladding/cladding-23-rainbow-teakwood-radial-sunburst-relief.jpg"
+    ],
+    "rotation": 0
   },
   {
     "id": "ST-WC-197",
@@ -303,7 +353,18 @@
       "Hand-chiselled"
     ],
     "code": "ST-WC-010",
-    "patternCategory": "Circular Motifs, Sunburst Chakras & Pebble Mosaics"
+    "patternCategory": "Circular Motifs, Sunburst Chakras & Pebble Mosaics",
+    "mrp": 490,
+    "unit": "sq.ft",
+    "badge": "Natural Split Cleft",
+    "notes": "Pleated Radial Fan & Bush-Hammered Teakwood Sandstone Cladding - Golden Teakwood Sandstone",
+    "price": 470,
+    "images": [
+      "/images/catalog/wall-cladding/cladding-199-pleated-radial-fan-bush-hammered-teakwood-sandstone-cladding.jpg"
+    ],
+    "isActive": true,
+    "leadTime": "In Stock - Ready to Ship",
+    "rotation": 0
   },
   {
     "id": "ST-WC-192",
@@ -328,7 +389,18 @@
       "Natural Cleft"
     ],
     "code": "ST-WC-011",
-    "patternCategory": "Modular Ashlar, Mondrian Grid & Beveled Blocks"
+    "patternCategory": "Modular Ashlar, Mondrian Grid & Beveled Blocks",
+    "mrp": 500,
+    "unit": "sq.ft",
+    "badge": "Natural Split Cleft",
+    "notes": "Radial Fluted Fan & Ashlar Dual-Tone Sandstone Cladding - Teakwood & Mint White Sandstone",
+    "price": 470,
+    "images": [
+      "/images/catalog/wall-cladding/cladding-194-radial-fluted-fan-ashlar-dualtone-sandstone-cladding.jpg"
+    ],
+    "isActive": true,
+    "leadTime": "In Stock - Ready to Ship",
+    "rotation": 0
   },
   {
     "id": "ST-WC-055",
@@ -354,7 +426,18 @@
       "Natural Cleft"
     ],
     "code": "ST-WC-012",
-    "patternCategory": "Staggered Multi-Level Plank & Strip Ledgestone"
+    "patternCategory": "Staggered Multi-Level Plank & Strip Ledgestone",
+    "mrp": 640,
+    "unit": "sq.ft",
+    "badge": "Interlocking Ledger Panel",
+    "notes": "White Sandstone Vertical Grooved Fluted Strip - Natural Sandstone",
+    "price": 390,
+    "images": [
+      "/images/catalog/wall-cladding/cladding-86-white-sandstone-vertical-grooved-fluted-strip.jpg"
+    ],
+    "isActive": true,
+    "leadTime": "In Stock - Ready to Ship",
+    "rotation": 0
   },
   {
     "id": "ST-WC-012",
@@ -385,9 +468,13 @@
     "unit": "sq.ft",
     "badge": "Natural Split Cleft",
     "notes": "Teakwood Sandstone Radial Fan Sunburst Relief - Teakwood Sandstone",
-    "price": 410,
+    "price": 390,
     "isActive": true,
-    "leadTime": "In Stock - Ready to Ship"
+    "leadTime": "In Stock - Ready to Ship",
+    "images": [
+      "/images/catalog/wall-cladding/cladding-87-teakwood-sandstone-radial-fan-sunburst-relief.jpg"
+    ],
+    "rotation": 0
   },
   {
     "id": "ST-WC-014",
@@ -418,9 +505,13 @@
     "unit": "sq.ft",
     "badge": "Natural Split Cleft",
     "notes": "Teakwood Sandstone Carved Jharokha Floral Panel - Teakwood Sandstone",
-    "price": 410,
+    "price": 390,
     "isActive": true,
-    "leadTime": "In Stock - Ready to Ship"
+    "leadTime": "In Stock - Ready to Ship",
+    "images": [
+      "/images/catalog/wall-cladding/cladding-89-teakwood-sandstone-carved-jharokha-floral-panel.jpg"
+    ],
+    "rotation": 0
   },
   {
     "id": "ST-WC-019",
@@ -450,10 +541,14 @@
     "mrp": 590,
     "unit": "sq.ft",
     "badge": "Natural Split Cleft",
-    "notes": "",
-    "price": 420,
+    "notes": "Teakwood Sandstone Carved Mandala Rosette Panel - Sandstone",
+    "price": 430,
     "isActive": true,
-    "leadTime": "In Stock - Ready to Ship"
+    "leadTime": "In Stock - Ready to Ship",
+    "images": [
+      "/images/catalog/wall-cladding/cladding-125-teakwood-sandstone-carved-mandala-rosette-panel.jpg"
+    ],
+    "rotation": 0
   },
   {
     "id": "ST-WC-023",
@@ -483,10 +578,14 @@
     "mrp": 560,
     "unit": "sq.ft",
     "badge": "Natural Split Cleft",
-    "notes": "",
+    "notes": "Ita Gold Carved Sacred Hindu Symbols & Motifs Mosaic - Sandstone",
     "price": 450,
     "isActive": true,
-    "leadTime": "In Stock - Ready to Ship"
+    "leadTime": "In Stock - Ready to Ship",
+    "images": [
+      "/images/catalog/wall-cladding/cladding-122-sandstone-carved-tree-of-life-sacred-symbols.jpg"
+    ],
+    "rotation": 0
   },
   {
     "id": "ST-WC-013",
@@ -517,9 +616,13 @@
     "unit": "sq.ft",
     "badge": "Natural Split Cleft",
     "notes": "Mint Sandstone Sculpted Rose Blossom Panel - Mint Sandstone",
-    "price": 410,
+    "price": 450,
     "isActive": true,
-    "leadTime": "In Stock - Ready to Ship"
+    "leadTime": "In Stock - Ready to Ship",
+    "images": [
+      "/images/catalog/wall-cladding/cladding-126-white-sandstone-sculpted-rose-blossom-panel.jpg"
+    ],
+    "rotation": 0
   },
   {
     "id": "ST-WC-026",
@@ -549,10 +652,14 @@
     "mrp": 560,
     "unit": "sq.ft",
     "badge": "Natural Split Cleft",
-    "notes": "",
-    "price": 450,
+    "notes": "Mint Sandstone Carved Monstera Leaf Panel - Sandstone",
+    "price": 460,
     "isActive": true,
-    "leadTime": "In Stock - Ready to Ship"
+    "leadTime": "In Stock - Ready to Ship",
+    "images": [
+      "/images/catalog/wall-cladding/cladding-128-white-sandstone-carved-monstera-leaf-panel.jpg"
+    ],
+    "rotation": 0
   },
   {
     "id": "ST-WC-024",
@@ -582,10 +689,14 @@
     "mrp": 560,
     "unit": "sq.ft",
     "badge": "Natural Split Cleft",
-    "notes": "",
-    "price": 450,
+    "notes": "Teakwood Sandstone Arabesque with Metallic Insets - Sandstone",
+    "price": 460,
     "isActive": true,
-    "leadTime": "In Stock - Ready to Ship"
+    "leadTime": "In Stock - Ready to Ship",
+    "images": [
+      "/images/catalog/wall-cladding/cladding-118-teakwood-arabesque-swirl-basalt-leaf-insets.jpg"
+    ],
+    "rotation": 0
   },
   {
     "id": "ST-WC-016",
@@ -616,9 +727,13 @@
     "unit": "sq.ft",
     "badge": "Natural Split Cleft",
     "notes": "Teakwood Mint Sandstone YinYang and Fengshui Mosaic - Teakwood & Mint Sandstone",
-    "price": 450,
+    "price": 390,
     "isActive": true,
-    "leadTime": "In Stock - Ready to Ship"
+    "leadTime": "In Stock - Ready to Ship",
+    "images": [
+      "/images/catalog/wall-cladding/cladding-123-teakwood-carved-lotus-floral-rosette-mural.jpg"
+    ],
+    "rotation": 0
   },
   {
     "id": "ST-WC-030",
@@ -644,7 +759,18 @@
       "Natural Cleft"
     ],
     "code": "ST-WC-021",
-    "patternCategory": "Architectural Relief Murals, Royal Jharokha & Carved Flora"
+    "patternCategory": "Architectural Relief Murals, Royal Jharokha & Carved Flora",
+    "mrp": 510,
+    "unit": "sq.ft",
+    "badge": "Natural Split Cleft",
+    "notes": "Dual-Tone Sandstone Carved Palm Leaf Quad Panel - Natural Sandstone",
+    "price": 390,
+    "images": [
+      "/images/catalog/wall-cladding/cladding-130-dualtone-sandstone-carved-palm-leaf-quad-panel.jpg"
+    ],
+    "isActive": true,
+    "leadTime": "In Stock - Ready to Ship",
+    "rotation": 0
   },
   {
     "id": "ST-WC-031",
@@ -670,7 +796,18 @@
       "Natural Cleft"
     ],
     "code": "ST-WC-022",
-    "patternCategory": "Architectural Relief Murals, Royal Jharokha & Carved Flora"
+    "patternCategory": "Architectural Relief Murals, Royal Jharokha & Carved Flora",
+    "mrp": 530,
+    "unit": "sq.ft",
+    "badge": "Natural Split Cleft",
+    "notes": "Teakwood Sandstone Carved Palm Frond Inserts - Teakwood Sandstone",
+    "price": 440,
+    "images": [
+      "/images/catalog/wall-cladding/cladding-121-teakwood-sandstone-carved-palm-frond-inserts.jpg"
+    ],
+    "isActive": true,
+    "leadTime": "In Stock - Ready to Ship",
+    "rotation": 0
   },
   {
     "id": "ST-WC-070",
@@ -698,7 +835,16 @@
     "code": "ST-WC-023",
     "patternCategory": "Chevron, Herringbone & Diagonal Fluted Parquet",
     "isActive": true,
-    "rotation": 90
+    "rotation": 90,
+    "mrp": 540,
+    "unit": "sq.ft",
+    "badge": "Natural Split Cleft",
+    "notes": "Teakwood Sandstone 4-Quadrant Chevron Diamond Relief - Teakwood Sandstone",
+    "price": 390,
+    "images": [
+      "/images/catalog/wall-cladding/cladding-127-teakwood-sandstone-4quadrant-chevron-diamond-relief.jpg"
+    ],
+    "leadTime": "In Stock - Ready to Ship"
   },
   {
     "id": "ST-WC-262",
@@ -722,7 +868,18 @@
       "Honed Border"
     ],
     "code": "ST-WC-024",
-    "patternCategory": "Chevron, Herringbone & Diagonal Fluted Parquet"
+    "patternCategory": "Chevron, Herringbone & Diagonal Fluted Parquet",
+    "mrp": 550,
+    "unit": "sq.ft",
+    "badge": "Natural Split Cleft",
+    "notes": "Teakwood Sandstone Chevron Fluted Parquet Cladding - Golden Teakwood Sandstone",
+    "price": 390,
+    "images": [
+      "/images/catalog/wall-cladding/cladding-262-teakwood-sandstone-chevron-fluted-parquet-cladding.jpg"
+    ],
+    "isActive": true,
+    "leadTime": "In Stock - Ready to Ship",
+    "rotation": 0
   },
   {
     "id": "ST-WC-263",
@@ -746,7 +903,18 @@
       "Honed"
     ],
     "code": "ST-WC-025",
-    "patternCategory": "Chevron, Herringbone & Diagonal Fluted Parquet"
+    "patternCategory": "Chevron, Herringbone & Diagonal Fluted Parquet",
+    "mrp": 560,
+    "unit": "sq.ft",
+    "badge": "Natural Split Cleft",
+    "notes": "Red Agra & Dholpur Beige Chevron Diamond Cladding - Red Agra Sandstone & Dholpur Beige Sandstone",
+    "price": 410,
+    "images": [
+      "/images/catalog/wall-cladding/cladding-263-red-agra-dholpur-beige-chevron-diamond-cladding.jpg"
+    ],
+    "isActive": true,
+    "leadTime": "In Stock - Ready to Ship",
+    "rotation": 0
   },
   {
     "id": "ST-WC-264",
@@ -793,7 +961,18 @@
       "Honed Border"
     ],
     "code": "ST-WC-027",
-    "patternCategory": "Chevron, Herringbone & Diagonal Fluted Parquet"
+    "patternCategory": "Chevron, Herringbone & Diagonal Fluted Parquet",
+    "mrp": 480,
+    "unit": "sq.ft",
+    "badge": "Natural Split Cleft",
+    "notes": "Dholpur Beige Chevron Fluted Parquet Cladding - Dholpur Beige Sandstone",
+    "price": 390,
+    "images": [
+      "/images/catalog/wall-cladding/cladding-265-dholpur-beige-chevron-fluted-parquet-cladding.jpg"
+    ],
+    "isActive": true,
+    "leadTime": "In Stock - Ready to Ship",
+    "rotation": 0
   },
   {
     "id": "ST-WC-064",
@@ -845,7 +1024,18 @@
       "Natural Cleft"
     ],
     "code": "ST-WC-029",
-    "patternCategory": "Architectural Relief Murals, Royal Jharokha & Carved Flora"
+    "patternCategory": "Architectural Relief Murals, Royal Jharokha & Carved Flora",
+    "mrp": 500,
+    "unit": "sq.ft",
+    "badge": "Natural Split Cleft",
+    "notes": "Black Slate Egyptian Winged Isis Gold Hieroglyphs - Natural Slate",
+    "price": 1200,
+    "images": [
+      "/images/catalog/wall-cladding/cladding-124-black-slate-egyptian-winged-isis-gold-hieroglyphs.jpg"
+    ],
+    "isActive": true,
+    "leadTime": "In Stock - Ready to Ship",
+    "rotation": 0
   },
   {
     "id": "ST-WC-200",
@@ -870,7 +1060,18 @@
       "Hand-chiselled"
     ],
     "code": "ST-WC-030",
-    "patternCategory": "Architectural Relief Murals, Royal Jharokha & Carved Flora"
+    "patternCategory": "Architectural Relief Murals, Royal Jharokha & Carved Flora",
+    "mrp": 510,
+    "unit": "sq.ft",
+    "badge": "Natural Split Cleft",
+    "notes": "Tropical Monstera Foliage Modular Sandstone Cladding - Teakwood & White Sandstone",
+    "price": 430,
+    "images": [
+      "/images/catalog/wall-cladding/cladding-202-tropical-monstera-foliage-modular-sandstone-cladding.jpg"
+    ],
+    "isActive": true,
+    "leadTime": "In Stock - Ready to Ship",
+    "rotation": 0
   },
   {
     "id": "ST-WC-223",
