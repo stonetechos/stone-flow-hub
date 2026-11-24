@@ -1503,67 +1503,96 @@ body[data-scroll-locked] {
   background-color: #00597b !important;
 }
 
-/* Red / Rose overrides into Deep Turquoise & Mineral */
-.theme-st-og .text-rose-500,
-.theme-st-og .text-rose-600,
-.theme-st-og .text-rose-700,
-.theme-st-og .text-red-500,
-.theme-st-og .text-red-600,
-.theme-st-og .text-red-700,
+/* Explicit Red Flag rules: Red Flags ALWAYS stay crisp, vibrant Red */
+.theme-st-og .red-flag-badge,
 :root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
     .theme-batman
   ):not(.dark)
-  .text-rose-600,
+  .red-flag-badge {
+  background-color: #e11d48 !important;
+  color: #ffffff !important;
+  border-color: #be123c !important;
+}
+
+.theme-st-og .red-flag-card,
 :root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
     .theme-batman
   ):not(.dark)
-  .text-rose-500,
+  .red-flag-card {
+  border-color: #fda4af !important;
+  background-color: #fff1f2 !important;
+  color: #881337 !important;
+}
+
+.theme-st-og .red-flag-icon,
 :root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
     .theme-batman
   ):not(.dark)
-  .text-red-600 {
+  .red-flag-icon {
+  color: #e11d48 !important;
+}
+
+/* Non-Red-Flag Red / Rose overrides into Deep Turquoise & Mineral */
+.theme-st-og .text-rose-500:not(.red-flag-icon):not(.red-flag-badge):not(.red-flag-card),
+.theme-st-og .text-rose-600:not(.red-flag-icon):not(.red-flag-badge):not(.red-flag-card),
+.theme-st-og .text-rose-700:not(.red-flag-icon):not(.red-flag-badge):not(.red-flag-card),
+.theme-st-og .text-red-500:not(.red-flag-icon):not(.red-flag-badge):not(.red-flag-card),
+.theme-st-og .text-red-600:not(.red-flag-icon):not(.red-flag-badge):not(.red-flag-card),
+.theme-st-og .text-red-700:not(.red-flag-icon):not(.red-flag-badge):not(.red-flag-card),
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .text-rose-600:not(.red-flag-icon):not(.red-flag-badge):not(.red-flag-card),
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .text-rose-500:not(.red-flag-icon):not(.red-flag-badge):not(.red-flag-card),
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .text-red-600:not(.red-flag-icon):not(.red-flag-badge):not(.red-flag-card) {
   color: #015474 !important;
 }
 
-.theme-st-og .bg-rose-50,
-.theme-st-og .bg-rose-100,
-.theme-st-og .bg-red-50,
-.theme-st-og .bg-red-100,
-.theme-st-og [class*="bg-rose-50/"],
-.theme-st-og [class*="bg-red-50/"],
+.theme-st-og .bg-rose-50:not(.red-flag-card),
+.theme-st-og .bg-rose-100:not(.red-flag-card),
+.theme-st-og .bg-red-50:not(.red-flag-card),
+.theme-st-og .bg-red-100:not(.red-flag-card),
+.theme-st-og [class*="bg-rose-50/"]:not(.red-flag-card),
+.theme-st-og [class*="bg-red-50/"]:not(.red-flag-card),
 :root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
     .theme-batman
   ):not(.dark)
-  .bg-rose-50,
+  .bg-rose-50:not(.red-flag-card),
 :root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
     .theme-batman
   ):not(.dark)
-  .bg-red-50,
+  .bg-red-50:not(.red-flag-card),
 :root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
     .theme-batman
   ):not(.dark)
-  [class*="bg-rose-50/"] {
+  [class*="bg-rose-50/"]:not(.red-flag-card) {
   background-color: #e0f1f5 !important;
 }
 
-.theme-st-og .bg-rose-500,
-.theme-st-og .bg-rose-600,
-.theme-st-og .bg-rose-700,
-.theme-st-og .bg-red-500,
-.theme-st-og .bg-red-600,
-.theme-st-og .bg-red-700,
+.theme-st-og .bg-rose-500:not(.red-flag-badge),
+.theme-st-og .bg-rose-600:not(.red-flag-badge),
+.theme-st-og .bg-rose-700:not(.red-flag-badge),
+.theme-st-og .bg-red-500:not(.red-flag-badge),
+.theme-st-og .bg-red-600:not(.red-flag-badge),
+.theme-st-og .bg-red-700:not(.red-flag-badge),
 :root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
     .theme-batman
   ):not(.dark)
-  .bg-rose-600,
+  .bg-rose-600:not(.red-flag-badge),
 :root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
     .theme-batman
   ):not(.dark)
-  .bg-rose-500,
+  .bg-rose-500:not(.red-flag-badge),
 :root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
     .theme-batman
   ):not(.dark)
-  .bg-red-600 {
+  .bg-red-600:not(.red-flag-badge) {
   background-color: #015474 !important;
   color: #ffffff !important;
 }
@@ -1573,10 +1602,16 @@ body[data-scroll-locked] {
 .theme-st-og .text-amber-600,
 .theme-st-og .text-amber-700,
 .theme-st-og .text-amber-800,
+.theme-st-og .text-amber-900,
+.theme-st-og .text-amber-950,
 .theme-st-og .text-orange-500,
 .theme-st-og .text-orange-600,
 .theme-st-og .text-orange-700,
+.theme-st-og .text-orange-800,
+.theme-st-og .text-yellow-500,
 .theme-st-og .text-yellow-600,
+.theme-st-og .text-yellow-700,
+.theme-st-og .text-yellow-800,
 :root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
     .theme-batman
   ):not(.dark)
@@ -1588,7 +1623,15 @@ body[data-scroll-locked] {
 :root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
     .theme-batman
   ):not(.dark)
-  .text-orange-600 {
+  .text-amber-800,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .text-orange-600,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .text-yellow-600 {
   color: #00597b !important;
 }
 
@@ -1596,13 +1639,28 @@ body[data-scroll-locked] {
 .theme-st-og .bg-amber-100,
 .theme-st-og .bg-orange-50,
 .theme-st-og .bg-orange-100,
+.theme-st-og .bg-yellow-50,
+.theme-st-og .bg-yellow-100,
 .theme-st-og [class*="bg-amber-50/"],
 .theme-st-og [class*="bg-amber-500/10"],
 .theme-st-og [class*="bg-orange-50/"],
+.theme-st-og [class*="bg-yellow-50/"],
 :root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
     .theme-batman
   ):not(.dark)
   .bg-amber-50,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .bg-amber-100,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .bg-orange-50,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .bg-yellow-50,
 :root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
     .theme-batman
   ):not(.dark)
@@ -1612,8 +1670,11 @@ body[data-scroll-locked] {
 
 .theme-st-og .bg-amber-500,
 .theme-st-og .bg-amber-600,
+.theme-st-og .bg-amber-700,
 .theme-st-og .bg-orange-500,
 .theme-st-og .bg-orange-600,
+.theme-st-og .bg-yellow-500,
+.theme-st-og .bg-yellow-600,
 :root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
     .theme-batman
   ):not(.dark)
@@ -1621,8 +1682,117 @@ body[data-scroll-locked] {
 :root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
     .theme-batman
   ):not(.dark)
-  .bg-amber-600 {
+  .bg-amber-600,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .bg-orange-500,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .bg-orange-600 {
   background-color: #00597b !important;
+  color: #ffffff !important;
+}
+
+/* Purple / Violet / Fuchsia / Indigo overrides into Deep & Medium Turquoise */
+.theme-st-og .text-purple-500,
+.theme-st-og .text-purple-600,
+.theme-st-og .text-purple-700,
+.theme-st-og .text-purple-800,
+.theme-st-og .text-purple-900,
+.theme-st-og .text-purple-950,
+.theme-st-og .text-violet-500,
+.theme-st-og .text-violet-600,
+.theme-st-og .text-violet-700,
+.theme-st-og .text-violet-800,
+.theme-st-og .text-fuchsia-600,
+.theme-st-og .text-fuchsia-700,
+.theme-st-og .text-indigo-500,
+.theme-st-og .text-indigo-600,
+.theme-st-og .text-indigo-700,
+.theme-st-og .text-indigo-800,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .text-purple-600,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .text-purple-700,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .text-purple-800,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .text-violet-600,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .text-indigo-600 {
+  color: #015474 !important;
+}
+
+.theme-st-og .bg-purple-50,
+.theme-st-og .bg-purple-100,
+.theme-st-og .bg-violet-50,
+.theme-st-og .bg-violet-100,
+.theme-st-og .bg-fuchsia-50,
+.theme-st-og .bg-indigo-50,
+.theme-st-og .bg-indigo-100,
+.theme-st-og [class*="bg-purple-50/"],
+.theme-st-og [class*="bg-purple-500/10"],
+.theme-st-og [class*="bg-violet-50/"],
+.theme-st-og [class*="bg-indigo-50/"],
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .bg-purple-50,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .bg-purple-100,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .bg-violet-50,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .bg-indigo-50,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  [class*="bg-purple-50/"] {
+  background-color: #e0f1f5 !important;
+}
+
+.theme-st-og .bg-purple-500,
+.theme-st-og .bg-purple-600,
+.theme-st-og .bg-purple-700,
+.theme-st-og .bg-violet-500,
+.theme-st-og .bg-violet-600,
+.theme-st-og .bg-indigo-500,
+.theme-st-og .bg-indigo-600,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .bg-purple-500,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .bg-purple-600,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .bg-violet-600,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .bg-indigo-600 {
+  background-color: #006788 !important;
   color: #ffffff !important;
 }
 
@@ -1633,17 +1803,27 @@ body[data-scroll-locked] {
 .theme-st-og .border-emerald-500,
 .theme-st-og .border-green-200,
 .theme-st-og .border-green-300,
-.theme-st-og .border-rose-200,
-.theme-st-og .border-rose-300,
-.theme-st-og .border-red-200,
-.theme-st-og .border-red-300,
+.theme-st-og .border-rose-200:not(.red-flag-card),
+.theme-st-og .border-rose-300:not(.red-flag-card),
+.theme-st-og .border-red-200:not(.red-flag-card),
+.theme-st-og .border-red-300:not(.red-flag-card),
 .theme-st-og .border-amber-200,
 .theme-st-og .border-amber-300,
+.theme-st-og .border-orange-200,
+.theme-st-og .border-yellow-200,
+.theme-st-og .border-purple-200,
+.theme-st-og .border-purple-300,
+.theme-st-og .border-purple-500,
+.theme-st-og .border-violet-200,
+.theme-st-og .border-violet-300,
+.theme-st-og .border-indigo-200,
+.theme-st-og .border-indigo-300,
 .theme-st-og .border-sky-200,
 .theme-st-og .border-sky-300,
 .theme-st-og [class*="border-emerald-500/"],
-.theme-st-og [class*="border-rose-300/"],
+.theme-st-og [class*="border-rose-300/"]:not(.red-flag-card),
 .theme-st-og [class*="border-amber-500/"],
+.theme-st-og [class*="border-purple-500/"],
 :root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
     .theme-batman
   ):not(.dark)
@@ -1655,11 +1835,11 @@ body[data-scroll-locked] {
 :root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
     .theme-batman
   ):not(.dark)
-  .border-rose-200,
+  .border-rose-200:not(.red-flag-card),
 :root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
     .theme-batman
   ):not(.dark)
-  .border-rose-300,
+  .border-rose-300:not(.red-flag-card),
 :root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
     .theme-batman
   ):not(.dark)
@@ -1667,7 +1847,15 @@ body[data-scroll-locked] {
 :root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
     .theme-batman
   ):not(.dark)
-  .border-amber-300 {
+  .border-amber-300,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .border-purple-200,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .border-purple-300 {
   border-color: #c9d1d4 !important;
 }
 

@@ -347,14 +347,14 @@ function DashboardPage() {
                         className={cn(
                           "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
                           opsSubTab === "fulfilment"
-                            ? "bg-white dark:bg-slate-800 text-purple-950 dark:text-purple-200 shadow-xs border border-border/40"
+                            ? "bg-white dark:bg-slate-800 text-[#015474] shadow-xs border border-border/40"
                             : "text-muted-foreground hover:text-foreground",
                         )}
                       >
-                        <Truck className="h-3.5 w-3.5 text-purple-600" />
+                        <Truck className="h-3.5 w-3.5 text-[#006788]" />
                         <span>{t("dashboard.tabs.fulfilment", "Fulfilment")}</span>
                         {kpisQ.data.ordersToStart > 0 && (
-                          <span className="rounded-full bg-purple-100 dark:bg-purple-900/60 text-purple-800 dark:text-purple-200 px-1.5 py-0.2 text-[10px] font-black">
+                          <span className="rounded-full bg-[#e0f1f5] text-[#015474] px-1.5 py-0.2 text-[10px] font-black border border-[#c9d1d4]">
                             {toIndicDigits(kpisQ.data.ordersToStart, i18n.language)}
                           </span>
                         )}
@@ -367,13 +367,13 @@ function DashboardPage() {
                           className={cn(
                             "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
                             opsSubTab === "money"
-                              ? "bg-white dark:bg-slate-800 text-emerald-950 dark:text-emerald-200 shadow-xs border border-border/40"
+                              ? "bg-white dark:bg-slate-800 text-[#015474] shadow-xs border border-border/40"
                               : "text-muted-foreground hover:text-foreground",
                           )}
                         >
-                          <Wallet className="h-3.5 w-3.5 text-emerald-600" />
+                          <Wallet className="h-3.5 w-3.5 text-[#006788]" />
                           <span>{t("dashboard.tabs.money", "Cash & Liabilities")}</span>
-                          <span className="rounded-full bg-purple-100 text-purple-900 dark:bg-purple-900 dark:text-purple-100 px-1.5 py-0.2 text-[9px] font-black uppercase">
+                          <span className="rounded-full bg-[#e0f1f5] text-[#015474] px-1.5 py-0.2 text-[9px] font-black uppercase border border-[#c9d1d4]">
                             Radar
                           </span>
                         </button>
@@ -535,7 +535,7 @@ function ExecutiveHero({
             )}
           </h1>
           {isNocturnal && nocturnalQuip && (
-            <p className="mt-1 sm:mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400 break-words">
+            <p className="mt-1 sm:mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-[#00597b] break-words">
               <span>🌙</span>
               <span>{nocturnalQuip}</span>
             </p>
@@ -553,20 +553,20 @@ function ExecutiveHero({
                 el.scrollIntoView({ behavior: "smooth" });
               }
             }}
-            className="engraved-well-glow flex flex-col justify-between rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 transition-all hover:scale-[1.02] border border-emerald-500/25 bg-emerald-50/40 dark:bg-emerald-950/20 text-left w-full cursor-pointer"
+            className="engraved-well-glow flex flex-col justify-between rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 transition-all hover:scale-[1.02] border border-[#c9d1d4] bg-[#e0f1f5]/40 text-left w-full cursor-pointer"
           >
             <div className="flex items-center justify-between gap-1.5">
-              <span className="font-mono text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-emerald-800 dark:text-emerald-300 truncate">
+              <span className="font-mono text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-[#015474] truncate">
                 {t("dashboard.profitTargetKpi", "50L Profit Goal")}
               </span>
-              <TrendingUp className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+              <TrendingUp className="h-3.5 w-3.5 text-[#006788] shrink-0" />
             </div>
             <div className="mt-2">
-              <div className="font-display text-lg sm:text-2xl font-black tabular-nums text-emerald-950 dark:text-emerald-100">
+              <div className="font-display text-lg sm:text-2xl font-black tabular-nums text-[#012535]">
                 ₹{toIndicDigits("21.95", i18n.language)}
                 {lakhUnit}
               </div>
-              <div className="mt-0.5 font-mono text-[10px] sm:text-[11px] font-semibold text-emerald-700/90 dark:text-emerald-400 truncate">
+              <div className="mt-0.5 font-mono text-[10px] sm:text-[11px] font-semibold text-[#00597b] truncate">
                 {toIndicDigits("44", i18n.language)}% {t("dashboard.achieved", "Achieved")} ·{" "}
                 {t("dashboard.gap", "Gap")}: ₹{toIndicDigits("28.05", i18n.language)}
                 {lakhUnit}
@@ -577,23 +577,23 @@ function ExecutiveHero({
           {/* 2. Active Revenue Pipeline */}
           <Link
             to="/quotes"
-            className="engraved-well-glow flex flex-col justify-between rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 transition-all hover:scale-[1.02] border border-cyan-500/25 bg-cyan-50/40 dark:bg-cyan-950/20"
+            className="engraved-well-glow flex flex-col justify-between rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 transition-all hover:scale-[1.02] border border-[#c9d1d4] bg-[#e0f1f5]/30"
           >
             <div className="flex items-center justify-between gap-1.5">
-              <span className="font-mono text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-cyan-800 dark:text-cyan-300 truncate">
+              <span className="font-mono text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-[#015474] truncate">
                 {t("dashboard.revenuePipeline", "Revenue Pipeline")}
               </span>
-              <FileText className="h-3.5 w-3.5 text-cyan-600 shrink-0" />
+              <FileText className="h-3.5 w-3.5 text-[#006788] shrink-0" />
             </div>
             <div className="mt-2">
-              <div className="font-display text-lg sm:text-2xl font-black tabular-nums text-cyan-950 dark:text-cyan-100">
+              <div className="font-display text-lg sm:text-2xl font-black tabular-nums text-[#012535]">
                 ₹
                 {toIndicDigits(
                   formatMoneyCompact(kpis.revenuePipelineInr || 2070000, i18n.language),
                   i18n.language,
                 )}
               </div>
-              <div className="mt-0.5 font-mono text-[10px] sm:text-[11px] font-semibold text-cyan-700/90 dark:text-cyan-400 truncate">
+              <div className="mt-0.5 font-mono text-[10px] sm:text-[11px] font-semibold text-[#00597b] truncate">
                 {toIndicDigits(kpis.pendingQuotes || 24, i18n.language)}{" "}
                 {t("dashboard.quotesInPlayContext", "quote(s) active")}
               </div>
@@ -603,19 +603,19 @@ function ExecutiveHero({
           {/* 3. Collections At Risk / Overdue */}
           <Link
             to="/invoices"
-            className="engraved-well-glow flex flex-col justify-between rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 transition-all hover:scale-[1.02] border border-amber-500/25 bg-amber-50/40 dark:bg-amber-950/20"
+            className="engraved-well-glow flex flex-col justify-between rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 transition-all hover:scale-[1.02] border border-[#c9d1d4] bg-[#e0f1f5]/50"
           >
             <div className="flex items-center justify-between gap-1.5">
-              <span className="font-mono text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-amber-800 dark:text-amber-300 truncate">
+              <span className="font-mono text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-[#015474] truncate">
                 {t("dashboard.collectionsAtRisk", "Overdue Collections")}
               </span>
-              <Wallet className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+              <Wallet className="h-3.5 w-3.5 text-[#006788] shrink-0" />
             </div>
             <div className="mt-2">
-              <div className="font-display text-lg sm:text-2xl font-black tabular-nums text-amber-950 dark:text-amber-100">
+              <div className="font-display text-lg sm:text-2xl font-black tabular-nums text-[#012535]">
                 ₹{toIndicDigits("11,099", i18n.language)}
               </div>
-              <div className="mt-0.5 font-mono text-[10px] sm:text-[11px] font-semibold text-amber-700/90 dark:text-amber-400 truncate">
+              <div className="mt-0.5 font-mono text-[10px] sm:text-[11px] font-semibold text-[#00597b] truncate">
                 {transliterateName("Nagesh Rabari", i18n.language)} (
                 {t("common.overdue", "Overdue")})
               </div>
@@ -625,20 +625,20 @@ function ExecutiveHero({
           {/* 4. Production & Stock Allocation */}
           <Link
             to="/sales-orders"
-            className="engraved-well-glow flex flex-col justify-between rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 transition-all hover:scale-[1.02] border border-purple-500/25 bg-purple-50/40 dark:bg-purple-950/20"
+            className="engraved-well-glow flex flex-col justify-between rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 transition-all hover:scale-[1.02] border border-[#c9d1d4] bg-[#e0f1f5]/40"
           >
             <div className="flex items-center justify-between gap-1.5">
-              <span className="font-mono text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-purple-800 dark:text-purple-300 truncate">
+              <span className="font-mono text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-[#015474] truncate">
                 {t("dashboard.ordersQueued", "Production Ready")}
               </span>
-              <Factory className="h-3.5 w-3.5 text-purple-600 shrink-0" />
+              <Factory className="h-3.5 w-3.5 text-[#006788] shrink-0" />
             </div>
             <div className="mt-2">
-              <div className="font-display text-lg sm:text-2xl font-black tabular-nums text-purple-950 dark:text-purple-100">
+              <div className="font-display text-lg sm:text-2xl font-black tabular-nums text-[#012535]">
                 {toIndicDigits(kpis.ordersToStart || 2, i18n.language)}{" "}
                 {t("common.orders", "Orders")}
               </div>
-              <div className="mt-0.5 font-mono text-[10px] sm:text-[11px] font-semibold text-rose-600 dark:text-rose-400 truncate">
+              <div className="mt-0.5 font-mono text-[10px] sm:text-[11px] font-semibold text-[#00597b] truncate">
                 ⚠️ {toIndicDigits("2", i18n.language)}{" "}
                 {t("dashboard.needSlabsAssigned", "Need Stock Slabs")}
               </div>
@@ -1228,7 +1228,7 @@ function SalesCommandCentre({ kpis }: { kpis: DashboardKpis }) {
             to={c.to}
             className={cn(
               "engraved-well-glow flex flex-col rounded-xl px-3.5 py-3 transition-all hover:scale-[1.02]",
-              c.tone === "warn" && "border-amber-300 bg-amber-50/60 shadow-amber-500/10",
+              c.tone === "warn" && "border-[#c9d1d4] bg-[#e0f1f5]/60 shadow-xs",
             )}
           >
             <span className="font-mono text-[10px] font-black uppercase tracking-wider text-engraved-kicker">
@@ -1282,7 +1282,7 @@ function CopilotDock({
     >
       {/* Critical Action Hub — Zero Truncation */}
       <SurfaceCard
-        icon={<AlertTriangle className="h-3.5 w-3.5 text-rose-600" />}
+        icon={<AlertTriangle className="h-3.5 w-3.5 text-rose-600 red-flag-icon" />}
         kicker={t("dashboard.bottlenecks", "Pain Points Radar")}
         title={t("dashboard.criticalActionHub", "Critical Action Hub")}
       >
@@ -1300,8 +1300,8 @@ function CopilotDock({
                   className={cn(
                     "engraved-well flex flex-col gap-1 rounded-xl p-2.5 transition-all hover:scale-[1.01] hover:shadow-xs group",
                     s.isRedFlag
-                      ? "border border-rose-300/80 bg-rose-50/50 hover:bg-rose-50 text-rose-950 dark:border-rose-900/60 dark:bg-rose-950/30"
-                      : "border border-border/60 bg-card hover:bg-accent/40 text-foreground",
+                      ? "border border-rose-300/80 bg-rose-50/50 hover:bg-rose-50 text-rose-950 red-flag-card"
+                      : "border border-[#c9d1d4] bg-card hover:bg-accent/40 text-foreground",
                   )}
                 >
                   <div className="flex items-center justify-between gap-1.5">
@@ -1309,8 +1309,8 @@ function CopilotDock({
                       className={cn(
                         "rounded-md px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider shadow-2xs",
                         s.isRedFlag
-                          ? "bg-rose-600 text-white"
-                          : "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/60 dark:text-cyan-200",
+                          ? "bg-rose-600 text-white red-flag-badge"
+                          : "bg-[#e0f1f5] text-[#015474] border border-[#c9d1d4]",
                       )}
                     >
                       {s.badge}
@@ -1368,17 +1368,17 @@ function CopilotDock({
                     })
                   : "";
 
-                let icon = <CheckCircle2 className="h-3.5 w-3.5 text-blue-500 shrink-0" />;
+                let icon = <CheckCircle2 className="h-3.5 w-3.5 text-[#006788] shrink-0" />;
                 if (a.entity_type === "receipt" || a.entity_type === "payment") {
-                  icon = <Wallet className="h-3.5 w-3.5 text-emerald-600 shrink-0" />;
+                  icon = <Wallet className="h-3.5 w-3.5 text-[#006788] shrink-0" />;
                 } else if (a.entity_type === "sales_order" || a.entity_type === "order") {
-                  icon = <Factory className="h-3.5 w-3.5 text-purple-600 shrink-0" />;
+                  icon = <Factory className="h-3.5 w-3.5 text-[#015474] shrink-0" />;
                 } else if (a.entity_type === "quote" || a.entity_type === "quotation") {
-                  icon = <FileText className="h-3.5 w-3.5 text-cyan-600 shrink-0" />;
+                  icon = <FileText className="h-3.5 w-3.5 text-[#006788] shrink-0" />;
                 } else if (a.entity_type === "customer") {
-                  icon = <Users className="h-3.5 w-3.5 text-blue-600 shrink-0" />;
+                  icon = <Users className="h-3.5 w-3.5 text-[#015474] shrink-0" />;
                 } else if (a.entity_type === "dispatch" || a.entity_type === "delivery_challan") {
-                  icon = <Truck className="h-3.5 w-3.5 text-amber-600 shrink-0" />;
+                  icon = <Truck className="h-3.5 w-3.5 text-[#00597b] shrink-0" />;
                 }
 
                 const desc = formatActivitySummary(a.summary || "", a.entity_type, t);

@@ -295,7 +295,9 @@ function NavLinkRow({
         <div className="px-2 py-1.5 text-xs font-semibold text-sidebar-ring border-b border-sidebar-border flex items-center justify-between">
           <span className="truncate">{label}</span>
           {isCustomized && (
-            <span className="text-[10px] text-amber-400 font-normal ml-1 shrink-0">Customized</span>
+            <span className="text-[10px] text-sidebar-ring font-normal ml-1 shrink-0">
+              Customized
+            </span>
           )}
         </div>
         {onStartRename && (
@@ -317,7 +319,7 @@ function NavLinkRow({
         {isCustomized && onResetRename && (
           <ContextMenuItem
             onClick={() => onResetRename(id)}
-            className="cursor-pointer text-xs flex items-center gap-2 hover:bg-slate-800 focus:bg-slate-800 text-amber-300 py-1.5"
+            className="cursor-pointer text-xs flex items-center gap-2 hover:bg-sidebar-accent focus:bg-sidebar-accent text-sidebar-ring py-1.5"
           >
             <RotateCcw className="h-3.5 w-3.5" />
             <span>Reset to &quot;{defaultLabel}&quot;</span>
@@ -497,7 +499,7 @@ function NavGroupRow({
           <div className="px-2 py-1.5 text-xs font-semibold text-sidebar-ring border-b border-sidebar-border flex items-center justify-between">
             <span className="truncate">{groupLabel}</span>
             {isGroupCustomized && (
-              <span className="text-[10px] text-amber-400 font-normal ml-1 shrink-0">
+              <span className="text-[10px] text-sidebar-ring font-normal ml-1 shrink-0">
                 Customized
               </span>
             )}
@@ -521,7 +523,7 @@ function NavGroupRow({
           {isGroupCustomized && onResetRename && (
             <ContextMenuItem
               onClick={() => onResetRename(group.id)}
-              className="cursor-pointer text-xs flex items-center gap-2 hover:bg-slate-800 focus:bg-slate-800 text-amber-300 py-1.5"
+              className="cursor-pointer text-xs flex items-center gap-2 hover:bg-sidebar-accent focus:bg-sidebar-accent text-sidebar-ring py-1.5"
             >
               <RotateCcw className="h-3.5 w-3.5" />
               <span>Reset to &quot;{defaultGroupLabel}&quot;</span>
@@ -616,7 +618,7 @@ function NavGroupRow({
           <div className="px-2 py-1.5 text-xs font-semibold text-sidebar-ring border-b border-sidebar-border flex items-center justify-between">
             <span className="truncate">{groupLabel}</span>
             {isGroupCustomized && (
-              <span className="text-[10px] text-amber-400 font-normal ml-1 shrink-0">
+              <span className="text-[10px] text-sidebar-ring font-normal ml-1 shrink-0">
                 Customized
               </span>
             )}
@@ -640,7 +642,7 @@ function NavGroupRow({
           {isGroupCustomized && onResetRename && (
             <ContextMenuItem
               onClick={() => onResetRename(group.id)}
-              className="cursor-pointer text-xs flex items-center gap-2 hover:bg-slate-800 focus:bg-slate-800 text-amber-300 py-1.5"
+              className="cursor-pointer text-xs flex items-center gap-2 hover:bg-sidebar-accent focus:bg-sidebar-accent text-sidebar-ring py-1.5"
             >
               <RotateCcw className="h-3.5 w-3.5" />
               <span>Reset to &quot;{defaultGroupLabel}&quot;</span>
@@ -980,10 +982,7 @@ function UserMenu({
           )}
           {isAdmin && (
             <DropdownMenuItem onSelect={() => void setMode(!isDemo)}>
-              <FlaskConical
-                className="mr-2 h-4 w-4 text-amber-600 dark:text-amber-400"
-                aria-hidden
-              />
+              <FlaskConical className="mr-2 h-4 w-4 text-primary" aria-hidden />
               {isDemo
                 ? t("common.liveMode", "Switch to Live Mode")
                 : t("common.demoMode", "Demo Mode")}

@@ -1395,7 +1395,7 @@ function QuoteDetailPage() {
                   <span className="text-primary font-black">{formatInr(quote.total)}</span>
                 </div>
                 {saleMode === "hybrid" && (
-                  <div className="text-xs text-purple-700 bg-purple-50 px-2.5 py-1.5 rounded-md border border-purple-200 mt-2">
+                  <div className="text-xs text-[#015474] bg-[#e0f1f5] px-2.5 py-1.5 rounded-md border border-[#c9d1d4] mt-2">
                     <span className="font-semibold">Hybrid Deal Split:</span> Cash{" "}
                     {formatInr(hybridSplit.cashAmount ?? 0)} · Invoiced{" "}
                     {formatInr(hybridSplit.invoicedAmount ?? 0)}

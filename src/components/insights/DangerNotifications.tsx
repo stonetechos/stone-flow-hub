@@ -195,7 +195,7 @@ function DangerNotificationCard({ insight, onDismiss, onAct }: DangerNotificatio
     <div
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="relative overflow-hidden rounded-2xl shadow-2xl border border-rose-300 dark:border-rose-800 bg-background/95 backdrop-blur-md select-none transition-shadow hover:shadow-rose-500/10"
+      className="relative overflow-hidden rounded-2xl shadow-2xl border border-rose-300 dark:border-rose-800 bg-background/95 backdrop-blur-md select-none transition-shadow hover:shadow-rose-500/10 red-flag-card"
     >
       {/* Background Revealed on Swipe Right: Remove / Dismiss */}
       <div
@@ -261,7 +261,7 @@ function DangerNotificationCard({ insight, onDismiss, onAct }: DangerNotificatio
           <div className="flex items-center gap-1.5 min-w-0">
             <span
               className={cn(
-                "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors",
+                "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors red-flag-badge",
                 dragX > 15
                   ? "bg-rose-600 text-white animate-pulse"
                   : dragX < -15
@@ -296,7 +296,7 @@ function DangerNotificationCard({ insight, onDismiss, onAct }: DangerNotificatio
 
         {/* Content Body */}
         <div className="flex items-start gap-2.5">
-          <div className="p-1.5 rounded-lg bg-rose-100 dark:bg-rose-900/60 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5">
+          <div className="p-1.5 rounded-lg bg-rose-100 dark:bg-rose-900/60 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5 red-flag-icon">
             <AlertCircle className="h-4 w-4" />
           </div>
 

@@ -345,12 +345,12 @@ export function PersonalTransfersLedger() {
       return (
         <Badge
           variant="outline"
-          className="border-purple-500/40 bg-purple-50 text-purple-800 dark:bg-purple-950/40 dark:text-purple-300 gap-1 text-[11px] font-medium"
+          className="border-[#c9d1d4] bg-[#e0f1f5] text-[#015474] gap-1 text-[11px] font-medium"
         >
           {def.type === "upi" ? (
-            <Smartphone className="h-3 w-3 text-purple-600" />
+            <Smartphone className="h-3 w-3 text-[#006788]" />
           ) : (
-            <Landmark className="h-3 w-3 text-purple-600" />
+            <Landmark className="h-3 w-3 text-[#006788]" />
           )}
           <span>{label}</span>
         </Badge>
@@ -407,19 +407,17 @@ export function PersonalTransfersLedger() {
         {/* 1. Rishi Rai Position */}
         <Card
           onClick={() => setPerspective("rishi")}
-          className={`cursor-pointer transition-all border-purple-500/30 hover:border-purple-500 shadow-xs ${
-            perspective === "rishi"
-              ? "ring-2 ring-purple-500 bg-purple-50/20 dark:bg-purple-950/10"
-              : ""
+          className={`cursor-pointer transition-all border-[#c9d1d4] hover:border-[#006788] shadow-xs ${
+            perspective === "rishi" ? "ring-2 ring-[#006788] bg-[#e0f1f5]/40" : ""
           }`}
         >
           <CardContent className="p-4 space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-purple-700 dark:text-purple-400 flex items-center gap-1.5">
-                <User className="h-3.5 w-3.5" />
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[#015474] flex items-center gap-1.5">
+                <User className="h-3.5 w-3.5 text-[#006788]" />
                 <span>{t("finance.rishiLedger", "Rishi Rai Ledger")}</span>
               </span>
-              <div className="h-6 w-6 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center dark:bg-purple-900/50 dark:text-purple-300">
+              <div className="h-6 w-6 rounded-full bg-[#e0f1f5] text-[#015474] flex items-center justify-center">
                 {rishiSummary.netBalance >= 0 ? (
                   <TrendingUp className="h-3.5 w-3.5" />
                 ) : (
@@ -430,11 +428,11 @@ export function PersonalTransfersLedger() {
             <div className="text-xl font-extrabold tracking-tight text-foreground">
               {formatInr(rishiSummary.netBalance)}
             </div>
-            <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1 border-t border-purple-100 dark:border-purple-900/40">
-              <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+            <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1 border-t border-[#c9d1d4]">
+              <span className="text-[#006788] font-medium">
                 {t("finance.inflowPrefix", "In:")} +{formatInr(rishiSummary.totalInflow)}
               </span>
-              <span className="text-rose-600 dark:text-rose-400 font-medium">
+              <span className="text-[#015474] font-medium">
                 {t("finance.outflowPrefix", "Out:")} -{formatInr(rishiSummary.totalOutflow)}
               </span>
             </div>

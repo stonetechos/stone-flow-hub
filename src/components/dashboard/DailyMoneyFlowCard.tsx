@@ -404,7 +404,7 @@ export function DailyMoneyFlowCard() {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800/80 pb-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5 flex-wrap">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-xs">
+            <div className="p-2 rounded-xl bg-[#006788] text-white shadow-xs">
               <ArrowLeftRight className="h-5 w-5" />
             </div>
             <div>
@@ -456,7 +456,7 @@ export function DailyMoneyFlowCard() {
             <Button
               variant="outline"
               size="sm"
-              className="h-8 text-xs gap-1 border-purple-200 text-purple-700 dark:border-purple-800 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/30"
+              className="h-8 text-xs gap-1 border-[#c9d1d4] text-[#015474] hover:bg-[#e0f1f5]"
               onClick={handleJumpToday}
             >
               <RotateCcw className="h-3 w-3" />
@@ -499,12 +499,12 @@ export function DailyMoneyFlowCard() {
                 className={cn(
                   "flex flex-col text-left p-2.5 rounded-xl border transition-all text-xs relative overflow-hidden",
                   isSelected
-                    ? "border-purple-500 bg-purple-50/70 dark:bg-purple-950/40 shadow-xs ring-2 ring-purple-500/20"
+                    ? "border-[#006788] bg-[#e0f1f5] shadow-xs ring-2 ring-[#006788]/20"
                     : "border-slate-200/80 dark:border-slate-800/80 bg-background/50 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-muted/30",
                 )}
               >
                 {day.isToday && (
-                  <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-purple-600 animate-pulse" />
+                  <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-[#006788] animate-pulse" />
                 )}
                 <div className="flex items-center justify-between font-semibold text-foreground text-[11px]">
                   <span>{localizeDayLabel(day.dayLabel, lang)}</span>
@@ -515,19 +515,19 @@ export function DailyMoneyFlowCard() {
 
                 <div className="mt-2 space-y-1">
                   <div className="flex items-center justify-between font-mono text-[11px]">
-                    <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                    <span className="flex items-center gap-1 text-[#006788]">
                       <ArrowDownLeft className="h-3 w-3" /> {txt.stripIn}
                     </span>
-                    <span className="font-semibold text-emerald-700 dark:text-emerald-300">
+                    <span className="font-semibold text-[#015474]">
                       {day.inflow > 0 ? `₹${(day.inflow / 1000).toFixed(0)}k` : "—"}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between font-mono text-[11px]">
-                    <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                    <span className="flex items-center gap-1 text-[#00597b]">
                       <ArrowUpRight className="h-3 w-3" /> {txt.stripOut}
                     </span>
-                    <span className="font-semibold text-amber-700 dark:text-amber-300">
+                    <span className="font-semibold text-[#015474]">
                       {day.outflow > 0 ? `₹${(day.outflow / 1000).toFixed(0)}k` : "—"}
                     </span>
                   </div>
@@ -645,24 +645,12 @@ export function DailyMoneyFlowCard() {
 
         {/* Net Flow Balance Card */}
         <Card
-          className={cn(
-            "relative overflow-hidden transition-all",
-            summary.netCashFlow >= 0
-              ? "border-purple-500/30 bg-gradient-to-br from-purple-500/10 via-indigo-500/5 to-transparent"
-              : "border-rose-500/30 bg-gradient-to-br from-rose-500/10 via-rose-500/5 to-transparent",
-          )}
+          className={cn("relative overflow-hidden transition-all border-[#c9d1d4] bg-[#e0f1f5]/40")}
         >
           <CardContent className="p-4 sm:p-5 space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div
-                  className={cn(
-                    "p-2 rounded-lg",
-                    summary.netCashFlow >= 0
-                      ? "bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-400"
-                      : "bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400",
-                  )}
-                >
+                <div className="p-2 rounded-lg bg-[#e0f1f5] text-[#015474]">
                   {summary.netCashFlow >= 0 ? (
                     <TrendingUp className="h-5 w-5" />
                   ) : (
@@ -678,25 +666,13 @@ export function DailyMoneyFlowCard() {
               </div>
               <Badge
                 variant="secondary"
-                className={cn(
-                  "text-[10px] font-semibold px-2 py-0.5",
-                  summary.netCashFlow >= 0
-                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300"
-                    : "bg-rose-100 text-rose-800 dark:bg-rose-950/50 dark:text-rose-300",
-                )}
+                className="text-[10px] font-semibold px-2 py-0.5 bg-[#006788] text-white"
               >
                 {summary.netCashFlow >= 0 ? txt.capitalSurplus : txt.netOutflow}
               </Badge>
             </div>
 
-            <div
-              className={cn(
-                "text-2xl sm:text-3xl font-extrabold font-mono tracking-tight pt-1",
-                summary.netCashFlow >= 0
-                  ? "text-purple-900 dark:text-purple-200"
-                  : "text-rose-700 dark:text-rose-300",
-              )}
-            >
+            <div className="text-2xl sm:text-3xl font-extrabold font-mono tracking-tight pt-1 text-[#015474]">
               {summary.netCashFlow >= 0 ? "+" : ""}
               {formatInr(summary.netCashFlow)}
             </div>
@@ -964,10 +940,7 @@ export function DailyMoneyFlowCard() {
           <Link to="/vendor-payments" className="hover:text-foreground hover:underline">
             {txt.vendorPayments}
           </Link>
-          <Link
-            to="/money-flow"
-            className="text-purple-600 dark:text-purple-400 font-bold hover:underline"
-          >
+          <Link to="/money-flow" className="text-[#006788] font-bold hover:underline">
             {txt.fullMoneyFlowHub}
           </Link>
         </div>

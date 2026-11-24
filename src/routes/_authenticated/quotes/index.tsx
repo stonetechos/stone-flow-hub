@@ -392,11 +392,11 @@ function QuotesPage() {
           className={cn(
             "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5",
             saleModeFilter === "hybrid"
-              ? "bg-purple-700 text-white border-purple-700 shadow-2xs font-semibold"
-              : "bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100",
+              ? "bg-[#015474] text-white border-[#015474] shadow-2xs font-semibold"
+              : "bg-[#e0f1f5] text-[#015474] border-[#c9d1d4] hover:bg-[#e0f1f5]/80",
           )}
         >
-          <span className="h-1.5 w-1.5 rounded-full bg-purple-500" />
+          <span className="h-1.5 w-1.5 rounded-full bg-[#006788]" />
           Hybrid Deals ({quoteCounts.hybrid})
         </button>
       </div>
@@ -892,16 +892,16 @@ function QuotesPage() {
                                       <Link
                                         to="/invoices/$invoiceId"
                                         params={{ invoiceId: activeInvoice.id }}
-                                        className="font-semibold text-purple-700 hover:underline inline-flex items-center gap-0.5"
+                                        className="font-semibold text-[#006788] hover:underline inline-flex items-center gap-0.5"
                                       >
-                                        <CheckCircle2 className="h-2.5 w-2.5 text-purple-600" />
+                                        <CheckCircle2 className="h-2.5 w-2.5 text-[#006788]" />
                                         <span>
                                           {t("quotes.invoiced", "Invoiced")} (
                                           {activeInvoice.invoice_no})
                                         </span>
                                       </Link>
                                     ) : (
-                                      <span className="text-purple-700 font-normal">
+                                      <span className="text-[#015474] font-normal">
                                         {t("quotes.bill", "Bill")}
                                       </span>
                                     )}

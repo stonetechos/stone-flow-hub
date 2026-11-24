@@ -197,9 +197,9 @@ export function SuperAdminFinancialCockpitBoxes({
                   className={cn(
                     "font-display text-2xl sm:text-3xl font-black tabular-nums tracking-tight drop-shadow-2xs",
                     mismatch.isDeficit
-                      ? "text-rose-600 dark:text-rose-400"
+                      ? "text-[#015474]"
                       : mismatch.netMismatchValue < 0
-                        ? "text-emerald-600 dark:text-emerald-400"
+                        ? "text-[#006788]"
                         : "text-foreground",
                   )}
                 >
@@ -277,7 +277,7 @@ export function SuperAdminFinancialCockpitBoxes({
                         className={cn(
                           "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border",
                           isDef
-                            ? "bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800"
+                            ? "bg-[#e0f1f5] text-[#015474] border-[#c9d1d4]"
                             : "bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800",
                         )}
                       >
@@ -319,7 +319,7 @@ export function SuperAdminFinancialCockpitBoxes({
             !isDataReady
               ? "ring-1 ring-border/50"
               : minHeadroom < 250000
-                ? "ring-2 ring-amber-500/25"
+                ? "ring-2 ring-[#006788]/25"
                 : "ring-1 ring-primary/20",
           )}
         >
@@ -485,7 +485,7 @@ export function SuperAdminFinancialCockpitBoxes({
               <span
                 className={cn(
                   "font-mono font-black text-sm sm:text-base",
-                  mismatch.isDeficit ? "text-rose-600" : "text-emerald-600",
+                  mismatch.isDeficit ? "text-[#015474]" : "text-[#006788]",
                 )}
               >
                 {mismatch.formattedMismatch}
@@ -543,10 +543,7 @@ export function SuperAdminFinancialCockpitBoxes({
                         : Math.round(diffQty * (spec?.unitRate || avgRate));
 
                     return (
-                      <TableRow
-                        key={item.hsn4}
-                        className={cn(isDef ? "bg-rose-50/40 dark:bg-rose-950/20" : "")}
-                      >
+                      <TableRow key={item.hsn4} className={cn(isDef ? "bg-[#e0f1f5]/50" : "")}>
                         {/* HSN & Name */}
                         <TableCell className="font-semibold py-3">
                           <div className="flex items-center gap-1.5">
@@ -554,7 +551,7 @@ export function SuperAdminFinancialCockpitBoxes({
                               {item.hsn4}
                             </span>
                             {isDef && (
-                              <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
+                              <span className="h-1.5 w-1.5 rounded-full bg-[#006788] animate-pulse" />
                             )}
                           </div>
                           <div className="text-[11px] text-foreground font-medium">
@@ -586,20 +583,18 @@ export function SuperAdminFinancialCockpitBoxes({
                         {/* Mismatch Quantity */}
                         <TableCell className="text-right py-3">
                           {isDef ? (
-                            <span className="font-mono font-black text-rose-600 dark:text-rose-400">
+                            <span className="font-mono font-black text-[#015474]">
                               +{diffQty.toLocaleString("en-IN")} {item.unit}
                             </span>
                           ) : (
-                            <span className="font-mono text-emerald-600 font-semibold">
-                              Balanced
-                            </span>
+                            <span className="font-mono text-[#006788] font-semibold">Balanced</span>
                           )}
                         </TableCell>
 
                         {/* Required Purchase Bill Value */}
                         <TableCell className="text-right py-3">
                           {isDef && requiredValue > 0 ? (
-                            <div className="font-mono font-black text-rose-600 dark:text-rose-400">
+                            <div className="font-mono font-black text-[#015474]">
                               {formatInr(requiredValue)}
                             </div>
                           ) : (
@@ -696,17 +691,17 @@ export function SuperAdminFinancialCockpitBoxes({
           </DialogHeader>
 
           {/* Interactive Direct Agency Offset Simulator */}
-          <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-500/15 via-cyan-500/10 to-purple-500/10 border border-emerald-500/30 space-y-3">
+          <div className="p-4 rounded-xl bg-[#e0f1f5]/60 border border-[#c9d1d4] space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="p-1 rounded-md bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200">
+                <span className="p-1 rounded-md bg-white text-[#015474]">
                   <Banknote className="h-4 w-4" />
                 </span>
                 <span className="text-xs font-black uppercase text-foreground">
                   Direct Customer-to-Agency/Vendor Offset Simulator
                 </span>
               </div>
-              <Badge className="bg-emerald-600 text-white text-[10px] font-bold">
+              <Badge className="bg-[#006788] text-white text-[10px] font-bold">
                 100% Tax Compliant
               </Badge>
             </div>
@@ -748,22 +743,20 @@ export function SuperAdminFinancialCockpitBoxes({
                 <span className="text-[10px] text-muted-foreground font-bold uppercase block">
                   If Deposited Personally (UPI)
                 </span>
-                <div className="mt-1 font-mono font-black text-base text-rose-600">
+                <div className="mt-1 font-mono font-black text-base text-[#015474]">
                   -{formatInr(simOffsetAmount)}
                 </div>
-                <span className="text-[10px] text-rose-600 block mt-1 font-medium">
+                <span className="text-[10px] text-[#015474] block mt-1 font-medium">
                   Directly burns personal ₹10L limit
                 </span>
               </div>
 
-              <div className="p-2.5 rounded-lg bg-card/90 border border-emerald-500/40 bg-emerald-50/30 dark:bg-emerald-950/20">
-                <span className="text-[10px] text-emerald-800 dark:text-emerald-300 font-bold uppercase block">
+              <div className="p-2.5 rounded-lg bg-card/90 border border-[#c9d1d4] bg-[#e0f1f5]/30">
+                <span className="text-[10px] text-[#015474] font-bold uppercase block">
                   With Direct Vendor Offset
                 </span>
-                <div className="mt-1 font-mono font-black text-base text-emerald-600 dark:text-emerald-400">
-                  ₹0 Impact
-                </div>
-                <span className="text-[10px] text-emerald-700 dark:text-emerald-300 block mt-1 font-medium">
+                <div className="mt-1 font-mono font-black text-base text-[#006788]">₹0 Impact</div>
+                <span className="text-[10px] text-[#015474] block mt-1 font-medium">
                   Saves {formatInr(simOffsetAmount)} headroom!
                 </span>
               </div>
@@ -792,10 +785,10 @@ export function SuperAdminFinancialCockpitBoxes({
                       className={cn(
                         "text-[9.5px] font-bold uppercase",
                         sug.priority === "critical"
-                          ? "bg-rose-50 text-rose-700 border-rose-300"
+                          ? "bg-[#e0f1f5] text-[#015474] border-[#c9d1d4]"
                           : sug.priority === "high"
-                            ? "bg-amber-50 text-amber-700 border-amber-300"
-                            : "bg-emerald-50 text-emerald-700 border-emerald-300",
+                            ? "bg-[#e0f1f5] text-[#00597b] border-[#c9d1d4]"
+                            : "bg-[#e0f1f5] text-[#006788] border-[#c9d1d4]",
                       )}
                     >
                       {sug.priority}

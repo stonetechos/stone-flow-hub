@@ -350,7 +350,7 @@ function EditQuotePage() {
                   className={cn(
                     "flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
                     saleMode === "hybrid"
-                      ? "bg-purple-600 text-white border-purple-600 shadow-2xs"
+                      ? "bg-[#015474] text-white border-[#015474] shadow-2xs"
                       : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
                   )}
                 >
@@ -358,15 +358,15 @@ function EditQuotePage() {
                 </button>
               </div>
               {saleMode === "cash" && (
-                <p className="text-[11px] text-emerald-700 font-medium mt-1.5">
+                <p className="text-[11px] text-[#015474] font-medium mt-1.5">
                   GST percentage is removed (0%). Amounts are added as-is without tax. Only Delivery
                   Challans will be issued.
                 </p>
               )}
               {saleMode === "hybrid" && (
-                <div className="grid grid-cols-2 gap-3 mt-2 p-2.5 rounded-md bg-purple-50 border border-purple-200">
+                <div className="grid grid-cols-2 gap-3 mt-2 p-2.5 rounded-md bg-[#e0f1f5] border border-[#c9d1d4]">
                   <div>
-                    <label className="text-[11px] font-medium text-purple-900 block mb-1">
+                    <label className="text-[11px] font-medium text-[#015474] block mb-1">
                       Cash Amount (Challan · No GST)
                     </label>
                     <NumericInput
@@ -379,7 +379,7 @@ function EditQuotePage() {
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] font-medium text-purple-900 block mb-1">
+                    <label className="text-[11px] font-medium text-[#015474] block mb-1">
                       Invoiced Amount (With GST Bill)
                     </label>
                     <NumericInput
@@ -1149,10 +1149,10 @@ function LineItemsEditor({
                 size="sm"
                 variant="outline"
                 disabled={addMut.isPending}
-                className="h-8 border-purple-300 bg-purple-50 text-purple-900 hover:bg-purple-100 hover:text-purple-950 text-xs font-semibold cursor-pointer shadow-2xs"
+                className="h-8 border-[#c9d1d4] bg-[#e0f1f5] text-[#015474] hover:bg-[#e0f1f5]/80 text-xs font-semibold cursor-pointer shadow-2xs"
                 title="Add sealer line (placed under the Sealers & Repellents category)"
               >
-                <ShieldCheck className="mr-1.5 h-3.5 w-3.5 text-purple-700" />
+                <ShieldCheck className="mr-1.5 h-3.5 w-3.5 text-[#006788]" />
                 + Add Sealer
                 <ChevronDown className="ml-1 h-3 w-3 opacity-60" />
               </Button>
