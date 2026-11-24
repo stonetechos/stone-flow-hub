@@ -31,6 +31,24 @@ describe("CountryCodeSelect & phone utilities", () => {
     expect(parsed.localNumber).toBe("9876543210");
   });
 
+  test("never misidentifies Indian 94 series (e.g. 9427045020) as Sri Lanka (+94)", () => {
+    const parsed = parsePhoneWithCountry("9427045020");
+    expect(parsed.countryCode).toBe("+91");
+    expect(parsed.localNumber).toBe("9427045020");
+  });
+
+  test("never misidentifies Indian 97 series as Qatar (+974) or UAE (+971)", () => {
+    const parsed = parsePhoneWithCountry("9727045020");
+    expect(parsed.countryCode).toBe("+91");
+    expect(parsed.localNumber).toBe("9727045020");
+  });
+
+  test("only identifies Sri Lanka when explicit +94 prefix is provided", () => {
+    const parsed = parsePhoneWithCountry("+9427045020");
+    expect(parsed.countryCode).toBe("+94");
+    expect(parsed.localNumber).toBe("27045020");
+  });
+
   test("parses Indian number with +91", () => {
     const parsed = parsePhoneWithCountry("+919876543210");
     expect(parsed.countryCode).toBe("+91");

@@ -59,11 +59,12 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(fu
 
   React.useEffect(() => {
     if (parsed.countryCode && parsed.countryCode !== selectedCountry) {
-      if (value && (value.startsWith("+") || parsed.localNumber)) {
+      // Only auto-switch the country selector if the incoming value explicitly includes an international '+' prefix
+      if (value && value.startsWith("+")) {
         setSelectedCountry(parsed.countryCode);
       }
     }
-  }, [parsed.countryCode, parsed.localNumber, value, selectedCountry]);
+  }, [parsed.countryCode, value, selectedCountry]);
 
   const activeCountry = selectedCountry || parsed.countryCode || defaultCountry;
 

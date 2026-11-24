@@ -94,7 +94,7 @@ export function CustomerAssigneeSelect({
             title={
               config
                 ? `Assigned to ${transliterateName(config.label, i18n.language)}. Click to reassign.`
-                : "Unassigned. Click to assign to Vijay, Rishi or Raman."
+                : "Unassigned. Click to assign to Rishi or Raman."
             }
           >
             {mutation.isPending ? (
@@ -133,7 +133,7 @@ export function CustomerAssigneeSelect({
             title={
               config
                 ? `Assigned to ${transliterateName(config.label, i18n.language)}. Click to reassign.`
-                : "Unassigned. Click to assign to Vijay, Rishi or Raman."
+                : "Unassigned. Click to assign to Rishi or Raman."
             }
           >
             {mutation.isPending ? (
@@ -157,39 +157,41 @@ export function CustomerAssigneeSelect({
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
 
-        {(Object.keys(CUSTOMER_SALESPEOPLE) as CustomerSalespersonKey[]).map((key) => {
-          const person = CUSTOMER_SALESPEOPLE[key];
-          const isSelected = currentSalesperson === key;
-          return (
-            <DropdownMenuItem
-              key={key}
-              onSelect={() => mutation.mutate(key)}
-              onClick={() => mutation.mutate(key)}
-              className={cn(
-                "flex items-center justify-between rounded-md p-2 text-xs cursor-pointer min-h-[38px] touch-manipulation",
-                isSelected && "bg-cyan-50/90 font-bold text-cyan-950",
-              )}
-            >
-              <div className="flex items-center gap-2">
-                <span
-                  className={cn(
-                    "flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white",
-                    person.avatarTone,
-                  )}
-                >
-                  {person.shortName[0]}
-                </span>
-                <div>
-                  <div className="font-semibold text-slate-900">
-                    {transliterateName(person.label, i18n.language)}
+        {(Object.keys(CUSTOMER_SALESPEOPLE) as CustomerSalespersonKey[])
+          .filter((key) => key !== "vijay")
+          .map((key) => {
+            const person = CUSTOMER_SALESPEOPLE[key];
+            const isSelected = currentSalesperson === key;
+            return (
+              <DropdownMenuItem
+                key={key}
+                onSelect={() => mutation.mutate(key)}
+                onClick={() => mutation.mutate(key)}
+                className={cn(
+                  "flex items-center justify-between rounded-md p-2 text-xs cursor-pointer min-h-[38px] touch-manipulation",
+                  isSelected && "bg-cyan-50/90 font-bold text-cyan-950",
+                )}
+              >
+                <div className="flex items-center gap-2">
+                  <span
+                    className={cn(
+                      "flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white",
+                      person.avatarTone,
+                    )}
+                  >
+                    {person.shortName[0]}
+                  </span>
+                  <div>
+                    <div className="font-semibold text-slate-900">
+                      {transliterateName(person.label, i18n.language)}
+                    </div>
+                    <div className="text-[10px] text-muted-foreground">{person.email}</div>
                   </div>
-                  <div className="text-[10px] text-muted-foreground">{person.email}</div>
                 </div>
-              </div>
-              {isSelected && <Check className="h-4 w-4 text-cyan-700 shrink-0" />}
-            </DropdownMenuItem>
-          );
-        })}
+                {isSelected && <Check className="h-4 w-4 text-cyan-700 shrink-0" />}
+              </DropdownMenuItem>
+            );
+          })}
 
         {currentSalesperson && (
           <>

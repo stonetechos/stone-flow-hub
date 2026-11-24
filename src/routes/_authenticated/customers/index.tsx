@@ -1968,71 +1968,65 @@ function CustomerFormDialog({
               />
             </Field>
 
-            {/* 3. Dropdown for Name Reflection + Reflected Name in compiled list */}
-            <div className="md:col-span-2 rounded-lg border border-slate-200 bg-slate-50/70 p-3.5 space-y-2.5">
+            {/* 3. Reflected Customer Name + Title Format Selector */}
+            <div className="md:col-span-2 rounded-lg border border-slate-200 bg-slate-50/70 p-3.5 space-y-2">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
                   <label className="text-xs font-semibold text-slate-900 flex items-center gap-1.5">
-                    <span>{t("customers.reflectInList", "Reflect in Customer List As")}</span>
-                    <span className="text-[11px] font-normal text-slate-500">
-                      {t("customers.dropdownSelector", "(Dropdown selector)")}
-                    </span>
+                    <span>{t("common.name", "Customer Name (Directory & Invoices)")}</span>
+                    <span className="text-rose-500">*</span>
                   </label>
                   <p className="text-[11px] text-muted-foreground">
                     {t(
-                      "customers.chooseTitledDesc",
-                      "Choose how this customer is titled in the compiled dashboard directory",
+                      "customers.reflectedNameHint",
+                      "Titled name shown on quotes, orders, and dashboard list",
                     )}
                   </p>
                 </div>
-                <Select
-                  value={nameReflectionMode}
-                  onValueChange={(v) => handleReflectionModeChange(v as NameReflectionMode)}
-                >
-                  <SelectTrigger className="h-8 w-full sm:w-64 text-xs bg-white font-medium">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="smart">
-                      {t("customers.reflectionSmart", "Smart (Firm if present, else Contact)")}
-                    </SelectItem>
-                    <SelectItem value="firm">
-                      {t("customers.reflectionFirm", "Firm / Company Name")}
-                    </SelectItem>
-                    <SelectItem value="contact">
-                      {t("customers.reflectionContact", "Contact Person's Name")}
-                    </SelectItem>
-                    <SelectItem value="combined">
-                      {t("customers.reflectionBoth", "Both (Firm · Contact Person)")}
-                    </SelectItem>
-                    <SelectItem value="custom">
-                      {t("customers.reflectionCustom", "Custom / Manual")}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center gap-1.5 self-start sm:self-auto">
+                  <span className="text-[11px] text-slate-500 font-medium whitespace-nowrap">
+                    {t("customers.format", "Format:")}
+                  </span>
+                  <Select
+                    value={nameReflectionMode}
+                    onValueChange={(v) => handleReflectionModeChange(v as NameReflectionMode)}
+                  >
+                    <SelectTrigger className="h-7 w-auto min-w-[190px] text-xs bg-white font-medium border-slate-200">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="smart">
+                        {t("customers.reflectionSmart", "Smart (Firm if present, else Contact)")}
+                      </SelectItem>
+                      <SelectItem value="firm">
+                        {t("customers.reflectionFirm", "Firm / Company Name")}
+                      </SelectItem>
+                      <SelectItem value="contact">
+                        {t("customers.reflectionContact", "Contact Person's Name")}
+                      </SelectItem>
+                      <SelectItem value="combined">
+                        {t("customers.reflectionBoth", "Both (Firm · Contact Person)")}
+                      </SelectItem>
+                      <SelectItem value="custom">
+                        {t("customers.reflectionCustom", "Custom / Manual")}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
-              <Field
-                label={t("common.name", "Reflected Customer Name")}
-                hint={t(
-                  "customers.reflectedNameHint",
-                  "Titled name shown on quotes, orders, and dashboard list",
-                )}
+              <Input
+                value={form.name}
+                onChange={(e) => {
+                  setNameReflectionMode("custom");
+                  set("name", e.target.value);
+                }}
+                placeholder="e.g. ABC Developers LLP or Ramesh Patel"
                 required
-              >
-                <Input
-                  value={form.name}
-                  onChange={(e) => {
-                    setNameReflectionMode("custom");
-                    set("name", e.target.value);
-                  }}
-                  placeholder="e.g. ABC Developers LLP or Ramesh Patel"
-                  required
-                  autoComplete="off"
-                  name="stos_reflected_name_manual"
-                  id="stos_reflected_name_field"
-                />
-              </Field>
+                autoComplete="off"
+                name="stos_reflected_name_manual"
+                id="stos_reflected_name_field"
+              />
             </div>
             <Field label={t("customers.customerType", "Type of Customer")} required>
               <Select
@@ -2062,7 +2056,7 @@ function CustomerFormDialog({
                     <span>Assigned Salesperson</span>
                   </label>
                   <p className="text-[11px] text-muted-foreground">
-                    Assign this customer account to Vijay, Rishi or Raman
+                    Assign this customer account to Rishi or Raman
                   </p>
                 </div>
                 <CustomerAssigneeSelect
@@ -2082,7 +2076,7 @@ function CustomerFormDialog({
                     <span>Assigned Salesperson</span>
                   </label>
                   <p className="text-[11px] text-muted-foreground">
-                    Assign this customer account to Vijay, Rishi or Raman
+                    Assign this customer account to Rishi or Raman
                   </p>
                 </div>
                 <Select
@@ -2098,9 +2092,6 @@ function CustomerFormDialog({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="unassigned">Unassigned</SelectItem>
-                    <SelectItem value="vijay">
-                      👤 {transliterateName("Vijay Dave", i18n.language)}
-                    </SelectItem>
                     <SelectItem value="rishi">
                       👤 {transliterateName("Rishi Rai", i18n.language)}
                     </SelectItem>
@@ -2148,7 +2139,7 @@ function CustomerFormDialog({
               label={t("customers.whatsapp", "WhatsApp")}
               hint={
                 form.mobile
-                  ? t("customers.whatsappHintMobile", "Dropdown defaults to Phone Number")
+                  ? t("customers.whatsappHintMobile", "Defaults to Phone Number")
                   : t("customers.whatsappHintDigits", "10 digits or +country code")
               }
             >
@@ -2183,11 +2174,13 @@ function CustomerFormDialog({
                     </SelectContent>
                   </Select>
                 ) : null}
-                <PhoneInput
-                  value={form.whatsapp ?? ""}
-                  onChange={(v) => set("whatsapp", v)}
-                  placeholder={t("customers.whatsappNumber", "WhatsApp number (+country code)")}
-                />
+                {(!form.mobile || (form.whatsapp && form.whatsapp !== form.mobile)) && (
+                  <PhoneInput
+                    value={form.whatsapp ?? ""}
+                    onChange={(v) => set("whatsapp", v)}
+                    placeholder={t("customers.whatsappNumber", "WhatsApp number (+country code)")}
+                  />
+                )}
               </div>
             </Field>
 

@@ -90,6 +90,14 @@ const SelectContent = React.forwardRef<
         ref={ref}
         sideOffset={sideOffset}
         collisionPadding={collisionPadding}
+        onCloseAutoFocus={(e) => {
+          if (props.onCloseAutoFocus) {
+            props.onCloseAutoFocus(e);
+          } else {
+            // Prevent Radix from stealing focus back to the trigger if user clicked/tabbed to an input
+            e.preventDefault();
+          }
+        }}
         className={cn(
           "relative z-50 max-h-80 min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-md border border-border-subtle bg-[var(--surface-elevated)] text-popover-foreground shadow-e3",
           "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 origin-[var(--radix-select-content-transform-origin)]",

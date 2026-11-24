@@ -150,23 +150,34 @@ export function parsePhoneWithCountry(
     return { countryCode: defaultCountry, localNumber: "" };
   }
 
-  // Check if digits start with a non-domestic country dial code (e.g. 265995429998 -> +265)
-  const nonDomestic = COMMON_COUNTRIES.filter((c) => c.code !== "+91").sort(
-    (a, b) => b.code.length - a.code.length,
-  );
-  for (const c of nonDomestic) {
+  // Domestic Indian numbers (10 digits or with trunk 0 / prefix 91)
+  // Standard Indian mobile numbers are 10 digits and commonly start with 94, 98, 97, 91, etc.
+  // These must NEVER be hijacked as international dial codes without an explicit leading '+'.
+  if (digits.length <= 10) {
+    return { countryCode: defaultCountry, localNumber: digits };
+  }
+
+  // Indian numbers with leading 0 (e.g. 09427045020 -> 9427045020)
+  if (digits.length === 11 && digits.startsWith("0")) {
+    return { countryCode: "+91", localNumber: digits.slice(1) };
+  }
+
+  // Indian numbers with raw 91 (e.g. 919427045020 -> 9427045020)
+  if (digits.length === 12 && digits.startsWith("91")) {
+    return { countryCode: "+91", localNumber: digits.slice(2) };
+  }
+
+  // International numbers entered without '+' (e.g. Malawi 265995429998 -> +265)
+  // Only match 3-digit country dial codes (length >= 3) to prevent 2-digit collisions with national numbers.
+  const nonDomestic3Digit = COMMON_COUNTRIES.filter(
+    (c) => c.code !== "+91" && c.code.replace("+", "").length >= 3,
+  ).sort((a, b) => b.code.length - a.code.length);
+
+  for (const c of nonDomestic3Digit) {
     const rawCode = c.code.replace("+", "");
     if (digits.startsWith(rawCode) && digits.length >= rawCode.length + 6) {
       return { countryCode: c.code, localNumber: digits.slice(rawCode.length) };
     }
-  }
-
-  // Indian numbers with 91 or leading 0
-  if (digits.length === 12 && digits.startsWith("91")) {
-    return { countryCode: "+91", localNumber: digits.slice(2) };
-  }
-  if (digits.length === 11 && digits.startsWith("0")) {
-    return { countryCode: "+91", localNumber: digits.slice(1) };
   }
 
   return { countryCode: defaultCountry, localNumber: digits };
