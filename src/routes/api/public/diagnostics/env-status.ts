@@ -74,63 +74,19 @@ export const Route = createFileRoute("/api/public/diagnostics/env-status")({
             );
             if (vijay) {
               await supabaseAdmin.auth.admin.updateUserById(vijay.id, {
-                password: "201078VD",
-                email_confirm: true,
-                user_metadata: { full_name: "Vijay Dave" },
-              });
-              await supabaseAdmin.from("profiles").upsert(
-                {
-                  id: vijay.id,
-                  email: "vijaydave3476@gmail.com",
-                  full_name: "Vijay Dave",
-                  job_title: "Sales Person",
-                  department: "Sales",
-                  is_active: true,
-                  force_password_change: false,
-                },
-                { onConflict: "id" },
-              );
+                ban_duration: "876000h",
+                user_metadata: { is_terminated: true, is_active: false },
+              } as { ban_duration: string });
+              await supabaseAdmin.from("profiles").update({ is_active: false }).eq("id", vijay.id);
+              await supabaseAdmin.from("user_roles").delete().eq("user_id", vijay.id);
               await supabaseAdmin
-                .from("user_roles")
-                .delete()
-                .eq("user_id", vijay.id)
-                .neq("role", "sales");
-              const { data: exRole } = await supabaseAdmin
-                .from("user_roles")
-                .select("id")
-                .eq("user_id", vijay.id)
-                .eq("role", "sales")
-                .maybeSingle();
-              if (!exRole) {
-                await supabaseAdmin.from("user_roles").insert({ user_id: vijay.id, role: "sales" });
-              }
-              body.vijay_synced = true;
-            } else {
-              const { data: newV } = await supabaseAdmin.auth.admin.createUser({
-                email: "vijaydave3476@gmail.com",
-                password: "201078VD",
-                email_confirm: true,
-                user_metadata: { full_name: "Vijay Dave" },
-              });
-              if (newV?.user) {
-                await supabaseAdmin.from("profiles").upsert(
-                  {
-                    id: newV.user.id,
-                    email: "vijaydave3476@gmail.com",
-                    full_name: "Vijay Dave",
-                    job_title: "Sales Person",
-                    department: "Sales",
-                    is_active: true,
-                    force_password_change: false,
-                  },
-                  { onConflict: "id" },
-                );
-                await supabaseAdmin.from("user_roles").insert({
-                  user_id: newV.user.id,
-                  role: "sales",
-                });
-                body.vijay_synced = true;
-              }
+                .from("employees")
+                .update({
+                  employment_status: "terminated",
+                  remarks: "Terminated - Access revoked",
+                })
+                .or("email.ilike.vijaydave3476@gmail.com,full_name.ilike.%Vijay Dave%");
+              body.vijay_terminated = true;
             }
           } catch (e: unknown) {
             body.vijay_sync_error = e instanceof Error ? e.message : String(e);

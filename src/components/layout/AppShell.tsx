@@ -1511,7 +1511,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 href="/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2 sm:px-2.5 text-xs font-bold bg-[#e0f1f5] text-[#015474] hover:bg-[#d0eaf1] dark:bg-[#015474]/30 dark:text-[#67e8f9] dark:hover:bg-[#015474]/50 border border-[#c9d1d4] dark:border-[#00597b] transition-all shadow-2xs cursor-pointer"
+                className="hidden sm:inline-flex h-8 items-center gap-1.5 rounded-lg px-2 sm:px-2.5 text-xs font-bold bg-[#e0f1f5] text-[#015474] hover:bg-[#d0eaf1] dark:bg-[#015474]/30 dark:text-[#67e8f9] dark:hover:bg-[#015474]/50 border border-[#c9d1d4] dark:border-[#00597b] transition-all shadow-2xs cursor-pointer"
                 title={t(
                   "header.openWebsite",
                   "Visit Stone Tech Public Website (opens in new browser tab)",
@@ -1523,7 +1523,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </a>
               <Link
                 to="/communication"
-                className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2 sm:px-2.5 text-xs font-bold bg-[#e0f1f5] text-[#015474] hover:bg-[#d0eaf1] dark:bg-[#015474]/30 dark:text-[#67e8f9] dark:hover:bg-[#015474]/50 border border-[#c9d1d4] dark:border-[#00597b] transition-all shadow-2xs cursor-pointer"
+                className="hidden sm:inline-flex h-8 items-center gap-1.5 rounded-lg px-2 sm:px-2.5 text-xs font-bold bg-[#e0f1f5] text-[#015474] hover:bg-[#d0eaf1] dark:bg-[#015474]/30 dark:text-[#67e8f9] dark:hover:bg-[#015474]/50 border border-[#c9d1d4] dark:border-[#00597b] transition-all shadow-2xs cursor-pointer"
                 title="Open WhatsApp Web & CRM (Option B: Linked Device · Chat Only)"
               >
                 <MessageSquare className="h-3.5 w-3.5 text-[#006788] dark:text-[#38bdf8]" />
@@ -1551,6 +1551,31 @@ export function AppShell({ children }: { children: ReactNode }) {
               </div>
             </div>
           </header>
+
+          {/* Mobile Quick Links Sub-bar — placed neatly below the header so it never collides with or hinders STOS brand title */}
+          <div className="flex sm:hidden items-center gap-2 border-b border-[#c9d1d4] dark:border-[#00597b]/40 bg-[#f4f9fa] dark:bg-[#002738]/80 px-3 py-1.5 shadow-2xs">
+            <a
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex flex-1 h-7.5 items-center justify-center gap-1.5 rounded-md px-2 text-xs font-semibold bg-[#e0f1f5] text-[#015474] hover:bg-[#d0eaf1] dark:bg-[#015474]/40 dark:text-[#67e8f9] border border-[#c9d1d4] dark:border-[#00597b] transition-all shadow-2xs"
+            >
+              <Globe className="h-3.5 w-3.5 text-[#006788] dark:text-[#38bdf8]" />
+              <span>{t("header.website", "Website")}</span>
+              <ExternalLink className="h-3 w-3 text-[#006788]/70 dark:text-[#38bdf8]/70" />
+            </a>
+            <Link
+              to="/communication"
+              className="inline-flex flex-1 h-7.5 items-center justify-center gap-1.5 rounded-md px-2 text-xs font-semibold bg-[#e0f1f5] text-[#015474] hover:bg-[#d0eaf1] dark:bg-[#015474]/40 dark:text-[#67e8f9] border border-[#c9d1d4] dark:border-[#00597b] transition-all shadow-2xs"
+            >
+              <MessageSquare className="h-3.5 w-3.5 text-[#006788] dark:text-[#38bdf8]" />
+              <span>WhatsApp Web</span>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#006788] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#006788]"></span>
+              </span>
+            </Link>
+          </div>
 
           {/* Breadcrumb rail — quiet, single line under the topbar */}
           {showBreadcrumbs && (

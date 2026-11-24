@@ -228,7 +228,7 @@ export function JobOpeningsDialog({ trigger }: JobOpeningsDialogProps) {
                 </Button>
                 <Button
                   onClick={() => applyViaWhatsApp(selectedRole)}
-                  className="w-full sm:w-auto h-10 text-xs font-bold gap-1.5 bg-[#25D366] hover:bg-[#1EBE5D] text-white px-4"
+                  className="w-full sm:w-auto h-10 text-xs font-bold gap-1.5 bg-[#006788] hover:bg-[#00597b] text-white px-4"
                 >
                   <Send className="h-3.5 w-3.5" /> WhatsApp HR
                 </Button>

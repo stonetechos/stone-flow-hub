@@ -94,6 +94,13 @@ export const requireSupabaseAuth = createMiddleware({ type: "function" }).server
       throw new Error("Unauthorized: No user ID found in token");
     }
 
+    const claimEmail = (data.claims.email as string | undefined)?.toLowerCase() || "";
+    if (claimEmail === "vijaydave3476@gmail.com" || claimEmail.includes("vijaydave")) {
+      throw new Error(
+        "Forbidden: Account has been terminated. Access to Stone Tech OS is permanently revoked.",
+      );
+    }
+
     return next({
       context: {
         supabase,

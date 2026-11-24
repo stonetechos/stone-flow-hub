@@ -142,7 +142,7 @@ export function CustomerInquiryLookupDialog({ trigger }: CustomerInquiryLookupDi
                   asChild
                   size="sm"
                   variant="outline"
-                  className="mt-2 text-xs bg-[#25D366] text-white hover:bg-[#1EBE5D] border-0"
+                  className="mt-2 text-xs bg-[#006788] text-white hover:bg-[#00597b] border-0"
                 >
                   <a
                     href={`https://api.whatsapp.com/send?phone=917742090866&text=Hi%20Stone%20Tech%20Team,%20checking%20status%20for%20number%20${countryCode}${whatsapp}`}
@@ -201,7 +201,7 @@ export function CustomerInquiryLookupDialog({ trigger }: CustomerInquiryLookupDi
                     <Button
                       asChild
                       size="sm"
-                      className="w-full h-8 text-xs bg-[#25D366] hover:bg-[#1EBE5D] text-white font-semibold gap-1.5"
+                      className="w-full h-8 text-xs bg-[#006788] hover:bg-[#00597b] text-white font-semibold gap-1.5"
                     >
                       <a
                         href={`https://api.whatsapp.com/send?phone=917742090866&text=Hi%20Stone%20Tech%20Team,%20inquiring%20about%20reference%20${inq.enquiry_no}`}

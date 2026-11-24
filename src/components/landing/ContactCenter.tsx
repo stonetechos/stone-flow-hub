@@ -96,9 +96,9 @@ export function ContactCenter({ className }: { className?: string }) {
         {/* 3-Column Broad Layout */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Card 1: Direct WhatsApp Lines */}
-          <div className="p-6 rounded-3xl border border-emerald-200/80 bg-emerald-50/40 dark:border-emerald-950 dark:bg-emerald-950/20 space-y-4 shadow-xs">
-            <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#25D366] text-white shadow-xs">
+          <div className="p-6 rounded-3xl border border-[#c9d1d4] bg-[#e0f1f5]/40 dark:border-[#00597b]/50 dark:bg-[#015474]/20 space-y-4 shadow-xs">
+            <div className="flex items-center gap-2 text-[#015474] dark:text-[#67e8f9]">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#006788] text-white shadow-xs">
                 <MessageCircle className="h-5 w-5 fill-current" />
               </div>
               <div>
@@ -114,14 +114,14 @@ export function ContactCenter({ className }: { className?: string }) {
                 href={`https://wa.me/${phone1Clean}?text=Hi%20Stone%20Tech,%20I'd%20like%20to%20inquire%20about%20natural%20stone%20finishes`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-between p-3.5 rounded-2xl border border-emerald-300/80 bg-background/90 hover:bg-emerald-100/50 dark:border-emerald-800 dark:bg-card dark:hover:bg-emerald-950/40 transition-all shadow-2xs group"
+                className="flex items-center justify-between p-3.5 rounded-2xl border border-[#c9d1d4] bg-background/90 hover:bg-[#e0f1f5]/50 dark:border-[#00597b] dark:bg-card dark:hover:bg-[#015474]/40 transition-all shadow-2xs group"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#006788]/15 text-[#006788] dark:text-[#67e8f9]">
                     <Phone className="h-4 w-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-foreground group-hover:text-emerald-700 dark:group-hover:text-emerald-400">
+                    <div className="text-xs font-bold text-foreground group-hover:text-[#006788] dark:group-hover:text-[#67e8f9]">
                       {toIndicDigits(phone1, currentLang)}
                     </div>
                     <div className="text-[10px] text-muted-foreground">
@@ -129,21 +129,21 @@ export function ContactCenter({ className }: { className?: string }) {
                     </div>
                   </div>
                 </div>
-                <ExternalLink className="h-3.5 w-3.5 text-emerald-600 opacity-60 group-hover:opacity-100 transition-opacity" />
+                <ExternalLink className="h-3.5 w-3.5 text-[#006788] dark:text-[#38bdf8] opacity-60 group-hover:opacity-100 transition-opacity" />
               </a>
 
               <a
                 href={`https://wa.me/${phone2Clean}?text=Hi%20Stone%20Tech,%20I'd%20like%20to%20inquire%20about%20natural%20stone%20finishes`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-between p-3.5 rounded-2xl border border-emerald-300/80 bg-background/90 hover:bg-emerald-100/50 dark:border-emerald-800 dark:bg-card dark:hover:bg-emerald-950/40 transition-all shadow-2xs group"
+                className="flex items-center justify-between p-3.5 rounded-2xl border border-[#c9d1d4] bg-background/90 hover:bg-[#e0f1f5]/50 dark:border-[#00597b] dark:bg-card dark:hover:bg-[#015474]/40 transition-all shadow-2xs group"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#006788]/15 text-[#006788] dark:text-[#67e8f9]">
                     <Phone className="h-4 w-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-foreground group-hover:text-emerald-700 dark:group-hover:text-emerald-400">
+                    <div className="text-xs font-bold text-foreground group-hover:text-[#006788] dark:group-hover:text-[#67e8f9]">
                       {toIndicDigits(phone2, currentLang)}
                     </div>
                     <div className="text-[10px] text-muted-foreground">
@@ -151,7 +151,7 @@ export function ContactCenter({ className }: { className?: string }) {
                     </div>
                   </div>
                 </div>
-                <ExternalLink className="h-3.5 w-3.5 text-emerald-600 opacity-60 group-hover:opacity-100 transition-opacity" />
+                <ExternalLink className="h-3.5 w-3.5 text-[#006788] dark:text-[#38bdf8] opacity-60 group-hover:opacity-100 transition-opacity" />
               </a>
             </div>
           </div>

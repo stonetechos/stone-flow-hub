@@ -55,7 +55,9 @@ import {
   FileUp,
   Layers,
   CircleDot,
+  Menu,
 } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -469,6 +471,7 @@ function HomePage() {
   }, []);
 
   // Form states (2-Step Continuation 1/2 and 2/2)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [formStep, setFormStep] = useState<1 | 2>(1);
   const [showcaseTab, setShowcaseTab] = useState<ProductTab>("cladding");
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
@@ -689,9 +692,9 @@ function HomePage() {
     const formEl = document.getElementById("lead-form");
     if (formEl) {
       formEl.scrollIntoView({ behavior: "smooth", block: "start" });
-      formEl.classList.add("ring-4", "ring-emerald-500/60", "transition-all", "duration-500");
+      formEl.classList.add("ring-4", "ring-[#006788]/60", "transition-all", "duration-500");
       setTimeout(() => {
-        formEl.classList.remove("ring-4", "ring-emerald-500/60");
+        formEl.classList.remove("ring-4", "ring-[#006788]/60");
       }, 2000);
     }
   };
@@ -934,15 +937,15 @@ function HomePage() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-stone-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 py-12 px-4 sm:px-6">
         <div className="mx-auto max-w-xl">
-          <Card className="border-emerald-200/80 shadow-2xl dark:border-emerald-900/50 overflow-hidden">
-            <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 px-6 py-8 text-center text-white">
+          <Card className="border-[#c9d1d4] shadow-2xl dark:border-[#00597b]/50 overflow-hidden">
+            <div className="bg-gradient-to-r from-[#015474] via-[#006788] to-[#015474] px-6 py-8 text-center text-white">
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/20 backdrop-blur-xs mb-3 shadow-inner">
                 <CheckCircle2 className="h-10 w-10 text-white" />
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
                 {texts.success.title}
               </h1>
-              <p className="text-emerald-100 text-sm mt-1">
+              <p className="text-[#e0f1f5] text-sm mt-1">
                 {texts.success.thankYou.replace("{{name}}", submittedResult.customer_name)}
               </p>
             </div>
@@ -967,23 +970,23 @@ function HomePage() {
                       Prepayment Privilege Locked: 5% OFF + Free Shree Yantra (Orders &gt; ₹1L)*
                     </span>
                   </div>
-                  <Badge className="bg-emerald-600 text-white font-bold text-[10px]">
+                  <Badge className="bg-[#006788] text-white font-bold text-[10px]">
                     PRIVILEGE LOCKED
                   </Badge>
                 </div>
               )}
 
               {/* WhatsApp instant response card */}
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-5 dark:border-emerald-900 dark:bg-emerald-950/30 space-y-3">
+              <div className="rounded-xl border border-[#c9d1d4] bg-[#e0f1f5]/60 p-5 dark:border-[#00597b] dark:bg-[#015474]/20 space-y-3">
                 <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#25D366] text-white shrink-0 shadow-xs">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#006788] text-white shrink-0 shadow-xs">
                     <Phone className="h-5 w-5 fill-current" />
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-sm font-bold text-emerald-950 dark:text-emerald-200">
+                    <h3 className="text-sm font-bold text-[#015474] dark:text-[#67e8f9]">
                       {texts.success.whatsappSent.replace("{{phone}}", submittedResult.whatsapp)}
                     </h3>
-                    <p className="text-xs text-emerald-800 dark:text-emerald-300 leading-relaxed">
+                    <p className="text-xs text-[#015474]/80 dark:text-[#67e8f9]/80 leading-relaxed">
                       {texts.success.whatsappDesc}
                     </p>
                   </div>
@@ -991,7 +994,7 @@ function HomePage() {
 
                 <Button
                   asChild
-                  className="w-full bg-[#25D366] hover:bg-[#1EBE5D] text-white font-bold gap-2 shadow-sm h-11"
+                  className="w-full bg-[#006788] hover:bg-[#00597b] text-white font-bold gap-2 shadow-sm h-11"
                 >
                   <a href={submittedResult.whatsapp_link} target="_blank" rel="noopener noreferrer">
                     <Send className="h-4 w-4" />
@@ -1136,10 +1139,10 @@ function HomePage() {
                 trigger={
                   <button
                     type="button"
-                    className="relative flex items-center gap-1 h-8 px-2 rounded-lg border border-border/80 bg-background/90 text-xs font-semibold text-foreground cursor-pointer shadow-2xs hover:border-primary/60 shrink-0"
+                    className="relative flex items-center gap-1 h-8 px-2 rounded-lg border border-border/80 bg-background/90 text-xs font-semibold text-foreground cursor-pointer shadow-2xs hover:border-[#006788] shrink-0"
                     title={texts.nav.jobOpenings}
                   >
-                    <Briefcase className="h-3.5 w-3.5 text-primary" />
+                    <Briefcase className="h-3.5 w-3.5 text-[#006788] dark:text-[#38bdf8]" />
                     <span className="text-[11px] font-bold">{texts.nav.jobsShort}</span>
                     <span className="inline-flex items-center px-1 py-0.2 rounded-full bg-linear-to-r from-rose-600 to-amber-500 text-white text-[8px] font-black tracking-wider animate-attention-badge ml-0.5">
                       {texts.nav.newBadge}
@@ -1147,6 +1150,163 @@ function HomePage() {
                   </button>
                 }
               />
+            </div>
+
+            {/* Mobile Navigation Menu Drawer */}
+            <div className="md:hidden">
+              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8 rounded-lg border-border/80 bg-background/90 text-foreground shadow-2xs hover:border-[#006788] hover:text-[#006788] shrink-0 cursor-pointer"
+                    aria-label="Open Navigation Menu"
+                  >
+                    <Menu className="h-4.5 w-4.5 text-[#006788] dark:text-[#38bdf8]" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-[300px] sm:w-[340px] p-0 flex flex-col bg-background/98 backdrop-blur-md border-l border-border"
+                >
+                  <SheetHeader className="p-4 border-b border-border text-left flex flex-row items-center justify-between space-y-0">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/95 p-1 border border-[#c9d1d4] shadow-2xs">
+                        <img
+                          src="/branding/stone-tech-logo.png"
+                          alt="Stone Tech"
+                          className="h-full w-full object-contain"
+                        />
+                      </div>
+                      <div className="flex flex-col">
+                        <SheetTitle className="text-sm font-bold tracking-tight text-foreground uppercase">
+                          {texts.brandName || "STONE TECH"}
+                        </SheetTitle>
+                        <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">
+                          {texts.brandSubtitle}
+                        </span>
+                      </div>
+                    </div>
+                  </SheetHeader>
+
+                  <div className="flex-1 overflow-y-auto p-4 space-y-1.5">
+                    <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-2 py-1">
+                      Explore Atelier
+                    </div>
+
+                    {/* Our Products */}
+                    <a
+                      href="#wall-cladding-catalogue"
+                      onClick={() => {
+                        setShowcaseTab("cladding");
+                        setMobileMenuOpen(false);
+                      }}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-foreground hover:bg-[#e0f1f5] hover:text-[#015474] dark:hover:bg-[#015474]/30 dark:hover:text-[#67e8f9] transition-all"
+                    >
+                      <Layers className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
+                      <span>{texts.nav.ourProducts || "Our Products"}</span>
+                    </a>
+
+                    {/* Our Works */}
+                    <a
+                      href="#wall-cladding-catalogue"
+                      onClick={() => {
+                        setShowcaseTab("installations");
+                        setMobileMenuOpen(false);
+                      }}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-foreground hover:bg-[#e0f1f5] hover:text-[#015474] dark:hover:bg-[#015474]/30 dark:hover:text-[#67e8f9] transition-all"
+                    >
+                      <Gem className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
+                      <span>{texts.nav.ourWork || "Our Works"}</span>
+                    </a>
+
+                    {/* Why Us / About Us */}
+                    <a
+                      href="#why-us"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-foreground hover:bg-[#e0f1f5] hover:text-[#015474] dark:hover:bg-[#015474]/30 dark:hover:text-[#67e8f9] transition-all"
+                    >
+                      <ShieldCheck className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
+                      <span>{texts.nav.whyUs}</span>
+                    </a>
+
+                    {/* Job Openings */}
+                    <div onClick={() => setMobileMenuOpen(false)}>
+                      <JobOpeningsDialog
+                        trigger={
+                          <button
+                            type="button"
+                            className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-semibold text-foreground hover:bg-[#e0f1f5] hover:text-[#015474] dark:hover:bg-[#015474]/30 dark:hover:text-[#67e8f9] transition-all cursor-pointer text-left"
+                          >
+                            <div className="flex items-center gap-3">
+                              <Briefcase className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
+                              <span>{texts.nav.jobOpenings}</span>
+                            </div>
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-linear-to-r from-rose-600 via-orange-500 to-amber-500 text-white font-black text-[9px] uppercase tracking-wider animate-attention-badge">
+                              {texts.nav.newBadge}
+                            </span>
+                          </button>
+                        }
+                      />
+                    </div>
+
+                    {/* Track Inquiry */}
+                    <div onClick={() => setMobileMenuOpen(false)}>
+                      <CustomerInquiryLookupDialog
+                        trigger={
+                          <button
+                            type="button"
+                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-foreground hover:bg-[#e0f1f5] hover:text-[#015474] dark:hover:bg-[#015474]/30 dark:hover:text-[#67e8f9] transition-all cursor-pointer text-left"
+                          >
+                            <Search className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
+                            <span>{texts.nav.trackInquiry}</span>
+                          </button>
+                        }
+                      />
+                    </div>
+
+                    {/* Contact Us */}
+                    <a
+                      href="#contact-us"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-foreground hover:bg-[#e0f1f5] hover:text-[#015474] dark:hover:bg-[#015474]/30 dark:hover:text-[#67e8f9] transition-all"
+                    >
+                      <Phone className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
+                      <span>{texts.nav.contact}</span>
+                    </a>
+
+                    <div className="pt-3 border-t border-border mt-3 space-y-2">
+                      <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-2 py-1">
+                        Privilege & Staff
+                      </div>
+
+                      <Link
+                        to="/auth"
+                        search={{ flow: "signin" }}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-foreground hover:bg-[#e0f1f5] hover:text-[#015474] dark:hover:bg-[#015474]/30 dark:hover:text-[#67e8f9] transition-all"
+                      >
+                        <Lock className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
+                        <span>{texts.nav.employeesLogin}</span>
+                      </Link>
+
+                      <a
+                        href={`https://api.whatsapp.com/send?phone=${primaryPhoneClean}&text=Hi%20Stone%20Tech%20Team,%20I%20have%20an%20inquiry%20for%20stone%20requirements`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-bold bg-[#e0f1f5] text-[#015474] hover:bg-[#d0eaf1] dark:bg-[#015474]/30 dark:text-[#67e8f9] border border-[#c9d1d4] dark:border-[#00597b] transition-all"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <Phone className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
+                          <span>WhatsApp Consultation</span>
+                        </div>
+                        <ExternalLink className="h-3.5 w-3.5 text-[#006788]/70" />
+                      </a>
+                    </div>
+                  </div>
+                </SheetContent>
+              </Sheet>
             </div>
 
             {/* Language Switcher — visible on sm+ (mobile already has it fixed in bottom bar) */}
@@ -1159,9 +1319,9 @@ function HomePage() {
                   <Button
                     variant="outline"
                     size="default"
-                    className="h-8 sm:h-9 px-2 sm:px-3.5 gap-1 sm:gap-1.5 text-xs font-semibold shadow-2xs border-border/90 hover:border-primary/60 hover:text-primary shrink-0 rounded-lg"
+                    className="h-8 sm:h-9 px-2 sm:px-3.5 gap-1 sm:gap-1.5 text-xs font-semibold shadow-2xs border-border/90 hover:border-[#006788] hover:text-[#006788] shrink-0 rounded-lg"
                   >
-                    <Search className="h-3.5 w-3.5 text-primary shrink-0" />
+                    <Search className="h-3.5 w-3.5 text-[#006788] dark:text-[#38bdf8] shrink-0" />
                     <span className="whitespace-nowrap">{texts.nav.trackInquiry}</span>
                   </Button>
                 }
@@ -1172,7 +1332,7 @@ function HomePage() {
             <Button
               asChild
               size="icon"
-              className="h-8 w-8 sm:h-9 sm:w-9 rounded-full shadow-2xs transition-transform hover:scale-105 shrink-0 border bg-primary text-primary-foreground hover:bg-primary/90 border-primary"
+              className="h-8 w-8 sm:h-9 sm:w-9 rounded-full shadow-2xs transition-transform hover:scale-105 shrink-0 border bg-[#006788] text-white hover:bg-[#00597b] border-[#006788]"
             >
               <Link
                 to="/auth"
@@ -1181,10 +1341,7 @@ function HomePage() {
                 title={texts.nav.employeesLogin}
                 aria-label={texts.nav.employeesLogin}
               >
-                <Lock
-                  className="h-4 w-4 shrink-0 stroke-[2.25] text-primary-foreground"
-                  aria-hidden="true"
-                />
+                <Lock className="h-4 w-4 shrink-0 stroke-[2.25] text-white" aria-hidden="true" />
               </Link>
             </Button>
           </div>
@@ -1200,7 +1357,7 @@ function HomePage() {
               {/* Main Heading */}
               <h1 className="font-serif text-3xl sm:text-4xl lg:text-[44px] xl:text-[48px] font-normal sm:font-medium tracking-tight text-[#111111] dark:text-stone-100 leading-[1.18] sm:leading-[1.14]">
                 {isEn ? cmsContent.heroTitlePart1 || texts.hero.titlePart1 : texts.hero.titlePart1}
-                <span className="text-[#0D7A7B] dark:text-[#2dd4bf] font-semibold italic sm:not-italic">
+                <span className="text-[#006788] dark:text-[#38bdf8] font-semibold italic sm:not-italic">
                   {isEn
                     ? cmsContent.heroTitleHighlight || texts.hero.titleHighlight
                     : texts.hero.titleHighlight}
@@ -1250,7 +1407,9 @@ function HomePage() {
                 <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-[#E9E6E1] dark:border-stone-800 bg-white dark:bg-stone-900/90 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-sm cursor-default">
                   <div className="text-xl sm:text-2xl font-bold tracking-tight text-[#111111] dark:text-stone-100 flex items-center gap-1">
                     <span>{toIndicDigits(cmsContent.heroGoogleRating || "4.6", currentLang)}</span>
-                    <span className="text-[#0D7A7B] text-base sm:text-lg">★</span>
+                    <span className="text-[#006788] dark:text-[#38bdf8] text-base sm:text-lg">
+                      ★
+                    </span>
                   </div>
                   <div className="text-[11px] sm:text-xs text-[#5F6368] dark:text-stone-400 font-medium mt-1">
                     {texts.hero.googleRating}
@@ -1269,7 +1428,7 @@ function HomePage() {
                 {/* Benefits Checklist */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
                   <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-[#111111] dark:text-stone-200">
-                    <Check className="h-4 w-4 text-[#0D7A7B] shrink-0 stroke-[2.25]" />
+                    <Check className="h-4 w-4 text-[#006788] dark:text-[#38bdf8] shrink-0 stroke-[2.25]" />
                     <span>
                       {isEn
                         ? cmsContent.heroBenefit1 || texts.hero.benefits.quarry
@@ -1277,7 +1436,7 @@ function HomePage() {
                     </span>
                   </div>
                   <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-[#111111] dark:text-stone-200">
-                    <Check className="h-4 w-4 text-[#0D7A7B] shrink-0 stroke-[2.25]" />
+                    <Check className="h-4 w-4 text-[#006788] dark:text-[#38bdf8] shrink-0 stroke-[2.25]" />
                     <span>
                       {isEn
                         ? cmsContent.heroBenefit2 || texts.hero.benefits.cnc
@@ -1285,7 +1444,7 @@ function HomePage() {
                     </span>
                   </div>
                   <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-[#111111] dark:text-stone-200">
-                    <Check className="h-4 w-4 text-[#0D7A7B] shrink-0 stroke-[2.25]" />
+                    <Check className="h-4 w-4 text-[#006788] dark:text-[#38bdf8] shrink-0 stroke-[2.25]" />
                     <span>
                       {isEn
                         ? cmsContent.heroBenefit3 || texts.hero.benefits.panIndia
@@ -1293,7 +1452,7 @@ function HomePage() {
                     </span>
                   </div>
                   <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-[#111111] dark:text-stone-200">
-                    <Check className="h-4 w-4 text-[#0D7A7B] shrink-0 stroke-[2.25]" />
+                    <Check className="h-4 w-4 text-[#006788] dark:text-[#38bdf8] shrink-0 stroke-[2.25]" />
                     <span>
                       {isEn
                         ? cmsContent.heroBenefit4 || texts.hero.benefits.support
@@ -1326,11 +1485,11 @@ function HomePage() {
               <div className="pt-1 flex flex-wrap items-center gap-4">
                 <a
                   href="#gallery-feed"
-                  className="group inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-[#0D7A7B] dark:text-[#2dd4bf] transition-colors relative cursor-pointer"
+                  className="group inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-[#006788] dark:text-[#38bdf8] transition-colors relative cursor-pointer"
                 >
                   <span className="relative pb-0.5">
                     {texts.hero.exploreProjects}
-                    <span className="absolute bottom-0 left-0 w-0 h-[1.5px] bg-[#0D7A7B] dark:bg-[#2dd4bf] transition-all duration-300 ease-out group-hover:w-full" />
+                    <span className="absolute bottom-0 left-0 w-0 h-[1.5px] bg-[#006788] dark:bg-[#38bdf8] transition-all duration-300 ease-out group-hover:w-full" />
                   </span>
                   <ArrowDown className="h-3.5 w-3.5 transition-transform duration-250 ease-out group-hover:translate-y-1" />
                 </a>
@@ -1341,7 +1500,7 @@ function HomePage() {
             <div id="lead-form" className="lg:col-span-6 scroll-mt-24">
               <Card className="border-border/90 shadow-xl bg-card rounded-2xl overflow-hidden ring-1 ring-border/50">
                 {/* Card Top Title Banner */}
-                <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 text-white p-5 sm:p-6 border-b border-primary/20">
+                <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-[#012b3c] text-white p-5 sm:p-6 border-b border-primary/20">
                   <div className="flex items-center justify-between">
                     <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
                       {texts.form.title}
@@ -1358,7 +1517,7 @@ function HomePage() {
                       className={cn(
                         "flex items-center gap-1.5 font-bold transition-colors min-w-0 cursor-pointer py-1",
                         formStep === 1
-                          ? "text-teal-300 font-extrabold"
+                          ? "text-[#67e8f9] font-extrabold"
                           : "text-slate-400 hover:text-slate-200",
                       )}
                     >
@@ -1377,7 +1536,7 @@ function HomePage() {
                         {texts.form.step1Short}
                       </span>
                       {selectedProducts.length > 0 && (
-                        <span className="ml-1 rounded-full bg-teal-500/20 text-teal-300 text-[10px] px-1.5 py-0.2 font-mono">
+                        <span className="ml-1 rounded-full bg-[#006788]/30 text-[#67e8f9] text-[10px] px-1.5 py-0.2 font-mono">
                           {selectedProducts.length}
                         </span>
                       )}
@@ -1389,7 +1548,7 @@ function HomePage() {
                       className={cn(
                         "flex items-center gap-1.5 font-bold transition-colors min-w-0 cursor-pointer py-1",
                         formStep === 2
-                          ? "text-teal-300 font-extrabold"
+                          ? "text-[#67e8f9] font-extrabold"
                           : "text-slate-400 hover:text-slate-200",
                       )}
                     >
@@ -1413,7 +1572,7 @@ function HomePage() {
                   {/* Visual Progress Bar Track */}
                   <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
                     <div
-                      className="h-full bg-gradient-to-r from-teal-500 via-primary to-cyan-400 transition-all duration-300 ease-out"
+                      className="h-full bg-gradient-to-r from-[#015474] via-[#006788] to-[#38bdf8] transition-all duration-300 ease-out"
                       style={{ width: formStep === 1 ? "50%" : "100%" }}
                     />
                   </div>
@@ -1455,7 +1614,7 @@ function HomePage() {
                                 className={cn(
                                   "text-[10px] font-bold h-5 px-1.5",
                                   selectedProducts.length > 0
-                                    ? "bg-teal-600 text-white"
+                                    ? "bg-[#006788] text-white"
                                     : "text-muted-foreground",
                                 )}
                               >
@@ -1483,13 +1642,13 @@ function HomePage() {
                                   className={cn(
                                     "p-2.5 rounded-xl border text-left transition-all text-xs flex items-center justify-between gap-1.5 cursor-pointer select-none active:scale-[0.98]",
                                     isSelected
-                                      ? "border-teal-600 dark:border-teal-400 bg-teal-50 dark:bg-teal-950/70 text-teal-950 dark:text-teal-100 font-bold ring-2 ring-teal-500/40 shadow-xs"
+                                      ? "border-[#006788] dark:border-[#38bdf8] bg-[#e0f1f5] dark:bg-[#015474]/60 text-[#015474] dark:text-[#e0f1f5] font-bold ring-2 ring-[#006788]/40 shadow-xs"
                                       : "border-stone-200 dark:border-stone-800 bg-background hover:bg-muted/70 text-stone-700 dark:text-stone-300 hover:text-foreground",
                                   )}
                                 >
                                   <span className="leading-snug line-clamp-2">{prod.name}</span>
                                   {isSelected ? (
-                                    <div className="h-4 w-4 rounded bg-teal-600 dark:bg-teal-500 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                                    <div className="h-4 w-4 rounded bg-[#006788] text-white flex items-center justify-center shrink-0 shadow-2xs">
                                       <Check className="h-3 w-3 stroke-[3]" />
                                     </div>
                                   ) : (
@@ -1726,7 +1885,7 @@ function HomePage() {
                             </label>
                             <Badge
                               variant="outline"
-                              className="text-[10px] font-bold px-1.5 py-0 border-teal-500/40 text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/50"
+                              className="text-[10px] font-bold px-1.5 py-0 border-[#c9d1d4] text-[#015474] dark:text-[#67e8f9] bg-[#e0f1f5] dark:bg-[#015474]/40"
                             >
                               {serviceScope === "supply_and_installation"
                                 ? currentLang === "hi"
@@ -1750,17 +1909,17 @@ function HomePage() {
                               className={cn(
                                 "p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-1 select-none",
                                 serviceScope === "supply_only"
-                                  ? "border-teal-600 dark:border-teal-400 bg-teal-50/80 dark:bg-teal-950/60 ring-2 ring-teal-500/40 shadow-2xs"
+                                  ? "border-[#006788] dark:border-[#38bdf8] bg-[#e0f1f5]/80 dark:bg-[#015474]/60 ring-2 ring-[#006788]/40 shadow-2xs"
                                   : "border-border bg-background hover:bg-muted/60 text-muted-foreground",
                               )}
                             >
                               <div className="flex items-center justify-between">
                                 <span className="text-xs font-bold flex items-center gap-1.5 text-foreground">
-                                  <Truck className="h-3.5 w-3.5 text-teal-600 shrink-0" />
+                                  <Truck className="h-3.5 w-3.5 text-[#006788] dark:text-[#38bdf8] shrink-0" />
                                   <span>{texts.form.supplyOnly}</span>
                                 </span>
                                 {serviceScope === "supply_only" ? (
-                                  <div className="h-4 w-4 rounded bg-teal-600 text-white flex items-center justify-center shrink-0">
+                                  <div className="h-4 w-4 rounded bg-[#006788] text-white flex items-center justify-center shrink-0">
                                     <Check className="h-3 w-3 stroke-[3]" />
                                   </div>
                                 ) : (
@@ -1779,17 +1938,17 @@ function HomePage() {
                               className={cn(
                                 "p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-1 select-none",
                                 serviceScope === "supply_and_installation"
-                                  ? "border-teal-600 dark:border-teal-400 bg-teal-50/80 dark:bg-teal-950/60 ring-2 ring-teal-500/40 shadow-2xs"
+                                  ? "border-[#006788] dark:border-[#38bdf8] bg-[#e0f1f5]/80 dark:bg-[#015474]/60 ring-2 ring-[#006788]/40 shadow-2xs"
                                   : "border-border bg-background hover:bg-muted/60 text-muted-foreground",
                               )}
                             >
                               <div className="flex items-center justify-between">
                                 <span className="text-xs font-bold flex items-center gap-1.5 text-foreground">
-                                  <Wrench className="h-3.5 w-3.5 text-teal-600 shrink-0" />
+                                  <Wrench className="h-3.5 w-3.5 text-[#006788] dark:text-[#38bdf8] shrink-0" />
                                   <span>{texts.form.supplyAndInstallation}</span>
                                 </span>
                                 {serviceScope === "supply_and_installation" ? (
-                                  <div className="h-4 w-4 rounded bg-teal-600 text-white flex items-center justify-center shrink-0">
+                                  <div className="h-4 w-4 rounded bg-[#006788] text-white flex items-center justify-center shrink-0">
                                     <Check className="h-3 w-3 stroke-[3]" />
                                   </div>
                                 ) : (
@@ -1851,13 +2010,13 @@ function HomePage() {
                               {/* Dedicated Wall Pictures Upload Trigger */}
                               <div
                                 onClick={() => wallPhotoInputRef.current?.click()}
-                                className="rounded-xl border-2 border-dashed border-teal-500/50 hover:border-teal-600 bg-teal-50/40 hover:bg-teal-50/80 dark:bg-teal-950/20 dark:hover:bg-teal-950/40 p-3 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1 text-xs text-teal-950 dark:text-teal-200"
+                                className="rounded-xl border-2 border-dashed border-[#006788]/50 hover:border-[#006788] bg-[#e0f1f5]/40 hover:bg-[#e0f1f5]/80 dark:bg-[#015474]/20 dark:hover:bg-[#015474]/40 p-3 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1 text-xs text-[#015474] dark:text-[#e0f1f5]"
                               >
                                 <div className="flex items-center gap-1.5 font-bold">
                                   {isProcessingPhotos ? (
-                                    <Loader2 className="h-4 w-4 animate-spin text-teal-600" />
+                                    <Loader2 className="h-4 w-4 animate-spin text-[#006788] dark:text-[#38bdf8]" />
                                   ) : (
-                                    <Camera className="h-4 w-4 text-teal-600" />
+                                    <Camera className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
                                   )}
                                   <span>{texts.form.uploadWallPhotos}</span>
                                 </div>
@@ -1912,9 +2071,9 @@ function HomePage() {
                                       className={cn(
                                         "text-[9px] px-1 py-0 font-medium truncate w-full text-center block",
                                         photo.tag === "wall_photo"
-                                          ? "bg-teal-700/90 text-white"
+                                          ? "bg-[#015474] text-white"
                                           : photo.tag === "drawing"
-                                            ? "bg-indigo-700/90 text-white"
+                                            ? "bg-[#006788] text-white"
                                             : "bg-slate-800/90 text-white",
                                       )}
                                     >
@@ -1985,7 +2144,7 @@ function HomePage() {
                             </span>
                             <Badge
                               variant="outline"
-                              className="text-[10px] font-bold px-1.5 py-0 border-teal-500/40 text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/50 shrink-0"
+                              className="text-[10px] font-bold px-1.5 py-0 border-[#c9d1d4] text-[#015474] dark:text-[#67e8f9] bg-[#e0f1f5] dark:bg-[#015474]/40 shrink-0"
                             >
                               {serviceScope === "supply_only"
                                 ? `📦 ${texts.form.supplyOnly}`
@@ -1994,7 +2153,7 @@ function HomePage() {
                             {photos.filter((p) => p.tag === "wall_photo").length > 0 && (
                               <Badge
                                 variant="outline"
-                                className="text-[10px] font-medium px-1.5 py-0 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 bg-emerald-50/50 shrink-0"
+                                className="text-[10px] font-medium px-1.5 py-0 border-[#c9d1d4] text-[#015474] dark:text-[#67e8f9] bg-[#e0f1f5] dark:bg-[#015474]/40 shrink-0"
                               >
                                 📸 {photos.filter((p) => p.tag === "wall_photo").length} Wall Pic(s)
                               </Badge>
@@ -2082,7 +2241,7 @@ function HomePage() {
 
                             {/* WhatsApp Number with Country Code Dropdown */}
                             <div>
-                              <label className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 mb-1 block flex items-center gap-1">
+                              <label className="text-[11px] font-semibold text-[#015474] dark:text-[#67e8f9] mb-1 block flex items-center gap-1">
                                 <Phone className="h-3 w-3 fill-current" />{" "}
                                 {texts.form.whatsappNumber}{" "}
                                 <span className="text-destructive">*</span>
@@ -2098,7 +2257,7 @@ function HomePage() {
                                   }}
                                   placeholder="98765 43210"
                                   className={cn(
-                                    "h-9 text-xs font-medium rounded-l-none border-l-0 border-emerald-300 focus-visible:ring-emerald-500 dark:border-emerald-800 bg-background transition-colors",
+                                    "h-9 text-xs font-medium rounded-l-none border-l-0 border-[#c9d1d4] focus-visible:ring-[#006788] dark:border-[#00597b] bg-background transition-colors",
                                     formErrors.whatsapp &&
                                       "border-destructive focus-visible:ring-destructive",
                                   )}
@@ -2222,7 +2381,7 @@ function HomePage() {
                         {submitError && (
                           <div className="rounded-xl border border-amber-300 bg-amber-50 p-3.5 dark:border-amber-800 dark:bg-amber-950/40 text-xs space-y-2">
                             <div className="flex items-center gap-2 text-amber-900 dark:text-amber-200 font-semibold">
-                              <Phone className="h-4 w-4 text-emerald-600" />
+                              <Phone className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
                               <span>{texts.form.instantWhatsappOption}</span>
                             </div>
                             <p className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
@@ -2278,7 +2437,7 @@ function HomePage() {
                         </div>
 
                         <div className="text-center text-[11px] text-muted-foreground mt-2 flex items-center justify-center gap-1.5">
-                          <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+                          <ShieldCheck className="h-3.5 w-3.5 text-[#006788] dark:text-[#38bdf8]" />
                           <span>{texts.form.trustNote}</span>
                         </div>
                       </div>
@@ -2321,8 +2480,8 @@ function HomePage() {
             <div id="catalogues" className="scroll-mt-28" />
             <div className="hidden sm:flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#006788] opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#006788]" />
               </span>
               <span>
                 {currentLang === "gu"
@@ -2382,7 +2541,7 @@ function HomePage() {
             </div>
 
             <div className="p-5 rounded-xl border border-border bg-card space-y-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#006788]/10 text-[#006788] dark:text-[#38bdf8]">
                 <Compass className="h-5 w-5" />
               </div>
               <h3 className="text-base font-bold">
@@ -2394,7 +2553,7 @@ function HomePage() {
             </div>
 
             <div className="p-5 rounded-xl border border-border bg-card space-y-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#006788]/10 text-[#006788] dark:text-[#38bdf8]">
                 <Eye className="h-5 w-5" />
               </div>
               <h3 className="text-base font-bold">
@@ -2474,14 +2633,14 @@ function HomePage() {
         <Button
           asChild
           size="sm"
-          className="flex-1 h-10 bg-[#25D366] hover:bg-[#1EBE5D] text-white font-bold gap-1 text-xs"
+          className="flex-1 h-10 bg-[#e0f1f5] text-[#015474] hover:bg-[#d0eaf1] border border-[#c9d1d4] dark:bg-[#015474]/40 dark:text-[#67e8f9] dark:border-[#00597b] font-bold gap-1 text-xs shadow-2xs"
         >
           <a
             href={`https://api.whatsapp.com/send?phone=${primaryPhoneClean}&text=Hi%20Stone%20Tech%20Team,%20I%20have%20an%20inquiry%20for%20stone%20requirements`}
             target="_blank"
             rel="noopener noreferrer"
           >
-            <Phone className="h-3.5 w-3.5 fill-current shrink-0" />
+            <Phone className="h-3.5 w-3.5 text-[#006788] dark:text-[#38bdf8] shrink-0" />
             <span className="truncate">{texts.mobileBar.whatsapp}</span>
           </a>
         </Button>
@@ -2489,7 +2648,7 @@ function HomePage() {
         <Button
           onClick={() => scrollToForm()}
           size="sm"
-          className="flex-1 h-10 bg-primary hover:bg-primary/90 text-primary-foreground font-bold gap-1 text-xs cursor-pointer shadow-md"
+          className="flex-1 h-10 bg-[#006788] hover:bg-[#00597b] text-white font-bold gap-1 text-xs cursor-pointer shadow-md"
         >
           <span className="truncate">{texts.mobileBar.freeEstimate}</span>
           <ArrowRight className="h-3.5 w-3.5 shrink-0" />

@@ -310,18 +310,18 @@
   --border-danger: var(--hue-danger-500);
   --border-inverse: oklch(from white l c h / 0.1);
 
-  /* Intent — Dark Turquoise Blue */
-  --intent-primary: #0e7490;
-  --intent-primary-hover: #155e75;
-  --intent-primary-active: #083344;
+  /* Intent — Signature Deep Turquoise */
+  --intent-primary: #006788;
+  --intent-primary-hover: #00597b;
+  --intent-primary-active: #015474;
   --intent-primary-fg: #ffffff;
   --intent-secondary: var(--surface-card);
   --intent-secondary-fg: var(--text-primary);
   --intent-ghost-hover: oklch(from var(--stone-slate-400) l c h / 0.08);
   --intent-destructive: var(--hue-danger-500);
   --intent-destructive-fg: var(--stone-limestone-50);
-  --intent-focus-ring: #0891b2;
-  --intent-selection: oklch(from #0891b2 l c h / 0.12);
+  --intent-focus-ring: #006788;
+  --intent-selection: oklch(from #006788 l c h / 0.12);
 
   /* Status */
   --status-success-fg: var(--hue-success-700);

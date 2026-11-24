@@ -437,8 +437,8 @@ function DashboardPage() {
                     <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
                       <MySalesPerformanceCard
                         userId={user?.id}
-                        userName={profileQ.data?.full_name || rawName || "Vijay Dave"}
-                        userEmail={user?.email || "vijaydave3476@gmail.com"}
+                        userName={profileQ.data?.full_name || rawName || "Sales Executive"}
+                        userEmail={user?.email || "sales@stonetech.in"}
                       />
                       <WebsiteLeadsDashboardCard />
                       <SalesCommandCentre kpis={kpisQ.data} />

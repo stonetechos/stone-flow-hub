@@ -455,6 +455,14 @@ function SignInCard() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const normEmail = email.trim().toLowerCase();
+    if (normEmail === "vijaydave3476@gmail.com" || normEmail.includes("vijaydave")) {
+      const msg =
+        "Access denied: Account terminated. Access to Stone Tech OS has been permanently revoked.";
+      setFormError(msg);
+      toast.error(msg);
+      return;
+    }
     if (typeof window !== "undefined") {
       localStorage.setItem("stos_last_auth_email", email.trim());
     }
@@ -776,6 +784,14 @@ function ResetPasswordCard() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const normEmail = email.trim().toLowerCase();
+    if (normEmail === "vijaydave3476@gmail.com" || normEmail.includes("vijaydave")) {
+      const msg =
+        "Access denied: Account terminated. Access to Stone Tech OS has been permanently revoked.";
+      setFormError(msg);
+      toast.error(msg);
+      return;
+    }
     if (typeof window !== "undefined") {
       localStorage.setItem("stos_last_auth_email", email.trim());
     }

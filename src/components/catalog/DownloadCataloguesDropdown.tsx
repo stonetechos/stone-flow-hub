@@ -165,7 +165,7 @@ export function DownloadCataloguesDropdown({
               : "Share catalogue download link on WhatsApp"
         }
       >
-        <MessageCircle className="h-4 w-4 text-[#25D366] fill-[#25D366]/20 shrink-0" />
+        <MessageCircle className="h-4 w-4 text-[#006788] fill-[#006788]/20 shrink-0" />
         <span className="hidden sm:inline">
           {lang === "gu" ? "વોટ્સએપ લિંક" : lang === "hi" ? "व्हाट्सएप लिंक" : "WhatsApp Link"}
         </span>
@@ -215,9 +215,9 @@ export function DownloadCataloguesDropdown({
           }}
         >
           {/* WhatsApp Direct Share Banner */}
-          <div className="rounded-xl border border-emerald-500/40 bg-linear-to-r from-emerald-500/10 via-teal-500/10 to-emerald-500/5 p-2.5 flex items-center justify-between gap-2 shadow-2xs">
+          <div className="rounded-xl border border-[#c9d1d4] dark:border-[#00597b]/50 bg-linear-to-r from-[#e0f1f5]/60 via-[#e0f1f5]/30 to-[#e0f1f5]/10 dark:from-[#015474]/30 dark:to-[#015474]/10 p-2.5 flex items-center justify-between gap-2 shadow-2xs">
             <div className="flex items-center gap-2 min-w-0">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#25D366] text-white shrink-0 shadow-2xs">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#006788] text-white shrink-0 shadow-2xs">
                 <MessageCircle className="h-4 w-4 fill-white" />
               </div>
               <div className="min-w-0">
@@ -244,7 +244,7 @@ export function DownloadCataloguesDropdown({
               >
                 {copied ? (
                   <>
-                    <Check className="h-3 w-3 text-emerald-600" />
+                    <Check className="h-3 w-3 text-[#006788]" />
                     <span>Copied</span>
                   </>
                 ) : (
@@ -258,7 +258,7 @@ export function DownloadCataloguesDropdown({
                 type="button"
                 size="sm"
                 onClick={handleShareWhatsapp}
-                className="h-7 px-2.5 text-[11px] font-bold gap-1 bg-[#25D366] hover:bg-[#1EBE5D] text-white rounded-lg shadow-xs"
+                className="h-7 px-2.5 text-[11px] font-bold gap-1 bg-[#006788] hover:bg-[#00597b] text-white rounded-lg shadow-xs"
                 title="Send via WhatsApp"
               >
                 <MessageCircle className="h-3 w-3 fill-white" />
