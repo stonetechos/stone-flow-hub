@@ -562,7 +562,7 @@ function ExecutiveHero({
               <TrendingUp className="h-3.5 w-3.5 text-[#006788] shrink-0" />
             </div>
             <div className="mt-2">
-              <div className="font-display text-lg sm:text-2xl font-black tabular-nums text-[#012535]">
+              <div className="font-display text-lg sm:text-2xl font-black tabular-nums text-[#015474]">
                 ₹{toIndicDigits("21.95", i18n.language)}
                 {lakhUnit}
               </div>
@@ -586,7 +586,7 @@ function ExecutiveHero({
               <FileText className="h-3.5 w-3.5 text-[#006788] shrink-0" />
             </div>
             <div className="mt-2">
-              <div className="font-display text-lg sm:text-2xl font-black tabular-nums text-[#012535]">
+              <div className="font-display text-lg sm:text-2xl font-black tabular-nums text-[#015474]">
                 ₹
                 {toIndicDigits(
                   formatMoneyCompact(kpis.revenuePipelineInr || 2070000, i18n.language),
@@ -612,7 +612,7 @@ function ExecutiveHero({
               <Wallet className="h-3.5 w-3.5 text-[#006788] shrink-0" />
             </div>
             <div className="mt-2">
-              <div className="font-display text-lg sm:text-2xl font-black tabular-nums text-[#012535]">
+              <div className="font-display text-lg sm:text-2xl font-black tabular-nums text-[#015474]">
                 ₹{toIndicDigits("11,099", i18n.language)}
               </div>
               <div className="mt-0.5 font-mono text-[10px] sm:text-[11px] font-semibold text-[#00597b] truncate">
@@ -634,7 +634,7 @@ function ExecutiveHero({
               <Factory className="h-3.5 w-3.5 text-[#006788] shrink-0" />
             </div>
             <div className="mt-2">
-              <div className="font-display text-lg sm:text-2xl font-black tabular-nums text-[#012535]">
+              <div className="font-display text-lg sm:text-2xl font-black tabular-nums text-[#015474]">
                 {toIndicDigits(kpis.ordersToStart || 2, i18n.language)}{" "}
                 {t("common.orders", "Orders")}
               </div>

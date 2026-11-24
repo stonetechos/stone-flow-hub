@@ -336,7 +336,7 @@ export function SuperAdminFinancialCockpitBoxes({
               </div>
             ) : (
               <div className="mt-1 flex items-baseline gap-2 flex-wrap">
-                <span className="font-display text-2xl sm:text-3xl font-black tabular-nums tracking-tight text-foreground drop-shadow-2xs">
+                <span className="font-display text-2xl sm:text-3xl font-black tabular-nums tracking-tight text-[#015474] drop-shadow-2xs">
                   {formatInr(minHeadroom)} Left
                 </span>
                 <span className="text-xs font-semibold text-muted-foreground">
