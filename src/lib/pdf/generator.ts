@@ -407,11 +407,17 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
 
         <!-- Right: Authorized Signatory -->
         <div style="text-align:right;min-width:140px;line-height:1.2;">
+          ${
+            signatureUrl
+              ? `
+          <div style="margin:2px 0 3px;display:flex;justify-content:flex-end;">
+            <img src="${signatureUrl}" alt="Authorized Signature" style="height:46px;max-width:140px;object-fit:contain;display:block;" />
+          </div>`
+              : `
           <div style="font-size:7.5px;font-weight:700;color:${deepTurquoise};text-transform:uppercase;letter-spacing:0.02em;">FOR: ${esc(brand.company_name.toUpperCase())}</div>
-          <div style="margin:2px 0 1px;display:flex;justify-content:flex-end;">
-            <img src="${signatureUrl}" alt="Authorized Signature" style="height:38px;max-width:130px;object-fit:contain;display:block;" />
-          </div>
-          <div style="font-size:7px;font-weight:700;color:#1e293b;">PROPRIETOR</div>
+          <div style="height:36px;"></div>
+          <div style="font-size:7px;font-weight:700;color:#1e293b;">PROPRIETOR</div>`
+          }
           <div style="font-size:7px;color:${muted};">Authorized Signatory</div>
         </div>
       </div>

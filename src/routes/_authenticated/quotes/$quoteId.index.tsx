@@ -520,13 +520,13 @@ function QuoteDetailPage() {
               </span>
             )}
             {assignment.fulfilmentType === "in_stock" ? (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
-                <Boxes className="h-3 w-3 text-emerald-600" /> Live Stock (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#e0f1f5] text-[#015474] border border-[#006788]/30 dark:bg-cyan-950/40 dark:text-cyan-300 dark:border-cyan-800">
+                <Boxes className="h-3 w-3 text-[#006788]" /> Live Stock (
                 {assignment.stockLocation || "Main Yard"})
               </span>
             ) : assignment.isAssigned ? (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-cyan-50 text-cyan-800 border border-cyan-300 dark:bg-cyan-950/40 dark:text-cyan-300 dark:border-cyan-800">
-                <Building2 className="h-3 w-3 text-cyan-600" /> Vendor: {assignment.vendorName}
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-cyan-50 text-[#00597b] border border-cyan-300 dark:bg-cyan-950/40 dark:text-cyan-300 dark:border-cyan-800">
+                <Building2 className="h-3 w-3 text-[#00597b]" /> Vendor: {assignment.vendorName}
               </span>
             ) : null}
           </div>
@@ -1587,7 +1587,7 @@ function QuoteDetailPage() {
                 quote.status === "rejected"
                   ? "border-rose-200 bg-rose-50 text-rose-700 font-medium"
                   : quote.status === "accepted"
-                    ? "border-emerald-200 bg-emerald-50 text-emerald-700 font-medium"
+                    ? "border-[#006788]/30 bg-[#e0f1f5] text-[#015474] font-medium"
                     : "capitalize"
               }
             >

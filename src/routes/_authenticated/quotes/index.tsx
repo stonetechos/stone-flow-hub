@@ -596,13 +596,13 @@ function QuotesPage() {
                         className={cn(
                           "capitalize text-[11px] font-semibold px-2 py-0.5",
                           r.status === "accepted" &&
-                            "bg-emerald-50 text-emerald-700 border-emerald-200",
-                          r.status === "sent" && "bg-sky-50 text-sky-700 border-sky-200",
+                            "bg-[#e0f1f5] text-[#015474] border-[#006788]/30",
+                          r.status === "sent" && "bg-cyan-50 text-[#00597b] border-cyan-200",
                           r.status === "draft" && "bg-slate-50 text-slate-700 border-slate-200",
                           r.status === "rejected" && "bg-rose-50 text-rose-700 border-rose-200",
                           r.status === "converted" &&
-                            "bg-indigo-50 text-indigo-700 border-indigo-200",
-                          r.status === "expired" && "bg-amber-50 text-amber-700 border-amber-200",
+                            "bg-[#006788]/15 text-[#015474] border-[#006788]/35",
+                          r.status === "expired" && "bg-slate-100 text-slate-700 border-slate-300",
                         )}
                       >
                         {r.status === "rejected"
@@ -724,16 +724,16 @@ function QuotesPage() {
                     {assignment.fulfilmentType === "in_stock" ||
                     assignment.fulfilmentType === "stock_lifted" ||
                     assignment.isOrderCompleted ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-300">
-                        <Boxes className="h-3 w-3 text-emerald-600" /> Live Stock
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-[#e0f1f5] text-[#015474] border border-[#006788]/30">
+                        <Boxes className="h-3 w-3 text-[#006788]" /> Live Stock
                       </span>
                     ) : assignment.isAssigned ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-cyan-50 text-cyan-800 border border-cyan-300">
-                        <Building2 className="h-3 w-3 text-cyan-600" /> {assignment.vendorName}
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-cyan-50 text-[#00597b] border border-cyan-300">
+                        <Building2 className="h-3 w-3 text-[#00597b]" /> {assignment.vendorName}
                       </span>
                     ) : r.status === "accepted" ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-50 text-amber-800 border border-amber-300">
-                        <Clock className="h-3 w-3 text-amber-600" /> Awaiting Partner
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-[#e0f1f5]/70 text-[#015474] border border-[#006788]/25">
+                        <Clock className="h-3 w-3 text-[#006788]" /> Awaiting Partner
                       </span>
                     ) : null}
 
@@ -876,7 +876,7 @@ function QuotesPage() {
                                   <Link
                                     to="/dispatch/new"
                                     search={{ quote: r.id, customer: r.customer_id }}
-                                    className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 hover:underline"
+                                    className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#015474] hover:underline"
                                   >
                                     <Truck className="h-3 w-3" />
                                     <span>{t("quotes.challanOnly", "Challan Only")}</span>
@@ -954,16 +954,17 @@ function QuotesPage() {
                                   className={cn(
                                     "capitalize font-medium transition-all group-hover:ring-1 group-hover:ring-slate-300",
                                     r.status === "accepted" &&
-                                      "bg-emerald-50 text-emerald-700 border-emerald-200",
-                                    r.status === "sent" && "bg-sky-50 text-sky-700 border-sky-200",
+                                      "bg-[#e0f1f5] text-[#015474] border-[#006788]/30",
+                                    r.status === "sent" &&
+                                      "bg-cyan-50 text-[#00597b] border-cyan-200",
                                     r.status === "draft" &&
                                       "bg-slate-50 text-slate-700 border-slate-200",
                                     r.status === "rejected" &&
                                       "bg-rose-50 text-rose-700 border-rose-200",
                                     r.status === "converted" &&
-                                      "bg-indigo-50 text-indigo-700 border-indigo-200",
+                                      "bg-[#006788]/15 text-[#015474] border-[#006788]/35",
                                     r.status === "expired" &&
-                                      "bg-amber-50 text-amber-700 border-amber-200",
+                                      "bg-slate-100 text-slate-700 border-slate-300",
                                   )}
                                 >
                                   {r.status === "rejected"
@@ -1156,10 +1157,10 @@ function QuotesPage() {
                             <button
                               type="button"
                               onClick={() => setAssigningQuote(r)}
-                              className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-1.5 py-0.5 rounded transition-colors cursor-pointer"
+                              className="inline-flex items-center gap-1 text-[11px] font-medium text-[#015474] bg-[#e0f1f5] hover:bg-[#c9e7ef] border border-[#006788]/30 px-1.5 py-0.5 rounded transition-colors cursor-pointer"
                               title="Promised delivery date missing — Click to set"
                             >
-                              <Calendar className="h-3 w-3 text-amber-600 shrink-0" />
+                              <Calendar className="h-3 w-3 text-[#006788] shrink-0" />
                               <span>+ Set Date</span>
                             </button>
                           ) : (

@@ -589,11 +589,11 @@ function CustomersPage() {
                 className={cn(
                   "px-2.5 py-1 text-xs font-medium rounded-full transition-all shrink-0 flex items-center gap-1.5 cursor-pointer",
                   paymentFilter === "promised_flagged"
-                    ? "bg-amber-800 text-white shadow-2xs font-semibold"
-                    : "bg-amber-50 text-amber-900 hover:bg-amber-100/90 border border-amber-300",
+                    ? "bg-[#015474] text-white shadow-2xs font-semibold"
+                    : "bg-[#e0f1f5] text-[#015474] hover:bg-[#e0f1f5]/90 border border-[#006788]/40",
                 )}
               >
-                <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+                <span className="h-1.5 w-1.5 rounded-full bg-[#006788] animate-pulse" />
                 💰 {t("customers.payment.promisedFlagged", "Payment Due (Flagged)")}{" "}
                 <span className="opacity-75 tabular-nums">({paymentCounts.promised_flagged})</span>
               </button>
@@ -641,11 +641,11 @@ function CustomersPage() {
               className={cn(
                 "px-2.5 py-1 text-xs font-medium rounded-full transition-all shrink-0 flex items-center gap-1.5 cursor-pointer",
                 paymentFilter === "part_payment_received"
-                  ? "bg-amber-700 text-white shadow-2xs font-semibold"
-                  : "bg-amber-50 text-amber-700 hover:bg-amber-100/80 border border-amber-200/60",
+                  ? "bg-[#015474] text-white shadow-2xs font-semibold"
+                  : "bg-[#e0f1f5]/70 text-[#015474] hover:bg-[#e0f1f5] border border-[#006788]/30",
               )}
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+              <span className="h-1.5 w-1.5 rounded-full bg-[#006788]" />
               {t("customers.payment.partPaymentReceived", "Part Payment Received")}{" "}
               <span className="opacity-75 tabular-nums">
                 ({paymentCounts.part_payment_received})
@@ -660,11 +660,11 @@ function CustomersPage() {
               className={cn(
                 "px-2.5 py-1 text-xs font-medium rounded-full transition-all shrink-0 flex items-center gap-1.5 cursor-pointer",
                 paymentFilter === "full_payment_received"
-                  ? "bg-emerald-700 text-white shadow-2xs font-semibold"
-                  : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100/80 border border-emerald-200/60",
+                  ? "bg-[#00597b] text-white shadow-2xs font-semibold"
+                  : "bg-cyan-50 text-[#00597b] hover:bg-cyan-100/80 border border-cyan-200/60",
               )}
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              <span className="h-1.5 w-1.5 rounded-full bg-[#00597b]" />
               {t("customers.payment.fullPaymentReceived", "Full Payment Received")}{" "}
               <span className="opacity-75 tabular-nums">
                 ({paymentCounts.full_payment_received})
@@ -679,8 +679,8 @@ function CustomersPage() {
               className={cn(
                 "px-2.5 py-1 text-xs font-medium rounded-full transition-all shrink-0 flex items-center gap-1.5 cursor-pointer",
                 paymentFilter === "payment_received"
-                  ? "bg-sky-700 text-white shadow-2xs font-semibold"
-                  : "bg-sky-50 text-sky-700 hover:bg-sky-100/80 border border-sky-200/60",
+                  ? "bg-[#006788] text-white shadow-2xs font-semibold"
+                  : "bg-sky-50 text-[#006788] hover:bg-sky-100/80 border border-sky-200/60",
               )}
             >
               <span className="h-1.5 w-1.5 rounded-full bg-sky-500" />
@@ -1032,8 +1032,8 @@ function CustomersPage() {
                                 orderInfo.health === "overdue"
                                   ? "bg-rose-50 text-rose-700 border-rose-200"
                                   : orderInfo.health === "tight_buffer"
-                                    ? "bg-amber-50 text-amber-700 border-amber-200"
-                                    : "bg-emerald-50 text-emerald-700 border-emerald-200",
+                                    ? "bg-[#e0f1f5] text-[#015474] border-[#006788]/30"
+                                    : "bg-cyan-50 text-[#00597b] border-cyan-200",
                               )}
                             >
                               ⏳ Due: {formatDate(orderInfo.nearestDeadline, i18n.language)}
@@ -1266,8 +1266,8 @@ function CustomersPage() {
                                         orderInfo.health === "overdue"
                                           ? "bg-rose-50 text-rose-700 border-rose-200"
                                           : orderInfo.health === "tight_buffer"
-                                            ? "bg-amber-50 text-amber-700 border-amber-200"
-                                            : "bg-emerald-50 text-emerald-700 border-emerald-200",
+                                            ? "bg-[#e0f1f5] text-[#015474] border-[#006788]/30"
+                                            : "bg-cyan-50 text-[#00597b] border-cyan-200",
                                       )}
                                       title={`Order #${orderInfo.urgentOrderNo ?? ""}`}
                                     >
@@ -1286,8 +1286,8 @@ function CustomersPage() {
                                         payReminder.urgency === "overdue"
                                           ? "bg-rose-100 text-rose-800 border-rose-300 animate-pulse"
                                           : payReminder.urgency === "due_today"
-                                            ? "bg-amber-100 text-amber-900 border-amber-400 font-bold animate-pulse"
-                                            : "bg-amber-50 text-amber-900 border-amber-300 font-semibold",
+                                            ? "bg-[#e0f1f5] text-[#015474] border-[#006788]/40 font-bold animate-pulse"
+                                            : "bg-[#e0f1f5]/70 text-[#015474] border-[#006788]/30 font-semibold",
                                       )}
                                       title={`Payment Promised Date: ${payReminder.promisedDate ? formatDate(payReminder.promisedDate) : ""}`}
                                     >
@@ -1493,13 +1493,12 @@ function CustomersPage() {
                                   </DropdownMenuItem>
                                   <DropdownMenuItem asChild>
                                     <Link to="/quotes" search={{ new: "1", customer: c.id }}>
-                                      <FileText className="mr-2 h-4 w-4 text-emerald-600" /> New
-                                      Quote
+                                      <FileText className="mr-2 h-4 w-4 text-[#006788]" /> New Quote
                                     </Link>
                                   </DropdownMenuItem>
                                   <DropdownMenuItem asChild>
                                     <Link to="/sales-orders/new" search={{ customer: c.id }}>
-                                      <ShoppingCart className="mr-2 h-4 w-4 text-amber-600" /> New
+                                      <ShoppingCart className="mr-2 h-4 w-4 text-[#006788]" /> New
                                       Sales Order
                                     </Link>
                                   </DropdownMenuItem>

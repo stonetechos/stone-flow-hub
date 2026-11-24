@@ -186,8 +186,8 @@ export function CustomerOrderPipeline() {
           className={cn(
             "cursor-pointer transition-all border",
             healthFilter === "unassigned"
-              ? "ring-2 ring-amber-500 border-amber-500 bg-amber-50/20"
-              : "hover:border-amber-300",
+              ? "ring-2 ring-[#006788] border-[#006788] bg-[#e0f1f5]/30"
+              : "hover:border-[#006788]/40",
           )}
           onClick={() => {
             setHealthFilter("unassigned");
@@ -196,14 +196,14 @@ export function CustomerOrderPipeline() {
         >
           <CardContent className="p-3.5 flex items-center justify-between">
             <div>
-              <p className="text-xs text-amber-800 font-medium flex items-center gap-1">
-                <AlertTriangle className="h-3 w-3 text-amber-600" /> Unassigned
+              <p className="text-xs text-[#015474] font-medium flex items-center gap-1">
+                <AlertTriangle className="h-3 w-3 text-[#006788]" /> Unassigned
               </p>
-              <h3 className="text-2xl font-bold text-amber-700 mt-0.5">
+              <h3 className="text-2xl font-bold text-[#015474] mt-0.5">
                 {metrics.unassignedCount}
               </h3>
             </div>
-            <div className="h-9 w-9 rounded-lg bg-amber-100 flex items-center justify-center text-amber-800">
+            <div className="h-9 w-9 rounded-lg bg-[#e0f1f5] flex items-center justify-center text-[#006788]">
               <Building2 className="h-5 w-5" />
             </div>
           </CardContent>
@@ -238,8 +238,8 @@ export function CustomerOrderPipeline() {
           className={cn(
             "cursor-pointer transition-all border",
             healthFilter === "tight"
-              ? "ring-2 ring-amber-500 border-amber-500 bg-amber-50/20"
-              : "hover:border-amber-300",
+              ? "ring-2 ring-[#015474] border-[#015474] bg-[#e0f1f5]/30"
+              : "hover:border-[#006788]/40",
           )}
           onClick={() => {
             setHealthFilter("tight");
@@ -248,14 +248,14 @@ export function CustomerOrderPipeline() {
         >
           <CardContent className="p-3.5 flex items-center justify-between">
             <div>
-              <p className="text-xs text-amber-700 font-medium flex items-center gap-1">
-                <Clock className="h-3 w-3" /> Tight Buffer (≤2d)
+              <p className="text-xs text-[#015474] font-medium flex items-center gap-1">
+                <Clock className="h-3 w-3 text-[#006788]" /> Tight Buffer (≤2d)
               </p>
-              <h3 className="text-2xl font-bold text-amber-600 mt-0.5">
+              <h3 className="text-2xl font-bold text-[#015474] mt-0.5">
                 {metrics.tightBufferCount}
               </h3>
             </div>
-            <div className="h-9 w-9 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700">
+            <div className="h-9 w-9 rounded-lg bg-[#e0f1f5] flex items-center justify-center text-[#015474]">
               <Clock className="h-5 w-5" />
             </div>
           </CardContent>
@@ -265,8 +265,8 @@ export function CustomerOrderPipeline() {
           className={cn(
             "cursor-pointer transition-all border",
             healthFilter === "on_track"
-              ? "ring-2 ring-emerald-500 border-emerald-500 bg-emerald-50/20"
-              : "hover:border-emerald-300",
+              ? "ring-2 ring-[#006788] border-[#006788] bg-[#e0f1f5]/30"
+              : "hover:border-[#006788]/40",
           )}
           onClick={() => {
             setHealthFilter("on_track");
@@ -275,12 +275,12 @@ export function CustomerOrderPipeline() {
         >
           <CardContent className="p-3.5 flex items-center justify-between">
             <div>
-              <p className="text-xs text-emerald-700 font-medium flex items-center gap-1">
-                <CheckCircle2 className="h-3 w-3" /> On Track
+              <p className="text-xs text-[#015474] font-medium flex items-center gap-1">
+                <CheckCircle2 className="h-3 w-3 text-[#006788]" /> On Track
               </p>
-              <h3 className="text-2xl font-bold text-emerald-600 mt-0.5">{metrics.onTrackCount}</h3>
+              <h3 className="text-2xl font-bold text-[#015474] mt-0.5">{metrics.onTrackCount}</h3>
             </div>
-            <div className="h-9 w-9 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-700">
+            <div className="h-9 w-9 rounded-lg bg-[#e0f1f5] flex items-center justify-center text-[#006788]">
               <CheckCircle2 className="h-5 w-5" />
             </div>
           </CardContent>
@@ -523,9 +523,9 @@ export function CustomerOrderPipeline() {
                         <div className="flex flex-col gap-1 items-start">
                           <Badge
                             variant="outline"
-                            className="border-amber-300 bg-amber-50 text-amber-800 font-semibold gap-1 text-[11px] py-0.5"
+                            className="border-[#006788]/30 bg-[#e0f1f5] text-[#015474] font-semibold gap-1 text-[11px] py-0.5"
                           >
-                            <AlertTriangle className="h-3 w-3 text-amber-600 shrink-0" />
+                            <AlertTriangle className="h-3 w-3 text-[#006788] shrink-0" />
                             <span>Unassigned Yet</span>
                           </Badge>
                           {item.orderType === "quote" && (
@@ -597,10 +597,10 @@ export function CustomerOrderPipeline() {
                             target="_blank"
                             rel="noopener noreferrer"
                             title={`Follow up with vendor (${item.vendorName}) on WhatsApp`}
-                            className="p-1.5 rounded-md hover:bg-emerald-50 text-emerald-600 transition-colors border border-emerald-200/60 inline-flex items-center"
+                            className="p-1.5 rounded-md hover:bg-[#e0f1f5] text-[#006788] transition-colors border border-[#006788]/30 inline-flex items-center"
                           >
-                            <Building2 className="h-3.5 w-3.5 mr-0.5 text-emerald-600" />
-                            <MessageSquare className="h-3.5 w-3.5 text-emerald-600" />
+                            <Building2 className="h-3.5 w-3.5 mr-0.5 text-[#006788]" />
+                            <MessageSquare className="h-3.5 w-3.5 text-[#006788]" />
                           </a>
                         )}
 
@@ -611,10 +611,10 @@ export function CustomerOrderPipeline() {
                             target="_blank"
                             rel="noopener noreferrer"
                             title={`Send progress update to customer (${item.contactPerson || item.customerName}) on WhatsApp`}
-                            className="p-1.5 rounded-md hover:bg-teal-50 text-teal-700 transition-colors border border-teal-200/60 inline-flex items-center"
+                            className="p-1.5 rounded-md hover:bg-[#e0f1f5] text-[#015474] transition-colors border border-[#006788]/30 inline-flex items-center"
                           >
-                            <User className="h-3.5 w-3.5 mr-0.5 text-teal-600" />
-                            <MessageSquare className="h-3.5 w-3.5 text-teal-600" />
+                            <User className="h-3.5 w-3.5 mr-0.5 text-[#006788]" />
+                            <MessageSquare className="h-3.5 w-3.5 text-[#006788]" />
                           </a>
                         )}
 
@@ -659,9 +659,9 @@ function HealthStatusPill({ item }: { item: OrderPipelineItem }) {
     return (
       <Badge
         variant="outline"
-        className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[11px] font-normal"
+        className="bg-[#006788]/10 text-[#015474] border-[#006788]/25 text-[11px] font-normal"
       >
-        <CheckCircle2 className="h-3 w-3 mr-1 text-emerald-600" /> Completed
+        <CheckCircle2 className="h-3 w-3 mr-1 text-[#006788]" /> Completed
       </Badge>
     );
   }
@@ -693,9 +693,9 @@ function HealthStatusPill({ item }: { item: OrderPipelineItem }) {
     return (
       <Badge
         variant="outline"
-        className="bg-amber-50 text-amber-800 border-amber-200 text-[11px] font-medium"
+        className="bg-[#e0f1f5] text-[#015474] border-[#006788]/30 text-[11px] font-medium"
       >
-        <Clock className="h-3 w-3 mr-1 text-amber-600" />
+        <Clock className="h-3 w-3 mr-1 text-[#006788]" />
         {item.bufferDays !== null ? `+${item.bufferDays}d Buffer` : "Tight Window"}
       </Badge>
     );
@@ -704,9 +704,9 @@ function HealthStatusPill({ item }: { item: OrderPipelineItem }) {
   return (
     <Badge
       variant="outline"
-      className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[11px] font-medium"
+      className="bg-[#e0f1f5]/70 text-[#015474] border-[#006788]/30 text-[11px] font-medium"
     >
-      <CheckCircle2 className="h-3 w-3 mr-1 text-emerald-600" />
+      <CheckCircle2 className="h-3 w-3 mr-1 text-[#006788]" />
       {item.bufferDays !== null ? `+${item.bufferDays}d Buffer` : "On Track"}
     </Badge>
   );

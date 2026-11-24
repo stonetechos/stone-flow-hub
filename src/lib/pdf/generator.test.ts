@@ -366,8 +366,11 @@ describe("PDF Generator", () => {
     expect(html).toContain("Bank of Baroda");
     expect(html).toContain("53130200000136");
     expect(html).toContain('alt="UPI QR Code"');
-    expect(html).toContain("PROPRIETOR");
+    // Redundant typed PROPRIETOR and FOR: STONE TECH omitted because stamp image already contains them
+    expect(html).not.toContain("PROPRIETOR");
+    expect(html).not.toContain("FOR: STONE TECH");
     expect(html).toContain('alt="Authorized Signature"');
+    expect(html).toContain("Authorized Signatory");
   });
 
   it("renders Bill To / Ship To table with generous vertical padding and centered headers", () => {

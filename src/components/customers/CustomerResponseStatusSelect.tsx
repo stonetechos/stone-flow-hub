@@ -246,9 +246,9 @@ export function CustomerResponseStatusSelect({
                 setPendingStatus(currentStatus);
                 setWaDialogOpen(true);
               }}
-              className="flex items-center gap-2 p-2 text-xs cursor-pointer min-h-[36px] touch-manipulation text-emerald-800 bg-emerald-50/60 font-medium"
+              className="flex items-center gap-2 p-2 text-xs cursor-pointer min-h-[36px] touch-manipulation text-[#015474] bg-[#e0f1f5]/70 font-medium"
             >
-              <MessageCircle className="h-3.5 w-3.5 text-emerald-600" />
+              <MessageCircle className="h-3.5 w-3.5 text-[#006788]" />
               <span>{t("crm.sendWhatsappStatusUpdate", "Send WhatsApp Status Update")}</span>
             </DropdownMenuItem>
 
@@ -263,12 +263,12 @@ export function CustomerResponseStatusSelect({
             >
               {isActive ? (
                 <>
-                  <UserX className="h-3.5 w-3.5 text-amber-600" />
+                  <UserX className="h-3.5 w-3.5 text-slate-500" />
                   <span>{t("crm.markInactive", "Mark Account Inactive (Archive response)")}</span>
                 </>
               ) : (
                 <>
-                  <UserCheck className="h-3.5 w-3.5 text-emerald-600" />
+                  <UserCheck className="h-3.5 w-3.5 text-[#006788]" />
                   <span>{t("crm.reactivateAccount", "Reactivate Client Account")}</span>
                 </>
               )}
@@ -286,17 +286,17 @@ export function CustomerResponseStatusSelect({
               setPendingStatus(currentStatus);
               setWaDialogOpen(true);
             }}
-            className="inline-flex max-w-full items-center gap-1 rounded bg-amber-50 hover:bg-amber-100/90 border border-amber-300/90 px-1.5 py-0.5 text-[10px] font-semibold text-amber-900 transition-colors shadow-2xs cursor-pointer text-left"
+            className="inline-flex max-w-full items-center gap-1 rounded bg-[#e0f1f5]/80 hover:bg-[#e0f1f5] border border-[#006788]/30 px-1.5 py-0.5 text-[10px] font-semibold text-[#015474] transition-colors shadow-2xs cursor-pointer text-left"
             title={t(
               "crm.notUpdatedStatusTooltip",
               "The customer is not updated with the current status. Click to send WhatsApp notification.",
             )}
           >
-            <AlertTriangle className="h-2.5 w-2.5 text-amber-600 shrink-0" />
+            <AlertTriangle className="h-2.5 w-2.5 text-[#006788] shrink-0" />
             <span className="truncate">
               {t("crm.notUpdatedStatus", "The customer is not updated with the current status")}
             </span>
-            <MessageCircle className="h-2.5 w-2.5 text-emerald-600 shrink-0 ml-0.5" />
+            <MessageCircle className="h-2.5 w-2.5 text-[#006788] shrink-0 ml-0.5" />
           </button>
         )}
 

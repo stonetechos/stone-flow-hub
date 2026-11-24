@@ -19,7 +19,7 @@ describe("Customer CRM Status", () => {
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_placed).toBeDefined();
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_placed.label).toBe("Order Placed");
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_placed.shortLabel).toBe("Order Placed");
-    expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_placed.dotColor).toContain("purple");
+    expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_placed.dotColor).toContain("#006788");
 
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.installation_team_working).toBeDefined();
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.installation_team_working.label).toBe(
@@ -28,17 +28,17 @@ describe("Customer CRM Status", () => {
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.installation_team_working.shortLabel).toBe(
       "Installation Team",
     );
-    expect(CUSTOMER_RESPONSE_STATUS_CONFIG.installation_team_working.dotColor).toContain("blue");
+    expect(CUSTOMER_RESPONSE_STATUS_CONFIG.installation_team_working.dotColor).toContain("#00597b");
 
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.artwork_team_working).toBeDefined();
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.artwork_team_working.label).toBe("Artwork Team Working");
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.artwork_team_working.shortLabel).toBe("Artwork Team");
-    expect(CUSTOMER_RESPONSE_STATUS_CONFIG.artwork_team_working.dotColor).toContain("violet");
+    expect(CUSTOMER_RESPONSE_STATUS_CONFIG.artwork_team_working.dotColor).toContain("#006788");
 
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_completed).toBeDefined();
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_completed.label).toBe("Order Completed");
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_completed.shortLabel).toBe("Completed");
-    expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_completed.dotColor).toContain("teal");
+    expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_completed.dotColor).toContain("#006788");
 
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_cancelled_delay).toBeDefined();
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_cancelled_delay.label).toBe(
