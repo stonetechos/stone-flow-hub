@@ -728,8 +728,8 @@ export function MasterProductCatalog({
           className={cn(
             "shrink-0 flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
             currentTab === "cladding"
-              ? "bg-primary text-primary-foreground shadow-xs"
-              : "text-muted-foreground hover:text-foreground",
+              ? "bg-[#015474] text-white shadow-xs"
+              : "text-[#015474]/75 dark:text-[#67e8f9]/75 hover:text-[#015474] dark:hover:text-[#67e8f9]",
           )}
         >
           <Layers className="h-4 w-4" />
@@ -748,11 +748,11 @@ export function MasterProductCatalog({
           className={cn(
             "shrink-0 flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
             currentTab === "stone-veneer"
-              ? "bg-primary text-primary-foreground shadow-xs"
-              : "text-muted-foreground hover:text-foreground",
+              ? "bg-[#015474] text-white shadow-xs"
+              : "text-[#015474]/75 dark:text-[#67e8f9]/75 hover:text-[#015474] dark:hover:text-[#67e8f9]",
           )}
         >
-          <Sparkles className="h-4 w-4 text-amber-500" />
+          <Sparkles className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
           <span>
             {lang === "gu"
               ? "અત્યંત પાતળી સ્ટોન વિનિયર (૯૮)"
@@ -768,11 +768,11 @@ export function MasterProductCatalog({
           className={cn(
             "shrink-0 flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
             currentTab === "glass-bricks"
-              ? "bg-primary text-primary-foreground shadow-xs"
-              : "text-muted-foreground hover:text-foreground",
+              ? "bg-[#015474] text-white shadow-xs"
+              : "text-[#015474]/75 dark:text-[#67e8f9]/75 hover:text-[#015474] dark:hover:text-[#67e8f9]",
           )}
         >
-          <Gem className="h-4 w-4 text-cyan-500" />
+          <Gem className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
           <span>
             {lang === "gu"
               ? "કાચની ઈંટો (૬૭)"
@@ -788,11 +788,11 @@ export function MasterProductCatalog({
           className={cn(
             "shrink-0 flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
             currentTab === "clay-veneers"
-              ? "bg-primary text-primary-foreground shadow-xs"
-              : "text-muted-foreground hover:text-foreground",
+              ? "bg-[#015474] text-white shadow-xs"
+              : "text-[#015474]/75 dark:text-[#67e8f9]/75 hover:text-[#015474] dark:hover:text-[#67e8f9]",
           )}
         >
-          <Compass className="h-4 w-4 text-orange-500" />
+          <Compass className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
           <span>
             {lang === "gu"
               ? "અત્યંત પાતળી લચીલી ક્લે વિનિયર્સ (૪૦)"
@@ -808,11 +808,11 @@ export function MasterProductCatalog({
           className={cn(
             "shrink-0 flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer",
             currentTab === "pebbles"
-              ? "bg-primary text-primary-foreground shadow-xs"
-              : "text-muted-foreground hover:text-foreground",
+              ? "bg-[#015474] text-white shadow-xs"
+              : "text-[#015474]/75 dark:text-[#67e8f9]/75 hover:text-[#015474] dark:hover:text-[#67e8f9]",
           )}
         >
-          <CircleDot className="h-4 w-4 text-amber-500" />
+          <CircleDot className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
           <span>
             {lang === "gu"
               ? "પાષાણ કાંકરા (૭૫)"
@@ -829,15 +829,15 @@ export function MasterProductCatalog({
             "shrink-0 relative flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 whitespace-nowrap cursor-pointer border overflow-hidden",
             "animate-works-glow",
             currentTab === "installations"
-              ? "bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.5)]"
-              : "bg-gradient-to-r from-emerald-500/15 via-teal-500/20 to-emerald-500/15 border-emerald-500/40 text-emerald-800 dark:text-emerald-300 hover:text-emerald-950 dark:hover:text-emerald-100",
+              ? "bg-gradient-to-r from-[#006788] via-[#015474] to-[#006788] text-white border-[#006788] shadow-[0_0_20px_rgba(1,84,116,0.35)]"
+              : "bg-gradient-to-r from-[#006788]/15 via-[#015474]/20 to-[#006788]/15 border-[#006788]/40 text-[#015474] dark:text-[#67e8f9] hover:text-[#004863] dark:hover:text-white",
           )}
         >
           <span className="relative flex h-2 w-2 shrink-0">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#006788] opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#006788]" />
           </span>
-          <Camera className="h-4 w-4 text-emerald-500 dark:text-emerald-400 shrink-0" />
+          <Camera className="h-4 w-4 text-[#006788] dark:text-[#38bdf8] shrink-0" />
           <span className="tracking-wide">
             {lang === "gu"
               ? "અમારા કેટલાક કાર્યો"
@@ -1110,7 +1110,7 @@ export function MasterProductCatalog({
                             : "Price on Project Request"}
                       </span>
                     </div>
-                    <span className="rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-2.5 py-1 text-[10px] font-bold">
+                    <span className="rounded-full bg-[#e0f1f5] text-[#015474] dark:bg-[#015474]/40 dark:text-[#67e8f9] border border-[#c9d1d4] dark:border-[#00597b] px-2.5 py-1 text-[10px] font-bold">
                       {lang === "gu"
                         ? "મોકલવા માટે તૈયાર"
                         : lang === "hi"

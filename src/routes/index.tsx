@@ -2458,12 +2458,12 @@ function HomePage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-10">
           {/* Section Header */}
           <div className="text-center space-y-3">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-foreground">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-[#015474] dark:text-[#67e8f9]">
               {isEn
                 ? cmsContent.showcaseSectionTitle || texts.showcase.sectionTitle
                 : texts.showcase.sectionTitle}
             </h2>
-            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg text-[#015474]/80 dark:text-[#67e8f9]/80 max-w-2xl mx-auto font-medium">
               {isEn
                 ? (cmsContent.showcaseSectionSubtitle || texts.showcase.sectionSubtitle)
                     .replace(/with transparent factory rates attached,?\s*/gi, "")
@@ -2522,17 +2522,17 @@ function HomePage() {
       <section id="why-us" className="py-16 sm:py-20 border-b border-border/60">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
           <div className="text-center max-w-3xl mx-auto space-y-3">
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#015474] dark:text-[#67e8f9]">
               {isEn ? cmsContent.whyUsSectionTitle || texts.whyUs.title : texts.whyUs.title}
             </h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="p-5 rounded-xl border border-border bg-card space-y-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#e0f1f5] text-[#006788] dark:bg-[#015474]/30 dark:text-[#38bdf8]">
                 <Sparkles className="h-5 w-5" />
               </div>
-              <h3 className="text-base font-bold">
+              <h3 className="text-base font-bold text-[#015474] dark:text-[#67e8f9]">
                 {isEn ? cmsContent.pillar1Title || texts.whyUs.p1Title : texts.whyUs.p1Title}
               </h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
@@ -2541,10 +2541,10 @@ function HomePage() {
             </div>
 
             <div className="p-5 rounded-xl border border-border bg-card space-y-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#006788]/10 text-[#006788] dark:text-[#38bdf8]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#e0f1f5] text-[#006788] dark:bg-[#015474]/30 dark:text-[#38bdf8]">
                 <Compass className="h-5 w-5" />
               </div>
-              <h3 className="text-base font-bold">
+              <h3 className="text-base font-bold text-[#015474] dark:text-[#67e8f9]">
                 {isEn ? cmsContent.pillar2Title || texts.whyUs.p2Title : texts.whyUs.p2Title}
               </h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
@@ -2553,10 +2553,10 @@ function HomePage() {
             </div>
 
             <div className="p-5 rounded-xl border border-border bg-card space-y-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#006788]/10 text-[#006788] dark:text-[#38bdf8]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#e0f1f5] text-[#006788] dark:bg-[#015474]/30 dark:text-[#38bdf8]">
                 <Eye className="h-5 w-5" />
               </div>
-              <h3 className="text-base font-bold">
+              <h3 className="text-base font-bold text-[#015474] dark:text-[#67e8f9]">
                 {isEn ? cmsContent.pillar3Title || texts.whyUs.p3Title : texts.whyUs.p3Title}
               </h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
@@ -2565,10 +2565,10 @@ function HomePage() {
             </div>
 
             <div className="p-5 rounded-xl border border-border bg-card space-y-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10 text-purple-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#e0f1f5] text-[#006788] dark:bg-[#015474]/30 dark:text-[#38bdf8]">
                 <Palette className="h-5 w-5" />
               </div>
-              <h3 className="text-base font-bold">
+              <h3 className="text-base font-bold text-[#015474] dark:text-[#67e8f9]">
                 {isEn ? cmsContent.pillar4Title || texts.whyUs.p4Title : texts.whyUs.p4Title}
               </h3>
               <p className="text-xs text-muted-foreground leading-relaxed">

@@ -61,8 +61,8 @@ export function ContactCenter({ className }: { className?: string }) {
         {/* Top Header Row with Title, Subtitle, and Google Business Rating Pill */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-border/70 pb-6">
           <div className="space-y-2">
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/15 text-primary shadow-2xs">
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#015474] dark:text-[#67e8f9] flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#e0f1f5] text-[#006788] dark:bg-[#015474]/30 dark:text-[#38bdf8] shadow-2xs">
                 <MapPin className="h-5 w-5" />
               </span>
               <span>{texts.contact.title}</span>

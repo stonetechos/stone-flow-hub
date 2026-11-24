@@ -136,19 +136,19 @@ export function ShreeYantraHeroShowcase({
         className={cn(
           "relative rounded-2xl border-2 transition-all duration-300 p-4 sm:p-5 shadow-lg overflow-hidden group",
           isClaimed
-            ? "border-emerald-500 bg-gradient-to-br from-emerald-500/10 via-amber-500/5 to-teal-500/10 dark:from-emerald-950/40 dark:via-stone-900/90 dark:to-teal-950/40 ring-2 ring-emerald-500/40"
-            : "border-amber-400/80 bg-gradient-to-br from-amber-500/10 via-stone-50/70 to-emerald-500/10 dark:from-amber-950/30 dark:via-stone-900/90 dark:to-emerald-950/30 hover:border-amber-500 ring-1 ring-amber-400/30",
+            ? "border-[#006788] bg-gradient-to-br from-[#006788]/15 via-[#e0f1f5]/40 to-[#015474]/15 dark:from-[#006788]/25 dark:via-stone-900/90 dark:to-[#015474]/30 ring-2 ring-[#006788]/40"
+            : "border-[#006788]/40 bg-gradient-to-br from-[#e0f1f5]/60 via-stone-50/70 to-[#e0f1f5]/40 dark:from-[#015474]/20 dark:via-stone-900/90 dark:to-[#015474]/15 hover:border-[#006788] ring-1 ring-[#006788]/20",
           className,
         )}
       >
         {/* Ambient warm golden glow in background */}
         <div className="absolute top-0 right-0 w-60 h-60 bg-gradient-to-br from-amber-400/20 via-amber-500/10 to-transparent rounded-full blur-3xl pointer-events-none group-hover:scale-110 transition-transform duration-500" />
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-emerald-400/15 to-transparent rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-[#006788]/15 to-transparent rounded-full blur-2xl pointer-events-none" />
 
         <div className="relative z-10 space-y-3.5">
           {isClaimed && (
             <div className="flex justify-end">
-              <Badge className="bg-emerald-600 text-white font-extrabold text-[10px] sm:text-[11px] px-2.5 py-0.5 tracking-wider animate-in fade-in shadow-xs">
+              <Badge className="bg-[#015474] text-white font-extrabold text-[10px] sm:text-[11px] px-2.5 py-0.5 tracking-wider animate-in fade-in shadow-xs">
                 {t.privilegeUnlocked}
               </Badge>
             </div>
@@ -156,15 +156,15 @@ export function ShreeYantraHeroShowcase({
 
           {/* 1. Headline & Subtitle */}
           <div className="space-y-1.5 text-left">
-            <h3 className="text-lg sm:text-xl lg:text-[22px] font-serif font-bold text-foreground tracking-tight leading-snug">
+            <h3 className="text-lg sm:text-xl lg:text-[22px] font-serif font-bold text-[#015474] dark:text-[#67e8f9] tracking-tight leading-snug">
               {t.titlePrefix}{" "}
-              <span className="text-amber-600 dark:text-amber-400 underline decoration-amber-400/60 underline-offset-4">
+              <span className="text-[#006788] dark:text-[#38bdf8] underline decoration-[#006788]/40 underline-offset-4">
                 {t.titleHighlight}
               </span>{" "}
               {t.titleSuffix}
             </h3>
 
-            <p className="font-cursive text-base sm:text-lg text-emerald-700 dark:text-emerald-400 font-bold">
+            <p className="font-cursive text-base sm:text-lg text-[#015474] dark:text-[#38bdf8] font-bold">
               {t.premakeSubtitle}
             </p>
 
@@ -203,27 +203,27 @@ export function ShreeYantraHeroShowcase({
 
             {/* Right: Privilege Highlights & Claim Button */}
             <div className="sm:col-span-7 flex flex-col justify-between space-y-2.5">
-              <div className="p-3 rounded-xl border border-emerald-500/40 bg-gradient-to-br from-emerald-500/10 via-amber-500/5 to-teal-500/10 dark:from-emerald-950/40 dark:via-stone-900/80 dark:to-teal-950/40 space-y-2">
-                <div className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
-                  <Flame className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
+              <div className="p-3 rounded-xl border border-[#006788]/30 bg-gradient-to-br from-[#e0f1f5]/80 via-white to-[#e0f1f5]/50 dark:from-[#015474]/30 dark:via-stone-900/80 dark:to-[#015474]/20 space-y-2 shadow-2xs">
+                <div className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-[#015474] dark:text-[#67e8f9]">
+                  <Flame className="h-3.5 w-3.5 text-[#006788] fill-[#006788]" />
                   {t.doublePrivilege}
                 </div>
 
                 <div className="space-y-1.5 text-left">
-                  <div className="flex items-center gap-2 bg-white/80 dark:bg-stone-900/80 p-2 rounded-lg border border-emerald-500/20 shadow-2xs">
-                    <div className="h-5 w-5 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 font-black text-[10px]">
+                  <div className="flex items-center gap-2 bg-white/90 dark:bg-stone-900/90 p-2 rounded-lg border border-[#006788]/20 shadow-2xs">
+                    <div className="h-5 w-5 rounded-full bg-[#006788] text-white flex items-center justify-center shrink-0 font-black text-[10px]">
                       1
                     </div>
                     <span className="text-xs font-bold text-foreground">{t.privilege1}</span>
                   </div>
 
-                  <div className="flex items-start gap-2 bg-white/80 dark:bg-stone-900/80 p-2 rounded-lg border border-amber-500/20 shadow-2xs">
-                    <div className="h-5 w-5 rounded-full bg-amber-500 text-stone-950 flex items-center justify-center shrink-0 font-black text-[10px] mt-0.5">
+                  <div className="flex items-start gap-2 bg-white/90 dark:bg-stone-900/90 p-2 rounded-lg border border-[#015474]/20 shadow-2xs">
+                    <div className="h-5 w-5 rounded-full bg-[#015474] text-white flex items-center justify-center shrink-0 font-black text-[10px] mt-0.5">
                       2
                     </div>
                     <div className="flex flex-col text-left">
                       <span className="text-xs font-bold text-foreground">{t.privilege2Title}</span>
-                      <span className="text-[10.5px] font-semibold text-amber-800 dark:text-amber-300 leading-tight mt-0.5">
+                      <span className="text-[10.5px] font-semibold text-[#015474] dark:text-[#38bdf8] leading-tight mt-0.5">
                         {t.privilege2Subtitle}
                       </span>
                     </div>
@@ -238,8 +238,8 @@ export function ShreeYantraHeroShowcase({
                 className={cn(
                   "w-full font-bold text-xs h-10 px-4 gap-1.5 shadow-md cursor-pointer transition-all",
                   isClaimed
-                    ? "bg-emerald-700 hover:bg-emerald-800 text-white"
-                    : "bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-teal-800 text-white hover:scale-[1.01]",
+                    ? "bg-[#015474] hover:bg-[#004863] text-white"
+                    : "bg-gradient-to-r from-[#006788] via-[#015474] to-[#006788] hover:from-[#015474] hover:to-[#004863] text-white hover:scale-[1.01]",
                 )}
               >
                 {isClaimed ? (
@@ -258,7 +258,7 @@ export function ShreeYantraHeroShowcase({
 
               {/* Value Threshold Note */}
               <div className="flex items-center justify-center sm:justify-start gap-1.5 text-[11px] text-muted-foreground font-medium pt-0.5">
-                <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#006788] shrink-0" />
                 <span>{t.thresholdNote}</span>
               </div>
             </div>
@@ -346,7 +346,7 @@ export function ShreeYantraHeroShowcase({
           )}
 
           {isClaimed && (
-            <p className="font-cursive text-emerald-700 dark:text-emerald-300 text-sm font-bold pt-0.5 animate-in fade-in duration-200 text-left">
+            <p className="font-cursive text-[#015474] dark:text-[#38bdf8] text-sm font-bold pt-0.5 animate-in fade-in duration-200 text-left">
               {t.bothRegistered}
             </p>
           )}

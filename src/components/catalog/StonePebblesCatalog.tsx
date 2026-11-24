@@ -690,7 +690,7 @@ export function StonePebblesCatalog({
                             : "Price on Request"}
                       </span>
                     </div>
-                    <span className="rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-2.5 py-1 text-[10px] font-bold">
+                    <span className="rounded-full bg-[#e0f1f5] text-[#015474] dark:bg-[#015474]/40 dark:text-[#67e8f9] border border-[#c9d1d4] dark:border-[#00597b] px-2.5 py-1 text-[10px] font-bold">
                       {t.inStock}
                     </span>
                   </div>

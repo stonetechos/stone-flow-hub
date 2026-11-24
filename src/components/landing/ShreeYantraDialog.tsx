@@ -156,19 +156,19 @@ export function ShreeYantraDialog({
               </Badge>
               <Badge
                 variant="outline"
-                className="border-emerald-500/50 text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 font-bold text-[11px] px-2.5 py-0.5"
+                className="border-[#006788]/40 text-[#015474] dark:text-[#38bdf8] bg-[#e0f1f5]/60 font-bold text-[11px] px-2.5 py-0.5"
               >
-                <Gift className="h-3 w-3 mr-1 inline" />
+                <Gift className="h-3 w-3 mr-1 inline text-[#006788]" />
                 {t.giftBadge}
               </Badge>
               {isClaimed && (
-                <Badge className="bg-emerald-600 text-white font-bold text-[11px] px-2.5 py-0.5 animate-in fade-in">
+                <Badge className="bg-[#015474] text-white font-bold text-[11px] px-2.5 py-0.5 animate-in fade-in">
                   {t.claimedBadge}
                 </Badge>
               )}
             </div>
 
-            <DialogTitle className="text-xl sm:text-2xl font-serif font-bold text-foreground tracking-tight leading-snug">
+            <DialogTitle className="text-xl sm:text-2xl font-serif font-bold text-[#015474] dark:text-[#67e8f9] tracking-tight leading-snug">
               {t.title}
             </DialogTitle>
             <DialogDescription className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
@@ -208,7 +208,7 @@ export function ShreeYantraDialog({
                   </span>
                 </div>
               </div>
-              <p className="text-[11px] text-muted-foreground text-center font-cursive text-emerald-700 dark:text-emerald-400 text-sm">
+              <p className="text-[11px] text-muted-foreground text-center font-cursive text-[#015474] dark:text-[#38bdf8] text-sm">
                 {t.caption}
               </p>
             </div>
@@ -216,15 +216,15 @@ export function ShreeYantraDialog({
             {/* Right: Specifications & Double Privilege Details */}
             <div className="md:col-span-6 space-y-4">
               {/* Double Privilege Summary Box */}
-              <div className="p-3.5 rounded-xl border border-emerald-500/40 bg-gradient-to-br from-emerald-500/10 via-amber-500/5 to-teal-500/10 dark:from-emerald-950/40 dark:via-stone-900/60 dark:to-teal-950/40 space-y-2.5">
-                <div className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wide text-emerald-800 dark:text-emerald-300">
-                  <Flame className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
+              <div className="p-3.5 rounded-xl border border-[#006788]/30 bg-gradient-to-br from-[#e0f1f5]/80 via-white to-[#e0f1f5]/50 dark:from-[#015474]/30 dark:via-stone-900/60 dark:to-[#015474]/20 space-y-2.5 shadow-2xs">
+                <div className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wide text-[#015474] dark:text-[#67e8f9]">
+                  <Flame className="h-3.5 w-3.5 text-[#006788] fill-[#006788]" />
                   {t.privilegeBoxTitle}
                 </div>
 
                 <div className="space-y-2 text-xs">
                   <div className="flex items-start gap-2">
-                    <div className="h-5 w-5 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 font-bold text-[10px] mt-0.5">
+                    <div className="h-5 w-5 rounded-full bg-[#006788] text-white flex items-center justify-center shrink-0 font-bold text-[10px] mt-0.5">
                       1
                     </div>
                     <div>
@@ -292,8 +292,8 @@ export function ShreeYantraDialog({
                   className={cn(
                     "w-full font-bold text-xs h-10 px-5 gap-2 shadow-md transition-all cursor-pointer",
                     isClaimed
-                      ? "bg-emerald-700 hover:bg-emerald-800 text-white"
-                      : "bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-teal-800 text-white hover:scale-[1.02]",
+                      ? "bg-[#015474] hover:bg-[#004863] text-white"
+                      : "bg-gradient-to-r from-[#006788] via-[#015474] to-[#006788] hover:from-[#015474] hover:to-[#004863] text-white hover:scale-[1.02]",
                   )}
                 >
                   {isClaimed ? (

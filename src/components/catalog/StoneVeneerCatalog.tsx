@@ -810,7 +810,7 @@ export function StoneVeneerCatalog({
                   <Button
                     variant="outline"
                     onClick={() => shareWhatsApp(lightboxTarget)}
-                    className="w-full h-9 text-xs font-semibold gap-2 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 rounded-xl cursor-pointer"
+                    className="w-full h-9 text-xs font-semibold gap-2 border-[#006788]/30 text-[#015474] dark:text-[#67e8f9] hover:bg-[#e0f1f5]/60 rounded-xl cursor-pointer"
                   >
                     <Share2 className="h-3.5 w-3.5" />
                     <span>{t.shareWhatsApp}</span>

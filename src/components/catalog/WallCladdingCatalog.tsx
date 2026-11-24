@@ -470,8 +470,8 @@ export function WallCladdingCatalog({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="flex h-2.5 w-2.5 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#006788] opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#006788]" />
             </span>
             <span className="text-xs font-bold uppercase tracking-wider text-foreground">
               {t.heading}
@@ -585,7 +585,7 @@ export function WallCladdingCatalog({
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-8 px-2.5 text-xs text-emerald-700 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 gap-1"
+                  className="h-8 px-2.5 text-xs text-[#015474] dark:text-[#67e8f9] border-[#006788]/30 hover:bg-[#e0f1f5]/60 gap-1"
                 >
                   <BookOpen className="h-3.5 w-3.5" />
                   <span className="hidden sm:inline font-medium">{t.cataloguesBtn}</span>
@@ -650,15 +650,15 @@ export function WallCladdingCatalog({
                 </div>
 
                 {/* 2. Wall Cladding Catalogue */}
-                <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-2 space-y-1.5">
+                <div className="rounded-lg border border-[#006788]/20 bg-[#e0f1f5]/30 dark:bg-[#015474]/15 p-2 space-y-1.5">
                   <div className="flex items-center justify-between">
                     <span className="font-semibold text-xs text-foreground flex items-center gap-1.5">
-                      <Layers className="h-3.5 w-3.5 text-emerald-600" />
+                      <Layers className="h-3.5 w-3.5 text-[#006788] dark:text-[#38bdf8]" />
                       {t.claddingTitle}
                     </span>
                     <Badge
                       variant="outline"
-                      className="text-[10px] px-1.5 py-0 h-4 border-emerald-500/40 text-emerald-700 dark:text-emerald-300"
+                      className="text-[10px] px-1.5 py-0 h-4 border-[#006788]/30 text-[#015474] dark:text-[#67e8f9]"
                     >
                       71 Pgs
                     </Badge>
@@ -673,7 +673,7 @@ export function WallCladdingCatalog({
                       className={cn(
                         "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
                         lang === "en"
-                          ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                          ? "bg-[#015474] text-white border-[#015474] shadow-xs"
                           : "bg-background/80 hover:bg-accent border-border text-foreground",
                       )}
                     >
@@ -685,7 +685,7 @@ export function WallCladdingCatalog({
                       className={cn(
                         "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
                         lang === "hi"
-                          ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                          ? "bg-[#015474] text-white border-[#015474] shadow-xs"
                           : "bg-background/80 hover:bg-accent border-border text-foreground",
                       )}
                     >
@@ -697,7 +697,7 @@ export function WallCladdingCatalog({
                       className={cn(
                         "flex-1 text-center py-1 px-1.5 text-[11px] font-medium rounded border transition-colors",
                         lang === "gu"
-                          ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                          ? "bg-[#015474] text-white border-[#015474] shadow-xs"
                           : "bg-background/80 hover:bg-accent border-border text-foreground",
                       )}
                     >

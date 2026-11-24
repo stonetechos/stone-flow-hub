@@ -211,8 +211,8 @@ export function InstalledWorksGallery({
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-border/60 pb-5">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5 flex-wrap">
-            <h3 className="text-xl sm:text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
-              <Camera className="h-5 w-5 text-emerald-500" />
+            <h3 className="text-xl sm:text-2xl font-black tracking-tight text-[#015474] dark:text-[#67e8f9] flex items-center gap-2">
+              <Camera className="h-5 w-5 text-[#006788] dark:text-[#38bdf8]" />
               <span>{t.heading}</span>
             </h3>
             <Badge variant="secondary" className="font-bold text-xs px-2.5 py-0.5 rounded-full">
@@ -346,7 +346,7 @@ export function InstalledWorksGallery({
                   setLightboxTarget(item);
                   setImageRotation(0);
                 }}
-                className="group relative aspect-4/3 sm:aspect-square rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer bg-stone-900 border border-border/60 hover:border-emerald-500/50 shadow-2xs hover:shadow-md transition-all duration-300 flex items-center justify-center"
+                className="group relative aspect-4/3 sm:aspect-square rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer bg-stone-900 border border-border/60 hover:border-[#006788]/60 shadow-2xs hover:shadow-md transition-all duration-300 flex items-center justify-center"
               >
                 <img
                   src={item.image}
@@ -367,7 +367,7 @@ export function InstalledWorksGallery({
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/80 to-transparent p-3 pt-8 text-white transition-opacity duration-300 flex flex-col justify-end gap-1.5 z-10">
                   <div className="min-w-0">
                     <p className="text-xs sm:text-sm font-bold truncate text-white">{item.title}</p>
-                    <p className="text-[11px] text-emerald-400 flex items-center gap-1 mt-0.5 truncate">
+                    <p className="text-[11px] text-[#38bdf8] flex items-center gap-1 mt-0.5 truncate">
                       <MapPin className="h-3 w-3 shrink-0" />
                       <span>{item.location}</span>
                     </p>
@@ -380,7 +380,7 @@ export function InstalledWorksGallery({
                         e.stopPropagation();
                         handleEstimateClick(item);
                       }}
-                      className="flex-1 h-7 text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white gap-1 rounded-lg"
+                      className="flex-1 h-7 text-[11px] font-bold bg-[#006788] hover:bg-[#015474] text-white gap-1 rounded-lg"
                     >
                       <span>{t.quickEstimate}</span>
                       <ArrowRight className="h-3 w-3" />
@@ -410,7 +410,7 @@ export function InstalledWorksGallery({
               variant="outline"
               size="sm"
               onClick={() => setVisibleCount((prev) => Math.min(prev + 12, filteredItems.length))}
-              className="h-8 text-xs cursor-pointer border-emerald-500/30 font-semibold"
+              className="h-8 text-xs cursor-pointer border-[#006788]/30 font-semibold text-[#015474] dark:text-[#67e8f9] hover:bg-[#e0f1f5]/60"
             >
               Load More Projects ({filteredItems.length - visibleItems.length} remaining)
             </Button>
@@ -467,7 +467,7 @@ export function InstalledWorksGallery({
                 </div>
 
                 <div className="absolute bottom-3 inset-x-0 text-center pointer-events-none">
-                  <span className="text-[11px] text-emerald-300 bg-black/60 px-3 py-1 rounded-full backdrop-blur-xs flex items-center justify-center gap-1 mx-auto w-fit">
+                  <span className="text-[11px] text-[#38bdf8] bg-black/60 px-3 py-1 rounded-full backdrop-blur-xs flex items-center justify-center gap-1 mx-auto w-fit">
                     <MapPin className="h-3 w-3" />
                     <span>{lightboxTarget.location}</span>
                   </span>
@@ -479,7 +479,7 @@ export function InstalledWorksGallery({
                 <div className="space-y-4">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <Badge className="bg-emerald-600 text-white font-bold text-[11px]">
+                      <Badge className="bg-[#015474] text-white font-bold text-[11px]">
                         {lightboxTarget.categoryLabel}
                       </Badge>
                       <Badge variant="outline" className="font-mono text-[11px]">
@@ -532,7 +532,7 @@ export function InstalledWorksGallery({
                 <div className="pt-3 border-t border-border/60 space-y-2">
                   <Button
                     onClick={() => handleEstimateClick(lightboxTarget)}
-                    className="w-full h-11 text-xs sm:text-sm font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-2 rounded-xl shadow-md cursor-pointer"
+                    className="w-full h-11 text-xs sm:text-sm font-bold bg-[#015474] hover:bg-[#004863] text-white gap-2 rounded-xl shadow-md cursor-pointer"
                   >
                     <span>{t.requestEstimate}</span>
                     <ArrowRight className="h-4 w-4" />
@@ -541,7 +541,7 @@ export function InstalledWorksGallery({
                   <Button
                     variant="outline"
                     onClick={() => shareWhatsApp(lightboxTarget)}
-                    className="w-full h-9 text-xs font-semibold gap-2 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 rounded-xl cursor-pointer"
+                    className="w-full h-9 text-xs font-semibold gap-2 border-[#006788]/30 text-[#015474] dark:text-[#67e8f9] hover:bg-[#e0f1f5]/60 rounded-xl cursor-pointer"
                   >
                     <Share2 className="h-3.5 w-3.5" />
                     <span>{t.shareWhatsApp}</span>

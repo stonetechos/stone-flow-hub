@@ -156,7 +156,7 @@ export function DownloadCataloguesDropdown({
         size="sm"
         variant="outline"
         onClick={handleShareWhatsapp}
-        className="h-9 px-2.5 sm:px-3 text-xs font-bold text-emerald-800 dark:text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/10 hover:border-emerald-500 gap-1.5 cursor-pointer shadow-xs rounded-xl bg-card/90 backdrop-blur-xs transition-all"
+        className="h-9 px-2.5 sm:px-3 text-xs font-bold text-[#015474] dark:text-[#67e8f9] border-[#006788]/30 hover:bg-[#e0f1f5]/60 dark:hover:bg-[#015474]/30 hover:border-[#006788] gap-1.5 cursor-pointer shadow-xs rounded-xl bg-card/90 backdrop-blur-xs transition-all"
         title={
           lang === "gu"
             ? "વોટ્સએપ પર કેટલોગ લિંક શેર કરો"
@@ -181,12 +181,12 @@ export function DownloadCataloguesDropdown({
             size="sm"
             variant="outline"
             className={cn(
-              "h-9 px-3 text-xs font-bold text-emerald-800 dark:text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/10 hover:border-emerald-500 gap-2 cursor-pointer shadow-xs rounded-xl bg-card/90 backdrop-blur-xs transition-all",
+              "h-9 px-3 text-xs font-bold text-[#015474] dark:text-[#67e8f9] border-[#006788]/30 hover:bg-[#e0f1f5]/60 dark:hover:bg-[#015474]/30 hover:border-[#006788] gap-2 cursor-pointer shadow-xs rounded-xl bg-card/90 backdrop-blur-xs transition-all",
               className,
             )}
             title="Download verified architectural catalogues (PDF)"
           >
-            <BookOpen className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <BookOpen className="h-4 w-4 text-[#006788] dark:text-[#38bdf8] shrink-0" />
             <span className="tracking-tight">
               {lang === "gu"
                 ? "કેટલોગ ડાઉનલોડ (PDF)"
@@ -269,14 +269,14 @@ export function DownloadCataloguesDropdown({
           <div className="space-y-0.5 px-1 pt-0.5">
             <DropdownMenuLabel className="p-0 text-xs font-bold text-foreground flex items-center justify-between">
               <span className="flex items-center gap-1.5">
-                <BookOpen className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                <BookOpen className="h-3.5 w-3.5 text-[#006788] dark:text-[#38bdf8]" />
                 {lang === "gu"
                   ? "વાસ્તુશિલ્પીય કેટલોગ્સ (PDF · ૬ સંગ્રહ)"
                   : lang === "hi"
                     ? "वास्तुशिल्पीय कैटलॉग (PDF · ६ संग्रह)"
                     : "Architectural Catalogues (PDF · 6 Collections)"}
               </span>
-              <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-1.5 py-0.5 rounded-md flex items-center gap-0.5">
+              <span className="text-[10px] font-semibold text-[#015474] dark:text-[#67e8f9] bg-[#e0f1f5] dark:bg-[#015474]/30 px-1.5 py-0.5 rounded-md flex items-center gap-0.5">
                 <span>↓</span>
                 <span>
                   {lang === "gu"
@@ -299,10 +299,10 @@ export function DownloadCataloguesDropdown({
           <DropdownMenuSeparator />
 
           {/* 1. Natural Stone Cladding Catalogue */}
-          <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/5 p-2.5 space-y-1.5">
+          <div className="rounded-xl border border-[#006788]/20 bg-[#e0f1f5]/30 dark:bg-[#015474]/15 p-2.5 space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="font-bold text-xs text-foreground flex items-center gap-1.5">
-                <Layers className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                <Layers className="h-3.5 w-3.5 text-[#006788] dark:text-[#38bdf8]" />
                 {lang === "gu"
                   ? "કુદરતી પથ્થર દીવાલ ક્લેડિંગ (૭૧ પાન)"
                   : lang === "hi"
@@ -311,7 +311,7 @@ export function DownloadCataloguesDropdown({
               </span>
               <Badge
                 variant="outline"
-                className="text-[10px] px-1.5 py-0 h-4 border-emerald-500/40 text-emerald-700 dark:text-emerald-300"
+                className="text-[10px] px-1.5 py-0 h-4 border-[#006788]/30 text-[#015474] dark:text-[#67e8f9]"
               >
                 {lang === "gu" ? "૨૭૫ પેટર્ન્સ" : lang === "hi" ? "२७५ पैटर्न्स" : "275 Patterns"}
               </Badge>
@@ -319,7 +319,7 @@ export function DownloadCataloguesDropdown({
 
             <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground pt-0.5">
               <span className="flex items-center gap-1">
-                <Download className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                <Download className="h-3 w-3 text-[#006788] dark:text-[#38bdf8]" />
                 <span>
                   {lang === "gu"
                     ? "સંપૂર્ણ ક્લેડિંગ કેટલોગ"
@@ -643,10 +643,10 @@ export function DownloadCataloguesDropdown({
           </div>
 
           {/* 6. Executed Works & Architectural Portfolio */}
-          <div className="rounded-xl border border-teal-500/25 bg-teal-500/5 p-2.5 space-y-1.5">
+          <div className="rounded-xl border border-[#006788]/20 bg-[#e0f1f5]/30 dark:bg-[#015474]/15 p-2.5 space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="font-bold text-xs text-foreground flex items-center gap-1.5">
-                <Camera className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+                <Camera className="h-3.5 w-3.5 text-[#006788] dark:text-[#38bdf8]" />
                 {lang === "gu"
                   ? "અમારા કાર્યો અને પોર્ટફોલિયો (PDF)"
                   : lang === "hi"
@@ -655,7 +655,7 @@ export function DownloadCataloguesDropdown({
               </span>
               <Badge
                 variant="outline"
-                className="text-[10px] px-1.5 py-0 h-4 border-teal-500/40 text-teal-700 dark:text-teal-300"
+                className="text-[10px] px-1.5 py-0 h-4 border-[#006788]/30 text-[#015474] dark:text-[#67e8f9]"
               >
                 {lang === "gu"
                   ? "૫૫ પ્રોજેક્ટ્સ"
@@ -667,7 +667,7 @@ export function DownloadCataloguesDropdown({
 
             <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground pt-0.5">
               <span className="flex items-center gap-1">
-                <Download className="h-3 w-3 text-teal-600 dark:text-teal-400" />
+                <Download className="h-3 w-3 text-[#006788] dark:text-[#38bdf8]" />
                 <span>
                   {lang === "gu"
                     ? "વાસ્તુશિલ્પીય ઇન્સ્ટોલેશન્સ અને ફોટોગ્રાફ્સ"
