@@ -562,10 +562,10 @@ export function WhatsappCrmWorkspace() {
             size="sm"
             onClick={() => setSyncModalOpen(true)}
             className="h-7 px-2.5 text-xs font-bold gap-1.5 bg-[#006788] hover:bg-[#00597b] text-white shadow-2xs cursor-pointer"
-            title="Open WhatsApp One-Time Synchronisation Center"
+            title="Open WhatsApp Business - STOS"
           >
             <Zap className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">One-Time Sync</span>
+            <span className="hidden sm:inline">WhatsApp Sync</span>
           </Button>
 
           <Button

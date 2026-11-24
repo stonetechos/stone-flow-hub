@@ -75,10 +75,10 @@ export function WhatsappConversationList({
               size="sm"
               onClick={onOpenSync}
               className="h-6 px-2 text-[10.5px] font-bold gap-1 bg-[#006788] hover:bg-[#00597b] text-white cursor-pointer shadow-2xs"
-              title="Open WhatsApp One-Time Synchronisation Center"
+              title="Open WhatsApp Business - STOS"
             >
               <Zap className="h-3 w-3" />
-              <span>One-Time Sync</span>
+              <span>Sync</span>
             </Button>
           </div>
         </div>
