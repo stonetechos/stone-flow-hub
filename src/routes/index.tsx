@@ -1351,9 +1351,9 @@ function HomePage() {
       {/* 2. ARCHITECTURAL HERO SECTION */}
       <section className="relative overflow-hidden pt-8 pb-12 sm:pt-12 sm:pb-16 lg:pt-14 lg:pb-20 border-b border-[#E9E6E1] dark:border-stone-800 bg-[#FAF8F4] dark:bg-slate-950">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
             {/* LEFT COLUMN: Authority, Brand Prestige, Metrics & Value Checklist */}
-            <div className="lg:col-span-6 space-y-6 sm:space-y-7 pt-1 lg:pt-2 animate-in fade-in-50 duration-300">
+            <div className="lg:col-span-6 space-y-5 sm:space-y-6 pt-1 lg:pt-2 flex flex-col justify-between animate-in fade-in-50 duration-300">
               {/* Main Heading */}
               <h1 className="font-serif text-3xl sm:text-4xl lg:text-[44px] xl:text-[48px] font-normal sm:font-medium tracking-tight text-[#111111] dark:text-stone-100 leading-[1.18] sm:leading-[1.14]">
                 {isEn ? cmsContent.heroTitlePart1 || texts.hero.titlePart1 : texts.hero.titlePart1}
@@ -1497,25 +1497,25 @@ function HomePage() {
             </div>
 
             {/* RIGHT COLUMN: Floating Request for Estimate Card */}
-            <div id="lead-form" className="lg:col-span-6 scroll-mt-24">
-              <Card className="border-border/90 shadow-xl bg-card rounded-2xl overflow-hidden ring-1 ring-border/50">
+            <div id="lead-form" className="lg:col-span-6 scroll-mt-24 flex flex-col">
+              <Card className="border-border/90 shadow-xl bg-card rounded-2xl overflow-hidden ring-1 ring-border/50 flex-1 flex flex-col justify-between">
                 {/* Card Top Title Banner */}
-                <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-[#012b3c] text-white p-5 sm:p-6 border-b border-primary/20">
+                <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-[#012b3c] text-white px-4 py-3 sm:px-5 sm:py-3.5 border-b border-primary/20">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                    <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white">
                       {texts.form.title}
                     </h2>
                   </div>
                 </div>
 
                 {/* Step Progress Continuation Bar (1/2 and 2/2) */}
-                <div className="border-b border-border/60 bg-slate-900/95 px-3.5 sm:px-5 py-2.5 sm:py-3 text-xs">
+                <div className="border-b border-border/60 bg-slate-900/95 px-3.5 sm:px-5 py-2 text-xs">
                   <div className="flex items-center justify-between gap-2">
                     <button
                       type="button"
                       onClick={() => setFormStep(1)}
                       className={cn(
-                        "flex items-center gap-1.5 font-bold transition-colors min-w-0 cursor-pointer py-1",
+                        "flex items-center gap-1.5 font-bold transition-colors min-w-0 cursor-pointer py-0.5",
                         formStep === 1
                           ? "text-[#67e8f9] font-extrabold"
                           : "text-slate-400 hover:text-slate-200",
@@ -1523,7 +1523,7 @@ function HomePage() {
                     >
                       <span
                         className={cn(
-                          "flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold shrink-0 transition-colors",
+                          "flex h-4.5 w-4.5 items-center justify-center rounded-full text-[10px] font-bold shrink-0 transition-colors",
                           formStep === 1
                             ? "bg-primary text-primary-foreground shadow-xs"
                             : "border border-slate-700 bg-slate-800 text-slate-400",
@@ -1546,7 +1546,7 @@ function HomePage() {
                       type="button"
                       onClick={() => setFormStep(2)}
                       className={cn(
-                        "flex items-center gap-1.5 font-bold transition-colors min-w-0 cursor-pointer py-1",
+                        "flex items-center gap-1.5 font-bold transition-colors min-w-0 cursor-pointer py-0.5",
                         formStep === 2
                           ? "text-[#67e8f9] font-extrabold"
                           : "text-slate-400 hover:text-slate-200",
@@ -1554,7 +1554,7 @@ function HomePage() {
                     >
                       <span
                         className={cn(
-                          "flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold shrink-0 transition-colors",
+                          "flex h-4.5 w-4.5 items-center justify-center rounded-full text-[10px] font-bold shrink-0 transition-colors",
                           formStep === 2
                             ? "bg-primary text-primary-foreground shadow-xs"
                             : "border border-slate-700 bg-slate-800 text-slate-400",
@@ -1570,7 +1570,7 @@ function HomePage() {
                   </div>
 
                   {/* Visual Progress Bar Track */}
-                  <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+                  <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-slate-800">
                     <div
                       className="h-full bg-gradient-to-r from-[#015474] via-[#006788] to-[#38bdf8] transition-all duration-300 ease-out"
                       style={{ width: formStep === 1 ? "50%" : "100%" }}
@@ -1578,16 +1578,19 @@ function HomePage() {
                   </div>
                 </div>
 
-                <CardContent className="paper-texture p-5 sm:p-6">
-                  <form onSubmit={handleSubmit} className="space-y-5">
+                <CardContent className="paper-texture p-4 sm:p-5 flex-1 flex flex-col justify-between">
+                  <form
+                    onSubmit={handleSubmit}
+                    className="space-y-3.5 sm:space-y-4 flex-1 flex flex-col justify-between"
+                  >
                     {/* PART 1/2: PRODUCTS, SPACE & PHOTO UPLOADS */}
                     {formStep === 1 && (
-                      <div className="space-y-5 animate-in fade-in-50 duration-200">
+                      <div className="space-y-3.5 sm:space-y-4 animate-in fade-in-50 duration-200">
                         {/* STEP 1: PRODUCT SELECTION */}
-                        <div className="space-y-2.5">
+                        <div className="space-y-2">
                           <div className="flex items-center justify-between">
                             <label className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
+                              <span className="flex h-4.5 w-4.5 items-center justify-center rounded-full bg-primary text-primary-foreground text-[10.5px] font-bold">
                                 1
                               </span>
                               <span>
@@ -1626,7 +1629,7 @@ function HomePage() {
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1">
+                          <div className="grid grid-cols-2 gap-1.5 sm:gap-2 max-h-40 sm:max-h-44 overflow-y-auto pr-1">
                             {localizedProducts.map((prod) => {
                               const isSelected = selectedProducts.includes(prod.canonicalName);
                               return (
@@ -1640,7 +1643,7 @@ function HomePage() {
                                   }}
                                   aria-pressed={isSelected}
                                   className={cn(
-                                    "p-2.5 rounded-xl border text-left transition-all text-xs flex items-center justify-between gap-1.5 cursor-pointer select-none active:scale-[0.98]",
+                                    "p-2 sm:p-2.5 rounded-xl border text-left transition-all text-xs flex items-center justify-between gap-1.5 cursor-pointer select-none active:scale-[0.98]",
                                     isSelected
                                       ? "border-[#006788] dark:border-[#38bdf8] bg-[#e0f1f5] dark:bg-[#015474]/60 text-[#015474] dark:text-[#e0f1f5] font-bold ring-2 ring-[#006788]/40 shadow-xs"
                                       : "border-stone-200 dark:border-stone-800 bg-background hover:bg-muted/70 text-stone-700 dark:text-stone-300 hover:text-foreground",
@@ -1687,10 +1690,10 @@ function HomePage() {
                         </div>
 
                         {/* STEP 2: SPACE TYPE & PLAN DESCRIPTION */}
-                        <div className="space-y-2.5 pt-2 border-t border-border/80">
+                        <div className="space-y-2 pt-2 border-t border-border/80">
                           <div className="flex items-center justify-between">
                             <label className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
+                              <span className="flex h-4.5 w-4.5 items-center justify-center rounded-full bg-primary text-primary-foreground text-[10.5px] font-bold">
                                 2
                               </span>
                               <span>
@@ -1709,7 +1712,7 @@ function HomePage() {
                           </div>
 
                           {/* Space Type Selector Chips */}
-                          <div className="flex flex-wrap gap-1.5">
+                          <div className="flex flex-wrap gap-1">
                             {localizedSpaceTypes.slice(0, 6).map((st) => (
                               <button
                                 key={st.value}
@@ -1718,7 +1721,7 @@ function HomePage() {
                                   clearError("spaceType");
                                   setSpaceType((prev) => (prev === st.value ? "" : st.value));
                                 }}
-                                className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
+                                className={`px-2 py-0.5 rounded-lg text-[11.5px] font-medium border transition-colors cursor-pointer ${
                                   spaceType === st.value
                                     ? "border-primary bg-primary text-primary-foreground shadow-2xs font-semibold"
                                     : "border-border bg-background text-muted-foreground hover:bg-muted"
@@ -1730,15 +1733,15 @@ function HomePage() {
                           </div>
 
                           {formErrors.spaceType && (
-                            <p className="text-[11px] text-destructive font-medium mt-1">
+                            <p className="text-[11px] text-destructive font-medium mt-0.5">
                               {formErrors.spaceType}
                             </p>
                           )}
 
                           {/* Dimensions & Length Unit Selector (ft / in / mm / m) */}
-                          <div className="rounded-xl border border-border/80 bg-muted/20 p-2.5 space-y-2">
+                          <div className="rounded-xl border border-border/80 bg-muted/20 p-2 sm:p-2.5 space-y-1.5">
                             <div className="flex items-center justify-between text-xs">
-                              <span className="font-semibold text-foreground flex items-center gap-1.5">
+                              <span className="font-semibold text-foreground flex items-center gap-1.5 text-[11.5px]">
                                 <Compass className="h-3.5 w-3.5 text-primary" />
                                 <span>
                                   {currentLang === "hi"
@@ -1751,7 +1754,7 @@ function HomePage() {
                               {calculatedSqft !== null && (
                                 <Badge
                                   variant="outline"
-                                  className="text-[10px] font-bold font-mono px-2 py-0.5 border-primary/40 text-primary bg-primary/5"
+                                  className="text-[10px] font-bold font-mono px-2 py-0.2 border-primary/40 text-primary bg-primary/5"
                                 >
                                   ≈ {toIndicDigits(calculatedSqft.toFixed(2), currentLang)}{" "}
                                   {currentLang === "hi"
@@ -1763,9 +1766,9 @@ function HomePage() {
                               )}
                             </div>
 
-                            <div className="grid grid-cols-3 gap-2">
+                            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                               <div>
-                                <label className="text-[10px] font-medium text-muted-foreground block mb-1">
+                                <label className="text-[10px] font-medium text-muted-foreground block mb-0.5">
                                   {currentLang === "hi"
                                     ? "लंबाई"
                                     : currentLang === "gu"
@@ -1778,11 +1781,11 @@ function HomePage() {
                                   placeholder="e.g. 12"
                                   value={dimLength}
                                   onChange={(e) => setDimLength(e.target.value)}
-                                  className="h-8 text-xs bg-background"
+                                  className="h-7.5 text-xs bg-background"
                                 />
                               </div>
                               <div>
-                                <label className="text-[10px] font-medium text-muted-foreground block mb-1">
+                                <label className="text-[10px] font-medium text-muted-foreground block mb-0.5">
                                   {currentLang === "hi"
                                     ? "ऊंचाई / चौड़ाई"
                                     : currentLang === "gu"
@@ -1795,11 +1798,11 @@ function HomePage() {
                                   placeholder="e.g. 10"
                                   value={dimHeight}
                                   onChange={(e) => setDimHeight(e.target.value)}
-                                  className="h-8 text-xs bg-background"
+                                  className="h-7.5 text-xs bg-background"
                                 />
                               </div>
                               <div>
-                                <label className="text-[10px] font-medium text-muted-foreground block mb-1">
+                                <label className="text-[10px] font-medium text-muted-foreground block mb-0.5">
                                   {currentLang === "hi"
                                     ? "इकाई"
                                     : currentLang === "gu"
@@ -1809,7 +1812,7 @@ function HomePage() {
                                 <select
                                   value={dimUnit}
                                   onChange={(e) => setDimUnit(e.target.value as LengthUnit)}
-                                  className="h-8 w-full rounded-md border border-input bg-background px-2 text-xs font-semibold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                  className="h-7.5 w-full rounded-md border border-input bg-background px-2 text-xs font-semibold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                                 >
                                   <option value="ft">
                                     {currentLang === "hi"
@@ -1845,13 +1848,13 @@ function HomePage() {
                           </div>
 
                           {/* Description & Quick Idea Suggestions */}
-                          <div className="space-y-1.5">
+                          <div className="space-y-1">
                             <Textarea
                               value={planDescription}
                               onChange={(e) => setPlanDescription(e.target.value)}
                               placeholder={texts.form.descPlaceholder}
                               rows={2}
-                              className="text-xs resize-none bg-background"
+                              className="text-xs resize-none bg-background min-h-[46px] py-1.5"
                             />
                             <div className="flex flex-wrap items-center gap-1">
                               <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
@@ -1862,7 +1865,7 @@ function HomePage() {
                                   key={tag}
                                   type="button"
                                   onClick={() => appendIdea(tag)}
-                                  className="text-[10px] rounded-full border border-border px-2 py-0.5 bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
+                                  className="text-[10px] rounded-full border border-border px-2 py-0.2 bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
                                 >
                                   + {tag}
                                 </button>
@@ -1872,10 +1875,10 @@ function HomePage() {
                         </div>
 
                         {/* STEP 3: SERVICE REQUIREMENT (SUPPLY ONLY vs SUPPLY + INSTALLATION) */}
-                        <div className="space-y-2.5 pt-2 border-t border-border/80">
+                        <div className="space-y-2 pt-2 border-t border-border/80">
                           <div className="flex items-center justify-between">
                             <label className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
+                              <span className="flex h-4.5 w-4.5 items-center justify-center rounded-full bg-primary text-primary-foreground text-[10.5px] font-bold">
                                 3
                               </span>
                               <span>
@@ -1907,7 +1910,7 @@ function HomePage() {
                               type="button"
                               onClick={() => setServiceScope("supply_only")}
                               className={cn(
-                                "p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-1 select-none",
+                                "p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-1 select-none",
                                 serviceScope === "supply_only"
                                   ? "border-[#006788] dark:border-[#38bdf8] bg-[#e0f1f5]/80 dark:bg-[#015474]/60 ring-2 ring-[#006788]/40 shadow-2xs"
                                   : "border-border bg-background hover:bg-muted/60 text-muted-foreground",
@@ -1926,7 +1929,7 @@ function HomePage() {
                                   <div className="h-4 w-4 rounded border-2 border-stone-300 dark:border-stone-600 shrink-0" />
                                 )}
                               </div>
-                              <p className="text-[11px] text-muted-foreground leading-snug">
+                              <p className="text-[10.5px] text-muted-foreground leading-tight">
                                 {texts.form.supplyOnlyDesc}
                               </p>
                             </button>
@@ -1936,7 +1939,7 @@ function HomePage() {
                               type="button"
                               onClick={() => setServiceScope("supply_and_installation")}
                               className={cn(
-                                "p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-1 select-none",
+                                "p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-1 select-none",
                                 serviceScope === "supply_and_installation"
                                   ? "border-[#006788] dark:border-[#38bdf8] bg-[#e0f1f5]/80 dark:bg-[#015474]/60 ring-2 ring-[#006788]/40 shadow-2xs"
                                   : "border-border bg-background hover:bg-muted/60 text-muted-foreground",
@@ -1955,7 +1958,7 @@ function HomePage() {
                                   <div className="h-4 w-4 rounded border-2 border-stone-300 dark:border-stone-600 shrink-0" />
                                 )}
                               </div>
-                              <p className="text-[11px] text-muted-foreground leading-snug">
+                              <p className="text-[10.5px] text-muted-foreground leading-tight">
                                 {texts.form.supplyAndInstallationDesc}
                               </p>
                             </button>
@@ -1966,7 +1969,7 @@ function HomePage() {
                         <div className="space-y-2 pt-2 border-t border-border/80">
                           <div className="flex items-center justify-between">
                             <label className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
+                              <span className="flex h-4.5 w-4.5 items-center justify-center rounded-full bg-primary text-primary-foreground text-[10.5px] font-bold">
                                 4
                               </span>
                               <span>{texts.form.uploadLabel}</span>
@@ -2010,17 +2013,17 @@ function HomePage() {
                               {/* Dedicated Wall Pictures Upload Trigger */}
                               <div
                                 onClick={() => wallPhotoInputRef.current?.click()}
-                                className="rounded-xl border-2 border-dashed border-[#006788]/50 hover:border-[#006788] bg-[#e0f1f5]/40 hover:bg-[#e0f1f5]/80 dark:bg-[#015474]/20 dark:hover:bg-[#015474]/40 p-3 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1 text-xs text-[#015474] dark:text-[#e0f1f5]"
+                                className="rounded-xl border-2 border-dashed border-[#006788]/50 hover:border-[#006788] bg-[#e0f1f5]/40 hover:bg-[#e0f1f5]/80 dark:bg-[#015474]/20 dark:hover:bg-[#015474]/40 p-2 sm:p-2.5 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-0.5 text-xs text-[#015474] dark:text-[#e0f1f5]"
                               >
                                 <div className="flex items-center gap-1.5 font-bold">
                                   {isProcessingPhotos ? (
-                                    <Loader2 className="h-4 w-4 animate-spin text-[#006788] dark:text-[#38bdf8]" />
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin text-[#006788] dark:text-[#38bdf8]" />
                                   ) : (
-                                    <Camera className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
+                                    <Camera className="h-3.5 w-3.5 text-[#006788] dark:text-[#38bdf8]" />
                                   )}
                                   <span>{texts.form.uploadWallPhotos}</span>
                                 </div>
-                                <span className="text-[10px] text-muted-foreground">
+                                <span className="text-[10px] text-muted-foreground leading-tight">
                                   {currentLang === "hi"
                                     ? "लिविंग रूम, बाहरी एलिवेशन या फीचर दीवारें"
                                     : currentLang === "gu"
@@ -2032,17 +2035,17 @@ function HomePage() {
                               {/* Architectural Plan / CAD / PDF Upload Trigger */}
                               <div
                                 onClick={() => cadFileInputRef.current?.click()}
-                                className="rounded-xl border border-dashed border-primary/40 hover:border-primary bg-background/60 hover:bg-muted/40 p-3 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                                className="rounded-xl border border-dashed border-primary/40 hover:border-primary bg-background/60 hover:bg-muted/40 p-2 sm:p-2.5 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-0.5 text-xs text-muted-foreground hover:text-foreground"
                               >
                                 <div className="flex items-center gap-1.5 font-semibold">
                                   {isProcessingPhotos ? (
-                                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
                                   ) : (
-                                    <FileUp className="h-4 w-4 text-primary" />
+                                    <FileUp className="h-3.5 w-3.5 text-primary" />
                                   )}
                                   <span>{texts.form.uploadCad}</span>
                                 </div>
-                                <span className="text-[10px] text-muted-foreground">
+                                <span className="text-[10px] text-muted-foreground leading-tight">
                                   {currentLang === "hi"
                                     ? "वास्तुशिल्पीय एलिवेशन या सीएडी ड्राइंग"
                                     : currentLang === "gu"
@@ -2099,7 +2102,7 @@ function HomePage() {
                         </div>
 
                         {/* CONTINUE TO PART 2/2 BUTTON */}
-                        <div className="pt-2">
+                        <div className="pt-1.5">
                           <Button
                             type="button"
                             onClick={() => {
@@ -2118,7 +2121,7 @@ function HomePage() {
                               setFormErrors({});
                               setFormStep(2);
                             }}
-                            className="w-full h-11 sm:h-12 text-xs sm:text-sm font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-2 shadow-md cursor-pointer"
+                            className="w-full h-10 sm:h-11 text-xs sm:text-sm font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-2 shadow-md cursor-pointer"
                           >
                             <span className="hidden sm:inline">{texts.form.continueBtn}</span>
                             <span className="sm:hidden">{texts.form.continueBtnShort}</span>
@@ -2130,7 +2133,7 @@ function HomePage() {
 
                     {/* PART 2/2: CONTACT, WHATSAPP & DELIVERY TIMELINE */}
                     {formStep === 2 && (
-                      <div className="space-y-5 animate-in fade-in-50 duration-200">
+                      <div className="space-y-3.5 sm:space-y-4 animate-in fade-in-50 duration-200">
                         {/* Quick Selection Summary */}
                         <div className="rounded-xl border border-border/80 bg-background/90 p-3 flex items-center justify-between text-xs">
                           <div className="flex items-center gap-2 min-w-0 flex-wrap">
