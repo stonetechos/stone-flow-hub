@@ -2655,6 +2655,12 @@ function HomePage() {
         </Button>
       </div>
 
+      {/* Native / PWA bottom safe-area underlay in signature turquoise */}
+      <div
+        aria-hidden="true"
+        className="fixed bottom-0 inset-x-0 h-[env(safe-area-inset-bottom,0px)] bg-[#015474] z-30 pointer-events-none sm:hidden"
+      />
+
       {/* StoneMan AI Customer Track Order Dialog */}
       <StonemanCustomerDialog open={stonemanOpen} onOpenChange={setStonemanOpen} />
     </div>

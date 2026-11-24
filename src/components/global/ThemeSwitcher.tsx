@@ -83,10 +83,8 @@ export function removeThemes(): void {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
   ALL_THEME_CLASSES.forEach((cls) => root.classList.remove(cls));
-  const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) {
-    meta.setAttribute("content", "#015474");
-  }
+  const metas = document.querySelectorAll('meta[name="theme-color"]');
+  metas.forEach((m) => m.setAttribute("content", "#015474"));
 }
 
 export function applyTheme(id: ThemeId): void {
@@ -96,9 +94,14 @@ export function applyTheme(id: ThemeId): void {
   root.classList.add(`theme-${id}`);
   const dark = THEMES.find((t) => t.id === id)?.dark ?? false;
   if (dark) root.classList.add("dark");
-  const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) {
-    meta.setAttribute("content", THEME_META_COLORS[id] || "#015474");
+  const targetColor = THEME_META_COLORS[id] || "#015474";
+  const metas = document.querySelectorAll('meta[name="theme-color"]');
+  metas.forEach((m) => m.setAttribute("content", targetColor));
+  if (metas.length === 0) {
+    const newMeta = document.createElement("meta");
+    newMeta.name = "theme-color";
+    newMeta.content = targetColor;
+    document.head.appendChild(newMeta);
   }
 }
 

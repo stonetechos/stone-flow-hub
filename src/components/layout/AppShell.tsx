@@ -1614,70 +1614,77 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           {/* Mobile Bottom Navigation Bar — calibrated for one-thumb ergonomics and safe area insets */}
           {!isFormRoute && (
-            <nav
-              aria-label="Mobile navigation"
-              className="fixed bottom-0 inset-x-0 z-30 flex h-[calc(3.5rem+env(safe-area-inset-bottom,0px))] items-center justify-around border-t border-[#c9d1d4] bg-white/95 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur supports-[backdrop-filter]:bg-white/90 md:hidden shadow-lg"
-            >
-              <Link
-                to="/dashboard"
-                className={cn(
-                  "flex flex-1 flex-col items-center justify-center py-1 text-[11px] font-medium transition-colors",
-                  cleanPath === "/" ||
-                    cleanPath === "/dashboard" ||
-                    cleanPath.startsWith("/dashboard/")
-                    ? "text-[#006788] font-bold"
-                    : "text-text-muted hover:text-[#006788]",
-                )}
+            <>
+              <nav
+                aria-label="Mobile navigation"
+                className="fixed bottom-0 inset-x-0 z-30 flex h-[calc(3.5rem+env(safe-area-inset-bottom,0px))] items-center justify-around border-t border-[#c9d1d4] bg-white/95 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur supports-[backdrop-filter]:bg-white/90 md:hidden shadow-lg"
               >
-                <LayoutDashboard className="h-5 w-5 mb-0.5" />
-                <span>{t("nav.dashboard", "Dashboard")}</span>
-              </Link>
-              <Link
-                to="/enquiries"
-                className={cn(
-                  "flex flex-1 flex-col items-center justify-center py-1 text-[11px] font-medium transition-colors",
-                  cleanPath.startsWith("/enquiries")
-                    ? "text-[#006788] font-bold"
-                    : "text-text-muted hover:text-[#006788]",
-                )}
-              >
-                <Globe className="h-5 w-5 mb-0.5" />
-                <span>{t("nav.leads", "Leads")}</span>
-              </Link>
-              <Link
-                to="/quotes"
-                className={cn(
-                  "flex flex-1 flex-col items-center justify-center py-1 text-[11px] font-medium transition-colors",
-                  cleanPath.startsWith("/quotes")
-                    ? "text-[#006788] font-bold"
-                    : "text-text-muted hover:text-[#006788]",
-                )}
-              >
-                <FileText className="h-5 w-5 mb-0.5" />
-                <span>{t("nav.quotes", "Quotes")}</span>
-              </Link>
-              <Link
-                to="/dispatch"
-                className={cn(
-                  "flex flex-1 flex-col items-center justify-center py-1 text-[11px] font-medium transition-colors",
-                  cleanPath.startsWith("/dispatch")
-                    ? "text-[#006788] font-bold"
-                    : "text-text-muted hover:text-[#006788]",
-                )}
-              >
-                <Truck className="h-5 w-5 mb-0.5" />
-                <span>{t("nav.dispatch", "Dispatch")}</span>
-              </Link>
-              <button
-                type="button"
-                onClick={() => setMobileNavOpen(true)}
-                className="flex flex-1 flex-col items-center justify-center py-1 text-[11px] font-medium text-text-muted hover:text-[#006788] transition-colors"
-                aria-label="Open navigation menu"
-              >
-                <Menu className="h-5 w-5 mb-0.5" />
-                <span>{t("common.menu", "Menu")}</span>
-              </button>
-            </nav>
+                <Link
+                  to="/dashboard"
+                  className={cn(
+                    "flex flex-1 flex-col items-center justify-center py-1 text-[11px] font-medium transition-colors",
+                    cleanPath === "/" ||
+                      cleanPath === "/dashboard" ||
+                      cleanPath.startsWith("/dashboard/")
+                      ? "text-[#006788] font-bold"
+                      : "text-text-muted hover:text-[#006788]",
+                  )}
+                >
+                  <LayoutDashboard className="h-5 w-5 mb-0.5" />
+                  <span>{t("nav.dashboard", "Dashboard")}</span>
+                </Link>
+                <Link
+                  to="/enquiries"
+                  className={cn(
+                    "flex flex-1 flex-col items-center justify-center py-1 text-[11px] font-medium transition-colors",
+                    cleanPath.startsWith("/enquiries")
+                      ? "text-[#006788] font-bold"
+                      : "text-text-muted hover:text-[#006788]",
+                  )}
+                >
+                  <Globe className="h-5 w-5 mb-0.5" />
+                  <span>{t("nav.leads", "Leads")}</span>
+                </Link>
+                <Link
+                  to="/quotes"
+                  className={cn(
+                    "flex flex-1 flex-col items-center justify-center py-1 text-[11px] font-medium transition-colors",
+                    cleanPath.startsWith("/quotes")
+                      ? "text-[#006788] font-bold"
+                      : "text-text-muted hover:text-[#006788]",
+                  )}
+                >
+                  <FileText className="h-5 w-5 mb-0.5" />
+                  <span>{t("nav.quotes", "Quotes")}</span>
+                </Link>
+                <Link
+                  to="/dispatch"
+                  className={cn(
+                    "flex flex-1 flex-col items-center justify-center py-1 text-[11px] font-medium transition-colors",
+                    cleanPath.startsWith("/dispatch")
+                      ? "text-[#006788] font-bold"
+                      : "text-text-muted hover:text-[#006788]",
+                  )}
+                >
+                  <Truck className="h-5 w-5 mb-0.5" />
+                  <span>{t("nav.dispatch", "Dispatch")}</span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setMobileNavOpen(true)}
+                  className="flex flex-1 flex-col items-center justify-center py-1 text-[11px] font-medium text-text-muted hover:text-[#006788] transition-colors"
+                  aria-label="Open navigation menu"
+                >
+                  <Menu className="h-5 w-5 mb-0.5" />
+                  <span>{t("common.menu", "Menu")}</span>
+                </button>
+              </nav>
+              {/* Native / PWA bottom safe-area underlay in signature turquoise */}
+              <div
+                aria-hidden="true"
+                className="fixed bottom-0 inset-x-0 h-[env(safe-area-inset-bottom,0px)] bg-[#015474] z-20 pointer-events-none md:hidden"
+              />
+            </>
           )}
         </div>
 

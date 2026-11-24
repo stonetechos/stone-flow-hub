@@ -1,5 +1,6 @@
 package in.vedoravision.stonetechos.app;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Window;
 import androidx.core.content.ContextCompat;
@@ -11,7 +12,12 @@ public class MainActivity extends BridgeActivity {
         super.onCreate(savedInstanceState);
         Window window = getWindow();
         if (window != null) {
-            window.setNavigationBarColor(ContextCompat.getColor(this, R.color.colorPrimaryDark));
+            int turquoise = ContextCompat.getColor(this, R.color.colorPrimaryDark);
+            window.setNavigationBarColor(turquoise);
+            window.setStatusBarColor(turquoise);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                window.setNavigationBarContrastEnforced(false);
+            }
         }
     }
 }
