@@ -345,8 +345,8 @@ function QuotesPage() {
           className={cn(
             "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0",
             saleModeFilter === "all"
-              ? "bg-slate-900 text-white border-slate-900 shadow-2xs font-semibold"
-              : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50",
+              ? "bg-[#006788] text-white border-[#006788] shadow-2xs font-semibold"
+              : "bg-[#e0f1f5] text-[#015474] border-[#c9d1d4] hover:bg-[#c9e7ef]",
           )}
         >
           All Quotes ({quoteCounts.all})
@@ -360,11 +360,11 @@ function QuotesPage() {
           className={cn(
             "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5",
             saleModeFilter === "invoiced"
-              ? "bg-blue-700 text-white border-blue-700 shadow-2xs font-semibold"
-              : "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100",
+              ? "bg-[#006788] text-white border-[#006788] shadow-2xs font-semibold"
+              : "bg-[#e0f1f5] text-[#015474] border-[#c9d1d4] hover:bg-[#c9e7ef]",
           )}
         >
-          <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+          <span className="h-1.5 w-1.5 rounded-full bg-[#006788]" />
           GST Deals ({quoteCounts.invoiced})
         </button>
         <button
@@ -376,11 +376,11 @@ function QuotesPage() {
           className={cn(
             "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5",
             saleModeFilter === "cash"
-              ? "bg-emerald-700 text-white border-emerald-700 shadow-2xs font-semibold"
-              : "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100",
+              ? "bg-[#006788] text-white border-[#006788] shadow-2xs font-semibold"
+              : "bg-[#e0f1f5] text-[#015474] border-[#c9d1d4] hover:bg-[#c9e7ef]",
           )}
         >
-          <Truck className="h-3.5 w-3.5 text-emerald-600" />
+          <span className="h-1.5 w-1.5 rounded-full bg-[#006788]" />
           Cash Deals ({quoteCounts.cash})
         </button>
         <button
@@ -392,8 +392,8 @@ function QuotesPage() {
           className={cn(
             "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5",
             saleModeFilter === "hybrid"
-              ? "bg-[#015474] text-white border-[#015474] shadow-2xs font-semibold"
-              : "bg-[#e0f1f5] text-[#015474] border-[#c9d1d4] hover:bg-[#e0f1f5]/80",
+              ? "bg-[#006788] text-white border-[#006788] shadow-2xs font-semibold"
+              : "bg-[#e0f1f5] text-[#015474] border-[#c9d1d4] hover:bg-[#c9e7ef]",
           )}
         >
           <span className="h-1.5 w-1.5 rounded-full bg-[#006788]" />
@@ -417,8 +417,8 @@ function QuotesPage() {
           className={cn(
             "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0",
             vendorFilter === "all" && statusFilter === "all"
-              ? "bg-slate-900 text-white border-slate-900 shadow-2xs font-semibold"
-              : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50",
+              ? "bg-[#006788] text-white border-[#006788] shadow-2xs font-semibold"
+              : "bg-[#e0f1f5] text-[#015474] border-[#c9d1d4] hover:bg-[#c9e7ef]",
           )}
         >
           All ({quoteCounts.all})
@@ -432,11 +432,10 @@ function QuotesPage() {
           className={cn(
             "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5",
             vendorFilter === "accepted"
-              ? "bg-sky-700 text-white border-sky-700 shadow-2xs font-semibold"
-              : "bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100",
+              ? "bg-[#006788] text-white border-[#006788] shadow-2xs font-semibold"
+              : "bg-[#e0f1f5] text-[#015474] border-[#c9d1d4] hover:bg-[#c9e7ef]",
           )}
         >
-          <CheckCircle2 className="h-3.5 w-3.5 text-sky-600" />
           Approved / Accepted Orders ({quoteCounts.accepted})
         </button>
         <button
@@ -448,11 +447,10 @@ function QuotesPage() {
           className={cn(
             "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5 cursor-pointer",
             vendorFilter === "unassigned"
-              ? "bg-amber-600 text-white border-amber-600 shadow-2xs font-semibold"
-              : "bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100",
+              ? "bg-[#006788] text-white border-[#006788] shadow-2xs font-semibold"
+              : "bg-[#e0f1f5] text-[#015474] border-[#c9d1d4] hover:bg-[#c9e7ef]",
           )}
         >
-          <Clock className="h-3.5 w-3.5 text-amber-600" />
           Awaiting Fulfilment ({quoteCounts.unassigned})
         </button>
         <button
@@ -464,11 +462,11 @@ function QuotesPage() {
           className={cn(
             "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5 cursor-pointer",
             vendorFilter === "assigned"
-              ? "bg-emerald-700 text-white border-emerald-700 shadow-2xs font-semibold"
-              : "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100",
+              ? "bg-[#006788] text-white border-[#006788] shadow-2xs font-semibold"
+              : "bg-[#e0f1f5] text-[#015474] border-[#c9d1d4] hover:bg-[#c9e7ef]",
           )}
         >
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          <span className="h-1.5 w-1.5 rounded-full bg-[#006788]" />
           Assigned to Vendor ({quoteCounts.assigned})
         </button>
         <button
@@ -480,11 +478,10 @@ function QuotesPage() {
           className={cn(
             "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5 cursor-pointer",
             vendorFilter === "in_stock"
-              ? "bg-blue-700 text-white border-blue-700 shadow-2xs font-semibold"
-              : "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100",
+              ? "bg-[#006788] text-white border-[#006788] shadow-2xs font-semibold"
+              : "bg-[#e0f1f5] text-[#015474] border-[#c9d1d4] hover:bg-[#c9e7ef]",
           )}
         >
-          <Boxes className="h-3.5 w-3.5 text-blue-600" />
           In-House / Stock Lifted ({quoteCounts.inStock})
         </button>
       </div>
@@ -744,9 +741,8 @@ function QuotesPage() {
                       <Link
                         to="/invoices/$invoiceId"
                         params={{ invoiceId: activeInvoice.id }}
-                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-blue-50 text-blue-800 border border-blue-200 hover:underline"
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-[#e0f1f5] text-[#015474] border border-[#c9d1d4] hover:underline"
                       >
-                        <CheckCircle2 className="h-3 w-3 text-blue-600" />
                         <span>{activeInvoice.invoice_no}</span>
                       </Link>
                     )}
@@ -864,9 +860,8 @@ function QuotesPage() {
                                     <Link
                                       to="/invoices/$invoiceId"
                                       params={{ invoiceId: activeInvoice.id }}
-                                      className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-700 hover:text-blue-900 hover:underline"
+                                      className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#015474] hover:underline"
                                     >
-                                      <CheckCircle2 className="h-3 w-3 text-blue-600" />
                                       <span>
                                         {t("quotes.invoiced", "Invoiced")} (
                                         {activeInvoice.invoice_no})
@@ -1054,19 +1049,18 @@ function QuotesPage() {
                             <button
                               type="button"
                               onClick={() => setAssigningQuote(r)}
-                              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-800 border border-blue-200 hover:bg-blue-100 transition-colors text-left group cursor-pointer"
+                              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-[#e0f1f5] text-[#015474] border border-[#c9d1d4] hover:bg-[#c9e7ef] transition-colors text-left group cursor-pointer"
                               title={
                                 assignment.stockLocation
                                   ? `Fulfilled from in-house stock (${assignment.stockLocation}) — Click to view/edit`
                                   : "Fulfilled from in-house stock — Click to view/edit"
                               }
                             >
-                              <Boxes className="h-3.5 w-3.5 text-blue-600 shrink-0" />
                               <span className="font-semibold truncate max-w-[130px]">
                                 In-House Stock
                               </span>
                               {assignment.stockLocation && (
-                                <span className="text-[10px] text-blue-600/80 max-w-[80px] truncate">
+                                <span className="text-[10px] text-[#006788] max-w-[80px] truncate">
                                   · {assignment.stockLocation}
                                 </span>
                               )}
@@ -1075,14 +1069,13 @@ function QuotesPage() {
                             <button
                               type="button"
                               onClick={() => setAssigningQuote(r)}
-                              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 transition-colors text-left group cursor-pointer"
+                              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-[#e0f1f5] text-[#015474] border border-[#c9d1d4] hover:bg-[#c9e7ef] transition-colors text-left group cursor-pointer"
                               title="Click to view or change assigned vendor"
                             >
-                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
+                              <span className="h-1.5 w-1.5 rounded-full bg-[#006788] shrink-0" />
                               <span className="font-semibold truncate max-w-[130px]">
                                 {assignment.vendorName}
                               </span>
-                              <Building2 className="h-3 w-3 text-emerald-600 opacity-60 group-hover:opacity-100 shrink-0" />
                             </button>
                           ) : r.status === "accepted" ? (
                             <div className="inline-flex items-center gap-1">
@@ -1090,10 +1083,9 @@ function QuotesPage() {
                                 type="button"
                                 onClick={() => quickLiftStockMut.mutate(r)}
                                 disabled={quickLiftStockMut.isPending}
-                                className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded transition-colors shadow-2xs cursor-pointer"
+                                className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold text-[#015474] bg-[#e0f1f5] hover:bg-[#c9e7ef] border border-[#c9d1d4] rounded transition-colors shadow-2xs cursor-pointer"
                                 title="1-click: Mark material as lifted from stock (RFQ not required)"
                               >
-                                <PackageCheck className="h-3 w-3 text-blue-600 shrink-0" />
                                 <span>Lift from Stock</span>
                               </button>
                               <button
@@ -1741,7 +1733,7 @@ function CreateQuoteDialog({
                   className={cn(
                     "flex items-center justify-center gap-2 rounded-md px-3 py-2.5 text-xs sm:text-sm font-semibold transition-all cursor-pointer border",
                     mode === "manual"
-                      ? "bg-blue-600 text-white border-blue-600 shadow-md ring-2 ring-blue-500/25"
+                      ? "bg-[#006788] text-white border-[#006788] shadow-md ring-2 ring-[#006788]/25"
                       : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/60",
                   )}
                 >
@@ -1754,7 +1746,7 @@ function CreateQuoteDialog({
                   className={cn(
                     "flex items-center justify-center gap-2 rounded-md px-3 py-2.5 text-xs sm:text-sm font-semibold transition-all cursor-pointer border",
                     mode === "wall_cladding" || mode === "calculator"
-                      ? "bg-emerald-600 text-white border-emerald-600 shadow-md ring-2 ring-emerald-500/25"
+                      ? "bg-[#006788] text-white border-[#006788] shadow-md ring-2 ring-[#006788]/25"
                       : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/60",
                   )}
                 >
@@ -1767,7 +1759,7 @@ function CreateQuoteDialog({
                   className={cn(
                     "flex items-center justify-center gap-2 rounded-md px-3 py-2.5 text-xs sm:text-sm font-semibold transition-all cursor-pointer border",
                     mode === "stone_mural"
-                      ? "bg-amber-600 text-white border-amber-600 shadow-md ring-2 ring-amber-500/25"
+                      ? "bg-[#006788] text-white border-[#006788] shadow-md ring-2 ring-[#006788]/25"
                       : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/60",
                   )}
                 >
@@ -1834,7 +1826,7 @@ function CreateQuoteDialog({
                     className={cn(
                       "flex items-center justify-center gap-1.5 py-2 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
                       saleMode === "invoiced"
-                        ? "bg-blue-600 text-white border-blue-600 shadow-2xs"
+                        ? "bg-[#006788] text-white border-[#006788] shadow-2xs"
                         : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
                     )}
                   >
@@ -1850,7 +1842,7 @@ function CreateQuoteDialog({
                     className={cn(
                       "flex items-center justify-center gap-1.5 py-2 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
                       saleMode === "cash"
-                        ? "bg-emerald-600 text-white border-emerald-600 shadow-2xs"
+                        ? "bg-[#006788] text-white border-[#006788] shadow-2xs"
                         : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
                     )}
                   >
@@ -1863,7 +1855,7 @@ function CreateQuoteDialog({
                     className={cn(
                       "flex items-center justify-center gap-1.5 py-2 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
                       saleMode === "hybrid"
-                        ? "bg-purple-600 text-white border-purple-600 shadow-2xs"
+                        ? "bg-[#006788] text-white border-[#006788] shadow-2xs"
                         : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
                     )}
                   >

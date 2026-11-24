@@ -15,6 +15,7 @@ import {
   History,
   UserCheck,
   Copy,
+  Check,
   CheckCircle2,
   Truck,
   Send,
@@ -28,6 +29,7 @@ import {
   AlertTriangle,
   ShieldCheck,
   FileText,
+  X,
   XCircle,
   RefreshCw,
   Sparkles,
@@ -545,14 +547,14 @@ function QuoteDetailPage() {
                 {!isAccepted && (
                   <Button
                     size="sm"
-                    className="bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
+                    className="bg-[#006788] hover:bg-[#00597b] text-white shadow-xs font-semibold"
                     onClick={() => statusMut.mutate("accepted")}
                     disabled={statusMut.isPending}
                   >
                     {statusMut.isPending ? (
                       <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
                     ) : (
-                      <CheckCircle2 className="mr-1.5 h-4 w-4" />
+                      <Check className="mr-1.5 h-4 w-4" />
                     )}
                     Approve
                   </Button>
@@ -566,7 +568,7 @@ function QuoteDetailPage() {
                     onClick={() => statusMut.mutate("rejected")}
                     disabled={statusMut.isPending}
                   >
-                    <XCircle className="mr-1.5 h-4 w-4 text-rose-600" />
+                    <X className="mr-1.5 h-4 w-4 text-rose-600" />
                     Decline
                   </Button>
                 )}
@@ -575,11 +577,11 @@ function QuoteDetailPage() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="border-sky-200 text-sky-700 hover:bg-sky-50 shadow-xs"
+                    className="border-[#c9d1d4] text-[#015474] hover:bg-[#e0f1f5] shadow-xs"
                     onClick={() => statusMut.mutate("sent")}
                     disabled={statusMut.isPending}
                   >
-                    <RefreshCw className="mr-1.5 h-4 w-4 text-sky-600" />
+                    <RefreshCw className="mr-1.5 h-4 w-4 text-[#006788]" />
                     Reopen Quote
                   </Button>
                 )}
@@ -589,10 +591,8 @@ function QuoteDetailPage() {
                     size="sm"
                     className={
                       primaryDispatch
-                        ? "border-emerald-600/60 text-emerald-800 bg-emerald-50/60 hover:bg-emerald-100 dark:border-emerald-700/60 dark:text-emerald-300 shadow-xs"
-                        : saleMode === "cash"
-                          ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
-                          : "bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
+                        ? "border-[#c9d1d4] text-[#015474] bg-[#e0f1f5]/60 hover:bg-[#e0f1f5] shadow-xs"
+                        : "bg-[#006788] hover:bg-[#00597b] text-white shadow-xs font-semibold"
                     }
                     variant={primaryDispatch ? "outline" : "default"}
                     onClick={() => {
@@ -770,7 +770,7 @@ function QuoteDetailPage() {
                 ? [
                     {
                       label: "Approve Quote",
-                      icon: <CheckCircle2 className="h-4 w-4 text-blue-600" />,
+                      icon: <Check className="h-4 w-4 text-[#006788]" />,
                       onSelect: () => statusMut.mutate("accepted"),
                     },
                   ]
@@ -779,14 +779,14 @@ function QuoteDetailPage() {
                 ? [
                     {
                       label: "Decline Quote",
-                      icon: <XCircle className="h-4 w-4 text-rose-600" />,
+                      icon: <X className="h-4 w-4 text-rose-600" />,
                       onSelect: () => statusMut.mutate("rejected"),
                     },
                   ]
                 : [
                     {
                       label: "Reopen (Mark as Sent)",
-                      icon: <RefreshCw className="h-4 w-4 text-sky-600" />,
+                      icon: <RefreshCw className="h-4 w-4 text-[#006788]" />,
                       onSelect: () => statusMut.mutate("sent"),
                     },
                   ]),
@@ -913,22 +913,22 @@ function QuoteDetailPage() {
 
       {/* Material Discrepancy Alert Banner */}
       {varianceReport?.hasVariance && primaryDispatch && (
-        <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50/80 dark:border-amber-900/60 dark:bg-amber-950/40 p-4 text-xs text-amber-950 dark:text-amber-200 shadow-xs">
+        <div className="mb-4 rounded-xl border border-rose-300 bg-rose-50/80 p-4 text-xs text-rose-950 shadow-xs red-flag-card">
           <div className="flex items-start gap-2.5">
-            <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
             <div className="space-y-1.5 flex-1">
               <div className="font-bold text-sm flex items-center justify-between flex-wrap gap-2">
-                <span>⚠️ Delivery Challan Product Discrepancy Flagged</span>
+                <span>Delivery Challan Product Discrepancy Flagged</span>
                 <Link
                   to="/dispatch/$id"
                   params={{ id: primaryDispatch.id }}
-                  className="font-mono font-semibold text-primary hover:underline text-xs flex items-center gap-1"
+                  className="font-mono font-semibold text-rose-800 hover:underline text-xs flex items-center gap-1"
                 >
-                  <Truck className="h-3.5 w-3.5 text-muted-foreground" />
+                  <Truck className="h-3.5 w-3.5 text-rose-600" />
                   View Challan #{primaryDispatch.dispatch_no} →
                 </Link>
               </div>
-              <p className="text-muted-foreground">
+              <p className="text-rose-900/80">
                 The line items dispatched on Delivery Challan{" "}
                 <strong>{primaryDispatch.dispatch_no}</strong> differ from this Quotation
                 specification ({varianceReport.summaryText}). Super admins have been flagged on the
@@ -937,7 +937,7 @@ function QuoteDetailPage() {
               <div className="space-y-1 pt-1">
                 {varianceReport.variances.map((v: ProductVarianceItem, i: number) => (
                   <div key={i} className="flex items-center gap-1.5 font-medium">
-                    <span className="h-1.5 w-1.5 rounded-full bg-amber-600 shrink-0" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-rose-600 shrink-0" />
                     <span>{v.message}</span>
                   </div>
                 ))}
@@ -1454,14 +1454,14 @@ function QuoteDetailPage() {
               <div className="flex flex-wrap items-center gap-2">
                 <Badge
                   variant="outline"
-                  className="bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/30 dark:text-emerald-300 text-[10px] font-semibold"
+                  className="bg-[#e0f1f5] text-[#015474] border-[#c9d1d4] text-[10px] font-semibold"
                 >
                   {t("quotes.hundredPercentAdvance", "100% Advance: 5% Discount")}
                 </Badge>
                 {Number(quote.total) > 0 && Number(quote.total) < ADVANCE_PAYMENT_THRESHOLD_INR && (
                   <Badge
                     variant="outline"
-                    className="bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/30 dark:text-amber-300 text-[10px]"
+                    className="bg-[#e0f1f5] text-[#015474] border-[#c9d1d4] text-[10px]"
                   >
                     {t("quotes.under50kAdvance", "< ₹50k: 100% Advance")}
                   </Badge>
@@ -1550,7 +1550,7 @@ function QuoteDetailPage() {
                   {autoTranslate(quote.terms, currentLang)}
                 </div>
               ) : (
-                <div className="rounded-md border border-dashed border-amber-300 bg-amber-50/50 dark:bg-amber-950/20 p-3 text-xs text-amber-900 dark:text-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                <div className="rounded-md border border-dashed border-[#c9d1d4] bg-[#e0f1f5]/50 p-3 text-xs text-[#015474] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                   <div>
                     <span className="font-semibold">
                       {t("quotes.standardTermsActive", "Standard Terms Active:")}{" "}

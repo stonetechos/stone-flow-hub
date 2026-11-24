@@ -221,10 +221,10 @@ export function SuperAdminFinancialRadarCard() {
               mode="health"
               statusText={
                 healthMetrics.overallScore >= 80
-                  ? "🟢 Audit-Proof · Optimal Health"
+                  ? "Audit-Proof · Optimal Health"
                   : healthMetrics.overallScore >= 50
-                    ? "🟡 Moderate Exposure"
-                    : "🔴 Deficit Red Alert"
+                    ? "Moderate Exposure"
+                    : "🚩 Deficit Red Alert"
               }
             />
           </div>
@@ -626,7 +626,7 @@ export function SuperAdminFinancialRadarCard() {
                                   variant="destructive"
                                   className="text-[10px] font-black uppercase tracking-wider"
                                 >
-                                  🚨 Needs Inward
+                                  🚩 Needs Inward
                                 </Badge>
                               ) : row.status === "surplus" ? (
                                 <Badge

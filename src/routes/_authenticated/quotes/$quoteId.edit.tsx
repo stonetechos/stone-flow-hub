@@ -302,11 +302,11 @@ function EditQuotePage() {
                   className={cn(
                     "flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
                     saleMode === "invoiced"
-                      ? "bg-blue-600 text-white border-blue-600 shadow-2xs"
+                      ? "bg-[#006788] text-white border-[#006788] shadow-2xs"
                       : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
                   )}
                 >
-                  <span>📄 GST Deal (Tax Bill)</span>
+                  <span>GST Deal (Tax Bill)</span>
                 </button>
                 <button
                   type="button"
@@ -329,11 +329,11 @@ function EditQuotePage() {
                   className={cn(
                     "flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
                     saleMode === "cash"
-                      ? "bg-emerald-600 text-white border-emerald-600 shadow-2xs"
+                      ? "bg-[#006788] text-white border-[#006788] shadow-2xs"
                       : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
                   )}
                 >
-                  <span>🚚 Cash Deal (Challan Only)</span>
+                  <span>Cash Deal (Challan Only)</span>
                 </button>
                 <button
                   type="button"
@@ -350,11 +350,11 @@ function EditQuotePage() {
                   className={cn(
                     "flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
                     saleMode === "hybrid"
-                      ? "bg-[#015474] text-white border-[#015474] shadow-2xs"
+                      ? "bg-[#006788] text-white border-[#006788] shadow-2xs"
                       : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
                   )}
                 >
-                  <span>⚖️ Hybrid Deal (GST + Cash)</span>
+                  <span>Hybrid Deal (GST + Cash)</span>
                 </button>
               </div>
               {saleMode === "cash" && (
@@ -1056,7 +1056,7 @@ function LineItemsEditor({
                 }
               >
                 <div className="flex items-center justify-between w-full font-medium text-xs">
-                  <span>⚪ White Cement Adhesive</span>
+                  <span>White Cement Adhesive</span>
                   <span className="text-emerald-700 font-semibold">₹900/bag</span>
                 </div>
                 <span className="text-[10px] text-muted-foreground">
@@ -1076,7 +1076,7 @@ function LineItemsEditor({
                 }
               >
                 <div className="flex items-center justify-between w-full font-medium text-xs">
-                  <span>🔘 Grey Cement Adhesive</span>
+                  <span>Grey Cement Adhesive</span>
                   <span className="text-emerald-700 font-semibold">₹800/bag</span>
                 </div>
                 <span className="text-[10px] text-muted-foreground">
@@ -1096,7 +1096,7 @@ function LineItemsEditor({
                 }
               >
                 <div className="flex items-center justify-between w-full font-medium text-xs">
-                  <span>⚡ No-Limit Grey Adhesive</span>
+                  <span>No-Limit Grey Adhesive</span>
                   <span className="text-emerald-700 font-semibold">₹1,650/bag</span>
                 </div>
                 <span className="text-[10px] text-muted-foreground">
@@ -1116,7 +1116,7 @@ function LineItemsEditor({
                 }
               >
                 <div className="flex items-center justify-between w-full font-medium text-xs">
-                  <span>🪣 PU Based Adhesive (Bucket)</span>
+                  <span>PU Based Adhesive (Bucket)</span>
                   <span className="text-emerald-700 font-semibold">₹1,650/bucket</span>
                 </div>
                 <span className="text-[10px] text-muted-foreground">
@@ -1175,7 +1175,7 @@ function LineItemsEditor({
                 }
               >
                 <div className="flex items-center justify-between w-full font-medium text-xs">
-                  <span>🛡️ Solvent Based Oil & Dust Repellent</span>
+                  <span>Solvent Based Oil & Dust Repellent</span>
                   <span className="text-emerald-700 font-semibold">₹2,500/ltr</span>
                 </div>
                 <span className="text-[10px] text-muted-foreground">
@@ -1195,7 +1195,7 @@ function LineItemsEditor({
                 }
               >
                 <div className="flex items-center justify-between w-full font-medium text-xs">
-                  <span>💧 Water Based Water Repellent</span>
+                  <span>Water Based Water Repellent</span>
                   <span className="text-emerald-700 font-semibold">₹1,700/ltr</span>
                 </div>
                 <span className="text-[10px] text-muted-foreground">
@@ -1215,7 +1215,7 @@ function LineItemsEditor({
                 }
               >
                 <div className="flex items-center justify-between w-full font-medium text-xs">
-                  <span>✨ Wetlook Sealer (Gloss Finish)</span>
+                  <span>Wetlook Sealer (Gloss Finish)</span>
                   <span className="text-emerald-700 font-semibold">₹3,000/ltr</span>
                 </div>
                 <span className="text-[10px] text-muted-foreground">
@@ -1235,7 +1235,7 @@ function LineItemsEditor({
                 }
               >
                 <div className="flex items-center justify-between w-full font-medium text-xs">
-                  <span>🛡️ Back Coat Sealer</span>
+                  <span>Back Coat Sealer</span>
                   <span className="text-emerald-700 font-semibold">₹3,000/ltr</span>
                 </div>
                 <span className="text-[10px] text-muted-foreground">
@@ -1633,21 +1633,21 @@ function LineItemsEditor({
                           nextPrice = 1700;
                           nextHsn = "38249900";
                           buttonLabel = `+ Insert Sealer line below (Place at #${i + 2})`;
-                          buttonBorder = "border-purple-300 text-purple-900 hover:bg-purple-50";
+                          buttonBorder = "border-[#c9d1d4] text-[#015474] hover:bg-[#e0f1f5]";
                         } else if (cat === "installation_labour" || cat === "sealer_labour") {
                           nextDesc = "Installation Labour";
                           nextUnit = "sq.ft";
                           nextPrice = 80;
                           nextHsn = "9954";
                           buttonLabel = `+ Insert Labour line below (Place at #${i + 2})`;
-                          buttonBorder = "border-blue-300 text-blue-900 hover:bg-blue-50";
+                          buttonBorder = "border-[#c9d1d4] text-[#015474] hover:bg-[#e0f1f5]";
                         } else if (cat === "carting") {
                           nextDesc = "Local Carting & Transportation";
                           nextUnit = "trip";
                           nextPrice = 1500;
                           nextHsn = "9965";
                           buttonLabel = `+ Insert Carting line below (Place at #${i + 2})`;
-                          buttonBorder = "border-orange-300 text-orange-900 hover:bg-orange-50";
+                          buttonBorder = "border-[#c9d1d4] text-[#015474] hover:bg-[#e0f1f5]";
                         }
 
                         return (

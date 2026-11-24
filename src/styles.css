@@ -1883,6 +1883,117 @@ body[data-scroll-locked] {
   color: #015474 !important;
 }
 
+/* Blue utilities override into Signature Turquoise (#006788, #015474, #e0f1f5, #c9d1d4) */
+.theme-st-og .bg-blue-500,
+.theme-st-og .bg-blue-600,
+.theme-st-og .bg-blue-700,
+.theme-st-og .bg-blue-800,
+.theme-st-og .bg-blue-900,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .bg-blue-500,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .bg-blue-600,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .bg-blue-700,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .bg-blue-800 {
+  background-color: #006788 !important;
+  color: #ffffff !important;
+}
+
+.theme-st-og .hover\:bg-blue-700:hover,
+.theme-st-og .hover\:bg-blue-600:hover,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .hover\:bg-blue-700:hover,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .hover\:bg-blue-600:hover {
+  background-color: #00597b !important;
+  color: #ffffff !important;
+}
+
+.theme-st-og .bg-blue-50,
+.theme-st-og .bg-blue-100,
+.theme-st-og [class*="bg-blue-50/"],
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .bg-blue-50,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .bg-blue-100 {
+  background-color: #e0f1f5 !important;
+}
+
+.theme-st-og .text-blue-500,
+.theme-st-og .text-blue-600,
+.theme-st-og .text-blue-700,
+.theme-st-og .text-blue-800,
+.theme-st-og .text-blue-900,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .text-blue-500,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .text-blue-600,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .text-blue-700,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .text-blue-800,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .text-blue-900 {
+  color: #015474 !important;
+}
+
+.theme-st-og .border-blue-100,
+.theme-st-og .border-blue-200,
+.theme-st-og .border-blue-300,
+.theme-st-og .border-blue-400,
+.theme-st-og .border-blue-500,
+.theme-st-og .border-blue-600,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .border-blue-100,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .border-blue-200,
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  .border-blue-300 {
+  border-color: #c9d1d4 !important;
+}
+
+.theme-st-og [class*="ring-blue-"],
+:root:not(.theme-st-bw):not(.theme-st-pop):not(.theme-st-pastel):not(.theme-monochrome):not(
+    .theme-batman
+  ):not(.dark)
+  [class*="ring-blue-"] {
+  --tw-ring-color: #006788 !important;
+}
+
 /* ST BW (Black & White — Elegant Monochrome Architectural Luxury) */
 .theme-st-bw,
 .theme-monochrome,

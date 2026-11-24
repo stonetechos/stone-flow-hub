@@ -522,22 +522,12 @@ function ExecutiveHero({
             {today}
           </div>
           <h1 className="mt-1 sm:mt-2 font-display text-lg sm:text-2xl lg:text-[28px] font-black tracking-tight text-engraved-title leading-snug break-words">
-            {isNocturnal ? (
-              <>
-                {greeting}
-                {name && name.toLowerCase() !== "there" ? ` ${name} ` : " "}🦉
-              </>
-            ) : (
-              <>
-                {greeting}
-                {name && name.toLowerCase() !== "there" ? `, ${name}` : ""}.
-              </>
-            )}
+            {greeting}
+            {name && name.toLowerCase() !== "there" ? `, ${name}` : ""}.
           </h1>
           {isNocturnal && nocturnalQuip && (
-            <p className="mt-1 sm:mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-[#00597b] break-words">
-              <span>🌙</span>
-              <span>{nocturnalQuip}</span>
+            <p className="mt-1 sm:mt-1.5 text-xs font-semibold text-[#00597b] break-words">
+              {nocturnalQuip}
             </p>
           )}
         </div>
@@ -639,7 +629,7 @@ function ExecutiveHero({
                 {t("common.orders", "Orders")}
               </div>
               <div className="mt-0.5 font-mono text-[10px] sm:text-[11px] font-semibold text-[#00597b] truncate">
-                ⚠️ {toIndicDigits("2", i18n.language)}{" "}
+                {toIndicDigits("2", i18n.language)}{" "}
                 {t("dashboard.needSlabsAssigned", "Need Stock Slabs")}
               </div>
             </div>
@@ -647,9 +637,8 @@ function ExecutiveHero({
         </div>
 
         {/* Executive Brief */}
-        <div className="mt-3.5 sm:mt-6 border-t border-blue-50 pt-3 sm:pt-5">
-          <div className="mb-2 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-wider sm:tracking-[0.22em] text-engraved-kicker">
-            <FileText className="h-3.5 w-3.5 text-blue-600" aria-hidden />
+        <div className="mt-3.5 sm:mt-6 border-t border-[#c9d1d4]/40 pt-3 sm:pt-5">
+          <div className="mb-2 font-mono text-[10px] font-bold uppercase tracking-wider sm:tracking-[0.22em] text-[#015474]">
             {t("dashboard.executiveBrief", "Executive brief")}
           </div>
           <ul className="space-y-1.5 sm:space-y-2 min-w-0">
@@ -660,9 +649,14 @@ function ExecutiveHero({
               >
                 <span
                   aria-hidden
-                  className="mt-1.5 sm:mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-700 shadow-sm shadow-cyan-700/50"
+                  className="mt-1.5 sm:mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#006788] shadow-sm shadow-[#006788]/50"
                 />
-                <span className="min-w-0 flex-1 break-words">{line}</span>
+                <span className="min-w-0 flex-1 break-words">
+                  {line.replace(
+                    /^[\p{Emoji}\p{Extended_Pictographic}\u2000-\u3300\uD800-\uDFFF\s]+/u,
+                    "",
+                  )}
+                </span>
               </li>
             ))}
           </ul>
@@ -1280,11 +1274,10 @@ function CopilotDock({
       className="space-y-4 xl:sticky xl:top-0 xl:self-start xl:max-h-[calc(100dvh-5.5rem)] xl:overflow-y-auto xl:pr-1 overscroll-contain"
       style={{ scrollbarWidth: "thin" }}
     >
-      {/* Critical Action Hub — Zero Truncation */}
+      {/* Critical Hub — Zero Truncation */}
       <SurfaceCard
-        icon={<AlertTriangle className="h-3.5 w-3.5 text-rose-600 red-flag-icon" />}
-        kicker={t("dashboard.bottlenecks", "Pain Points Radar")}
-        title={t("dashboard.criticalActionHub", "Critical Action Hub")}
+        icon={<AlertTriangle className="h-4 w-4 text-rose-600 red-flag-icon shrink-0" />}
+        title={t("dashboard.criticalHub", "Critical Hub")}
       >
         {suggestions.length === 0 ? (
           <div className="engraved-well rounded-xl px-3 py-6 text-center text-[12px] font-medium text-slate-400">
@@ -1605,8 +1598,8 @@ function SurfaceCard({
   to,
   children,
 }: {
-  icon: React.ReactNode;
-  kicker: string;
+  icon?: React.ReactNode;
+  kicker?: string;
   title: string;
   to?: string;
   children: React.ReactNode;
@@ -1616,13 +1609,25 @@ function SurfaceCard({
     <section className="card-3d-milky p-5">
       <header className="mb-3.5 flex items-start justify-between gap-4">
         <div>
-          <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-engraved-kicker">
-            <span className="flex h-5 w-5 items-center justify-center rounded-md bg-cyan-50 text-cyan-700 border border-cyan-200 shadow-xs">
-              {icon}
-            </span>
-            {kicker}
-          </div>
-          <h3 className="mt-1 font-display text-[16px] font-black text-engraved-title">{title}</h3>
+          {kicker ? (
+            <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-engraved-kicker">
+              {icon && (
+                <span className="flex h-5 w-5 items-center justify-center rounded-md bg-cyan-50 text-cyan-700 border border-cyan-200 shadow-xs">
+                  {icon}
+                </span>
+              )}
+              {kicker}
+            </div>
+          ) : null}
+          <h3
+            className={cn(
+              "font-display text-[16px] font-black text-engraved-title",
+              kicker ? "mt-1" : "flex items-center gap-2",
+            )}
+          >
+            {!kicker && icon && <span>{icon}</span>}
+            {title}
+          </h3>
         </div>
         {to && (
           <Link
@@ -1656,17 +1661,8 @@ function ShellLoading({
           {today}
         </div>
         <h1 className="mt-2 font-display text-2xl font-black text-engraved-title">
-          {isNocturnal ? (
-            <>
-              {greeting}
-              {name && name.toLowerCase() !== "there" ? ` ${name} ` : " "}🦉
-            </>
-          ) : (
-            <>
-              {greeting}
-              {name && name.toLowerCase() !== "there" ? `, ${name}` : ""}.
-            </>
-          )}
+          {greeting}
+          {name && name.toLowerCase() !== "there" ? `, ${name}` : ""}.
         </h1>
       </div>
       <SkeletonCards count={4} />
@@ -1780,11 +1776,11 @@ function buildBrief(
       discrepancyCount === 1
         ? t(
             "dashboard.briefDiscrepancySingle",
-            "⚠️ 1 delivery challan has material product discrepancies against approved quotation specifications.",
+            "1 delivery challan has material product discrepancies against approved quotation specifications.",
           )
         : t(
             "dashboard.briefDiscrepancyMultiple",
-            "⚠️ {{count}} delivery challans have material product discrepancies against approved quotation specifications.",
+            "{{count}} delivery challans have material product discrepancies against approved quotation specifications.",
             { count: discrepancyCount },
           ),
     );
@@ -1793,15 +1789,15 @@ function buildBrief(
     if (rentItem) {
       lines.push(
         isHindi
-          ? `🏢 इस महीने का किराया (${rentItem.name}) देय है (${formatInr(rentItem.amount)})। भुगतान हो गया हो तो प्रविष्टि करें।`
+          ? `इस महीने का किराया (${rentItem.name}) देय है (${formatInr(rentItem.amount)})। भुगतान हो गया हो तो प्रविष्टि करें।`
           : isGujarati
-            ? `🏢 આ મહિનાનું ભાડું (${rentItem.name}) બાકી છે (${formatInr(rentItem.amount)}). ચુકવણી થઈ ગઈ હોય તો એન્ટ્રી કરો.`
-            : `🏢 The rent of this month (${rentItem.name}) is now due (${formatInr(rentItem.amount)}). If paid, please record the entry.`,
+            ? `આ મહિનાનું ભાડું (${rentItem.name}) બાકી છે (${formatInr(rentItem.amount)}). ચુકવણી થઈ ગઈ હોય તો એન્ટ્રી કરો.`
+            : `The rent of this month (${rentItem.name}) is now due (${formatInr(rentItem.amount)}). If paid, please record the entry.`,
       );
     } else {
       const topDue = dueLiabilities[0];
       lines.push(
-        `💳 ${topDue.name} (${formatInr(topDue.amount)}) — ` +
+        `${topDue.name} (${formatInr(topDue.amount)}) — ` +
           t("dashboard.dueThisMonthRecordEntry", "due this month. If paid, please record entry."),
       );
     }
@@ -1826,15 +1822,15 @@ function buildBrief(
     const nameStr = names.slice(0, 2).join(isHindi ? " और " : isGujarati ? " અને " : " & ");
     if (isHindi) {
       lines.push(
-        `🏭 आपूर्ति अवरोध: ${toIndicDigits(fulfilmentAlerts.length, lang)} पुष्ट ऑर्डर (${nameStr}) को कटिंग शुरू करने से पहले लाइव स्टॉक स्लैब सौंपना आवश्यक है।`,
+        `आपूर्ति अवरोध: ${toIndicDigits(fulfilmentAlerts.length, lang)} पुष्ट ऑर्डर (${nameStr}) को कटिंग शुरू करने से पहले लाइव स्टॉक स्लैब सौंपना आवश्यक है।`,
       );
     } else if (isGujarati) {
       lines.push(
-        `🏭 પૂર્તિ અવરોધ: ${toIndicDigits(fulfilmentAlerts.length, lang)} પુષ્ટ ઓર્ડર (${nameStr}) ને કટિંગ શરૂ કરતાં પહેલાં લાઇવ સ્ટોક સ્લેબ સોંપવું જરૂરી છે.`,
+        `પૂર્તિ અવરોધ: ${toIndicDigits(fulfilmentAlerts.length, lang)} પુષ્ટ ઓર્ડર (${nameStr}) ને કટિંગ શરૂ કરતાં પહેલાં લાઇવ સ્ટોક સ્લેબ સોંપવું જરૂરી છે.`,
       );
     } else {
       lines.push(
-        `🏭 Fulfilment Blocker: ${fulfilmentAlerts.length} confirmed order(s) (${nameStr}) require Live Stock slab reservation before cutting begins.`,
+        `Fulfilment Blocker: ${fulfilmentAlerts.length} confirmed order(s) (${nameStr}) require Live Stock slab reservation before cutting begins.`,
       );
     }
   } else if (vendorPromptCount > 0) {
@@ -1842,11 +1838,11 @@ function buildBrief(
       vendorPromptCount === 1
         ? t(
             "dashboard.briefVendorDeliverySingle",
-            "🚚 1 team delivery is round the corner (due within 5 days). Tap prompt below to nudge partner.",
+            "1 team delivery is round the corner (due within 5 days). Tap prompt below to nudge partner.",
           )
         : t(
             "dashboard.briefVendorDeliveryMultiple",
-            "🚚 {{count}} team deliveries are round the corner (due within 5 days). Tap prompt below to nudge team partners.",
+            "{{count}} team deliveries are round the corner (due within 5 days). Tap prompt below to nudge team partners.",
             { count: vendorPromptCount },
           ),
     );
@@ -1864,15 +1860,15 @@ function buildBrief(
       const debtor = transliterateName(match[2].trim(), lang);
       if (isHindi) {
         lines.push(
-          `💳 वसूली चेतावनी: ${debtor} से ${amt} अतिदेय है — नए माल की डिलीवरी से पहले भुगतान की पुष्टि करें।`,
+          `वसूली चेतावनी: ${debtor} से ${amt} अतिदेय है — नए माल की डिलीवरी से पहले भुगतान की पुष्टि करें।`,
         );
       } else if (isGujarati) {
         lines.push(
-          `💳 વસૂલાત ચેતવણી: ${debtor} પાસેથી ${amt} મુદતવીતી છે — નવા માલની ડિલિવરી પહેલાં ચુકવણીની પુષ્ટિ કરો.`,
+          `વસૂલાત ચેતવણી: ${debtor} પાસેથી ${amt} મુદતવીતી છે — નવા માલની ડિલિવરી પહેલાં ચુકવણીની પુષ્ટિ કરો.`,
         );
       } else {
         lines.push(
-          `💳 Collection Alert: ${amt} overdue from ${debtor} — follow up prior to releasing next dispatches.`,
+          `Collection Alert: ${amt} overdue from ${debtor} — follow up prior to releasing next dispatches.`,
         );
       }
     }
@@ -1887,15 +1883,15 @@ function buildBrief(
       const days = toIndicDigits(qMatch[2], lang);
       if (isHindi) {
         lines.push(
-          `📈 कोटेशन समीक्षा: ${qNo} पर पिछले ${days} दिनों से कोई जवाब नहीं आया है — समीक्षा या आर्काइव करें।`,
+          `कोटेशन समीक्षा: ${qNo} पर पिछले ${days} दिनों से कोई जवाब नहीं आया है — समीक्षा या आर्काइव करें।`,
         );
       } else if (isGujarati) {
         lines.push(
-          `📈 ક્વોટેશન સમીક્ષા: ${qNo} પર છેલ્લા ${days} દિવસથી કોઈ જવાબ નથી મળ્યો — સમીક્ષા અથવા આર્કાઇવ કરો.`,
+          `ક્વોટેશન સમીક્ષા: ${qNo} પર છેલ્લા ${days} દિવસથી કોઈ જવાબ નથી મળ્યો — સમીક્ષા અથવા આર્કાઇવ કરો.`,
         );
       } else {
         lines.push(
-          `📈 Pipeline Hygiene: ${qNo} is stale (${days}d awaiting response) — follow up or archive to keep pipeline clean.`,
+          `Pipeline Hygiene: ${qNo} is stale (${days}d awaiting response) — follow up or archive to keep pipeline clean.`,
         );
       }
     } else {
@@ -1908,18 +1904,18 @@ function buildBrief(
     if (kpis.overdueFollowups > 0) {
       lines.push(
         isHindi
-          ? `📞 ${toIndicDigits(kpis.overdueFollowups, lang)} ग्राहक फॉलो-अप अतिदेय हैं — आज संपर्क सुनिश्चित करें।`
+          ? `${toIndicDigits(kpis.overdueFollowups, lang)} ग्राहक फॉलो-अप अतिदेय हैं — आज संपर्क सुनिश्चित करें।`
           : isGujarati
-            ? `📞 ${toIndicDigits(kpis.overdueFollowups, lang)} ગ્રાહક ફોલો-અપ મુદતવીતી છે — આજે સંપર્ક કરો.`
-            : `📞 ${kpis.overdueFollowups} client follow-up(s) are overdue — follow up today.`,
+            ? `${toIndicDigits(kpis.overdueFollowups, lang)} ગ્રાહક ફોલો-અપ મુદતવીતી છે — આજે સંપર્ક કરો.`
+            : `${kpis.overdueFollowups} client follow-up(s) are overdue — follow up today.`,
       );
     } else if (kpis.activeEnquiries > 0 && lines.length < 3) {
       lines.push(
         isHindi
-          ? `💬 ${toIndicDigits(kpis.activeEnquiries, lang)} सक्रिय CRM पूछताछ प्रगति पर हैं।`
+          ? `${toIndicDigits(kpis.activeEnquiries, lang)} सक्रिय CRM पूछताछ प्रगति पर हैं।`
           : isGujarati
-            ? `💬 ${toIndicDigits(kpis.activeEnquiries, lang)} સક્રિય CRM પૂછપરછ પ્રગતિમાં છે.`
-            : `💬 ${kpis.activeEnquiries} active CRM inquiries currently in progress.`,
+            ? `${toIndicDigits(kpis.activeEnquiries, lang)} સક્રિય CRM પૂછપરછ પ્રગતિમાં છે.`
+            : `${kpis.activeEnquiries} active CRM inquiries currently in progress.`,
       );
     }
   }

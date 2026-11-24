@@ -20,7 +20,7 @@
  */
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Compass, X } from "lucide-react";
+import { ArrowRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useGuidedSkip } from "@/hooks/use-guided-skip";
@@ -82,22 +82,15 @@ export function GuidedNextStep({ entity, entityId, ctx, hasNext, reasonOverride 
   return (
     <Card className="border-primary/30 bg-primary/[0.04] shadow-1">
       <CardContent className="flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex min-w-0 items-start gap-3">
-          <div className="mt-0.5 rounded-md bg-primary/10 p-1.5 text-primary">
-            <Compass className="h-4 w-4" />
-          </div>
-          <div className="min-w-0 space-y-1">
-            <div className="text-sm font-semibold leading-tight">{step.title}</div>
-            <div className="text-xs text-muted-foreground">
-              {reasonOverride ?? step.description}
-            </div>
-            <div className="text-[11px] text-muted-foreground/80">
-              Suggestion only — nothing happens automatically. Press{" "}
-              <kbd className="rounded border border-border bg-muted px-1 py-px font-mono text-[10px]">
-                N
-              </kbd>{" "}
-              to continue.
-            </div>
+        <div className="min-w-0 space-y-1">
+          <div className="text-sm font-semibold leading-tight">{step.title}</div>
+          <div className="text-xs text-muted-foreground">{reasonOverride ?? step.description}</div>
+          <div className="text-[11px] text-muted-foreground/80">
+            Suggestion only — nothing happens automatically. Press{" "}
+            <kbd className="rounded border border-border bg-muted px-1 py-px font-mono text-[10px]">
+              N
+            </kbd>{" "}
+            to continue.
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2 self-end sm:self-center">

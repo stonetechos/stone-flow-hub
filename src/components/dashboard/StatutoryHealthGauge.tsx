@@ -986,12 +986,12 @@ export function SftInflowSimulator({
             mode="risk"
             statusText={
               isCritical
-                ? "🔴 Critical SFT Danger (>90%)"
+                ? "🚩 Critical SFT Danger (>90%)"
                 : isHighRisk
-                  ? "🟠 High Scrutiny Risk (75-90%)"
+                  ? "🚩 High Scrutiny Risk (75-90%)"
                   : isCaution
-                    ? "🟡 Moderate Inflow (50-75%)"
-                    : "🟢 Safe Headroom (<50%)"
+                    ? "Moderate Inflow (50-75%)"
+                    : "Safe Headroom (<50%)"
             }
           />
         </div>
