@@ -56,7 +56,7 @@ export interface BrandingConfig {
 export const DEFAULT_BRANDING: BrandingConfig = {
   company_name: "Stone Tech",
   tagline: "ever evolving!",
-  primary: "#0d9488", // teal-600
+  primary: "#006788", // signature deep turquoise
   accent: "#334155", // granite slate-700
   logo_url: "/branding/stone-tech-logo.png",
   address: "E-02, Ground Floor, SG Business Hub, Vasant Nagar, Gota, Ahmedabad, Gujarat, 380060",

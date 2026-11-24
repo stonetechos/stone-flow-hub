@@ -191,7 +191,7 @@ export function ShareStatementDialog({ open, onOpenChange, data }: ShareStatemen
             <div>BANK: BANK OF BARODA</div>
             <div>BRANCH: CHANDLODIYA, AHMEDABAD</div>
             <div>ACCOUNT NUMBER: 53130200000136 · IFSC: BARB0CHAAHM</div>
-            <div style="color:#0d9488;font-weight:600;margin-top:2px;">UPI ID: stonetech.ahmedabad@okicici</div>
+            <div style="color:#006788;font-weight:600;margin-top:2px;">UPI ID: stonetech.ahmedabad@okicici</div>
           </div>
           <div style="text-align:right;">
             <div style="margin:4px 0 2px;"><img src="/signature.png" alt="Authorized Signature" style="height:64px;max-width:170px;object-fit:contain;" onerror="this.style.display='none'" /></div>

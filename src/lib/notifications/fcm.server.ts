@@ -153,7 +153,7 @@ export async function sendFcmToToken(
       notification: {
         channel_id: "stos_operations",
         icon: "ic_stat_stos",
-        color: "#0f766e",
+        color: "#006788",
         default_sound: true,
         default_vibrate_timings: true,
         click_action: "OPEN_STOS_APP",

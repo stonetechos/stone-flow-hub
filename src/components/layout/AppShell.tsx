@@ -1616,7 +1616,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           {!isFormRoute && (
             <nav
               aria-label="Mobile navigation"
-              className="fixed bottom-0 inset-x-0 z-30 flex h-[calc(3.5rem+env(safe-area-inset-bottom,0px))] items-center justify-around border-t border-border-subtle bg-surface-header/95 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur supports-[backdrop-filter]:bg-surface-header/80 md:hidden shadow-lg"
+              className="fixed bottom-0 inset-x-0 z-30 flex h-[calc(3.5rem+env(safe-area-inset-bottom,0px))] items-center justify-around border-t border-[#c9d1d4] bg-white/95 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur supports-[backdrop-filter]:bg-white/90 md:hidden shadow-lg"
             >
               <Link
                 to="/dashboard"
@@ -1625,8 +1625,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                   cleanPath === "/" ||
                     cleanPath === "/dashboard" ||
                     cleanPath.startsWith("/dashboard/")
-                    ? "text-intent-primary font-bold"
-                    : "text-text-muted hover:text-text-primary",
+                    ? "text-[#006788] font-bold"
+                    : "text-text-muted hover:text-[#006788]",
                 )}
               >
                 <LayoutDashboard className="h-5 w-5 mb-0.5" />
@@ -1637,8 +1637,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                 className={cn(
                   "flex flex-1 flex-col items-center justify-center py-1 text-[11px] font-medium transition-colors",
                   cleanPath.startsWith("/enquiries")
-                    ? "text-intent-primary font-bold"
-                    : "text-text-muted hover:text-text-primary",
+                    ? "text-[#006788] font-bold"
+                    : "text-text-muted hover:text-[#006788]",
                 )}
               >
                 <Globe className="h-5 w-5 mb-0.5" />
@@ -1649,8 +1649,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                 className={cn(
                   "flex flex-1 flex-col items-center justify-center py-1 text-[11px] font-medium transition-colors",
                   cleanPath.startsWith("/quotes")
-                    ? "text-intent-primary font-bold"
-                    : "text-text-muted hover:text-text-primary",
+                    ? "text-[#006788] font-bold"
+                    : "text-text-muted hover:text-[#006788]",
                 )}
               >
                 <FileText className="h-5 w-5 mb-0.5" />
@@ -1661,8 +1661,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                 className={cn(
                   "flex flex-1 flex-col items-center justify-center py-1 text-[11px] font-medium transition-colors",
                   cleanPath.startsWith("/dispatch")
-                    ? "text-intent-primary font-bold"
-                    : "text-text-muted hover:text-text-primary",
+                    ? "text-[#006788] font-bold"
+                    : "text-text-muted hover:text-[#006788]",
                 )}
               >
                 <Truck className="h-5 w-5 mb-0.5" />
@@ -1671,7 +1671,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <button
                 type="button"
                 onClick={() => setMobileNavOpen(true)}
-                className="flex flex-1 flex-col items-center justify-center py-1 text-[11px] font-medium text-text-muted hover:text-text-primary transition-colors"
+                className="flex flex-1 flex-col items-center justify-center py-1 text-[11px] font-medium text-text-muted hover:text-[#006788] transition-colors"
                 aria-label="Open navigation menu"
               >
                 <Menu className="h-5 w-5 mb-0.5" />

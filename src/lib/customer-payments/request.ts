@@ -74,7 +74,7 @@ export function renderPaymentRequestEmail(ctx: PaymentRequestContext): {
   const subject = `Payment request — ${row.label}${row.estimate_no ? " · " + row.estimate_no : ""}`;
   const html = `<!doctype html><html><body style="font-family:Inter,system-ui,sans-serif;background:#fafafa;padding:24px;color:#1c1917">
   <div style="max-width:600px;margin:auto;background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden">
-    <div style="background:linear-gradient(135deg,#0f766e,#334155);padding:24px 28px;color:#fff">
+    <div style="background:linear-gradient(135deg,#006788,#015474);padding:24px 28px;color:#fff">
       <div style="font-size:12px;letter-spacing:.08em;opacity:.85">${org.brand_name ?? "STONE TECH"}</div>
       <h1 style="margin:6px 0 0;font-size:22px;font-weight:600">Payment request</h1>
     </div>
@@ -84,7 +84,7 @@ export function renderPaymentRequestEmail(ctx: PaymentRequestContext): {
       <table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:14px">
         ${row.estimate_no ? `<tr><td style="padding:6px 0;color:#64748b">Estimate</td><td style="text-align:right"><strong>${row.estimate_no}</strong></td></tr>` : ""}
         <tr><td style="padding:6px 0;color:#64748b">Milestone</td><td style="text-align:right"><strong>${row.label}</strong> (${row.milestone_no})</td></tr>
-        <tr><td style="padding:6px 0;color:#64748b">Amount due</td><td style="text-align:right;font-size:20px;color:#0f766e;font-weight:700">${inr(row.balance_due)}</td></tr>
+        <tr><td style="padding:6px 0;color:#64748b">Amount due</td><td style="text-align:right;font-size:20px;color:#006788;font-weight:700">${inr(row.balance_due)}</td></tr>
         ${row.due_date ? `<tr><td style="padding:6px 0;color:#64748b">Due date</td><td style="text-align:right"><strong>${row.due_date}</strong></td></tr>` : ""}
       </table>
       ${
@@ -102,7 +102,7 @@ export function renderPaymentRequestEmail(ctx: PaymentRequestContext): {
           : ""
       }
       ${org.upi_id ? `<p>UPI: <strong>${org.upi_id}</strong></p>` : ""}
-      ${paymentLinkUrl ? `<p style="text-align:center;margin:24px 0"><a href="${paymentLinkUrl}" style="background:#0f766e;color:#fff;padding:12px 24px;border-radius:999px;text-decoration:none;font-weight:600">Pay online</a></p>` : ""}
+      ${paymentLinkUrl ? `<p style="text-align:center;margin:24px 0"><a href="${paymentLinkUrl}" style="background:#006788;color:#fff;padding:12px 24px;border-radius:999px;text-decoration:none;font-weight:600">Pay online</a></p>` : ""}
       <p style="color:#64748b;font-size:12px;margin-top:32px">Ref: ${row.estimate_no ?? row.id.slice(0, 8)}</p>
       <p style="color:#64748b;font-size:12px">Regards,<br>${org.brand_name ?? "Stone Tech"}</p>
     </div>

@@ -135,7 +135,7 @@ async function ensureAndroidChannel(): Promise<void> {
       vibration: true,
       sound: "default",
       lights: true,
-      lightColor: "#0f766e",
+      lightColor: "#006788",
     });
 
     // Register push notification channel and request push token from FCM
@@ -148,7 +148,7 @@ async function ensureAndroidChannel(): Promise<void> {
       vibration: true,
       sound: "default",
       lights: true,
-      lightColor: "#0f766e",
+      lightColor: "#006788",
     });
 
     await PushNotifications.register();
@@ -182,7 +182,7 @@ export const androidChannel: NotificationChannel = {
             channelId: "stos_operations",
             sound: "default",
             smallIcon: "ic_stat_stos",
-            iconColor: "#0f766e",
+            iconColor: "#006788",
             ongoing: false,
             autoCancel: true,
             extra: {
