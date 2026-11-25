@@ -899,23 +899,23 @@ export function WallCladdingCatalog({
                       contentVisibility: idx >= INITIAL_BATCH ? "auto" : undefined,
                       containIntrinsicSize: idx >= INITIAL_BATCH ? "auto 120px" : undefined,
                     }}
-                    className="group relative aspect-square rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer bg-stone-900/95 dark:bg-black border border-border/60 hover:border-amber-500/50 shadow-2xs hover:shadow-md transition-all duration-300 flex items-center justify-center p-1 sm:p-2"
+                    className="group relative aspect-square rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer bg-[#f8fafc] dark:bg-stone-900/70 border border-slate-200/80 dark:border-stone-800 hover:border-[#006788]/60 shadow-2xs hover:shadow-md transition-all duration-300 flex items-center justify-center p-2"
                     title={getCladdingName(item, lang)}
                   >
-                    {/* Media Image — Complete uncropped panel with NO zooming on hover */}
+                    {/* Media Image — Complete uncropped panel with smooth zoom on hover matching PDF quality */}
                     <img
                       src={item.image}
                       alt={getCladdingName(item, lang)}
                       loading="lazy"
                       decoding="async"
-                      className="h-full w-full object-contain drop-shadow-sm select-none transition-all duration-300"
+                      className="max-h-[95%] max-w-[95%] w-auto h-auto object-contain drop-shadow-xs select-none transition-transform duration-500 ease-out group-hover:scale-115 pointer-events-none"
                       style={
                         item.rotation ? { transform: `rotate(${item.rotation}deg)` } : undefined
                       }
                     />
 
-                    {/* Subtle Top-Right Code Badge */}
-                    <div className="absolute top-1.5 right-1.5 bg-black/60 backdrop-blur-xs text-white px-1.5 py-0.5 rounded-md text-[9px] font-mono font-bold shadow-xs pointer-events-none z-10">
+                    {/* Subtle Top-Right Code Badge — matching PDF .code-tag gold styling */}
+                    <div className="absolute top-1.5 right-1.5 bg-[#0f172a] text-[#fbbf24] px-1.5 py-0.5 rounded-md text-[9px] font-mono font-bold shadow-xs border border-amber-500/30 pointer-events-none z-10">
                       {toIndicDigits(item.code || item.id, lang)}
                     </div>
 

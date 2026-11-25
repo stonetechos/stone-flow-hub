@@ -338,7 +338,15 @@ export function useWebsiteCatalog(initialSettings?: Partial<SiteSettings>) {
     for (const custom of customItems) {
       if (deletedSet.has(custom.id)) continue;
       const normalizedCat = OLD_CATEGORY_MAP[custom.category] || custom.category;
-      map.set(custom.id, { ...(map.get(custom.id) || {}), ...custom, category: normalizedCat });
+      const existing = map.get(custom.id);
+      const isWallCladdingAsset = existing?.image?.startsWith("/catalogues/wall-cladding-assets/");
+      map.set(custom.id, {
+        ...(existing || {}),
+        ...custom,
+        image: isWallCladdingAsset ? existing!.image : custom.image || existing?.image || "",
+        rotation: isWallCladdingAsset ? 0 : (custom.rotation ?? existing?.rotation ?? 0),
+        category: normalizedCat,
+      });
     }
 
     const items = Array.from(map.values());
@@ -363,10 +371,13 @@ export function useWebsiteCatalog(initialSettings?: Partial<SiteSettings>) {
     return sorted.map((item, idx) => {
       const seqIndex = idx + 1;
       const seqCode = `ST-WC-${String(seqIndex).padStart(3, "0")}`;
+      const isCladdingAsset = item.image?.startsWith("/catalogues/wall-cladding-assets/");
       return {
         ...item,
         index: seqIndex,
         code: seqCode,
+        image: isCladdingAsset ? `/catalogues/wall-cladding-assets/${seqCode}.jpg` : item.image,
+        rotation: isCladdingAsset ? 0 : item.rotation || 0,
       };
     });
   }, [customItems, customOrder, deletedIds]);

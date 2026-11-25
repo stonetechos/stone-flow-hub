@@ -41,6 +41,7 @@ import {
   Check,
   Share2,
   ExternalLink,
+  Maximize2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -885,18 +886,19 @@ export function MasterProductCatalog({
                     onClick={() => setLightboxItem(item)}
                     className="group relative flex flex-col overflow-hidden rounded-xl border border-border/70 bg-card hover:border-amber-500/60 hover:shadow-md transition-all duration-200 cursor-pointer"
                   >
-                    {/* Squeezed Product Image Frame */}
-                    <div className="relative aspect-square w-full overflow-hidden bg-neutral-100 dark:bg-neutral-900">
+                    {/* Architectural Product Image Frame — Matching PDF photo-box presentation */}
+                    <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-[#f8fafc] dark:bg-stone-900/60 border border-slate-100 dark:border-slate-800 flex items-center justify-center p-2">
                       <img
                         src={item.image}
                         alt={item.name}
                         loading="lazy"
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        decoding="async"
+                        className="max-h-[95%] max-w-[95%] w-auto h-auto object-contain transition-transform duration-500 ease-out group-hover:scale-115 drop-shadow-xs select-none pointer-events-none"
                       />
 
-                      {/* Top badges */}
-                      <div className="absolute top-2 left-2 flex items-center gap-1 z-10">
-                        <span className="rounded-md bg-amber-500 px-1.5 py-0.5 text-[9px] font-extrabold text-slate-950 tracking-wider shadow-xs">
+                      {/* Top badges — matching PDF .code-tag gold on dark styling */}
+                      <div className="absolute top-2 left-2 flex items-center gap-1 z-10 pointer-events-none">
+                        <span className="rounded-md bg-[#0f172a] px-1.5 py-0.5 text-[9px] font-mono font-bold text-[#fbbf24] tracking-wider shadow-xs border border-amber-500/30">
                           {item.code}
                         </span>
                         <span className="rounded-md bg-slate-950/85 backdrop-blur-xs px-1.5 py-0.5 text-[8.5px] font-semibold text-cyan-300 border border-cyan-500/30 line-clamp-1 max-w-[110px]">
@@ -914,8 +916,8 @@ export function MasterProductCatalog({
                         <Share2 className="h-3 w-3" />
                       </button>
 
-                      {/* Hover overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-2.5 z-10">
+                      {/* Hover overlay with zoom hint */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2.5 z-10 pointer-events-none">
                         <p className="text-[10px] text-amber-300 font-medium line-clamp-1 mb-0.5">
                           {item.details}
                         </p>
@@ -927,9 +929,9 @@ export function MasterProductCatalog({
                                 ? "सत्यापित संग्रह"
                                 : "Verified Atelier Collection"}
                           </span>
-                          <span className="flex items-center gap-0.5 text-[10px] text-amber-400 font-semibold">
-                            <Eye className="h-3 w-3" />{" "}
-                            {lang === "gu" ? "વિગતો" : lang === "hi" ? "विवरण" : "Details"}
+                          <span className="flex items-center gap-1 text-[10px] text-amber-400 font-semibold bg-black/40 px-1.5 py-0.5 rounded backdrop-blur-xs">
+                            <Maximize2 className="h-2.5 w-2.5" />
+                            <span>{lang === "gu" ? "ઝૂમ" : lang === "hi" ? "ज़ूम" : "Zoom"}</span>
                           </span>
                         </div>
                       </div>
@@ -1044,14 +1046,14 @@ export function MasterProductCatalog({
         <DialogContent className="max-w-3xl p-0 overflow-hidden bg-card border-border/80 sm:rounded-2xl">
           {lightboxItem && (
             <div className="flex flex-col md:flex-row">
-              <div className="relative aspect-square md:w-1/2 w-full bg-slate-950 flex items-center justify-center overflow-hidden">
+              <div className="relative aspect-square md:w-1/2 w-full bg-[#f8fafc] dark:bg-slate-950 flex items-center justify-center p-4 overflow-hidden border-b md:border-b-0 md:border-r border-border/60">
                 <img
                   src={lightboxItem.image}
                   alt={lightboxItem.name}
-                  className="w-full h-full object-cover"
+                  className="max-h-[92%] max-w-[92%] w-auto h-auto object-contain drop-shadow-md transition-transform duration-500 hover:scale-105"
                 />
                 <div className="absolute top-3 left-3 flex gap-1.5 z-10">
-                  <span className="rounded-md bg-amber-500 px-2.5 py-1 text-xs font-extrabold text-slate-950 tracking-wider shadow-md">
+                  <span className="rounded-md bg-[#0f172a] px-2.5 py-1 text-xs font-mono font-bold text-[#fbbf24] tracking-wider shadow-md border border-amber-500/30">
                     {lightboxItem.code}
                   </span>
                   <span className="rounded-md bg-slate-950/80 backdrop-blur-xs px-2.5 py-1 text-xs font-semibold text-cyan-300 border border-cyan-500/30">
