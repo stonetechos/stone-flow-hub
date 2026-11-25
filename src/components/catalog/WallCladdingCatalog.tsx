@@ -75,12 +75,8 @@ function getCladdingName(
   item: { code?: string; id?: string; name: string },
   lang: "en" | "hi" | "gu",
 ): string {
-  if (lang === "en") return item.name;
-  const code = item.code || item.id;
-  if (code && CATALOG_ITEMS_BY_CODE[code]?.name?.[lang]) {
-    return CATALOG_ITEMS_BY_CODE[code].name[lang];
-  }
-  return transliterateName(item.name, lang);
+  const code = item.code || item.id || item.name;
+  return toIndicDigits(code, lang);
 }
 
 export type WallCladdingItem = CatalogProduct;

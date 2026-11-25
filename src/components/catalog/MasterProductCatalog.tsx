@@ -610,10 +610,11 @@ export function MasterProductCatalog({
           const imgs = Array.isArray(c.images) ? (c.images as string[]) : [];
           const code = String(c.code || c.id);
           const loc = lang !== "en" ? CATALOG_ITEMS_BY_CODE[code] : undefined;
+          const codeName = toIndicDigits(code, lang);
           return {
             id: String(c.id),
             code: code,
-            name: getLoc(loc?.name, lang) || localizeCatalogTerm(String(c.name || ""), lang),
+            name: codeName, // Exclusively display sequential code name for Natural Stone Cladding
             category:
               getLoc(loc?.category, lang) ||
               localizeCatalogTerm(String(c.category || "Stone Wall Cladding"), lang),
@@ -671,19 +672,25 @@ export function MasterProductCatalog({
   const handleSelectProductClick = (item: CatalogItem, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     setLightboxItem(null);
+    const label = currentTab === "cladding" ? `Pattern ${item.code}` : item.name;
     const desc =
-      `${item.name} (${item.code}) - ${item.category} [${item.sizes || "Standard"}]`.trim();
+      currentTab === "cladding"
+        ? `Wall Cladding: Pattern ${item.code} - ${item.category} [${item.sizes || "Standard"}]`.trim()
+        : `${item.name} (${item.code}) - ${item.category} [${item.sizes || "Standard"}]`.trim();
     if (onSelectProduct) {
       onSelectProduct(desc);
     } else {
-      toast.success(`Selected ${item.name} for quotation estimation`);
+      toast.success(`Selected ${label} for quotation estimation`);
     }
   };
 
   const handleShare = (item: CatalogItem, e: React.MouseEvent) => {
     e.stopPropagation();
     const url = `${window.location.origin}/#${currentTab}-${item.code.toLowerCase()}`;
-    const text = `Check out ${item.name} (${item.code}) from Stone Tech Atelier: ${url}`;
+    const text =
+      currentTab === "cladding"
+        ? `Check out Pattern ${item.code} from Stone Tech Atelier: ${url}`
+        : `Check out ${item.name} (${item.code}) from Stone Tech Atelier: ${url}`;
     if (navigator.share) {
       navigator.share({ title: item.name, text, url }).catch(() => {});
     } else {
