@@ -385,7 +385,10 @@ export function MasterProductCatalog({
 
   const [lightboxItem, setLightboxItem] = useState<CatalogItem | null>(null);
   const [hoveredZoomItem, setHoveredZoomItem] = useState<CatalogItem | null>(null);
+  const hoveredZoomItemRef = useRef<CatalogItem | null>(null);
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isScrollingRef = useRef(false);
+  const scrollEndTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -394,6 +397,9 @@ export function MasterProductCatalog({
   }, []);
 
   const handleMouseEnter = (item: CatalogItem) => {
+    // If the user is actively scrolling, do not trigger hover zoom
+    if (isScrollingRef.current) return;
+
     // Only trigger hover zoom on fine pointer devices (mouse/trackpad), not mobile touchscreens
     if (
       typeof window !== "undefined" &&
@@ -405,10 +411,13 @@ export function MasterProductCatalog({
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
     }
-    // 50ms responsive threshold to avoid flicker while rapidly sweeping past
+    // 220ms intentional hover dwell time to avoid accidental triggers while moving or scrolling past
     hoverTimeoutRef.current = setTimeout(() => {
-      setHoveredZoomItem(item);
-    }, 50);
+      if (!isScrollingRef.current) {
+        hoveredZoomItemRef.current = item;
+        setHoveredZoomItem(item);
+      }
+    }, 220);
   };
 
   const handleMouseLeave = () => {
@@ -416,17 +425,32 @@ export function MasterProductCatalog({
       clearTimeout(hoverTimeoutRef.current);
       hoverTimeoutRef.current = null;
     }
-    setHoveredZoomItem(null);
+    if (hoveredZoomItemRef.current !== null) {
+      hoveredZoomItemRef.current = null;
+      setHoveredZoomItem(null);
+    }
   };
 
-  // Close hover zoom immediately if the user scrolls (window or container)
+  // Zero-overhead scroll listener: completely silent with NO React re-renders while scrolling
   useEffect(() => {
     const handleScroll = () => {
+      isScrollingRef.current = true;
       if (hoverTimeoutRef.current) {
         clearTimeout(hoverTimeoutRef.current);
         hoverTimeoutRef.current = null;
       }
-      setHoveredZoomItem(null);
+      // ONLY trigger a state update if the zoom overlay is actually open
+      if (hoveredZoomItemRef.current !== null) {
+        hoveredZoomItemRef.current = null;
+        setHoveredZoomItem(null);
+      }
+
+      if (scrollEndTimerRef.current) {
+        clearTimeout(scrollEndTimerRef.current);
+      }
+      scrollEndTimerRef.current = setTimeout(() => {
+        isScrollingRef.current = false;
+      }, 150);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -438,6 +462,9 @@ export function MasterProductCatalog({
       window.removeEventListener("scroll", handleScroll);
       if (scrollContainer) {
         scrollContainer.removeEventListener("scroll", handleScroll);
+      }
+      if (scrollEndTimerRef.current) {
+        clearTimeout(scrollEndTimerRef.current);
       }
     };
   }, []);
@@ -936,7 +963,7 @@ export function MasterProductCatalog({
               className={cn(
                 "relative w-full rounded-2xl border border-border/80 bg-card/40 p-2 sm:p-3 shadow-inner",
                 "h-[480px] sm:h-[540px] md:h-[600px] lg:h-[700px] xl:h-[780px]",
-                "overflow-y-auto overscroll-y-auto scroll-smooth",
+                "overflow-y-auto overscroll-y-auto",
                 "touch-pan-y [-webkit-overflow-scrolling:touch]",
                 "[scrollbar-width:thin] scrollbar-thumb-muted-foreground/30 hover:scrollbar-thumb-muted-foreground/60",
                 "[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-muted/30 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/50",
@@ -953,6 +980,7 @@ export function MasterProductCatalog({
                     }}
                     onMouseEnter={() => handleMouseEnter(item)}
                     onMouseLeave={handleMouseLeave}
+                    style={{ contentVisibility: "auto", containIntrinsicSize: "280px" }}
                     className="group relative flex flex-col overflow-hidden rounded-xl border border-border/70 bg-card hover:border-amber-500/60 hover:shadow-md transition-all duration-200 cursor-pointer"
                   >
                     {/* Architectural Product Image Frame — Matching PDF photo-box presentation */}
@@ -1227,7 +1255,7 @@ export function MasterProductCatalog({
         createPortal(
           <div
             aria-hidden="true"
-            className="fixed inset-0 z-[9999] pointer-events-none flex items-center justify-center p-3 sm:p-6 md:p-8 bg-slate-950/80 backdrop-blur-md transition-opacity duration-200 animate-in fade-in"
+            className="fixed inset-0 z-[9999] pointer-events-none flex items-center justify-center p-3 sm:p-6 md:p-8 bg-slate-950/92 transition-opacity duration-200 animate-in fade-in"
           >
             <div className="relative max-w-4xl max-h-[92vh] w-auto h-auto flex flex-col items-center justify-between rounded-2xl border-2 border-amber-500/60 bg-gradient-to-b from-slate-900/95 via-slate-950/98 to-slate-950/95 shadow-[0_25px_70px_rgba(0,0,0,0.9)] p-4 sm:p-6 overflow-hidden">
               {/* Header inside Zoom Box */}
