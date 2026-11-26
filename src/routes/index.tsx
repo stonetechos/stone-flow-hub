@@ -439,26 +439,13 @@ function HomePage() {
   const [planDescription, setPlanDescription] = useState<string>("");
   const [stonemanOpen, setStonemanOpen] = useState(false);
 
-  // Deep-link / WhatsApp share listener for catalogues section & estimate form
+  // Deep-link / WhatsApp share listener for estimate modal
   useEffect(() => {
     if (typeof window === "undefined") return;
     const handleHash = () => {
       const h = window.location.hash.toLowerCase();
       const s = window.location.search.toLowerCase();
       if (
-        h === "#catalogues" ||
-        h === "#download-catalogues" ||
-        h === "#catalogue" ||
-        h === "#pdf-catalogues" ||
-        s.includes("catalog")
-      ) {
-        setTimeout(() => {
-          const el = document.getElementById("download-catalogues");
-          if (el) {
-            el.scrollIntoView({ behavior: "smooth", block: "start" });
-          }
-        }, 150);
-      } else if (
         h === "#lead-form" ||
         h === "#request-estimate" ||
         h === "#estimate" ||

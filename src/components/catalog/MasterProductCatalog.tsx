@@ -22,6 +22,7 @@
  */
 
 import { useState, useMemo, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import {
   Layers,
@@ -383,7 +384,63 @@ export function MasterProductCatalog({
   };
 
   const [lightboxItem, setLightboxItem] = useState<CatalogItem | null>(null);
+  const [hoveredZoomItem, setHoveredZoomItem] = useState<CatalogItem | null>(null);
+  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const handleMouseEnter = (item: CatalogItem) => {
+    // Only trigger hover zoom on fine pointer devices (mouse/trackpad), not mobile touchscreens
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia &&
+      !window.matchMedia("(hover: hover) and (pointer: fine)").matches
+    ) {
+      return;
+    }
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    // 50ms responsive threshold to avoid flicker while rapidly sweeping past
+    hoverTimeoutRef.current = setTimeout(() => {
+      setHoveredZoomItem(item);
+    }, 50);
+  };
+
+  const handleMouseLeave = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setHoveredZoomItem(null);
+  };
+
+  // Close hover zoom immediately if the user scrolls (window or container)
+  useEffect(() => {
+    const handleScroll = () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+        hoverTimeoutRef.current = null;
+      }
+      setHoveredZoomItem(null);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    const scrollContainer = scrollContainerRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener("scroll", handleScroll, { passive: true });
+    }
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (scrollContainer) {
+        scrollContainer.removeEventListener("scroll", handleScroll);
+      }
+    };
+  }, []);
 
   // Normalize data collections
   const currentDataset: CatalogItem[] = useMemo(() => {
@@ -879,18 +936,23 @@ export function MasterProductCatalog({
               className={cn(
                 "relative w-full rounded-2xl border border-border/80 bg-card/40 p-2 sm:p-3 shadow-inner",
                 "h-[480px] sm:h-[540px] md:h-[600px] lg:h-[700px] xl:h-[780px]",
-                "overflow-y-auto overscroll-contain",
+                "overflow-y-auto overscroll-y-auto scroll-smooth",
                 "touch-pan-y [-webkit-overflow-scrolling:touch]",
                 "[scrollbar-width:thin] scrollbar-thumb-muted-foreground/30 hover:scrollbar-thumb-muted-foreground/60",
                 "[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-muted/30 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/50",
               )}
-              style={{ overscrollBehaviorY: "contain" }}
+              style={{ overscrollBehaviorY: "auto" }}
             >
               <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-2.5 sm:gap-3.5 pb-8">
                 {displayedItems.map((item) => (
                   <div
                     key={item.code}
-                    onClick={() => setLightboxItem(item)}
+                    onClick={() => {
+                      setHoveredZoomItem(null);
+                      setLightboxItem(item);
+                    }}
+                    onMouseEnter={() => handleMouseEnter(item)}
+                    onMouseLeave={handleMouseLeave}
                     className="group relative flex flex-col overflow-hidden rounded-xl border border-border/70 bg-card hover:border-amber-500/60 hover:shadow-md transition-all duration-200 cursor-pointer"
                   >
                     {/* Architectural Product Image Frame — Matching PDF photo-box presentation */}
@@ -1157,6 +1219,72 @@ export function MasterProductCatalog({
           )}
         </DialogContent>
       </Dialog>
+
+      {/* FULL SCREEN HOVER ZOOM PREVIEW (DISAPPEARS AUTOMATICALLY ON MOUSE LEAVE) */}
+      {hoveredZoomItem &&
+        isMounted &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            aria-hidden="true"
+            className="fixed inset-0 z-[9999] pointer-events-none flex items-center justify-center p-3 sm:p-6 md:p-8 bg-slate-950/80 backdrop-blur-md transition-opacity duration-200 animate-in fade-in"
+          >
+            <div className="relative max-w-4xl max-h-[92vh] w-auto h-auto flex flex-col items-center justify-between rounded-2xl border-2 border-amber-500/60 bg-gradient-to-b from-slate-900/95 via-slate-950/98 to-slate-950/95 shadow-[0_25px_70px_rgba(0,0,0,0.9)] p-4 sm:p-6 overflow-hidden">
+              {/* Header inside Zoom Box */}
+              <div className="w-full flex items-center justify-between gap-3 pb-3 border-b border-amber-500/20">
+                <div className="flex items-center gap-2">
+                  <span className="rounded-md bg-[#0f172a] px-2.5 py-1 text-xs sm:text-sm font-mono font-bold text-[#fbbf24] tracking-wider shadow-sm border border-amber-500/40">
+                    {hoveredZoomItem.code}
+                  </span>
+                  <span className="rounded-md bg-cyan-950/80 px-2.5 py-1 text-xs font-semibold text-cyan-300 border border-cyan-500/30">
+                    {hoveredZoomItem.category}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 text-[11px] font-medium text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/30">
+                  <Maximize2 className="h-3 w-3 text-amber-400 animate-pulse" />
+                  <span>
+                    {lang === "gu"
+                      ? "પૂર્ણ સ્ક્રીન પ્રીવ્યૂ · માઉસ દૂર કરો બંધ કરવા"
+                      : lang === "hi"
+                        ? "पूर्ण स्क्रीन पूर्वावलोकन · बंद करने हेतु माउस हटाएं"
+                        : "Full Screen Preview · Hover off to close"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Main Full-Scale Image */}
+              <div className="relative flex items-center justify-center my-3 max-h-[68vh] max-w-[80vw] overflow-hidden rounded-xl bg-slate-950/50 p-2 sm:p-4 border border-white/5">
+                <img
+                  src={hoveredZoomItem.image}
+                  alt={hoveredZoomItem.name}
+                  className="max-h-[64vh] max-w-[76vw] w-auto h-auto object-contain drop-shadow-[0_20px_45px_rgba(0,0,0,0.9)] select-none transition-transform duration-300 animate-in zoom-in-95"
+                />
+              </div>
+
+              {/* Footer inside Zoom Box */}
+              <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-2 pt-2 border-t border-border/40 text-xs">
+                <div className="text-center sm:text-left">
+                  <p className="font-bold text-white text-sm line-clamp-1">
+                    {currentTab === "cladding"
+                      ? `Pattern ${hoveredZoomItem.code}`
+                      : hoveredZoomItem.name}
+                  </p>
+                  <p className="text-amber-400 font-medium text-xs">
+                    {hoveredZoomItem.details} · {hoveredZoomItem.sizes}
+                  </p>
+                </div>
+                <p className="text-[11px] text-muted-foreground italic">
+                  {lang === "gu"
+                    ? "વિગતવાર સ્પેક્સ માટે કાર્ડ પર ક્લિક કરો"
+                    : lang === "hi"
+                      ? "विस्तृत विनिर्देश हेतु कार्ड पर क्लिक करें"
+                      : "Click card for full specifications & estimate"}
+                </p>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }
