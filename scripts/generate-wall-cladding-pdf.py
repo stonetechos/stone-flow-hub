@@ -429,6 +429,9 @@ def build_catalog_order_and_items():
         item_copy = dict(item)
         item_copy["index"] = seq_idx
         item_copy["code"] = seq_code
+        item_copy["name"] = seq_code
+        item_copy["standardSizes"] = ""
+        item_copy["thickness"] = ""
         item_copy["image"] = f"/catalogues/wall-cladding-assets/{seq_code}.jpg"
         item_copy["images"] = [f"/catalogues/wall-cladding-assets/{seq_code}.jpg"]
         item_copy["rotation"] = 0

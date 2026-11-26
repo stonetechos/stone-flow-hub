@@ -1168,28 +1168,21 @@ export function WallCladdingCatalog({
                         <div>
                           <span className="text-muted-foreground block text-[10px]">
                             {lang === "hi"
-                              ? "उभार / मोटाई"
+                              ? "पत्थर प्रकार"
                               : lang === "gu"
-                                ? "રિલીફ / જાડાઈ"
-                                : "Relief"}
+                                ? "પથ્થર પ્રકાર"
+                                : "Stone Type"}
                           </span>
-                          <span className="font-medium">
-                            {toIndicDigits(lightboxTarget.thickness || "20-35mm", lang)}
+                          <span className="font-medium truncate block">
+                            {transliterateName(lightboxTarget.stoneType || "Natural Stone", lang)}
                           </span>
                         </div>
                         <div>
                           <span className="text-muted-foreground block text-[10px]">
-                            {lang === "hi"
-                              ? "मानक आकार"
-                              : lang === "gu"
-                                ? "માનક કદ"
-                                : "Standard Sizes"}
+                            {lang === "hi" ? "श्रेणी" : lang === "gu" ? "શ્રેણી" : "Category"}
                           </span>
                           <span className="font-medium truncate block">
-                            {toIndicDigits(
-                              lightboxTarget.standardSizes || "600x300mm / Custom",
-                              lang,
-                            )}
+                            {lightboxTarget.category || "Stone Wall Cladding"}
                           </span>
                         </div>
                         <div>
@@ -1239,7 +1232,7 @@ export function WallCladdingCatalog({
                                 ? `आपके अनुमान के लिए "${getCladdingName(lightboxTarget, lang)}" चुना गया!`
                                 : lang === "gu"
                                   ? `તમારા અંદાજ માટે "${getCladdingName(lightboxTarget, lang)}" પસંદ કરાયું!`
-                                  : `Selected "${lightboxTarget.name}" for your estimate inquiry!`,
+                                  : `Selected "${getCladdingName(lightboxTarget, lang)}" for your estimate inquiry!`,
                             );
                           }}
                         >

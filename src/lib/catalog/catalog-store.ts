@@ -374,6 +374,9 @@ export function useWebsiteCatalog(initialSettings?: Partial<SiteSettings>) {
       const isCladdingAsset = item.image?.startsWith("/catalogues/wall-cladding-assets/");
       return {
         ...item,
+        name: seqCode,
+        standardSizes: "",
+        thickness: "",
         index: seqIndex,
         code: seqCode,
         image: isCladdingAsset ? `/catalogues/wall-cladding-assets/${seqCode}.jpg` : item.image,

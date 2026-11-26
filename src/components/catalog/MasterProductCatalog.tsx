@@ -673,7 +673,7 @@ export function MasterProductCatalog({
             image: String(imgs[0] || c.image || ""),
             price: typeof c.price === "number" ? c.price : 240,
             unit: "sq.ft",
-            sizes: toIndicDigits("600 × 300 mm / Modular", lang),
+            sizes: "",
             details:
               getLoc(loc?.details, lang) ||
               localizeCatalogTerm(String(c.stoneType || "Natural Stone"), lang),
@@ -754,10 +754,10 @@ export function MasterProductCatalog({
   const handleSelectProductClick = (item: CatalogItem, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     setLightboxItem(null);
-    const label = currentTab === "cladding" ? `Pattern ${item.code}` : item.name;
+    const label = currentTab === "cladding" ? item.code : item.name;
     const desc =
       currentTab === "cladding"
-        ? `Wall Cladding: Pattern ${item.code} - ${item.category} [${item.sizes || "Standard"}]`.trim()
+        ? `Wall Cladding: ${item.code} - ${item.category}`.trim()
         : `${item.name} (${item.code}) - ${item.category} [${item.sizes || "Standard"}]`.trim();
     if (onSelectProduct) {
       onSelectProduct(desc);
@@ -771,7 +771,7 @@ export function MasterProductCatalog({
     const url = `${window.location.origin}/#${currentTab}-${item.code.toLowerCase()}`;
     const text =
       currentTab === "cladding"
-        ? `Check out Pattern ${item.code} from Stone Tech Atelier: ${url}`
+        ? `Check out ${item.code} from Stone Tech Atelier: ${url}`
         : `Check out ${item.name} (${item.code}) from Stone Tech Atelier: ${url}`;
     if (navigator.share) {
       navigator.share({ title: item.name, text, url }).catch(() => {});
@@ -1021,12 +1021,14 @@ export function MasterProductCatalog({
                         <p className="text-[10px] sm:text-[11px] text-amber-600 dark:text-amber-400 font-medium line-clamp-1">
                           {item.details}
                         </p>
-                        <p className="mt-0.5 text-[10px] text-muted-foreground line-clamp-1">
-                          <span className="font-semibold">
-                            {lang === "gu" ? "માપ:" : lang === "hi" ? "साइज़:" : "Size:"}
-                          </span>{" "}
-                          {item.sizes}
-                        </p>
+                        {currentTab !== "cladding" && item.sizes ? (
+                          <p className="mt-0.5 text-[10px] text-muted-foreground line-clamp-1">
+                            <span className="font-semibold">
+                              {lang === "gu" ? "માપ:" : lang === "hi" ? "साइज़:" : "Size:"}
+                            </span>{" "}
+                            {item.sizes}
+                          </p>
+                        ) : null}
                       </div>
 
                       <div className="pt-1.5 border-t border-border/40 flex items-center justify-between gap-1">
@@ -1146,7 +1148,7 @@ export function MasterProductCatalog({
                 <div>
                   <DialogHeader className="p-0 text-left">
                     <DialogTitle className="text-xl font-bold text-foreground">
-                      {lightboxItem.name}
+                      {currentTab === "cladding" ? lightboxItem.code : lightboxItem.name}
                     </DialogTitle>
                     <DialogDescription className="text-xs text-amber-600 dark:text-amber-400 font-semibold mt-0.5">
                       {lightboxItem.details}
@@ -1276,12 +1278,12 @@ export function MasterProductCatalog({
               <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-2 pt-2 border-t border-border/40 text-xs">
                 <div className="text-center sm:text-left">
                   <p className="font-bold text-white text-sm line-clamp-1">
-                    {currentTab === "cladding"
-                      ? `Pattern ${hoveredZoomItem.code}`
-                      : hoveredZoomItem.name}
+                    {currentTab === "cladding" ? hoveredZoomItem.code : hoveredZoomItem.name}
                   </p>
                   <p className="text-amber-400 font-medium text-xs">
-                    {hoveredZoomItem.details} · {hoveredZoomItem.sizes}
+                    {currentTab === "cladding"
+                      ? hoveredZoomItem.details
+                      : `${hoveredZoomItem.details}${hoveredZoomItem.sizes ? ` · ${hoveredZoomItem.sizes}` : ""}`}
                   </p>
                 </div>
                 <p className="text-[11px] text-muted-foreground italic">
