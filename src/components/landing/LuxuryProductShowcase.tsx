@@ -1,18 +1,6 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  Sparkles,
-  Layers,
-  ArrowRight,
-  Phone,
-  Gem,
-  Check,
-  Compass,
-  Palette,
-  ShieldCheck,
-  ChevronDown,
-  ExternalLink,
-} from "lucide-react";
+import { ArrowRight, Phone, Check, ChevronDown, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -402,25 +390,16 @@ export function LuxuryProductShowcase({
 
   return (
     <div className="mt-8 space-y-6">
-      {/* Luxury Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl border border-[#006788]/30 bg-gradient-to-br from-[#072430] via-[#0b3345] to-stone-950 p-6 sm:p-8 text-white shadow-xl">
-        <div className="absolute -top-12 -right-12 h-44 w-44 rounded-full bg-[#006788]/20 blur-3xl pointer-events-none" />
+      {/* Curated Natural Stone Collections Header Banner */}
+      <div className="relative overflow-hidden rounded-3xl border-2 border-[#006788]/30 bg-gradient-to-br from-[#e0f1f5]/70 via-background to-[#e0f1f5]/40 dark:from-[#015474]/25 dark:via-stone-900/90 dark:to-[#015474]/15 p-6 sm:p-8 shadow-sm">
+        <div className="absolute -top-12 -right-12 h-44 w-44 rounded-full bg-[#006788]/10 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-12 -left-12 h-44 w-44 rounded-full bg-[#015474]/10 blur-3xl pointer-events-none" />
         <div className="relative space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#006788]/50 bg-[#006788]/20 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[#67e8f9]">
-              <Gem className="h-3 w-3 text-[#38bdf8] fill-[#38bdf8]/30" />
-              {texts.showcase.portfolioBadge}
-            </span>
-            <span className="text-[11px] font-medium text-stone-300">
-              {texts.showcase.directMine}
-            </span>
-          </div>
-
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#015474] dark:text-[#67e8f9]">
             {texts.showcase.title}
           </h2>
 
-          <p className="text-xs sm:text-sm text-stone-200/90 max-w-2xl leading-relaxed">
+          <p className="text-xs sm:text-sm text-[#015474]/80 dark:text-stone-300 max-w-2xl leading-relaxed font-medium">
             {texts.showcase.subtitle}
           </p>
 
@@ -433,11 +412,12 @@ export function LuxuryProductShowcase({
                   key={c.key}
                   type="button"
                   onClick={() => setSelectedCategory(c.key as typeof selectedCategory)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                  className={cn(
+                    "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer",
                     isSelected
-                      ? "bg-[#015474] text-white shadow-md font-bold border border-[#006788]"
-                      : "bg-stone-900/80 text-stone-300 hover:bg-[#015474]/40 hover:text-white border border-[#006788]/20"
-                  }`}
+                      ? "bg-[#015474] text-white shadow-sm ring-1 ring-[#006788]"
+                      : "bg-background/90 text-[#015474] hover:bg-[#e0f1f5] dark:text-[#67e8f9] dark:bg-stone-900/80 dark:hover:bg-[#015474]/30 border border-[#006788]/25",
+                  )}
                 >
                   {c.label} ({c.count})
                 </button>
@@ -462,28 +442,16 @@ export function LuxuryProductShowcase({
                 "group relative rounded-2xl border bg-card/90 backdrop-blur-xs p-5 sm:p-6 shadow-sm hover:shadow-lg transition-all duration-300 ring-1 ring-black/5 dark:ring-white/5 space-y-4",
                 isSelected
                   ? "border-emerald-500/80 ring-2 ring-emerald-500/30 bg-emerald-50/20 dark:bg-emerald-950/10"
-                  : "border-border/80 hover:border-[#006788]/60",
+                  : "border-[#006788]/20 hover:border-[#006788]/60",
               )}
             >
-              {/* Top Row: Category Tag, Badge, and Action Link */}
+              {/* Top Row: Product Title, Subtitle, and Action Link */}
               <div className="flex flex-wrap items-start justify-between gap-2 border-b border-border/60 pb-3">
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant="outline"
-                      className="border-[#006788]/30 text-[#015474] dark:text-[#67e8f9] bg-[#e0f1f5]/60 dark:bg-[#015474]/20 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5"
-                    >
-                      {product.categoryLabel}
-                    </Badge>
-                    <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
-                      <Sparkles className="h-3 w-3 text-[#006788] dark:text-[#38bdf8]" />
-                      {product.badge}
-                    </span>
-                  </div>
-                  <h3 className="text-lg sm:text-xl font-extrabold text-foreground tracking-tight group-hover:text-[#015474] dark:group-hover:text-[#67e8f9] transition-colors">
+                  <h3 className="text-lg sm:text-xl font-extrabold text-[#015474] dark:text-[#67e8f9] tracking-tight">
                     {product.name}
                   </h3>
-                  <p className="text-xs font-semibold text-[#015474] dark:text-[#38bdf8]">
+                  <p className="text-xs font-semibold text-[#006788] dark:text-[#38bdf8]">
                     {product.luxurySubtitle}
                   </p>
                 </div>
