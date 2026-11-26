@@ -403,15 +403,15 @@ export function LuxuryProductShowcase({
   return (
     <div className="mt-8 space-y-6">
       {/* Luxury Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl border border-amber-500/25 bg-gradient-to-br from-stone-900 via-stone-850 to-stone-950 p-6 sm:p-8 text-white shadow-xl">
-        <div className="absolute -top-12 -right-12 h-44 w-44 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
+      <div className="relative overflow-hidden rounded-3xl border border-[#006788]/30 bg-gradient-to-br from-[#072430] via-[#0b3345] to-stone-950 p-6 sm:p-8 text-white shadow-xl">
+        <div className="absolute -top-12 -right-12 h-44 w-44 rounded-full bg-[#006788]/20 blur-3xl pointer-events-none" />
         <div className="relative space-y-3">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/40 bg-amber-500/15 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-amber-300">
-              <Gem className="h-3 w-3 fill-amber-400" />
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#006788]/50 bg-[#006788]/20 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[#67e8f9]">
+              <Gem className="h-3 w-3 text-[#38bdf8] fill-[#38bdf8]/30" />
               {texts.showcase.portfolioBadge}
             </span>
-            <span className="text-[11px] font-medium text-stone-400">
+            <span className="text-[11px] font-medium text-stone-300">
               {texts.showcase.directMine}
             </span>
           </div>
@@ -420,7 +420,7 @@ export function LuxuryProductShowcase({
             {texts.showcase.title}
           </h2>
 
-          <p className="text-xs sm:text-sm text-stone-300 max-w-2xl leading-relaxed">
+          <p className="text-xs sm:text-sm text-stone-200/90 max-w-2xl leading-relaxed">
             {texts.showcase.subtitle}
           </p>
 
@@ -433,10 +433,10 @@ export function LuxuryProductShowcase({
                   key={c.key}
                   type="button"
                   onClick={() => setSelectedCategory(c.key as typeof selectedCategory)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer ${
                     isSelected
-                      ? "bg-amber-500 text-stone-950 shadow-md font-bold"
-                      : "bg-stone-800/80 text-stone-300 hover:bg-stone-800 hover:text-white border border-stone-700/60"
+                      ? "bg-[#015474] text-white shadow-md font-bold border border-[#006788]"
+                      : "bg-stone-900/80 text-stone-300 hover:bg-[#015474]/40 hover:text-white border border-[#006788]/20"
                   }`}
                 >
                   {c.label} ({c.count})
@@ -462,7 +462,7 @@ export function LuxuryProductShowcase({
                 "group relative rounded-2xl border bg-card/90 backdrop-blur-xs p-5 sm:p-6 shadow-sm hover:shadow-lg transition-all duration-300 ring-1 ring-black/5 dark:ring-white/5 space-y-4",
                 isSelected
                   ? "border-emerald-500/80 ring-2 ring-emerald-500/30 bg-emerald-50/20 dark:bg-emerald-950/10"
-                  : "border-border/80 hover:border-amber-500/50",
+                  : "border-border/80 hover:border-[#006788]/60",
               )}
             >
               {/* Top Row: Category Tag, Badge, and Action Link */}
@@ -471,19 +471,19 @@ export function LuxuryProductShowcase({
                   <div className="flex items-center gap-2">
                     <Badge
                       variant="outline"
-                      className="border-amber-500/30 text-amber-700 dark:text-amber-400 bg-amber-500/10 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5"
+                      className="border-[#006788]/30 text-[#015474] dark:text-[#67e8f9] bg-[#e0f1f5]/60 dark:bg-[#015474]/20 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5"
                     >
                       {product.categoryLabel}
                     </Badge>
                     <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
-                      <Sparkles className="h-3 w-3 text-amber-500" />
+                      <Sparkles className="h-3 w-3 text-[#006788] dark:text-[#38bdf8]" />
                       {product.badge}
                     </span>
                   </div>
-                  <h3 className="text-lg sm:text-xl font-extrabold text-foreground tracking-tight group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                  <h3 className="text-lg sm:text-xl font-extrabold text-foreground tracking-tight group-hover:text-[#015474] dark:group-hover:text-[#67e8f9] transition-colors">
                     {product.name}
                   </h3>
-                  <p className="text-xs font-semibold text-amber-700 dark:text-amber-300/90">
+                  <p className="text-xs font-semibold text-[#015474] dark:text-[#38bdf8]">
                     {product.luxurySubtitle}
                   </p>
                 </div>
@@ -497,7 +497,7 @@ export function LuxuryProductShowcase({
                       "h-8 text-xs font-bold shadow-2xs gap-1.5 px-3 cursor-pointer transition-all",
                       isSelected
                         ? "bg-emerald-600 hover:bg-emerald-700 text-white ring-2 ring-emerald-400/40"
-                        : "bg-amber-600 hover:bg-amber-700 text-white",
+                        : "bg-[#015474] hover:bg-[#004863] text-white",
                     )}
                   >
                     {isSelected ? (
@@ -535,7 +535,7 @@ export function LuxuryProductShowcase({
                 <button
                   type="button"
                   onClick={() => toggleExpand(product.id)}
-                  className="flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
+                  className="flex items-center gap-1.5 text-xs font-bold text-[#015474] dark:text-[#67e8f9] hover:text-[#004863] hover:underline cursor-pointer"
                 >
                   <span>{isExpanded ? texts.showcase.hideSpecs : texts.showcase.viewSpecs}</span>
                   <ChevronDown
@@ -604,7 +604,7 @@ export function LuxuryProductShowcase({
                           <Badge
                             key={i}
                             variant="outline"
-                            className="text-[10px] px-2 py-0.5 bg-amber-50/50 text-amber-900 border-amber-200 dark:bg-amber-950/20 dark:text-amber-200 dark:border-amber-900"
+                            className="text-[10px] px-2 py-0.5 bg-[#e0f1f5]/50 text-[#015474] border-[#006788]/30 dark:bg-[#015474]/20 dark:text-[#67e8f9] dark:border-[#006788]/40"
                           >
                             {app}
                           </Badge>
@@ -644,7 +644,7 @@ export function LuxuryProductShowcase({
                       "h-7 text-xs font-bold px-2 cursor-pointer transition-colors",
                       isSelected
                         ? "text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 font-extrabold"
-                        : "text-amber-600 hover:text-amber-700 hover:bg-amber-500/10",
+                        : "text-[#015474] dark:text-[#67e8f9] hover:text-[#004863] hover:bg-[#e0f1f5]/60 dark:hover:bg-[#015474]/30",
                     )}
                   >
                     {isSelected ? texts.showcase.viewInForm : texts.showcase.getEstimate}

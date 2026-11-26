@@ -176,7 +176,7 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
                     contentVisibility: idx >= INITIAL_BATCH ? "auto" : undefined,
                     containIntrinsicSize: idx >= INITIAL_BATCH ? "auto 120px" : undefined,
                   }}
-                  className="group relative aspect-square rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer bg-stone-100 dark:bg-stone-900 border border-border/60 hover:border-amber-500/50 shadow-2xs hover:shadow-md transition-all duration-300"
+                  className="group relative aspect-square rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer bg-stone-100 dark:bg-stone-900 border border-border/60 hover:border-[#006788]/60 shadow-2xs hover:shadow-md transition-all duration-300"
                   title={post.productName}
                 >
                   {/* Media: Video or Image */}
@@ -253,7 +253,7 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
                 onClick={() =>
                   setVisibleCount((prev) => Math.min(prev + BATCH_SIZE, allPosts.length))
                 }
-                className="px-4 py-2 rounded-lg border border-amber-500/30 bg-card hover:bg-muted text-xs font-semibold text-foreground cursor-pointer transition-all shadow-xs"
+                className="px-4 py-2 rounded-lg border border-[#006788]/30 bg-card hover:bg-[#e0f1f5]/50 dark:hover:bg-[#015474]/20 text-xs font-semibold text-[#015474] dark:text-[#67e8f9] cursor-pointer transition-all shadow-xs"
               >
                 Load More Projects ({allPosts.length - visiblePosts.length} remaining)
               </button>
@@ -281,7 +281,7 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
             href="https://www.instagram.com/stonetech.ahmedabad/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[11px] font-semibold tracking-wider text-amber-600 dark:text-amber-400 hover:underline inline-flex items-center gap-1"
+            className="text-[11px] font-semibold tracking-wider text-[#015474] dark:text-[#67e8f9] hover:underline inline-flex items-center gap-1"
           >
             @stonetech.ahmedabad
           </a>
@@ -393,7 +393,7 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
                       <div className="flex items-center justify-between">
                         <Badge
                           variant="outline"
-                          className="text-[11px] border-amber-500/30 text-amber-700 dark:text-amber-300"
+                          className="text-[11px] border-[#006788]/30 text-[#015474] dark:text-[#67e8f9] bg-[#e0f1f5]/50 dark:bg-[#015474]/20"
                         >
                           {activeModalPost.location}
                         </Badge>
@@ -419,7 +419,7 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
 
                       <Button
                         onClick={() => handleInquire(activeModalPost)}
-                        className="w-full h-11 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs gap-1.5 shadow-sm"
+                        className="w-full h-11 bg-[#015474] hover:bg-[#004863] text-white font-bold text-xs gap-1.5 shadow-sm"
                       >
                         <Sparkles className="h-4 w-4" />
                         <span>{texts.gallery.requestEstimate}</span>
