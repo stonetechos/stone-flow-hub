@@ -183,8 +183,11 @@ export function ShreeYantraHeroShowcase({
                 <img
                   src="/images/shree-yantra.jpg"
                   alt="Certified Handcrafted 3D Sacred Shree Yantra Showcase"
+                  width={190}
+                  height={190}
                   className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-500"
                   loading="eager"
+                  decoding="async"
                 />
 
                 {/* Bottom Inspection Plaque */}

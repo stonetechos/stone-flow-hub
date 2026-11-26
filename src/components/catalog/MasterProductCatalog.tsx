@@ -977,17 +977,18 @@ export function MasterProductCatalog({
                     }}
                     onMouseEnter={() => handleMouseEnter(item)}
                     onMouseLeave={handleMouseLeave}
-                    style={{ contentVisibility: "auto", containIntrinsicSize: "280px" }}
-                    className="group relative flex flex-col overflow-hidden rounded-xl border border-border/70 bg-card hover:border-amber-500/60 hover:shadow-md transition-all duration-200 cursor-pointer transform-gpu"
+                    className="group relative flex flex-col overflow-hidden rounded-xl border border-border/70 bg-card hover:border-amber-500/60 transition-colors duration-150 cursor-pointer"
                   >
                     {/* Architectural Product Image Frame — Matching PDF photo-box presentation */}
                     <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-[#f8fafc] dark:bg-stone-900/60 border border-slate-100 dark:border-slate-800 flex items-center justify-center p-2">
                       <img
                         src={item.image}
                         alt={item.name}
-                        loading="lazy"
+                        width={300}
+                        height={300}
+                        loading="eager"
                         decoding="async"
-                        className="max-h-[95%] max-w-[95%] w-auto h-auto object-contain transition-transform duration-300 ease-out group-hover:scale-115 select-none pointer-events-none"
+                        className="max-h-[92%] max-w-[92%] w-auto h-auto object-contain select-none pointer-events-none"
                       />
 
                       {/* Top badges — matching PDF .code-tag gold on dark styling */}
@@ -1009,26 +1010,6 @@ export function MasterProductCatalog({
                       >
                         <Share2 className="h-3 w-3" />
                       </button>
-
-                      {/* Hover overlay with zoom hint */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2.5 z-10 pointer-events-none">
-                        <p className="text-[10px] text-amber-300 font-medium line-clamp-1 mb-0.5">
-                          {item.details}
-                        </p>
-                        <div className="flex items-center justify-between text-[11px]">
-                          <span className="text-white font-bold">
-                            {lang === "gu"
-                              ? "સત્યાપિત સંગ્રહ"
-                              : lang === "hi"
-                                ? "सत्यापित संग्रह"
-                                : "Verified Atelier Collection"}
-                          </span>
-                          <span className="flex items-center gap-1 text-[10px] text-amber-400 font-semibold bg-black/60 px-1.5 py-0.5 rounded">
-                            <Maximize2 className="h-2.5 w-2.5" />
-                            <span>{lang === "gu" ? "ઝૂમ" : lang === "hi" ? "ज़ूम" : "Zoom"}</span>
-                          </span>
-                        </div>
-                      </div>
                     </div>
 
                     {/* Squeezed Product Info */}
