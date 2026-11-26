@@ -416,7 +416,7 @@ export function LuxuryProductShowcase({
                     "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer",
                     isSelected
                       ? "bg-[#015474] text-white shadow-sm ring-1 ring-[#006788]"
-                      : "bg-background/90 text-[#015474] hover:bg-[#e0f1f5] dark:text-[#67e8f9] dark:bg-stone-900/80 dark:hover:bg-[#015474]/30 border border-[#006788]/25",
+                      : "bg-[#006788]/10 text-[#015474] hover:bg-[#006788]/20 dark:bg-[#015474]/25 dark:text-[#67e8f9] dark:hover:bg-[#015474]/40 border border-[#006788]/25",
                   )}
                 >
                   {c.label} ({c.count})
