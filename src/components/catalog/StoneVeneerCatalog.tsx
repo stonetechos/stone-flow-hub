@@ -534,13 +534,6 @@ export function StoneVeneerCatalog({
                   className="w-full h-full object-cover rounded-lg sm:rounded-xl transition-transform duration-500 group-hover:scale-105"
                 />
 
-                {/* Top Badge: Stone Collection Tag */}
-                <div className="absolute top-2 left-2 z-10 flex items-center gap-1">
-                  <Badge className="bg-black/75 hover:bg-black/90 backdrop-blur-md text-[10px] text-white border-white/20 font-semibold px-2 py-0.5">
-                    {item.stoneType}
-                  </Badge>
-                </div>
-
                 {/* Bottom Hover Overlay with Details & Quick Estimate Button */}
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/80 to-transparent p-2.5 sm:p-3.5 pt-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end gap-1.5 z-10">
                   <div className="flex items-start justify-between gap-1">
