@@ -51,6 +51,7 @@ export const LANDING_UI_TRANSLATIONS = {
     nav: {
       ourProducts: "Our Products",
       ourWork: "Our Works",
+      requestEstimate: "Request for Estimate",
       whyUs: "Why Us",
       jobOpenings: "Job Openings",
       newBadge: "NEW",
@@ -281,6 +282,7 @@ export const LANDING_UI_TRANSLATIONS = {
     nav: {
       ourProducts: "हमारे उत्पाद",
       ourWork: "हमारा काम",
+      requestEstimate: "अनुमान अनुरोध",
       whyUs: "हम ही क्यों",
       jobOpenings: "करियर / नौकरियां",
       newBadge: "नया",
@@ -511,6 +513,7 @@ export const LANDING_UI_TRANSLATIONS = {
     nav: {
       ourProducts: "અમારા ઉત્પાદનો",
       ourWork: "અમારું કામ",
+      requestEstimate: "અંદાજ વિનંતી",
       whyUs: "અમે જ કેમ",
       jobOpenings: "નોકરીઓ / કારકિર્દી",
       newBadge: "નવું",

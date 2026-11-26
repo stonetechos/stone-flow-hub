@@ -39,7 +39,7 @@ const SHREE_YANTRA_TEXTS = {
     inspectButton: "Inspect Sacred Geometry Details (High-Res 3D)",
     showLessBtn: "Show less ▴",
     bothRegistered:
-      "🎉 Both privileges are registered! Complete the estimate form on the right to lock in your quotation.",
+      "🎉 Both privileges are registered! Open the estimate request to lock in your quotation.",
   },
   hi: {
     privilegeUnlocked: "✓ विशेषाधिकार अनलॉक",
@@ -73,7 +73,7 @@ const SHREE_YANTRA_TEXTS = {
     inspectButton: "पवित्र ज्यामिति विवरण देखें (उच्च-रिज़ॉल्यूशन 3D)",
     showLessBtn: "कम दिखाएं ▴",
     bothRegistered:
-      "🎉 दोनों विशेषाधिकार पंजीकृत हैं! अपना कोटेशन सुरक्षित करने के लिए दाईं ओर का अनुमान फॉर्म पूरा करें।",
+      "🎉 दोनों विशेषाधिकार पंजीकृत हैं! अपना कोटेशन सुरक्षित करने के लिए अनुमान अनुरोध पूरा करें।",
   },
   gu: {
     privilegeUnlocked: "✓ વિશેષાધિકાર અનલૉક",
@@ -107,7 +107,7 @@ const SHREE_YANTRA_TEXTS = {
     inspectButton: "પવિત્ર ભૂમિતિ વિગતો જુઓ (હાઇ-રિઝોલ્યુશન 3D)",
     showLessBtn: "ઓછું જુઓ ▴",
     bothRegistered:
-      "🎉 બંને લાભો નોંધાયા છે! તમારું ક્વોટેશન નિશ્ચિત કરવા માટે જમણી બાજુનું ફોર્મ ભરો.",
+      "🎉 બંને લાભો નોંધાયા છે! તમારું ક્વોટેશન નિશ્ચિત કરવા માટે અંદાજ વિનંતી પૂર્ણ કરો.",
   },
 };
 
