@@ -385,10 +385,7 @@ export function MasterProductCatalog({
 
   const [lightboxItem, setLightboxItem] = useState<CatalogItem | null>(null);
   const [hoveredZoomItem, setHoveredZoomItem] = useState<CatalogItem | null>(null);
-  const hoveredZoomItemRef = useRef<CatalogItem | null>(null);
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isScrollingRef = useRef(false);
-  const scrollEndTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -397,9 +394,6 @@ export function MasterProductCatalog({
   }, []);
 
   const handleMouseEnter = (item: CatalogItem) => {
-    // If the user is actively scrolling, do not trigger hover zoom
-    if (isScrollingRef.current) return;
-
     // Only trigger hover zoom on fine pointer devices (mouse/trackpad), not mobile touchscreens
     if (
       typeof window !== "undefined" &&
@@ -411,13 +405,10 @@ export function MasterProductCatalog({
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
     }
-    // 220ms intentional hover dwell time to avoid accidental triggers while moving or scrolling past
+    // 200ms intentional hover dwell time to avoid accidental triggers while moving or scrolling past
     hoverTimeoutRef.current = setTimeout(() => {
-      if (!isScrollingRef.current) {
-        hoveredZoomItemRef.current = item;
-        setHoveredZoomItem(item);
-      }
-    }, 220);
+      setHoveredZoomItem(item);
+    }, 200);
   };
 
   const handleMouseLeave = () => {
@@ -425,49 +416,23 @@ export function MasterProductCatalog({
       clearTimeout(hoverTimeoutRef.current);
       hoverTimeoutRef.current = null;
     }
-    if (hoveredZoomItemRef.current !== null) {
-      hoveredZoomItemRef.current = null;
-      setHoveredZoomItem(null);
-    }
+    setHoveredZoomItem(null);
   };
 
-  // Zero-overhead scroll listener: completely silent with NO React re-renders while scrolling
+  // Only listen to window scroll/wheel when a zoom overlay is ACTUALLY OPEN so we can close it
+  // This guarantees ZERO window scroll listeners during normal 120fps webpage scrolling!
   useEffect(() => {
-    const handleScroll = () => {
-      isScrollingRef.current = true;
-      if (hoverTimeoutRef.current) {
-        clearTimeout(hoverTimeoutRef.current);
-        hoverTimeoutRef.current = null;
-      }
-      // ONLY trigger a state update if the zoom overlay is actually open
-      if (hoveredZoomItemRef.current !== null) {
-        hoveredZoomItemRef.current = null;
-        setHoveredZoomItem(null);
-      }
-
-      if (scrollEndTimerRef.current) {
-        clearTimeout(scrollEndTimerRef.current);
-      }
-      scrollEndTimerRef.current = setTimeout(() => {
-        isScrollingRef.current = false;
-      }, 150);
+    if (!hoveredZoomItem) return;
+    const closeOnScroll = () => {
+      setHoveredZoomItem(null);
     };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    const scrollContainer = scrollContainerRef.current;
-    if (scrollContainer) {
-      scrollContainer.addEventListener("scroll", handleScroll, { passive: true });
-    }
+    window.addEventListener("scroll", closeOnScroll, { passive: true, once: true });
+    window.addEventListener("wheel", closeOnScroll, { passive: true, once: true });
     return () => {
-      window.removeEventListener("scroll", handleScroll);
-      if (scrollContainer) {
-        scrollContainer.removeEventListener("scroll", handleScroll);
-      }
-      if (scrollEndTimerRef.current) {
-        clearTimeout(scrollEndTimerRef.current);
-      }
+      window.removeEventListener("scroll", closeOnScroll);
+      window.removeEventListener("wheel", closeOnScroll);
     };
-  }, []);
+  }, [hoveredZoomItem]);
 
   // Normalize data collections
   const currentDataset: CatalogItem[] = useMemo(() => {
@@ -736,16 +701,49 @@ export function MasterProductCatalog({
     }
   }, [currentTab, lang]);
 
-  // Items displayed in the active tab (clean, complete collection without cluttered sub-filters)
-  const displayedItems = currentDataset;
-  const filteredItems = currentDataset;
+  // Progressive rendering for 120fps smooth scrolling: initial 24 items + auto-batching on scroll
+  const BATCH_SIZE = 24;
+  const [visibleCount, setVisibleCount] = useState(BATCH_SIZE);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // Reset scroll position when active tab changes
+  // Reset scroll position and visible count when active tab changes
   useEffect(() => {
+    setVisibleCount(BATCH_SIZE);
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = 0;
     }
   }, [currentTab]);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    const container = scrollContainerRef.current;
+    if (!sentinel || !container) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const first = entries[0];
+        if (first?.isIntersecting) {
+          setVisibleCount((prev) => {
+            if (prev >= currentDataset.length) return prev;
+            return Math.min(prev + BATCH_SIZE, currentDataset.length);
+          });
+        }
+      },
+      {
+        root: container,
+        rootMargin: "400px 0px",
+        threshold: 0,
+      },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [currentDataset.length, currentTab]);
+
+  const displayedItems = useMemo(() => {
+    return currentDataset.slice(0, visibleCount);
+  }, [currentDataset, visibleCount]);
+  const filteredItems = currentDataset;
 
   const scrollToContainerTop = () => {
     if (scrollContainerRef.current) {
@@ -961,16 +959,15 @@ export function MasterProductCatalog({
               ref={scrollContainerRef}
               aria-label="Architectural Products 8-Item Frame"
               className={cn(
-                "relative w-full rounded-2xl border border-border/80 bg-card/40 p-2 sm:p-3 shadow-inner",
+                "relative w-full rounded-2xl border border-border/80 bg-card/40 p-2 sm:p-3",
                 "h-[480px] sm:h-[540px] md:h-[600px] lg:h-[700px] xl:h-[780px]",
-                "overflow-y-auto overscroll-y-auto",
-                "touch-pan-y [-webkit-overflow-scrolling:touch]",
+                "overflow-y-auto overscroll-y-auto transform-gpu",
                 "[scrollbar-width:thin] scrollbar-thumb-muted-foreground/30 hover:scrollbar-thumb-muted-foreground/60",
                 "[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-muted/30 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/50",
               )}
               style={{ overscrollBehaviorY: "auto" }}
             >
-              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-2.5 sm:gap-3.5 pb-8">
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-2.5 sm:gap-3.5 pb-4">
                 {displayedItems.map((item) => (
                   <div
                     key={item.code}
@@ -981,7 +978,7 @@ export function MasterProductCatalog({
                     onMouseEnter={() => handleMouseEnter(item)}
                     onMouseLeave={handleMouseLeave}
                     style={{ contentVisibility: "auto", containIntrinsicSize: "280px" }}
-                    className="group relative flex flex-col overflow-hidden rounded-xl border border-border/70 bg-card hover:border-amber-500/60 hover:shadow-md transition-all duration-200 cursor-pointer"
+                    className="group relative flex flex-col overflow-hidden rounded-xl border border-border/70 bg-card hover:border-amber-500/60 hover:shadow-md transition-all duration-200 cursor-pointer transform-gpu"
                   >
                     {/* Architectural Product Image Frame — Matching PDF photo-box presentation */}
                     <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-[#f8fafc] dark:bg-stone-900/60 border border-slate-100 dark:border-slate-800 flex items-center justify-center p-2">
@@ -990,7 +987,7 @@ export function MasterProductCatalog({
                         alt={item.name}
                         loading="lazy"
                         decoding="async"
-                        className="max-h-[95%] max-w-[95%] w-auto h-auto object-contain transition-transform duration-500 ease-out group-hover:scale-115 drop-shadow-xs select-none pointer-events-none"
+                        className="max-h-[95%] max-w-[95%] w-auto h-auto object-contain transition-transform duration-300 ease-out group-hover:scale-115 select-none pointer-events-none"
                       />
 
                       {/* Top badges — matching PDF .code-tag gold on dark styling */}
@@ -998,7 +995,7 @@ export function MasterProductCatalog({
                         <span className="rounded-md bg-[#0f172a] px-1.5 py-0.5 text-[9px] font-mono font-bold text-[#fbbf24] tracking-wider shadow-xs border border-amber-500/30">
                           {item.code}
                         </span>
-                        <span className="rounded-md bg-slate-950/85 backdrop-blur-xs px-1.5 py-0.5 text-[8.5px] font-semibold text-cyan-300 border border-cyan-500/30 line-clamp-1 max-w-[110px]">
+                        <span className="rounded-md bg-slate-950/90 px-1.5 py-0.5 text-[8.5px] font-semibold text-cyan-300 border border-cyan-500/30 line-clamp-1 max-w-[110px]">
                           {item.category}
                         </span>
                       </div>
@@ -1007,7 +1004,7 @@ export function MasterProductCatalog({
                       <button
                         type="button"
                         onClick={(e) => handleShare(item, e)}
-                        className="absolute top-2 right-2 rounded-full bg-slate-950/70 backdrop-blur-xs p-1 text-slate-300 hover:text-white transition-opacity z-10 cursor-pointer opacity-70 group-hover:opacity-100"
+                        className="absolute top-2 right-2 rounded-full bg-slate-950/80 p-1 text-slate-300 hover:text-white transition-opacity z-10 cursor-pointer opacity-70 group-hover:opacity-100"
                         title="Share"
                       >
                         <Share2 className="h-3 w-3" />
@@ -1026,7 +1023,7 @@ export function MasterProductCatalog({
                                 ? "सत्यापित संग्रह"
                                 : "Verified Atelier Collection"}
                           </span>
-                          <span className="flex items-center gap-1 text-[10px] text-amber-400 font-semibold bg-black/40 px-1.5 py-0.5 rounded backdrop-blur-xs">
+                          <span className="flex items-center gap-1 text-[10px] text-amber-400 font-semibold bg-black/60 px-1.5 py-0.5 rounded">
                             <Maximize2 className="h-2.5 w-2.5" />
                             <span>{lang === "gu" ? "ઝૂમ" : lang === "hi" ? "ज़ूम" : "Zoom"}</span>
                           </span>
@@ -1078,6 +1075,11 @@ export function MasterProductCatalog({
                   </div>
                 ))}
               </div>
+              <div
+                ref={sentinelRef}
+                className="h-6 w-full pointer-events-none"
+                aria-hidden="true"
+              />
             </div>
 
             {/* Crisp Action & Navigation Bar */}
@@ -1257,7 +1259,7 @@ export function MasterProductCatalog({
             aria-hidden="true"
             className="fixed inset-0 z-[9999] pointer-events-none flex items-center justify-center p-3 sm:p-6 md:p-8 bg-slate-950/92 transition-opacity duration-200 animate-in fade-in"
           >
-            <div className="relative max-w-4xl max-h-[92vh] w-auto h-auto flex flex-col items-center justify-between rounded-2xl border-2 border-amber-500/60 bg-gradient-to-b from-slate-900/95 via-slate-950/98 to-slate-950/95 shadow-[0_25px_70px_rgba(0,0,0,0.9)] p-4 sm:p-6 overflow-hidden">
+            <div className="relative max-w-4xl max-h-[92vh] w-auto h-auto flex flex-col items-center justify-between rounded-2xl border-2 border-amber-500/60 bg-gradient-to-b from-slate-900/95 via-slate-950/98 to-slate-950/95 shadow-[0_25px_70px_rgba(0,0,0,0.9)] p-4 sm:p-6 overflow-hidden transform-gpu">
               {/* Header inside Zoom Box */}
               <div className="w-full flex items-center justify-between gap-3 pb-3 border-b border-amber-500/20">
                 <div className="flex items-center gap-2">
