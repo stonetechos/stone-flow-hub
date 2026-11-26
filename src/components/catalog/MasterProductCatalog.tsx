@@ -405,10 +405,11 @@ export function MasterProductCatalog({
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
     }
-    // 200ms intentional hover dwell time to avoid accidental triggers while moving or scrolling past
+    // 2-second (2000ms) deliberate hover dwell delay so user can read card details,
+    // view prices, and use the share or estimate buttons without premature zoom popup
     hoverTimeoutRef.current = setTimeout(() => {
       setHoveredZoomItem(item);
-    }, 200);
+    }, 2000);
   };
 
   const handleMouseLeave = () => {
@@ -975,12 +976,15 @@ export function MasterProductCatalog({
                       setHoveredZoomItem(null);
                       setLightboxItem(item);
                     }}
-                    onMouseEnter={() => handleMouseEnter(item)}
                     onMouseLeave={handleMouseLeave}
                     className="group relative flex flex-col overflow-hidden rounded-xl border border-border/70 bg-card hover:border-amber-500/60 transition-colors duration-150 cursor-pointer"
                   >
                     {/* Architectural Product Image Frame — Matching PDF photo-box presentation */}
-                    <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-[#f8fafc] dark:bg-stone-900/60 border border-slate-100 dark:border-slate-800 flex items-center justify-center p-2">
+                    <div
+                      onMouseEnter={() => handleMouseEnter(item)}
+                      onMouseLeave={handleMouseLeave}
+                      className="relative aspect-square w-full overflow-hidden rounded-lg bg-[#f8fafc] dark:bg-stone-900/60 border border-slate-100 dark:border-slate-800 flex items-center justify-center p-2"
+                    >
                       <img
                         src={item.image}
                         alt={item.name}
@@ -995,6 +999,13 @@ export function MasterProductCatalog({
                       <button
                         type="button"
                         onClick={(e) => handleShare(item, e)}
+                        onMouseEnter={(e) => {
+                          e.stopPropagation();
+                          if (hoverTimeoutRef.current) {
+                            clearTimeout(hoverTimeoutRef.current);
+                            hoverTimeoutRef.current = null;
+                          }
+                        }}
                         className="absolute top-2 right-2 rounded-full bg-slate-950/80 p-1 text-slate-300 hover:text-white transition-opacity z-10 cursor-pointer opacity-70 group-hover:opacity-100"
                         title="Share"
                       >
@@ -1222,9 +1233,9 @@ export function MasterProductCatalog({
         createPortal(
           <div
             aria-hidden="true"
-            className="fixed inset-0 z-[9999] pointer-events-none flex items-center justify-center p-3 sm:p-6 md:p-8 bg-slate-950/92 transition-opacity duration-200 animate-in fade-in"
+            className="fixed inset-0 z-[9999] pointer-events-none flex items-center justify-center p-3 sm:p-6 md:p-8 bg-slate-950/92 backdrop-blur-xs transition-opacity duration-300 ease-out animate-in fade-in"
           >
-            <div className="relative max-w-4xl max-h-[92vh] w-auto h-auto flex flex-col items-center justify-between rounded-2xl border-2 border-amber-500/60 bg-gradient-to-b from-slate-900/95 via-slate-950/98 to-slate-950/95 shadow-[0_25px_70px_rgba(0,0,0,0.9)] p-4 sm:p-6 overflow-hidden transform-gpu">
+            <div className="relative max-w-4xl max-h-[92vh] w-auto h-auto flex flex-col items-center justify-between rounded-2xl border-2 border-amber-500/60 bg-gradient-to-b from-slate-900/95 via-slate-950/98 to-slate-950/95 shadow-[0_25px_70px_rgba(0,0,0,0.9)] p-4 sm:p-6 overflow-hidden transform-gpu transition-all duration-300 ease-out animate-in zoom-in-95 fade-in">
               {/* Header inside Zoom Box */}
               <div className="w-full flex items-center justify-end gap-3 pb-3 border-b border-amber-500/20">
                 <div className="flex items-center gap-1.5 text-[11px] font-medium text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/30">
