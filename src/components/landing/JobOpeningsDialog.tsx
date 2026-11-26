@@ -71,13 +71,13 @@ export function JobOpeningsDialog({ trigger }: JobOpeningsDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <button className="group hover:text-primary transition-colors cursor-pointer flex items-center gap-1.5 text-sm font-semibold text-foreground/80 hover:text-foreground py-1 whitespace-nowrap">
-            <Briefcase className="h-4 w-4 text-primary transition-transform group-hover:scale-110" />
-            <span>Job Openings</span>
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-linear-to-r from-rose-600 via-orange-500 to-amber-500 text-white font-extrabold shadow-sm ring-1 ring-white/30 animate-attention-badge select-none ml-0.5">
+          <button className="group hover:text-[#006788] dark:hover:text-[#38bdf8] transition-colors cursor-pointer flex items-center gap-1.5 text-sm font-semibold text-foreground/80 py-1 whitespace-nowrap">
+            <Briefcase className="h-4 w-4 text-[#006788] dark:text-[#38bdf8] transition-transform group-hover:scale-110" />
+            <span>Hirings</span>
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-[#015474] text-white font-bold border border-[#006788]/40 shadow-xs animate-attention-badge select-none ml-0.5">
               <span className="relative flex h-1.5 w-1.5 mr-1">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-90" />
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#67e8f9] opacity-90" />
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#67e8f9]" />
               </span>
               <span className="text-[9.5px] font-black uppercase tracking-wider text-white leading-none">
                 NEW

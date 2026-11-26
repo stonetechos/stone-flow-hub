@@ -493,7 +493,7 @@ function HomePage() {
   return (
     <div className="min-h-screen paper-texture dark:bg-slate-950 text-foreground antialiased pb-20 sm:pb-12 w-full max-w-full overflow-x-hidden">
       {/* 1. STOS ENTERPRISE NAVBAR (TURQUOISE & PAPER WHITE) */}
-      <header className="sticky top-0 z-40 border-b border-border/80 bg-background/95 backdrop-blur-md shadow-2xs pt-[max(env(safe-area-inset-top),0px)]">
+      <header className="sticky top-0 z-40 border-b border-[#006788]/20 bg-background/95 backdrop-blur-md shadow-2xs pt-[max(env(safe-area-inset-top),0px)]">
         <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
           {/* Brand Logo & Name — HD Logo & Never Truncated */}
           <Link to="/" className="flex items-center gap-2.5 sm:gap-3 shrink-0 group">
@@ -521,54 +521,52 @@ function HomePage() {
             <a
               href="#wall-cladding-catalogue"
               onClick={() => setShowcaseTab("cladding")}
-              className="hover:text-primary transition-colors whitespace-nowrap py-1"
+              className="hover:text-[#006788] dark:hover:text-[#38bdf8] transition-colors whitespace-nowrap py-1"
             >
-              {texts.nav.ourProducts || "Our Products"}
+              {texts.nav.ourProducts || "Products"}
             </a>
             <a
               href="#wall-cladding-catalogue"
               onClick={() => setShowcaseTab("installations")}
-              className="hover:text-primary transition-colors whitespace-nowrap py-1"
+              className="hover:text-[#006788] dark:hover:text-[#38bdf8] transition-colors whitespace-nowrap py-1"
             >
-              {texts.nav.ourWork || "Our Works"}
+              {texts.nav.ourWork || "Works"}
             </a>
             <button
               type="button"
               onClick={() => setIsEstimateOpen(true)}
-              className="hover:text-primary transition-colors whitespace-nowrap py-1 flex items-center gap-1.5 cursor-pointer text-foreground/80 hover:text-primary font-semibold text-sm"
+              className="hover:text-[#006788] dark:hover:text-[#38bdf8] transition-colors whitespace-nowrap py-1 flex items-center gap-1.5 cursor-pointer text-foreground/80 font-semibold text-sm"
             >
               <Calculator className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
-              <span>{texts.nav.requestEstimate || "Request for Estimate"}</span>
+              <span>{texts.nav.requestEstimate || "Request a quote"}</span>
             </button>
             <a
               href="#why-us"
-              className="hover:text-primary transition-colors whitespace-nowrap py-1"
+              className="hover:text-[#006788] dark:hover:text-[#38bdf8] transition-colors whitespace-nowrap py-1"
             >
-              {texts.nav.whyUs}
+              {texts.nav.whyUs || "Why us"}
             </a>
             <JobOpeningsDialog
               trigger={
                 <button
                   type="button"
-                  className="group hover:text-primary transition-colors whitespace-nowrap py-1 flex items-center gap-1.5 cursor-pointer text-foreground/85 hover:text-foreground font-semibold"
+                  className="group hover:text-[#006788] dark:hover:text-[#38bdf8] transition-colors whitespace-nowrap py-1 flex items-center gap-1.5 cursor-pointer text-foreground/85 font-semibold"
                 >
-                  <Briefcase className="h-4 w-4 text-primary transition-transform group-hover:scale-110" />
-                  <span>{texts.nav.jobOpenings}</span>
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-linear-to-r from-rose-600 via-orange-500 to-amber-500 text-white font-extrabold shadow-sm ring-1 ring-white/30 animate-attention-badge select-none ml-0.5">
+                  <Briefcase className="h-4 w-4 text-[#006788] dark:text-[#38bdf8] transition-transform group-hover:scale-110" />
+                  <span>{texts.nav.jobOpenings || "Hirings"}</span>
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-[#015474] text-white text-[9.5px] font-black uppercase tracking-wider border border-[#006788]/40 shadow-xs animate-attention-badge select-none ml-0.5">
                     <span className="relative flex h-1.5 w-1.5 mr-1">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-90" />
-                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white" />
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#67e8f9] opacity-90" />
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#67e8f9]" />
                     </span>
-                    <span className="text-[9.5px] font-black uppercase tracking-wider text-white leading-none">
-                      {texts.nav.newBadge}
-                    </span>
+                    <span>{texts.nav.newBadge}</span>
                   </span>
                 </button>
               }
             />
             <a
               href="#contact-us"
-              className="hover:text-primary transition-colors whitespace-nowrap py-1"
+              className="hover:text-[#006788] dark:hover:text-[#38bdf8] transition-colors whitespace-nowrap py-1"
             >
               {texts.nav.contact}
             </a>
@@ -618,7 +616,7 @@ function HomePage() {
                       Explore Atelier
                     </div>
 
-                    {/* Our Products */}
+                    {/* Products */}
                     <a
                       href="#wall-cladding-catalogue"
                       onClick={() => {
@@ -628,10 +626,10 @@ function HomePage() {
                       className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-foreground hover:bg-[#e0f1f5] hover:text-[#015474] dark:hover:bg-[#015474]/30 dark:hover:text-[#67e8f9] transition-all"
                     >
                       <Layers className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
-                      <span>{texts.nav.ourProducts || "Our Products"}</span>
+                      <span>{texts.nav.ourProducts || "Products"}</span>
                     </a>
 
-                    {/* Our Works */}
+                    {/* Works */}
                     <a
                       href="#wall-cladding-catalogue"
                       onClick={() => {
@@ -641,10 +639,10 @@ function HomePage() {
                       className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-foreground hover:bg-[#e0f1f5] hover:text-[#015474] dark:hover:bg-[#015474]/30 dark:hover:text-[#67e8f9] transition-all"
                     >
                       <Gem className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
-                      <span>{texts.nav.ourWork || "Our Works"}</span>
+                      <span>{texts.nav.ourWork || "Works"}</span>
                     </a>
 
-                    {/* Request for Estimate */}
+                    {/* Request a quote */}
                     <button
                       type="button"
                       onClick={() => {
@@ -654,20 +652,20 @@ function HomePage() {
                       className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-foreground hover:bg-[#e0f1f5] hover:text-[#015474] dark:hover:bg-[#015474]/30 dark:hover:text-[#67e8f9] transition-all cursor-pointer text-left"
                     >
                       <Calculator className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
-                      <span>{texts.nav.requestEstimate || "Request for Estimate"}</span>
+                      <span>{texts.nav.requestEstimate || "Request a quote"}</span>
                     </button>
 
-                    {/* Why Us / About Us */}
+                    {/* Why us */}
                     <a
                       href="#why-us"
                       onClick={() => setMobileMenuOpen(false)}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-foreground hover:bg-[#e0f1f5] hover:text-[#015474] dark:hover:bg-[#015474]/30 dark:hover:text-[#67e8f9] transition-all"
                     >
                       <ShieldCheck className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
-                      <span>{texts.nav.whyUs}</span>
+                      <span>{texts.nav.whyUs || "Why us"}</span>
                     </a>
 
-                    {/* Job Openings */}
+                    {/* Hirings */}
                     <div onClick={() => setMobileMenuOpen(false)}>
                       <JobOpeningsDialog
                         trigger={
@@ -677,10 +675,14 @@ function HomePage() {
                           >
                             <div className="flex items-center gap-3">
                               <Briefcase className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
-                              <span>{texts.nav.jobOpenings}</span>
+                              <span>{texts.nav.jobOpenings || "Hirings"}</span>
                             </div>
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-linear-to-r from-rose-600 via-orange-500 to-amber-500 text-white font-black text-[9px] uppercase tracking-wider animate-attention-badge">
-                              {texts.nav.newBadge}
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-[#015474] text-white font-bold text-[9px] uppercase tracking-wider border border-[#006788]/40 shadow-xs animate-attention-badge">
+                              <span className="relative flex h-1.5 w-1.5 mr-1">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#67e8f9] opacity-90" />
+                                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#67e8f9]" />
+                              </span>
+                              <span>{texts.nav.newBadge}</span>
                             </span>
                           </button>
                         }
