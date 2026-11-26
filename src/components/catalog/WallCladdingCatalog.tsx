@@ -910,11 +910,6 @@ export function WallCladdingCatalog({
                       }
                     />
 
-                    {/* Subtle Top-Right Code Badge — matching PDF .code-tag gold styling */}
-                    <div className="absolute top-1.5 right-1.5 bg-[#0f172a] text-[#fbbf24] px-1.5 py-0.5 rounded-md text-[9px] font-mono font-bold shadow-xs border border-amber-500/30 pointer-events-none z-10">
-                      {toIndicDigits(item.code || item.id, lang)}
-                    </div>
-
                     {/* Subtle dark gradient overlay on hover — EXACT SAME as Live Installations */}
                     <div className="absolute inset-0 bg-black/65 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-between p-2 text-white z-10">
                       <div className="flex items-center justify-between text-[10px]">

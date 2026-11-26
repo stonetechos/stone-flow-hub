@@ -991,16 +991,6 @@ export function MasterProductCatalog({
                         className="max-h-[92%] max-w-[92%] w-auto h-auto object-contain select-none pointer-events-none"
                       />
 
-                      {/* Top badges — matching PDF .code-tag gold on dark styling */}
-                      <div className="absolute top-2 left-2 flex items-center gap-1 z-10 pointer-events-none">
-                        <span className="rounded-md bg-[#0f172a] px-1.5 py-0.5 text-[9px] font-mono font-bold text-[#fbbf24] tracking-wider shadow-xs border border-amber-500/30">
-                          {item.code}
-                        </span>
-                        <span className="rounded-md bg-slate-950/90 px-1.5 py-0.5 text-[8.5px] font-semibold text-cyan-300 border border-cyan-500/30 line-clamp-1 max-w-[110px]">
-                          {item.category}
-                        </span>
-                      </div>
-
                       {/* Quick Share */}
                       <button
                         type="button"
@@ -1134,14 +1124,6 @@ export function MasterProductCatalog({
                   alt={lightboxItem.name}
                   className="max-h-[92%] max-w-[92%] w-auto h-auto object-contain drop-shadow-md transition-transform duration-500 hover:scale-105"
                 />
-                <div className="absolute top-3 left-3 flex gap-1.5 z-10">
-                  <span className="rounded-md bg-[#0f172a] px-2.5 py-1 text-xs font-mono font-bold text-[#fbbf24] tracking-wider shadow-md border border-amber-500/30">
-                    {lightboxItem.code}
-                  </span>
-                  <span className="rounded-md bg-slate-950/80 backdrop-blur-xs px-2.5 py-1 text-xs font-semibold text-cyan-300 border border-cyan-500/30">
-                    {lightboxItem.category}
-                  </span>
-                </div>
               </div>
 
               <div className="p-5 md:p-6 md:w-1/2 flex flex-col justify-between space-y-4 overflow-y-auto max-h-[80vh]">

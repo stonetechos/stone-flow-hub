@@ -481,16 +481,6 @@ export function StonePebblesCatalog({
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
 
-                {/* TOP BADGES */}
-                <div className="absolute top-2 left-2 flex items-center gap-1.5 z-10">
-                  <span className="rounded-md bg-amber-500 px-2 py-0.5 text-[10px] font-extrabold text-slate-950 tracking-wider shadow-sm">
-                    {item.code}
-                  </span>
-                  <span className="rounded-md bg-slate-950/80 backdrop-blur-xs px-2 py-0.5 text-[9px] font-semibold text-cyan-300 border border-cyan-500/30">
-                    {item.category}
-                  </span>
-                </div>
-
                 {/* QUICK SHARE BUTTON */}
                 <button
                   type="button"
@@ -596,14 +586,6 @@ export function StonePebblesCatalog({
                   alt={lightboxTarget.name}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute top-3 left-3 flex gap-1.5 z-10">
-                  <span className="rounded-md bg-amber-500 px-2.5 py-1 text-xs font-extrabold text-slate-950 tracking-wider shadow-md">
-                    {lightboxTarget.code}
-                  </span>
-                  <span className="rounded-md bg-slate-950/80 backdrop-blur-xs px-2.5 py-1 text-xs font-semibold text-cyan-300 border border-cyan-500/30">
-                    {lightboxTarget.category}
-                  </span>
-                </div>
               </div>
 
               {/* RIGHT: SPECS & ACTIONS */}
