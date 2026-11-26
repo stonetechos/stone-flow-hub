@@ -507,42 +507,42 @@ function HomePage() {
               />
             </div>
             <div className="flex flex-col shrink-0">
-              <span className="text-base sm:text-xl font-black tracking-tight uppercase text-foreground leading-tight whitespace-nowrap">
+              <span className="text-base sm:text-xl font-black tracking-tight uppercase text-[#015474] dark:text-[#67e8f9] leading-tight whitespace-nowrap">
                 {texts.brandName || "STONE TECH"}
               </span>
-              <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-wider sm:tracking-widest leading-none mt-0.5 whitespace-nowrap">
+              <span className="text-[9px] sm:text-[10px] font-bold text-[#006788]/80 dark:text-[#67e8f9]/70 uppercase tracking-wider sm:tracking-widest leading-none mt-0.5 whitespace-nowrap">
                 {texts.brandSubtitle}
               </span>
             </div>
           </Link>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-6 xl:gap-8 text-sm font-semibold text-foreground/80">
+          {/* Desktop Navigation Links — Signature Turquoise Architectural Theme */}
+          <nav className="hidden md:flex items-center gap-6 xl:gap-8 text-sm font-bold text-[#015474] dark:text-[#67e8f9]">
             <a
               href="#wall-cladding-catalogue"
               onClick={() => setShowcaseTab("cladding")}
-              className="hover:text-[#006788] dark:hover:text-[#38bdf8] transition-colors whitespace-nowrap py-1"
+              className="text-[#015474] hover:text-[#004863] dark:text-[#67e8f9] dark:hover:text-white transition-colors whitespace-nowrap py-1 font-bold"
             >
               {texts.nav.ourProducts || "Products"}
             </a>
             <a
               href="#wall-cladding-catalogue"
               onClick={() => setShowcaseTab("installations")}
-              className="hover:text-[#006788] dark:hover:text-[#38bdf8] transition-colors whitespace-nowrap py-1"
+              className="text-[#015474] hover:text-[#004863] dark:text-[#67e8f9] dark:hover:text-white transition-colors whitespace-nowrap py-1 font-bold"
             >
               {texts.nav.ourWork || "Works"}
             </a>
             <button
               type="button"
               onClick={() => setIsEstimateOpen(true)}
-              className="hover:text-[#006788] dark:hover:text-[#38bdf8] transition-colors whitespace-nowrap py-1 flex items-center gap-1.5 cursor-pointer text-foreground/80 font-semibold text-sm"
+              className="text-[#015474] hover:text-[#004863] dark:text-[#67e8f9] dark:hover:text-white transition-colors whitespace-nowrap py-1 flex items-center gap-1.5 cursor-pointer font-bold text-sm"
             >
               <Calculator className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
               <span>{texts.nav.requestEstimate || "Request a quote"}</span>
             </button>
             <a
               href="#why-us"
-              className="hover:text-[#006788] dark:hover:text-[#38bdf8] transition-colors whitespace-nowrap py-1"
+              className="text-[#015474] hover:text-[#004863] dark:text-[#67e8f9] dark:hover:text-white transition-colors whitespace-nowrap py-1 font-bold"
             >
               {texts.nav.whyUs || "Why us"}
             </a>
@@ -550,7 +550,7 @@ function HomePage() {
               trigger={
                 <button
                   type="button"
-                  className="group hover:text-[#006788] dark:hover:text-[#38bdf8] transition-colors whitespace-nowrap py-1 flex items-center gap-1.5 cursor-pointer text-foreground/85 font-semibold"
+                  className="group text-[#015474] hover:text-[#004863] dark:text-[#67e8f9] dark:hover:text-white transition-colors whitespace-nowrap py-1 flex items-center gap-1.5 cursor-pointer font-bold"
                 >
                   <Briefcase className="h-4 w-4 text-[#006788] dark:text-[#38bdf8] transition-transform group-hover:scale-110" />
                   <span>{texts.nav.jobOpenings || "Hirings"}</span>
@@ -566,7 +566,7 @@ function HomePage() {
             />
             <a
               href="#contact-us"
-              className="hover:text-[#006788] dark:hover:text-[#38bdf8] transition-colors whitespace-nowrap py-1"
+              className="text-[#015474] hover:text-[#004863] dark:text-[#67e8f9] dark:hover:text-white transition-colors whitespace-nowrap py-1 font-bold"
             >
               {texts.nav.contact}
             </a>
@@ -581,7 +581,7 @@ function HomePage() {
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-8 w-8 rounded-lg border-border/80 bg-background/90 text-foreground shadow-2xs hover:border-[#006788] hover:text-[#006788] shrink-0 cursor-pointer"
+                    className="h-8 w-8 rounded-lg border-[#006788]/30 bg-[#e0f1f5]/50 text-[#015474] shadow-2xs hover:border-[#006788] hover:bg-[#e0f1f5] hover:text-[#004863] shrink-0 cursor-pointer"
                     aria-label="Open Navigation Menu"
                   >
                     <Menu className="h-4.5 w-4.5 text-[#006788] dark:text-[#38bdf8]" />
@@ -623,7 +623,7 @@ function HomePage() {
                         setShowcaseTab("cladding");
                         setMobileMenuOpen(false);
                       }}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-foreground hover:bg-[#e0f1f5] hover:text-[#015474] dark:hover:bg-[#015474]/30 dark:hover:text-[#67e8f9] transition-all"
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold text-[#015474] dark:text-[#67e8f9] hover:bg-[#e0f1f5] hover:text-[#004863] dark:hover:bg-[#015474]/30 dark:hover:text-white transition-all"
                     >
                       <Layers className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
                       <span>{texts.nav.ourProducts || "Products"}</span>
@@ -636,7 +636,7 @@ function HomePage() {
                         setShowcaseTab("installations");
                         setMobileMenuOpen(false);
                       }}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-foreground hover:bg-[#e0f1f5] hover:text-[#015474] dark:hover:bg-[#015474]/30 dark:hover:text-[#67e8f9] transition-all"
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold text-[#015474] dark:text-[#67e8f9] hover:bg-[#e0f1f5] hover:text-[#004863] dark:hover:bg-[#015474]/30 dark:hover:text-white transition-all"
                     >
                       <Gem className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
                       <span>{texts.nav.ourWork || "Works"}</span>
@@ -649,7 +649,7 @@ function HomePage() {
                         setMobileMenuOpen(false);
                         setIsEstimateOpen(true);
                       }}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-foreground hover:bg-[#e0f1f5] hover:text-[#015474] dark:hover:bg-[#015474]/30 dark:hover:text-[#67e8f9] transition-all cursor-pointer text-left"
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold text-[#015474] dark:text-[#67e8f9] hover:bg-[#e0f1f5] hover:text-[#004863] dark:hover:bg-[#015474]/30 dark:hover:text-white transition-all cursor-pointer text-left"
                     >
                       <Calculator className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
                       <span>{texts.nav.requestEstimate || "Request a quote"}</span>
@@ -659,7 +659,7 @@ function HomePage() {
                     <a
                       href="#why-us"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-foreground hover:bg-[#e0f1f5] hover:text-[#015474] dark:hover:bg-[#015474]/30 dark:hover:text-[#67e8f9] transition-all"
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold text-[#015474] dark:text-[#67e8f9] hover:bg-[#e0f1f5] hover:text-[#004863] dark:hover:bg-[#015474]/30 dark:hover:text-white transition-all"
                     >
                       <ShieldCheck className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
                       <span>{texts.nav.whyUs || "Why us"}</span>
@@ -671,7 +671,7 @@ function HomePage() {
                         trigger={
                           <button
                             type="button"
-                            className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-semibold text-foreground hover:bg-[#e0f1f5] hover:text-[#015474] dark:hover:bg-[#015474]/30 dark:hover:text-[#67e8f9] transition-all cursor-pointer text-left"
+                            className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-bold text-[#015474] dark:text-[#67e8f9] hover:bg-[#e0f1f5] hover:text-[#004863] dark:hover:bg-[#015474]/30 dark:hover:text-white transition-all cursor-pointer text-left"
                           >
                             <div className="flex items-center gap-3">
                               <Briefcase className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
@@ -695,7 +695,7 @@ function HomePage() {
                         trigger={
                           <button
                             type="button"
-                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-foreground hover:bg-[#e0f1f5] hover:text-[#015474] dark:hover:bg-[#015474]/30 dark:hover:text-[#67e8f9] transition-all cursor-pointer text-left"
+                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold text-[#015474] dark:text-[#67e8f9] hover:bg-[#e0f1f5] hover:text-[#004863] dark:hover:bg-[#015474]/30 dark:hover:text-white transition-all cursor-pointer text-left"
                           >
                             <Search className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
                             <span>{texts.nav.trackInquiry}</span>
@@ -708,14 +708,14 @@ function HomePage() {
                     <a
                       href="#contact-us"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-foreground hover:bg-[#e0f1f5] hover:text-[#015474] dark:hover:bg-[#015474]/30 dark:hover:text-[#67e8f9] transition-all"
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold text-[#015474] dark:text-[#67e8f9] hover:bg-[#e0f1f5] hover:text-[#004863] dark:hover:bg-[#015474]/30 dark:hover:text-white transition-all"
                     >
                       <Phone className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
                       <span>{texts.nav.contact}</span>
                     </a>
 
-                    <div className="pt-3 border-t border-border mt-3 space-y-2">
-                      <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-2 py-1">
+                    <div className="pt-3 border-t border-[#006788]/20 mt-3 space-y-2">
+                      <div className="text-[10px] font-bold text-[#006788] uppercase tracking-wider px-2 py-1">
                         Privilege & Staff
                       </div>
 
@@ -723,7 +723,7 @@ function HomePage() {
                         to="/auth"
                         search={{ flow: "signin" }}
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-foreground hover:bg-[#e0f1f5] hover:text-[#015474] dark:hover:bg-[#015474]/30 dark:hover:text-[#67e8f9] transition-all"
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold text-[#015474] dark:text-[#67e8f9] hover:bg-[#e0f1f5] hover:text-[#004863] dark:hover:bg-[#015474]/30 dark:hover:text-white transition-all"
                       >
                         <Lock className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
                         <span>{texts.nav.employeesLogin}</span>
@@ -749,7 +749,7 @@ function HomePage() {
             </div>
 
             {/* Language Switcher — visible on sm+ (mobile already has it fixed in bottom bar) */}
-            <LanguageToggle className="hidden sm:inline-flex h-8 sm:h-9 px-2 sm:px-2.5 text-xs rounded-lg border border-border/80 bg-background/80" />
+            <LanguageToggle className="hidden sm:inline-flex h-8 sm:h-9 px-2 sm:px-2.5 text-xs font-bold rounded-lg border border-[#006788]/30 bg-[#e0f1f5]/50 text-[#015474] hover:bg-[#e0f1f5] hover:border-[#006788]/60" />
 
             {/* Customer Tracking Dialog — visible on sm+ */}
             <div className="hidden sm:block">
@@ -758,7 +758,7 @@ function HomePage() {
                   <Button
                     variant="outline"
                     size="default"
-                    className="h-8 sm:h-9 px-2 sm:px-3.5 gap-1 sm:gap-1.5 text-xs font-semibold shadow-2xs border-border/90 hover:border-[#006788] hover:text-[#006788] shrink-0 rounded-lg"
+                    className="h-8 sm:h-9 px-2 sm:px-3.5 gap-1 sm:gap-1.5 text-xs font-bold shadow-2xs border-[#006788]/40 bg-[#e0f1f5]/50 text-[#015474] hover:bg-[#e0f1f5] hover:border-[#006788] hover:text-[#004863] shrink-0 rounded-lg cursor-pointer"
                   >
                     <Search className="h-3.5 w-3.5 text-[#006788] dark:text-[#38bdf8] shrink-0" />
                     <span className="whitespace-nowrap">{texts.nav.trackInquiry}</span>
@@ -771,7 +771,7 @@ function HomePage() {
             <Button
               asChild
               size="icon"
-              className="hidden md:inline-flex h-8 w-8 sm:h-9 sm:w-9 rounded-full shadow-2xs transition-transform hover:scale-105 shrink-0 border bg-[#006788] text-white hover:bg-[#00597b] border-[#006788]"
+              className="hidden md:inline-flex h-8 w-8 sm:h-9 sm:w-9 rounded-full shadow-2xs transition-transform hover:scale-105 shrink-0 border bg-[#015474] text-white hover:bg-[#004863] border-[#015474]"
             >
               <Link
                 to="/auth"
