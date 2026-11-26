@@ -664,7 +664,7 @@ function HomePage() {
                         setMobileMenuOpen(false);
                         setIsEstimateOpen(true);
                       }}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold text-[#015474] dark:text-[#67e8f9] bg-[#e0f1f5]/70 dark:bg-[#015474]/30 hover:bg-[#e0f1f5] dark:hover:bg-[#015474]/50 transition-all cursor-pointer text-left"
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-foreground hover:bg-[#e0f1f5] hover:text-[#015474] dark:hover:bg-[#015474]/30 dark:hover:text-[#67e8f9] transition-all cursor-pointer text-left"
                     >
                       <Calculator className="h-4 w-4 text-[#006788] dark:text-[#38bdf8]" />
                       <span>{texts.nav.requestEstimate || "Request for Estimate"}</span>
