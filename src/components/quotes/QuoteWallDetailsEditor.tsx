@@ -177,7 +177,17 @@ export function QuoteWallDetailsEditor({
     [existingItems],
   );
 
-  // Form state for adding a new wall
+  // Surface counts
+  const floorCount = useMemo(
+    () =>
+      walls.filter((w) => w.surfaceType === "floor" || w.name.toLowerCase().includes("floor"))
+        .length,
+    [walls],
+  );
+  const wallCount = walls.length - floorCount;
+
+  // Form state for adding a new surface (wall or floor)
+  const [surfaceType, setSurfaceType] = useState<"wall" | "floor">("wall");
   const [newWallName, setNewWallName] = useState("");
   const [newWallUnit, setNewWallUnit] = useState<LengthUnit>("ft");
   const [newWallHeight, setNewWallHeight] = useState("");
@@ -204,17 +214,36 @@ export function QuoteWallDetailsEditor({
     return ceilWhole(gross);
   }, [calcNewWallSqft, wastagePct]);
 
-  // Open modal with prefilled defaults
-  const handleOpenAddWall = () => {
-    const nextIdx = walls.length + 1;
-    setNewWallName(`Wall ${nextIdx}`);
+  // Open modal with prefilled defaults for Wall or Floor
+  const handleOpenAddWall = (type: "wall" | "floor" = "wall") => {
+    setSurfaceType(type);
     setNewWallUnit(worksheet.unit || "ft");
-    setNewWallHeight("10");
-    setNewWallLength("12");
     setNewWallSqftOverride("");
-    setSelectedCatalogProduct(null);
-    setProductRate("");
     setWastagePct("5");
+
+    if (type === "floor") {
+      const nextIdx = floorCount + 1;
+      setNewWallName(`Floor ${nextIdx}`);
+      setNewWallHeight("12"); // Width
+      setNewWallLength("15"); // Length
+      setSelectedCatalogProduct({
+        id: "sp_custom_flooring",
+        name: "Custom Flooring",
+        code: "ST-FL-CUSTOM",
+        category: "stone_product",
+        defaultUnit: "sqft",
+        defaultPrice: 180,
+        hsnCode: "6802",
+      });
+      setProductRate("180");
+    } else {
+      const nextIdx = wallCount + 1;
+      setNewWallName(`Wall ${nextIdx}`);
+      setNewWallHeight("10"); // Height
+      setNewWallLength("12"); // Length
+      setSelectedCatalogProduct(null);
+      setProductRate("");
+    }
     setAddWallOpen(true);
   };
 
@@ -224,21 +253,24 @@ export function QuoteWallDetailsEditor({
     qc.invalidateQueries({ queryKey: qk.quotes.items(quoteId) });
   };
 
-  // Add Wall Mutation
+  // Add Wall / Floor Mutation
   const addWallMut = useMutation({
     mutationFn: async () => {
       const finalSqft = Math.round(calcNewWallSqft * 100) / 100;
       if (finalSqft <= 0) {
-        throw new Error("Wall area must be greater than 0 sq.ft");
+        throw new Error("Surface area must be greater than 0 sq.ft");
       }
       if (!newWallName.trim()) {
-        throw new Error("Wall name is required");
+        throw new Error(
+          surfaceType === "floor" ? "Floor name is required" : "Wall name is required",
+        );
       }
 
-      const wallId = `wall_${Date.now()}`;
+      const wallId = `${surfaceType}_${Date.now()}`;
       const newWall: EstimateWall = {
         id: wallId,
         name: newWallName.trim(),
+        surfaceType,
         height: Number(newWallHeight) || 0,
         length: Number(newWallLength) || 0,
         unit: newWallUnit,
@@ -255,10 +287,11 @@ export function QuoteWallDetailsEditor({
         const qty = calcQtyToOrder > 0 ? calcQtyToOrder : finalSqft;
         const prodId = `prod_${Date.now()}`;
 
+        const isFloor = surfaceType === "floor";
         const newProd: EstimateProduct = {
           id: prodId,
           wallId,
-          materialCategory: "stone_wall_cladding",
+          materialCategory: isFloor ? "custom_flooring" : "stone_wall_cladding",
           productName: selectedCatalogProduct.name,
           priceUnit: "sqft",
           pricePerUnit: rate,
@@ -269,10 +302,17 @@ export function QuoteWallDetailsEditor({
         };
         updatedProducts.push(newProd);
 
-        // Add quote item to database: use catalog code as product name when available
+        // Add quote item to database: clean product name/code
         const prodCode = selectedCatalogProduct.code || "";
-        const desc = prodCode || selectedCatalogProduct.name;
-        const dimText = `Wall: ${newWall.name} · ${newWall.height}×${newWall.length} ${newWall.unit} (${finalSqft} sq.ft) · Wastage: ${wastagePct}%`;
+        const desc =
+          selectedCatalogProduct.name === "Custom Flooring"
+            ? "Custom Flooring"
+            : prodCode || selectedCatalogProduct.name;
+        const prefix = isFloor ? "Floor" : "Wall";
+        const dims = isFloor
+          ? `${newWall.length}×${newWall.height}`
+          : `${newWall.height}×${newWall.length}`;
+        const dimText = `${prefix}: ${newWall.name} · ${dims} ${newWall.unit} (${finalSqft} sq.ft) · Wastage: ${wastagePct}%`;
         const combinedNotes = dimText;
 
         const newItem = await addQuoteItem(quoteId, {
@@ -331,7 +371,7 @@ export function QuoteWallDetailsEditor({
       setAddWallOpen(false);
       if (hasProduct) {
         toast.success(
-          `${wallName} added! Stone product placed at top, and updated labour (${newLabour} sq.ft) & adhesives (${newBags} bags).`,
+          `${wallName} added! Product placed at top, and updated labour (${newLabour} sq.ft) & adhesives (${newBags} bags).`,
         );
       } else {
         toast.success(
@@ -360,15 +400,21 @@ export function QuoteWallDetailsEditor({
         await updateQuoteItem(patch.id, { quantity: patch.newQuantity });
       }
 
-      // Update wall dimension notes and clear cash HSN
+      // Update surface dimension notes and clear cash HSN
       const matchedProd = products.find((p) => p.wallId === updatedWall.id);
       const waste = matchedProd?.wastagePct ?? 5;
-      const dimText = `Wall: ${updatedWall.name} · ${updatedWall.height}×${updatedWall.length} ${updatedWall.unit} (${updatedWall.sqft} sq.ft) · Wastage: ${waste}%`;
+      const isFloor =
+        updatedWall.surfaceType === "floor" || updatedWall.name.toLowerCase().includes("floor");
+      const prefix = isFloor ? "Floor" : "Wall";
+      const dims = isFloor
+        ? `${updatedWall.length}×${updatedWall.height}`
+        : `${updatedWall.height}×${updatedWall.length}`;
+      const dimText = `${prefix}: ${updatedWall.name} · ${dims} ${updatedWall.unit} (${updatedWall.sqft} sq.ft) · Wastage: ${waste}%`;
       const matchedItem = currentItems.find((it) => {
         const d = (it.description || "").toLowerCase();
         const n = (it.notes || "").toLowerCase();
         const wn = updatedWall.name.toLowerCase();
-        return d.includes(`(${wn})`) || n.includes(`wall: ${wn}`);
+        return d.includes(`(${wn})`) || n.includes(`wall: ${wn}`) || n.includes(`floor: ${wn}`);
       });
       if (matchedItem) {
         const itemPatch: Parameters<typeof updateQuoteItem>[1] = {
@@ -415,14 +461,14 @@ export function QuoteWallDetailsEditor({
       const updatedWalls = walls.filter((w) => w.id !== wallId);
       const updatedProducts = products.filter((p) => p.wallId !== wallId);
 
-      // Check if any quote item matches this wall specifically
+      // Check if any quote item matches this surface specifically
       const currentItems = await getQuoteItems(quoteId);
       if (wallToDelete) {
         const wn = wallToDelete.name.toLowerCase();
         const itemToDelete = currentItems.find((it) => {
           const d = (it.description || "").toLowerCase();
           const n = (it.notes || "").toLowerCase();
-          return d.includes(`(${wn})`) || n.includes(`wall: ${wn}`);
+          return d.includes(`(${wn})`) || n.includes(`wall: ${wn}`) || n.includes(`floor: ${wn}`);
         });
         if (itemToDelete) {
           await deleteQuoteItem(itemToDelete.id);
@@ -480,20 +526,26 @@ export function QuoteWallDetailsEditor({
         await updateQuoteItem(patch.id, { quantity: patch.newQuantity });
       }
 
-      // Ensure every wall product has clean wall details in notes & suppress cash HSN
+      // Ensure every surface product has clean details in notes & suppress cash HSN
       for (const wall of walls) {
         const wallProd = products.find((p) => p.wallId === wall.id);
         const waste = wallProd?.wastagePct ?? 5;
-        const dimText = `Wall: ${wall.name} · ${wall.height}×${wall.length} ${wall.unit} (${wall.sqft} sq.ft) · Wastage: ${waste}%`;
+        const isFloor = wall.surfaceType === "floor" || wall.name.toLowerCase().includes("floor");
+        const prefix = isFloor ? "Floor" : "Wall";
+        const dims = isFloor ? `${wall.length}×${wall.height}` : `${wall.height}×${wall.length}`;
+        const dimText = `${prefix}: ${wall.name} · ${dims} ${wall.unit} (${wall.sqft} sq.ft) · Wastage: ${waste}%`;
         const matchedItem = currentItems.find((it) => {
           const d = (it.description || "").toLowerCase();
           const n = (it.notes || "").toLowerCase();
           const wn = wall.name.toLowerCase();
-          return d.includes(`(${wn})`) || n.includes(`wall: ${wn}`);
+          return d.includes(`(${wn})`) || n.includes(`wall: ${wn}`) || n.includes(`floor: ${wn}`);
         });
         if (matchedItem) {
           const patchObj: Parameters<typeof updateQuoteItem>[1] = {};
-          if (!matchedItem.notes || !matchedItem.notes.includes("Wall:")) {
+          if (
+            !matchedItem.notes ||
+            (!matchedItem.notes.includes("Wall:") && !matchedItem.notes.includes("Floor:"))
+          ) {
             patchObj.notes = dimText;
           }
           if (saleMode === "cash" && matchedItem.hsn_sac) {
@@ -660,13 +712,17 @@ export function QuoteWallDetailsEditor({
               <Layers className="h-4 w-4" />
             </div>
             <div>
-              <CardTitle className="text-xs sm:text-sm font-semibold flex items-center gap-2">
-                <span>Wall Details & Estimator</span>
+              <CardTitle className="text-xs sm:text-sm font-semibold flex items-center gap-2 flex-wrap">
+                <span>Wall & Floor Details (Surfaces & Estimator)</span>
                 <Badge
                   variant="outline"
                   className="text-[10px] font-normal border-teal-200 bg-teal-50 text-teal-900"
                 >
-                  {walls.length} {walls.length === 1 ? "Wall" : "Walls"} Defined
+                  {floorCount > 0 && wallCount > 0
+                    ? `${wallCount} Walls · ${floorCount} Floors`
+                    : floorCount > 0
+                      ? `${floorCount} ${floorCount === 1 ? "Floor" : "Floors"}`
+                      : `${wallCount} ${wallCount === 1 ? "Wall" : "Walls"}`}
                 </Badge>
                 {totalArea > 0 && (
                   <Badge
@@ -678,26 +734,36 @@ export function QuoteWallDetailsEditor({
                 )}
               </CardTitle>
               <p className="text-[11px] text-muted-foreground hidden sm:block">
-                Auto-calculates product sq.ft, installation labour, adhesives & sealer chemicals.
+                Auto-calculates product sq.ft, installation labour, adhesives & sealer chemicals for
+                walls and custom flooring.
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <Button
               size="sm"
               variant="outline"
-              onClick={handleOpenAddWall}
+              onClick={() => handleOpenAddWall("wall")}
               className="h-8 border-teal-300 bg-teal-50 text-teal-900 hover:bg-teal-100 hover:text-teal-950 text-xs font-semibold cursor-pointer shadow-2xs"
             >
               <Plus className="mr-1 h-3.5 w-3.5 text-teal-700" />
-              Add New Wall
+              Add Wall
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleOpenAddWall("floor")}
+              className="h-8 border-sky-300 bg-sky-50 text-sky-900 hover:bg-sky-100 hover:text-sky-950 text-xs font-semibold cursor-pointer shadow-2xs"
+            >
+              <Plus className="mr-1 h-3.5 w-3.5 text-sky-700" />
+              Add Floor
             </Button>
             <Button
               size="sm"
               variant="ghost"
               onClick={() => setCollapsed((v) => !v)}
               className="h-8 w-8 p-0 text-muted-foreground"
-              title={collapsed ? "Expand wall details" : "Collapse wall details"}
+              title={collapsed ? "Expand surface details" : "Collapse surface details"}
             >
               {collapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
             </Button>
@@ -710,60 +776,92 @@ export function QuoteWallDetailsEditor({
               <div className="flex flex-col items-center justify-center p-6 text-center rounded-lg border border-dashed border-border bg-muted/10">
                 <Ruler className="h-8 w-8 text-muted-foreground/60 mb-2" />
                 <h4 className="text-xs sm:text-sm font-semibold text-foreground">
-                  No walls defined yet
+                  No walls or floors defined yet
                 </h4>
                 <p className="text-xs text-muted-foreground max-w-md mt-1 mb-3">
-                  Add Wall 1, Wall 2, etc. to calculate precise surface areas and automatically
-                  determine stone cladding, chemical bags, and installation labour.
+                  Add Wall or Custom Flooring surfaces to calculate precise surface areas and
+                  automatically determine stone products, chemical bags, and installation labour.
                 </p>
-                <Button
-                  size="sm"
-                  onClick={handleOpenAddWall}
-                  className="h-8 text-xs bg-teal-700 hover:bg-teal-800 text-white"
-                >
-                  <Plus className="mr-1.5 h-3.5 w-3.5" /> + Add Wall 1
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() => handleOpenAddWall("wall")}
+                    className="h-8 text-xs bg-teal-700 hover:bg-teal-800 text-white cursor-pointer"
+                  >
+                    <Plus className="mr-1.5 h-3.5 w-3.5" /> + Add Wall
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => handleOpenAddWall("floor")}
+                    className="h-8 text-xs bg-sky-700 hover:bg-sky-800 text-white cursor-pointer"
+                  >
+                    <Plus className="mr-1.5 h-3.5 w-3.5" /> + Add Floor
+                  </Button>
+                </div>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {walls.map((w, idx) => {
                   const assignedProduct = products.find((p) => p.wallId === w.id);
+                  const isFloor =
+                    w.surfaceType === "floor" || w.name.toLowerCase().includes("floor");
                   return (
                     <div
                       key={w.id}
-                      className="rounded-lg border border-border/80 bg-white p-3 shadow-2xs flex flex-col justify-between hover:border-teal-300 transition-all"
+                      className={cn(
+                        "rounded-lg border p-3 shadow-2xs flex flex-col justify-between transition-all",
+                        isFloor
+                          ? "border-sky-200 bg-sky-50/20 hover:border-sky-400"
+                          : "border-border/80 bg-white hover:border-teal-300",
+                      )}
                     >
                       <div>
                         <div className="flex items-center justify-between pb-2 border-b border-border/40">
-                          <div className="flex items-center gap-1.5">
-                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-teal-100 text-teal-900 text-[10px] font-bold">
+                          <div className="flex items-center gap-1.5 truncate">
+                            <span
+                              className={cn(
+                                "flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold shrink-0",
+                                isFloor ? "bg-sky-100 text-sky-900" : "bg-teal-100 text-teal-900",
+                              )}
+                            >
                               {idx + 1}
                             </span>
                             <span className="font-semibold text-xs text-foreground truncate">
                               {w.name}
                             </span>
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                "text-[9px] px-1 py-0 uppercase font-bold shrink-0",
+                                isFloor
+                                  ? "bg-sky-100 text-sky-800 border-sky-300"
+                                  : "bg-teal-100 text-teal-800 border-teal-300",
+                              )}
+                            >
+                              {isFloor ? "🏠 Floor" : "🧱 Wall"}
+                            </Badge>
                           </div>
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-1 shrink-0">
                             <Button
                               size="sm"
                               variant="ghost"
-                              className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                              className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground cursor-pointer"
                               onClick={() => setEditingWall(w)}
-                              title="Edit wall dimensions (increases/decreases quantities)"
+                              title="Edit dimensions (increases/decreases quantities)"
                             >
                               <Edit2 className="h-3 w-3" />
                             </Button>
                             <Button
                               size="sm"
                               variant="ghost"
-                              className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                              className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive cursor-pointer"
                               onClick={() => {
                                 if (confirm(`Remove ${w.name}?`)) {
                                   deleteWallMut.mutate(w.id);
                                 }
                               }}
                               disabled={deleteWallMut.isPending}
-                              title="Delete wall"
+                              title="Delete surface"
                             >
                               <Trash2 className="h-3 w-3" />
                             </Button>
@@ -773,17 +871,36 @@ export function QuoteWallDetailsEditor({
                         <div className="mt-2.5 grid grid-cols-2 gap-2 text-xs">
                           <div className="rounded bg-slate-50 p-2 border border-slate-100">
                             <span className="text-[10px] uppercase text-muted-foreground block font-medium">
-                              Dimensions
+                              {isFloor ? "Dimensions (L × W)" : "Dimensions (H × L)"}
                             </span>
                             <span className="font-semibold text-slate-800">
-                              {w.height} × {w.length} {w.unit}
+                              {isFloor
+                                ? `${w.length} × ${w.height} ${w.unit}`
+                                : `${w.height} × ${w.length} ${w.unit}`}
                             </span>
                           </div>
-                          <div className="rounded bg-teal-50/60 p-2 border border-teal-100">
-                            <span className="text-[10px] uppercase text-teal-800 block font-medium">
+                          <div
+                            className={cn(
+                              "rounded p-2 border",
+                              isFloor
+                                ? "bg-sky-50/70 border-sky-100"
+                                : "bg-teal-50/60 border-teal-100",
+                            )}
+                          >
+                            <span
+                              className={cn(
+                                "text-[10px] uppercase block font-medium",
+                                isFloor ? "text-sky-800" : "text-teal-800",
+                              )}
+                            >
                               Surface Area
                             </span>
-                            <span className="font-bold text-teal-900 text-xs">
+                            <span
+                              className={cn(
+                                "font-bold text-xs",
+                                isFloor ? "text-sky-950" : "text-teal-900",
+                              )}
+                            >
                               {Number(w.sqft).toFixed(1)} sq.ft
                             </span>
                           </div>
@@ -792,7 +909,7 @@ export function QuoteWallDetailsEditor({
                         {assignedProduct && (
                           <div className="mt-2.5 pt-2 border-t border-border/40 text-[11px]">
                             <span className="text-[10px] uppercase text-muted-foreground block font-medium">
-                              Cladding Product
+                              {isFloor ? "Flooring Product" : "Cladding Product"}
                             </span>
                             <span className="font-medium text-foreground line-clamp-1">
                               {assignedProduct.productName}
@@ -1035,32 +1152,92 @@ export function QuoteWallDetailsEditor({
         )}
       </Card>
 
-      {/* Add New Wall Dialog */}
+      {/* Add New Wall or Floor Dialog */}
       <Dialog open={addWallOpen} onOpenChange={setAddWallOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-base font-semibold flex items-center gap-2">
               <Layers className="h-5 w-5 text-teal-700" />
-              Add New Wall & Cladding Line
+              {surfaceType === "floor"
+                ? "Add New Floor & Flooring Line"
+                : "Add New Wall & Cladding Line"}
             </DialogTitle>
             <DialogDescription className="text-xs">
-              Enter wall measurements. The stone product will be clubbed at the top with other
-              products, and installation labour, adhesive bags, and sealers will automatically
-              update.
+              Enter {surfaceType === "floor" ? "floor" : "wall"} measurements. The stone product
+              will be clubbed at the top with other products, and installation labour, adhesive
+              bags, and sealers will automatically update.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-2 text-xs">
-            {/* Wall Details */}
+            {/* Surface Type Switcher */}
+            <div className="flex items-center gap-2 p-1 bg-slate-100 rounded-lg">
+              <button
+                type="button"
+                onClick={() => {
+                  setSurfaceType("wall");
+                  if (newWallName.startsWith("Floor") || !newWallName) {
+                    setNewWallName(`Wall ${wallCount + 1}`);
+                  }
+                }}
+                className={cn(
+                  "flex-1 py-1.5 px-3 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer",
+                  surfaceType === "wall"
+                    ? "bg-white text-teal-900 shadow-2xs font-bold"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                🧱 Wall (Cladding)
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSurfaceType("floor");
+                  if (newWallName.startsWith("Wall") || !newWallName) {
+                    setNewWallName(`Floor ${floorCount + 1}`);
+                  }
+                  if (
+                    !selectedCatalogProduct ||
+                    selectedCatalogProduct.name.toLowerCase().includes("cladding")
+                  ) {
+                    setSelectedCatalogProduct({
+                      id: "sp_custom_flooring",
+                      name: "Custom Flooring",
+                      code: "ST-FL-CUSTOM",
+                      category: "stone_product",
+                      defaultUnit: "sqft",
+                      defaultPrice: 180,
+                      hsnCode: "6802",
+                    });
+                    setProductRate("180");
+                  }
+                }}
+                className={cn(
+                  "flex-1 py-1.5 px-3 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer",
+                  surfaceType === "floor"
+                    ? "bg-white text-sky-900 shadow-2xs font-bold"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                🏠 Floor (Custom Flooring)
+              </button>
+            </div>
+
+            {/* Surface Details */}
             <div className="grid grid-cols-12 gap-3 items-end">
               <div className="col-span-12 sm:col-span-6">
                 <label className="text-xs font-medium text-foreground block mb-1">
-                  Wall Name <span className="text-destructive">*</span>
+                  {surfaceType === "floor" ? "Floor Name" : "Wall Name"}{" "}
+                  <span className="text-destructive">*</span>
                 </label>
                 <Input
                   value={newWallName}
                   onChange={(e) => setNewWallName(e.target.value)}
-                  placeholder="e.g. Wall 3, Front Porch Facade"
+                  placeholder={
+                    surfaceType === "floor"
+                      ? "e.g. Floor 1, Living Room Flooring"
+                      : "e.g. Wall 3, Front Porch Facade"
+                  }
                   className="h-8.5 text-xs"
                 />
               </div>
@@ -1083,64 +1260,153 @@ export function QuoteWallDetailsEditor({
                 </Select>
               </div>
 
-              <div className="col-span-6">
-                <label className="text-xs font-medium text-foreground block mb-1">
-                  Height ({newWallUnit})
-                </label>
-                <Input
-                  type="number"
-                  step="any"
-                  min="0"
-                  value={newWallHeight}
-                  onChange={(e) => setNewWallHeight(e.target.value)}
-                  placeholder="10"
-                  className="h-8.5 text-xs"
-                />
-              </div>
-
-              <div className="col-span-6">
-                <label className="text-xs font-medium text-foreground block mb-1">
-                  Length ({newWallUnit})
-                </label>
-                <Input
-                  type="number"
-                  step="any"
-                  min="0"
-                  value={newWallLength}
-                  onChange={(e) => setNewWallLength(e.target.value)}
-                  placeholder="12"
-                  className="h-8.5 text-xs"
-                />
-              </div>
+              {surfaceType === "floor" ? (
+                <>
+                  <div className="col-span-6">
+                    <label className="text-xs font-medium text-foreground block mb-1">
+                      Length ({newWallUnit})
+                    </label>
+                    <Input
+                      type="number"
+                      step="any"
+                      min="0"
+                      value={newWallLength}
+                      onChange={(e) => setNewWallLength(e.target.value)}
+                      placeholder="15"
+                      className="h-8.5 text-xs"
+                    />
+                  </div>
+                  <div className="col-span-6">
+                    <label className="text-xs font-medium text-foreground block mb-1">
+                      Width ({newWallUnit})
+                    </label>
+                    <Input
+                      type="number"
+                      step="any"
+                      min="0"
+                      value={newWallHeight}
+                      onChange={(e) => setNewWallHeight(e.target.value)}
+                      placeholder="12"
+                      className="h-8.5 text-xs"
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="col-span-6">
+                    <label className="text-xs font-medium text-foreground block mb-1">
+                      Height ({newWallUnit})
+                    </label>
+                    <Input
+                      type="number"
+                      step="any"
+                      min="0"
+                      value={newWallHeight}
+                      onChange={(e) => setNewWallHeight(e.target.value)}
+                      placeholder="10"
+                      className="h-8.5 text-xs"
+                    />
+                  </div>
+                  <div className="col-span-6">
+                    <label className="text-xs font-medium text-foreground block mb-1">
+                      Length ({newWallUnit})
+                    </label>
+                    <Input
+                      type="number"
+                      step="any"
+                      min="0"
+                      value={newWallLength}
+                      onChange={(e) => setNewWallLength(e.target.value)}
+                      placeholder="12"
+                      className="h-8.5 text-xs"
+                    />
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Calculated Area Highlight */}
-            <div className="p-2.5 rounded-md bg-teal-50 border border-teal-200 flex items-center justify-between">
+            <div
+              className={cn(
+                "p-2.5 rounded-md border flex items-center justify-between",
+                surfaceType === "floor" ? "bg-sky-50 border-sky-200" : "bg-teal-50 border-teal-200",
+              )}
+            >
               <div>
-                <span className="text-[11px] text-teal-900 block font-medium">
-                  Calculated Wall Area:
+                <span
+                  className={cn(
+                    "text-[11px] block font-medium",
+                    surfaceType === "floor" ? "text-sky-900" : "text-teal-900",
+                  )}
+                >
+                  {surfaceType === "floor" ? "Calculated Floor Area:" : "Calculated Wall Area:"}
                 </span>
-                <span className="text-sm font-bold text-teal-950">
+                <span
+                  className={cn(
+                    "text-sm font-bold",
+                    surfaceType === "floor" ? "text-sky-950" : "text-teal-950",
+                  )}
+                >
                   {calcNewWallSqft.toFixed(2)} sq.ft
                 </span>
               </div>
               <div className="text-right">
-                <span className="text-[10px] text-teal-800 block">
-                  {newWallHeight || 0} {newWallUnit} × {newWallLength || 0} {newWallUnit}
+                <span
+                  className={cn(
+                    "text-[10px] block",
+                    surfaceType === "floor" ? "text-sky-800" : "text-teal-800",
+                  )}
+                >
+                  {surfaceType === "floor"
+                    ? `${newWallLength || 0} ${newWallUnit} (L) × ${newWallHeight || 0} ${newWallUnit} (W)`
+                    : `${newWallHeight || 0} ${newWallUnit} (H) × ${newWallLength || 0} ${newWallUnit} (L)`}
                 </span>
-                <span className="text-[10px] text-teal-700 italic">Auto-calculated</span>
+                <span
+                  className={cn(
+                    "text-[10px] italic",
+                    surfaceType === "floor" ? "text-sky-700" : "text-teal-700",
+                  )}
+                >
+                  Auto-calculated
+                </span>
               </div>
             </div>
 
             {/* Stone Product Selection */}
             <div className="pt-2 border-t border-border space-y-3">
               <div>
-                <label className="text-xs font-semibold text-foreground block mb-1">
-                  Stone Cladding Product{" "}
-                  <span className="text-muted-foreground font-normal">
-                    (Search by 080, 80, name)
-                  </span>
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-semibold text-foreground block">
+                    {surfaceType === "floor"
+                      ? "Flooring Product (Custom Flooring, Marble, Granite)"
+                      : "Stone Cladding Product"}
+                    <span className="text-muted-foreground font-normal ml-1">
+                      {surfaceType === "floor"
+                        ? "(Search or pick below)"
+                        : "(Search by 080, 80, name)"}
+                    </span>
+                  </label>
+                  {surfaceType === "floor" && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedCatalogProduct({
+                          id: "sp_custom_flooring",
+                          name: "Custom Flooring",
+                          code: "ST-FL-CUSTOM",
+                          category: "stone_product",
+                          defaultUnit: "sqft",
+                          defaultPrice: 180,
+                          hsnCode: "6802",
+                        });
+                        setProductRate("180");
+                      }}
+                      className="text-[11px] font-semibold text-sky-700 hover:text-sky-900 hover:underline cursor-pointer flex items-center gap-1"
+                    >
+                      ✨ Pick "Custom Flooring"
+                    </button>
+                  )}
+                </div>
                 <CatalogProductSelect
                   value={selectedCatalogProduct?.name || ""}
                   onChange={(val) => {
@@ -1152,7 +1418,11 @@ export function QuoteWallDetailsEditor({
                       setProductRate(String(prod.defaultPrice));
                     }
                   }}
-                  placeholder="Search code (e.g. 080, 80) or stone name…"
+                  placeholder={
+                    surfaceType === "floor"
+                      ? "Search Custom Flooring, Marble, Granite, or stone name…"
+                      : "Search code (e.g. 080, 80) or stone name…"
+                  }
                 />
               </div>
 
@@ -1209,8 +1479,8 @@ export function QuoteWallDetailsEditor({
             <div className="p-2.5 rounded-md bg-blue-50/70 border border-blue-200 flex items-center gap-2 text-blue-900 text-[11px]">
               <AlertCircle className="h-4 w-4 text-blue-700 shrink-0" />
               <span>
-                <strong>Categorical Hierarchy:</strong> Stone products are grouped at the top,
-                followed by installation labour, adhesives/chemicals, sealers, and carting.
+                <strong>Categorical Hierarchy:</strong> Stone and flooring products are grouped at
+                the top, followed by installation labour, adhesives/chemicals, sealers, and carting.
               </span>
             </div>
           </div>
@@ -1228,17 +1498,22 @@ export function QuoteWallDetailsEditor({
               type="button"
               onClick={() => addWallMut.mutate()}
               disabled={addWallMut.isPending || calcNewWallSqft <= 0}
-              className="bg-teal-700 hover:bg-teal-800 text-white"
+              className={cn(
+                "text-white cursor-pointer",
+                surfaceType === "floor"
+                  ? "bg-sky-700 hover:bg-sky-800"
+                  : "bg-teal-700 hover:bg-teal-800",
+              )}
             >
               {addWallMut.isPending ? (
                 <>
                   <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                  Adding Wall & Updating Consumables…
+                  Adding {surfaceType === "floor" ? "Floor" : "Wall"} & Updating Consumables…
                 </>
               ) : (
                 <>
                   <Check className="mr-1.5 h-3.5 w-3.5" />
-                  Add Wall & Recalculate
+                  Add {surfaceType === "floor" ? "Floor" : "Wall"} & Recalculate
                 </>
               )}
             </Button>
@@ -1246,22 +1521,33 @@ export function QuoteWallDetailsEditor({
         </DialogContent>
       </Dialog>
 
-      {/* Edit Wall Dimensions Dialog */}
+      {/* Edit Wall / Floor Dimensions Dialog */}
       {editingWall && (
         <Dialog open={!!editingWall} onOpenChange={(o) => !o && setEditingWall(null)}>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle className="text-sm font-semibold">
-                Edit {editingWall.name} Dimensions
+              <DialogTitle className="text-sm font-semibold flex items-center gap-2">
+                <span>
+                  {editingWall.surfaceType === "floor" ||
+                  editingWall.name.toLowerCase().includes("floor")
+                    ? "🏠"
+                    : "🧱"}
+                </span>
+                <span>Edit {editingWall.name} Dimensions</span>
               </DialogTitle>
               <DialogDescription className="text-xs">
-                Decreasing or increasing wall dimensions will automatically adjust product
+                Decreasing or increasing surface dimensions will automatically adjust product
                 quantities, installation labour, adhesives bags, and sealers.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-3 py-2 text-xs">
               <div>
-                <label className="text-xs font-medium block mb-1">Wall Name</label>
+                <label className="text-xs font-medium block mb-1">
+                  {editingWall.surfaceType === "floor" ||
+                  editingWall.name.toLowerCase().includes("floor")
+                    ? "Floor Name"
+                    : "Wall Name"}
+                </label>
                 <Input
                   value={editingWall.name}
                   onChange={(e) => setEditingWall({ ...editingWall, name: e.target.value })}
@@ -1271,42 +1557,82 @@ export function QuoteWallDetailsEditor({
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="text-xs font-medium block mb-1">
-                    Height ({editingWall.unit})
+                    {editingWall.surfaceType === "floor" ||
+                    editingWall.name.toLowerCase().includes("floor")
+                      ? `Length (${editingWall.unit})`
+                      : `Height (${editingWall.unit})`}
                   </label>
                   <Input
                     type="number"
                     step="any"
                     min="0"
-                    value={editingWall.height}
+                    value={
+                      editingWall.surfaceType === "floor" ||
+                      editingWall.name.toLowerCase().includes("floor")
+                        ? editingWall.length
+                        : editingWall.height
+                    }
                     onChange={(e) => {
-                      const h = Number(e.target.value) || 0;
-                      const sq = wallSqft(h, editingWall.length, editingWall.unit);
-                      setEditingWall({
-                        ...editingWall,
-                        height: h,
-                        sqft: Math.round(sq * 100) / 100,
-                      });
+                      const val = Number(e.target.value) || 0;
+                      if (
+                        editingWall.surfaceType === "floor" ||
+                        editingWall.name.toLowerCase().includes("floor")
+                      ) {
+                        const sq = wallSqft(editingWall.height, val, editingWall.unit);
+                        setEditingWall({
+                          ...editingWall,
+                          length: val,
+                          sqft: Math.round(sq * 100) / 100,
+                        });
+                      } else {
+                        const sq = wallSqft(val, editingWall.length, editingWall.unit);
+                        setEditingWall({
+                          ...editingWall,
+                          height: val,
+                          sqft: Math.round(sq * 100) / 100,
+                        });
+                      }
                     }}
                     className="h-8.5 text-xs"
                   />
                 </div>
                 <div>
                   <label className="text-xs font-medium block mb-1">
-                    Length ({editingWall.unit})
+                    {editingWall.surfaceType === "floor" ||
+                    editingWall.name.toLowerCase().includes("floor")
+                      ? `Width (${editingWall.unit})`
+                      : `Length (${editingWall.unit})`}
                   </label>
                   <Input
                     type="number"
                     step="any"
                     min="0"
-                    value={editingWall.length}
+                    value={
+                      editingWall.surfaceType === "floor" ||
+                      editingWall.name.toLowerCase().includes("floor")
+                        ? editingWall.height
+                        : editingWall.length
+                    }
                     onChange={(e) => {
-                      const l = Number(e.target.value) || 0;
-                      const sq = wallSqft(editingWall.height, l, editingWall.unit);
-                      setEditingWall({
-                        ...editingWall,
-                        length: l,
-                        sqft: Math.round(sq * 100) / 100,
-                      });
+                      const val = Number(e.target.value) || 0;
+                      if (
+                        editingWall.surfaceType === "floor" ||
+                        editingWall.name.toLowerCase().includes("floor")
+                      ) {
+                        const sq = wallSqft(val, editingWall.length, editingWall.unit);
+                        setEditingWall({
+                          ...editingWall,
+                          height: val,
+                          sqft: Math.round(sq * 100) / 100,
+                        });
+                      } else {
+                        const sq = wallSqft(editingWall.height, val, editingWall.unit);
+                        setEditingWall({
+                          ...editingWall,
+                          length: val,
+                          sqft: Math.round(sq * 100) / 100,
+                        });
+                      }
                     }}
                     className="h-8.5 text-xs"
                   />
@@ -1333,7 +1659,7 @@ export function QuoteWallDetailsEditor({
                 type="button"
                 onClick={() => editWallMut.mutate(editingWall)}
                 disabled={editWallMut.isPending}
-                className="bg-teal-700 hover:bg-teal-800 text-white"
+                className="bg-teal-700 hover:bg-teal-800 text-white cursor-pointer"
               >
                 {editWallMut.isPending ? (
                   <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />

@@ -949,7 +949,7 @@ function QuoteDetailPage() {
 
       <div className="grid gap-4 md:grid-cols-3">
         <div className="space-y-4 md:col-span-2">
-          {/* Wall Specifications Summary Card if quote has wall_estimate with walls */}
+          {/* Wall & Floor Specifications Summary Card if quote has wall_estimate with surfaces */}
           {quote.wall_estimate &&
             typeof quote.wall_estimate === "object" &&
             Array.isArray((quote.wall_estimate as Record<string, unknown>).walls) &&
@@ -957,70 +957,106 @@ function QuoteDetailPage() {
               (quote.wall_estimate as Record<string, unknown>).walls as Array<{
                 id: string;
                 name: string;
+                surfaceType?: "wall" | "floor";
                 height: number;
                 length: number;
                 unit: string;
                 sqft: number;
               }>
-            ).length > 0 && (
-              <Card className="shadow-1 border-teal-200/80 bg-teal-50/20">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 py-3 px-4 bg-teal-50/50 border-b border-teal-100">
-                  <div className="flex items-center gap-2">
-                    <Layers className="h-4 w-4 text-teal-800" />
-                    <CardTitle className="text-xs sm:text-sm font-semibold text-teal-950">
-                      Wall Cladding Specifications &amp; Dimensions
-                    </CardTitle>
-                    <Badge
-                      variant="outline"
-                      className="text-[10px] border-teal-200 bg-white text-teal-900"
-                    >
-                      {((quote.wall_estimate as Record<string, unknown>).walls as unknown[]).length}{" "}
-                      Walls
-                    </Badge>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-7 text-[11px] border-teal-300 text-teal-900 bg-white hover:bg-teal-50"
-                    onClick={() => nav({ to: "/quotes/$quoteId/edit", params: { quoteId } })}
-                  >
-                    <Pencil className="mr-1 h-3 w-3" /> Edit walls
-                  </Button>
-                </CardHeader>
-                <CardContent className="p-3 sm:p-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
-                    {(
-                      (quote.wall_estimate as Record<string, unknown>).walls as Array<{
-                        id: string;
-                        name: string;
-                        height: number;
-                        length: number;
-                        unit: string;
-                        sqft: number;
-                      }>
-                    ).map((w, idx) => (
-                      <div
-                        key={w.id || idx}
-                        className="rounded-md border border-teal-100 bg-white p-2.5 shadow-2xs"
+            ).length > 0 &&
+            (() => {
+              const surfacesList = (quote.wall_estimate as Record<string, unknown>).walls as Array<{
+                id: string;
+                name: string;
+                surfaceType?: "wall" | "floor";
+                height: number;
+                length: number;
+                unit: string;
+                sqft: number;
+              }>;
+              const floorCount = surfacesList.filter(
+                (w) => w.surfaceType === "floor" || w.name.toLowerCase().includes("floor"),
+              ).length;
+              const wallCount = surfacesList.length - floorCount;
+
+              return (
+                <Card className="shadow-1 border-teal-200/80 bg-teal-50/20">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 py-3 px-4 bg-teal-50/50 border-b border-teal-100">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Layers className="h-4 w-4 text-teal-800" />
+                      <CardTitle className="text-xs sm:text-sm font-semibold text-teal-950">
+                        Wall & Floor Specifications &amp; Dimensions
+                      </CardTitle>
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] border-teal-200 bg-white text-teal-900"
                       >
-                        <div className="flex items-center justify-between pb-1 mb-1.5 border-b border-slate-100">
-                          <span className="font-semibold text-xs text-slate-800">{w.name}</span>
-                          <span className="text-[10px] font-bold text-teal-700 bg-teal-50 px-1.5 py-0.5 rounded">
-                            {Number(w.sqft).toFixed(1)} sq.ft
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-muted-foreground flex items-center justify-between">
-                          <span>Dimensions:</span>
-                          <span className="font-medium text-slate-700">
-                            {w.height} × {w.length} {w.unit}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+                        {floorCount > 0 && wallCount > 0
+                          ? `${wallCount} Walls · ${floorCount} Floors`
+                          : floorCount > 0
+                            ? `${floorCount} ${floorCount === 1 ? "Floor" : "Floors"}`
+                            : `${wallCount} ${wallCount === 1 ? "Wall" : "Walls"}`}
+                      </Badge>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-[11px] border-teal-300 text-teal-900 bg-white hover:bg-teal-50"
+                      onClick={() => nav({ to: "/quotes/$quoteId/edit", params: { quoteId } })}
+                    >
+                      <Pencil className="mr-1 h-3 w-3" /> Edit surfaces
+                    </Button>
+                  </CardHeader>
+                  <CardContent className="p-3 sm:p-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                      {surfacesList.map((w, idx) => {
+                        const isFloor =
+                          w.surfaceType === "floor" || w.name.toLowerCase().includes("floor");
+                        return (
+                          <div
+                            key={w.id || idx}
+                            className={cn(
+                              "rounded-md border p-2.5 shadow-2xs",
+                              isFloor ? "border-sky-200 bg-sky-50/30" : "border-teal-100 bg-white",
+                            )}
+                          >
+                            <div className="flex items-center justify-between pb-1 mb-1.5 border-b border-slate-100">
+                              <span className="font-semibold text-xs text-slate-800 flex items-center gap-1.5 truncate">
+                                <span>{isFloor ? "🏠" : "🧱"}</span>
+                                <span className="truncate">{w.name}</span>
+                              </span>
+                              <div className="flex items-center gap-1 shrink-0">
+                                <span
+                                  className={cn(
+                                    "text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider",
+                                    isFloor
+                                      ? "bg-sky-100 text-sky-800 border border-sky-200"
+                                      : "bg-teal-50 text-teal-800 border border-teal-200",
+                                  )}
+                                >
+                                  {isFloor ? "Floor" : "Wall"}
+                                </span>
+                                <span className="text-[10px] font-bold text-teal-700 bg-teal-50 px-1.5 py-0.5 rounded">
+                                  {Number(w.sqft).toFixed(1)} sq.ft
+                                </span>
+                              </div>
+                            </div>
+                            <div className="text-[11px] text-muted-foreground flex items-center justify-between">
+                              <span>Dimensions:</span>
+                              <span className="font-medium text-slate-700">
+                                {isFloor
+                                  ? `${w.length} × ${w.height} ${w.unit} (L × W)`
+                                  : `${w.height} × ${w.length} ${w.unit} (H × L)`}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })()}
 
           <Card className="shadow-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">

@@ -38,6 +38,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { useWebsiteCatalog } from "@/lib/catalog/catalog-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -94,6 +95,7 @@ function rid(): string {
 type WallForm = {
   id: string;
   name: string;
+  surfaceType?: "wall" | "floor";
   height: string;
   length: string;
   sqftOverride?: string | null;
@@ -234,11 +236,25 @@ export function EstimateStudioCalculator({
     };
   }, [projectId]);
 
-  function addWall() {
-    setWalls((prev) => [
-      ...prev,
-      { id: rid(), name: `Wall ${prev.length + 1}`, height: "", length: "" },
-    ]);
+  function addWall(type: "wall" | "floor" = "wall") {
+    setWalls((prev) => {
+      const isFloor = type === "floor";
+      const count = prev.filter((w) =>
+        isFloor
+          ? w.surfaceType === "floor" || w.name.toLowerCase().includes("floor")
+          : !w.surfaceType || w.surfaceType === "wall",
+      ).length;
+      return [
+        ...prev,
+        {
+          id: rid(),
+          name: isFloor ? `Floor ${count + 1}` : `Wall ${count + 1}`,
+          surfaceType: type,
+          height: isFloor ? "12" : "",
+          length: isFloor ? "15" : "",
+        },
+      ];
+    });
   }
   function removeWall(id: string) {
     setWalls((prev) => (prev.length === 1 ? prev : prev.filter((w) => w.id !== id)));
@@ -321,9 +337,11 @@ export function EstimateStudioCalculator({
           !isNaN(Number(w.sqftOverride))
             ? Math.max(0, Number(w.sqftOverride))
             : autoSqft;
+        const isFloor = w.surfaceType === "floor" || w.name.toLowerCase().includes("floor");
         return {
           id: w.id,
-          name: w.name.trim() || "Wall",
+          name: w.name.trim() || (isFloor ? "Floor" : "Wall"),
+          surfaceType: isFloor ? "floor" : "wall",
           height: Number(w.height) || 0,
           length: Number(w.length) || 0,
           unit,
@@ -832,10 +850,10 @@ export function EstimateStudioCalculator({
         quote notes, not in this quote's own stored total below.
       </div>
 
-      {/* Wall size (coverage area) */}
+      {/* Wall & Floor size (coverage area) */}
       <div>
         <div className="mb-2 flex items-center justify-between">
-          <label className="text-sm font-medium">Wall size (coverage area)</label>
+          <label className="text-sm font-medium">Wall &amp; Floor size (coverage area)</label>
           <div className="flex items-center gap-2">
             <Select value={unit} onValueChange={(v) => setUnit(v as LengthUnit)}>
               <SelectTrigger className="h-8 w-32 text-xs">
@@ -849,27 +867,51 @@ export function EstimateStudioCalculator({
                 ))}
               </SelectContent>
             </Select>
-            <Button type="button" variant="ghost" size="sm" onClick={addWall}>
+            <Button type="button" variant="ghost" size="sm" onClick={() => addWall("wall")}>
               <Plus className="mr-1 h-3 w-3" /> Add wall
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => addWall("floor")}
+              className="text-sky-700 hover:text-sky-800"
+            >
+              <Plus className="mr-1 h-3 w-3" /> Add floor
             </Button>
           </div>
         </div>
         <div className="space-y-2">
           {walls.map((w, idx) => {
             const sqft = wallSqft(Number(w.height) || 0, Number(w.length) || 0, unit);
+            const isFloor = w.surfaceType === "floor" || w.name.toLowerCase().includes("floor");
             return (
               <div
                 key={w.id}
-                className="grid grid-cols-12 items-end gap-2 rounded-sm border border-border bg-background p-3"
+                className={cn(
+                  "grid grid-cols-12 items-end gap-2 rounded-sm border p-3",
+                  isFloor ? "border-sky-200 bg-sky-50/20" : "border-border bg-background",
+                )}
               >
-                <LineField label="Wall name" className="col-span-12 md:col-span-4">
+                <LineField
+                  label={
+                    <span className="flex items-center gap-1.5">
+                      <span>{isFloor ? "🏠" : "🧱"}</span>
+                      <span>{isFloor ? "Floor name" : "Wall name"}</span>
+                    </span>
+                  }
+                  className="col-span-12 md:col-span-4"
+                >
                   <Input
                     value={w.name}
-                    placeholder={`Wall ${idx + 1}`}
+                    placeholder={isFloor ? `Floor ${idx + 1}` : `Wall ${idx + 1}`}
                     onChange={(e) => updateWall(w.id, { name: e.target.value })}
                   />
                 </LineField>
-                <LineField label={`Height (${unit})`} className="col-span-6 md:col-span-2">
+                <LineField
+                  label={isFloor ? `Length (${unit})` : `Height (${unit})`}
+                  className="col-span-6 md:col-span-2"
+                >
                   <Input
                     type="number"
                     step="any"
@@ -879,7 +921,10 @@ export function EstimateStudioCalculator({
                     onChange={(e) => updateWall(w.id, { height: e.target.value })}
                   />
                 </LineField>
-                <LineField label={`Length (${unit})`} className="col-span-6 md:col-span-2">
+                <LineField
+                  label={isFloor ? `Width (${unit})` : `Length (${unit})`}
+                  className="col-span-6 md:col-span-2"
+                >
                   <Input
                     type="number"
                     step="any"

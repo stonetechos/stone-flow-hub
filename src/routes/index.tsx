@@ -589,25 +589,6 @@ function HomePage() {
 
           {/* Action CTAs */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-            {/* Mobile Job Openings Trigger with Animated NEW Badge */}
-            <div className="md:hidden">
-              <JobOpeningsDialog
-                trigger={
-                  <button
-                    type="button"
-                    className="relative flex items-center gap-1 h-8 px-2 rounded-lg border border-border/80 bg-background/90 text-xs font-semibold text-foreground cursor-pointer shadow-2xs hover:border-[#006788] shrink-0"
-                    title={texts.nav.jobOpenings}
-                  >
-                    <Briefcase className="h-3.5 w-3.5 text-[#006788] dark:text-[#38bdf8]" />
-                    <span className="text-[11px] font-bold">{texts.nav.jobsShort}</span>
-                    <span className="inline-flex items-center px-1 py-0.2 rounded-full bg-linear-to-r from-rose-600 to-amber-500 text-white text-[8px] font-black tracking-wider animate-attention-badge ml-0.5">
-                      {texts.nav.newBadge}
-                    </span>
-                  </button>
-                }
-              />
-            </div>
-
             {/* Mobile Navigation Menu Drawer */}
             <div className="md:hidden">
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -797,11 +778,11 @@ function HomePage() {
               />
             </div>
 
-            {/* Employees Login CTA — circled lock icon to save navbar space */}
+            {/* Employees Login CTA — circled lock icon to save navbar space (desktop only; mobile in drawer menu) */}
             <Button
               asChild
               size="icon"
-              className="h-8 w-8 sm:h-9 sm:w-9 rounded-full shadow-2xs transition-transform hover:scale-105 shrink-0 border bg-[#006788] text-white hover:bg-[#00597b] border-[#006788]"
+              className="hidden md:inline-flex h-8 w-8 sm:h-9 sm:w-9 rounded-full shadow-2xs transition-transform hover:scale-105 shrink-0 border bg-[#006788] text-white hover:bg-[#00597b] border-[#006788]"
             >
               <Link
                 to="/auth"

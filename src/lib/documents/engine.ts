@@ -301,16 +301,16 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
           ? undefined
           : ((it as { hsn_sac?: string | null }).hsn_sac ?? undefined);
 
-        // 1. Check if this line item matches a defined wall from wall_estimate
+        // 1. Check if this line item matches a defined wall or floor from wall_estimate
         let matchedWall = walls.find((w) => {
           if (matchedWallIds.has(w.id)) return false;
           const wn = w.name.toLowerCase();
           const d = (it.description || "").toLowerCase();
           const n = (notes || "").toLowerCase();
-          return d.includes(`(${wn})`) || n.includes(`wall: ${wn}`);
+          return d.includes(`(${wn})`) || n.includes(`wall: ${wn}`) || n.includes(`floor: ${wn}`);
         });
 
-        // Fallback: match sequential stone cladding products to unmatched walls
+        // Fallback: match sequential stone cladding products to unmatched walls/floors
         if (!matchedWall && categorizeQuoteItem(it) === "product") {
           matchedWall = walls.find((w) => !matchedWallIds.has(w.id));
         }
@@ -319,10 +319,20 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
           matchedWallIds.add(matchedWall.id);
           const matchedProd = prods.find((p) => p.wallId === matchedWall!.id);
           const waste = matchedProd?.wastagePct ?? 5;
-          const wallNote = `Wall: ${matchedWall.name} · ${matchedWall.height}×${matchedWall.length} ${matchedWall.unit} (${matchedWall.sqft} sq.ft) · Wastage: ${waste}%`;
+          const isFloor =
+            (matchedWall as { surfaceType?: string }).surfaceType === "floor" ||
+            matchedWall.name.toLowerCase().includes("floor");
+          const surfacePrefix = isFloor ? "Floor" : "Wall";
+          const dimLabel = isFloor
+            ? `${matchedWall.length}×${matchedWall.height}`
+            : `${matchedWall.height}×${matchedWall.length}`;
+          const wallNote = `${surfacePrefix}: ${matchedWall.name} · ${dimLabel} ${matchedWall.unit} (${matchedWall.sqft} sq.ft) · Wastage: ${waste}%`;
 
-          // Ensure wall detail is present in notes
-          if (!notes || !notes.toLowerCase().includes("wall:")) {
+          // Ensure surface detail is present in notes
+          if (
+            !notes ||
+            (!notes.toLowerCase().includes("wall:") && !notes.toLowerCase().includes("floor:"))
+          ) {
             notes = notes ? `${notes}\n${wallNote}` : wallNote;
           }
 

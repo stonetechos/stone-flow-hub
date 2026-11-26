@@ -12,6 +12,7 @@ import { LENGTH_UNITS } from "./estimateCatalog";
 export const estimateWallSchema = z.object({
   id: z.string(),
   name: z.string().trim().min(1),
+  surfaceType: z.enum(["wall", "floor"]).default("wall").optional(),
   height: z.number().nonnegative(),
   length: z.number().nonnegative(),
   unit: z.enum(LENGTH_UNITS),
