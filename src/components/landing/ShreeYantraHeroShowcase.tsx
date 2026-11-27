@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Gift, Check, ShieldCheck, Eye, Flame, ArrowRight, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
-import { ShreeYantraDialog } from "./ShreeYantraDialog";
+
+const ShreeYantraDialog = lazy(() =>
+  import("./ShreeYantraDialog").then((m) => ({ default: m.ShreeYantraDialog })),
+);
 
 const SHREE_YANTRA_TEXTS = {
   en: {
@@ -180,15 +183,19 @@ export function ShreeYantraHeroShowcase({
                 className="group/img relative rounded-xl overflow-hidden border-2 border-amber-400/80 bg-stone-950 shadow-md hover:shadow-amber-500/30 hover:border-amber-400 transition-all duration-300 cursor-pointer w-full max-w-[190px] aspect-square flex items-center justify-center"
                 title={t.tapToZoom}
               >
-                <img
-                  src="/images/shree-yantra.jpg"
-                  alt="Certified Handcrafted 3D Sacred Shree Yantra Showcase"
-                  width={190}
-                  height={190}
-                  className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-500"
-                  loading="eager"
-                  decoding="async"
-                />
+                <picture>
+                  <source srcSet="/shree-yantra.webp" type="image/webp" />
+                  <img
+                    src="/images/shree-yantra.jpg"
+                    alt="Certified Handcrafted 3D Sacred Shree Yantra Showcase"
+                    width={190}
+                    height={190}
+                    className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-500"
+                    loading="eager"
+                    fetchPriority="high"
+                    decoding="async"
+                  />
+                </picture>
 
                 {/* Bottom Inspection Plaque */}
                 <div className="absolute inset-x-0 bottom-0 p-1.5 bg-gradient-to-t from-stone-950/95 via-stone-950/80 to-transparent flex items-center justify-between text-[10px] text-amber-200">
@@ -357,14 +364,18 @@ export function ShreeYantraHeroShowcase({
       </div>
 
       {/* Lightbox / Details Modal */}
-      <ShreeYantraDialog
-        open={modalOpen}
-        onOpenChange={setModalOpen}
-        onClaimOffer={() => {
-          if (!isClaimed) onToggleClaim();
-        }}
-        isClaimed={isClaimed}
-      />
+      {modalOpen && (
+        <Suspense fallback={null}>
+          <ShreeYantraDialog
+            open={modalOpen}
+            onOpenChange={setModalOpen}
+            onClaimOffer={() => {
+              if (!isClaimed) onToggleClaim();
+            }}
+            isClaimed={isClaimed}
+          />
+        </Suspense>
+      )}
     </>
   );
 }

@@ -32,8 +32,15 @@ function parseSetting<K extends keyof SiteSettings>(
   return (row.value as SiteSettings[K]) ?? fallback;
 }
 
+let cachedSettings: { data: SiteSettings; timestamp: number } | null = null;
+const CACHE_TTL_MS = 5 * 60 * 1000;
+
 export const fetchPublicSiteSettingsServerFn = createServerFn({ method: "GET" }).handler(
   async (): Promise<SiteSettings> => {
+    if (cachedSettings && Date.now() - cachedSettings.timestamp < CACHE_TTL_MS) {
+      return cachedSettings.data;
+    }
+
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -51,7 +58,7 @@ export const fetchPublicSiteSettingsServerFn = createServerFn({ method: "GET" })
         value: r.value,
       }));
 
-      return {
+      const result: SiteSettings = {
         google_rating: parseSetting(rows, "google_rating", SITE_SETTINGS_DEFAULTS.google_rating),
         reviews: parseSetting<"reviews">(
           rows,
@@ -104,6 +111,8 @@ export const fetchPublicSiteSettingsServerFn = createServerFn({ method: "GET" })
           SITE_SETTINGS_DEFAULTS.website_landing_content ?? {},
         ),
       };
+      cachedSettings = { data: result, timestamp: Date.now() };
+      return result;
     } catch (err) {
       console.warn("[site-settings.functions] error fetching settings:", err);
       return SITE_SETTINGS_DEFAULTS;
@@ -119,6 +128,7 @@ const upsertInputSchema = z.object({
 export const upsertSiteSettingServerFn = createServerFn({ method: "POST" })
   .validator((data: { key: string; value: unknown }) => upsertInputSchema.parse(data))
   .handler(async ({ data }) => {
+    cachedSettings = null; // Bust cache on write
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { key, value } = data;

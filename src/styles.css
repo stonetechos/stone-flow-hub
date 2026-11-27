@@ -2281,6 +2281,62 @@ body[data-scroll-locked] {
   animation: stoneman-eye-glow 2.5s ease-in-out infinite;
 }
 
+@keyframes stoneman-standing-beckon {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+  }
+  25% {
+    transform: translateY(-4px) rotate(-1deg) scale(1.02);
+  }
+  50% {
+    transform: translateY(-7px) rotate(1.2deg) scale(1.03);
+  }
+  75% {
+    transform: translateY(-3px) rotate(-0.5deg) scale(1.01);
+  }
+}
+
+@keyframes stoneman-aura-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes stoneman-speech-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2.5px);
+  }
+}
+
+.animate-stoneman-beckon {
+  animation: stoneman-standing-beckon 4.5s ease-in-out infinite;
+}
+
+.animate-stoneman-aura {
+  animation: stoneman-aura-pulse 3s ease-in-out infinite;
+}
+
+.animate-speech-bob {
+  animation: stoneman-speech-bob 3.5s ease-in-out infinite;
+}
+
+/* Modern Web Performance: Defer offscreen rendering until scrolled near */
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto none auto 800px;
+}
+
 /* ERP Numeric input clarity: suppress browser spin-buttons from overlapping typed text */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {

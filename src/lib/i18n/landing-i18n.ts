@@ -64,6 +64,13 @@ export const LANDING_UI_TRANSLATIONS = {
     hero: {
       titlePart1: "Architectural Stone, Crafted for ",
       titleHighlight: "Extraordinary Spaces.",
+      stonemanAiHighlight: "With proprietary Stoneman® AI.",
+      stonemanAiOnline: "AI Copilot Online",
+      stonemanAiBadge: "Proprietary AI Copilot",
+      stonemanAiSpeech:
+        "Namaste! Need instant answers on natural stones, cladding rates, custom CNC specs, or live order status? Tap to ask me directly!",
+      stonemanAiAskProducts: "Ask Product Specs & Rates",
+      stonemanAiTrackOrder: "Track Order Status",
       customersServed: "Customers Served",
       installationWarranty: "Installation Warranty",
       yearsWarranty: "3 Years",
@@ -295,6 +302,13 @@ export const LANDING_UI_TRANSLATIONS = {
     hero: {
       titlePart1: "वास्तुशिल्प प्राकृतिक पत्थर, विशेष रूप से निर्मित ",
       titleHighlight: "असाधारण स्थानों के लिए।",
+      stonemanAiHighlight: "हमारे विशेष Stoneman® AI के साथ।",
+      stonemanAiOnline: "AI कोपायलट सक्रिय",
+      stonemanAiBadge: "स्वामित्वयुक्त AI कोपायलट",
+      stonemanAiSpeech:
+        "नमस्ते! प्राकृतिक पत्थर, वॉल क्लैडिंग दरों, सीएनसी विनिर्देशों या अपने लाइव ऑर्डर स्टेटस के बारे में पूछने के लिए मुझे टैप करें!",
+      stonemanAiAskProducts: "प्रोडक्ट स्पेक्स एवं दरें पूछें",
+      stonemanAiTrackOrder: "ऑर्डर स्टेटस ट्रैक करें",
       customersServed: "संतुष्ट ग्राहक",
       installationWarranty: "इंस्टॉलेशन वारंटी",
       yearsWarranty: "३ वर्ष",
@@ -526,6 +540,13 @@ export const LANDING_UI_TRANSLATIONS = {
     hero: {
       titlePart1: "વાસ્તુશિલ્પ નેચરલ સ્ટોન, ખાસ નિર્મિત ",
       titleHighlight: "અસાધારણ જગ્યાઓ માટે.",
+      stonemanAiHighlight: "અમારા માલિકીના Stoneman® AI સાથે.",
+      stonemanAiOnline: "AI કોપાયલટ સક્રિય",
+      stonemanAiBadge: "માલિકીનું AI કોપાયલટ",
+      stonemanAiSpeech:
+        "નમસ્તે! નેચરલ સ્ટોન, વોલ ક્લેડિંગ રેટ્સ, કસ્ટમ CNC સ્પેક્સ અથવા તમારા લાઈવ ઓર્ડર સ્ટેટસ વિશે પૂછવા માટે મને ટેપ કરો!",
+      stonemanAiAskProducts: "પ્રોડક્ટ સ્પેક્સ અને રેટ્સ પૂછો",
+      stonemanAiTrackOrder: "ઓર્ડર સ્ટેટસ ટ્રેક કરો",
       customersServed: "સંતોષકારક ગ્રાહકો",
       installationWarranty: "ઇન્સ્ટોલેશન વોરંટી",
       yearsWarranty: "૩ વર્ષ",

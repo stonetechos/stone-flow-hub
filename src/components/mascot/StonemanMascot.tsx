@@ -279,12 +279,15 @@ export function StonemanMascot({ onClick, className }: StonemanMascotProps) {
 
         {/* Stoneman Character */}
         <div className="relative h-11 w-11 overflow-hidden rounded-full p-0.5 pointer-events-none">
-          <img
-            src="/stoneman-avatar.png"
-            alt="Stoneman AI Mascot"
-            draggable={false}
-            className="h-full w-full object-cover object-top transition-transform duration-300 group-hover:scale-115 animate-stoneman-eyes select-none pointer-events-none"
-          />
+          <picture>
+            <source srcSet="/stoneman-avatar.webp" type="image/webp" />
+            <img
+              src="/stoneman-avatar.png"
+              alt="Stoneman AI Mascot"
+              draggable={false}
+              className="h-full w-full object-cover object-top transition-transform duration-300 group-hover:scale-115 animate-stoneman-eyes select-none pointer-events-none"
+            />
+          </picture>
         </div>
 
         {/* Live indicator dot */}

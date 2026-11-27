@@ -181,6 +181,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         as: "style",
         href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Gujarati:wght@400;500;600;700&family=Caveat:wght@500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap",
       },
+      {
+        rel: "preload",
+        as: "image",
+        href: "/stoneman.webp",
+        type: "image/webp",
+        fetchpriority: "high",
+      },
+      {
+        rel: "preload",
+        as: "image",
+        href: "/shree-yantra.webp",
+        type: "image/webp",
+        fetchpriority: "high",
+      },
       // Canonical URL & PWA manifest
       { rel: "canonical", href: "https://stonetech.in" },
       { rel: "manifest", href: "/manifest.json" },

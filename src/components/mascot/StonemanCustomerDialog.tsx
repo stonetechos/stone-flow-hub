@@ -9,7 +9,7 @@
  * 4. Fixed consistent dimensions across ALL tabs (never changes size).
  * 5. Stone knowledge base, verified order tracking, and complaints.
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {
   Search,
@@ -43,10 +43,21 @@ import {
 interface StonemanCustomerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  defaultTab?: "faqs" | "track" | "complaint";
 }
 
-export function StonemanCustomerDialog({ open, onOpenChange }: StonemanCustomerDialogProps) {
+export function StonemanCustomerDialog({
+  open,
+  onOpenChange,
+  defaultTab,
+}: StonemanCustomerDialogProps) {
   const [activeTab, setActiveTab] = useState<"faqs" | "track" | "complaint">("faqs");
+
+  useEffect(() => {
+    if (open && defaultTab) {
+      setActiveTab(defaultTab);
+    }
+  }, [open, defaultTab]);
   const [isWideScreen, setIsWideScreen] = useState(false);
 
   // Track order state
@@ -203,12 +214,15 @@ export function StonemanCustomerDialog({ open, onOpenChange }: StonemanCustomerD
           <div className="relative z-20 flex w-full justify-center select-none pointer-events-none -mb-5 sm:-mb-6 shrink-0">
             {/* Stone Energy Aura Glow */}
             <div className="absolute top-2 left-1/2 -translate-x-1/2 w-48 h-20 rounded-full bg-teal-500/25 blur-2xl -z-10 animate-pulse" />
-            <img
-              src="/stoneman-peeking-top.png"
-              alt="StoneMan Mascot"
-              className="h-24 sm:h-32 md:h-36 w-auto max-w-full object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.65)] select-none pointer-events-none"
-              draggable={false}
-            />
+            <picture>
+              <source srcSet="/stoneman-peeking-top.webp" type="image/webp" />
+              <img
+                src="/stoneman-peeking-top.png"
+                alt="StoneMan Mascot"
+                className="h-24 sm:h-32 md:h-36 w-auto max-w-full object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.65)] select-none pointer-events-none"
+                draggable={false}
+              />
+            </picture>
           </div>
 
           {/* Stone Body Hugging the Window from the Back */}
@@ -232,11 +246,14 @@ export function StonemanCustomerDialog({ open, onOpenChange }: StonemanCustomerD
             <div className="flex items-center justify-between border-b border-slate-800/90 bg-slate-900/70 px-3.5 sm:px-4 py-2.5 shrink-0">
               <div className="flex items-center gap-2.5">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-[#083b43] to-teal-500 p-0.5 shadow-md">
-                  <img
-                    src="/stoneman-avatar.png"
-                    alt="StoneMan AI"
-                    className="h-full w-full rounded-[10px] object-cover"
-                  />
+                  <picture>
+                    <source srcSet="/stoneman-avatar.webp" type="image/webp" />
+                    <img
+                      src="/stoneman-avatar.png"
+                      alt="StoneMan AI"
+                      className="h-full w-full rounded-[10px] object-cover"
+                    />
+                  </picture>
                 </div>
                 <div className="flex flex-col">
                   <div className="flex items-center gap-1.5">

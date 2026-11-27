@@ -20,7 +20,16 @@
  * - Sticky mobile bottom action bar
  */
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, useRef, useMemo, useEffect, type FormEvent, type ChangeEvent } from "react";
+import {
+  useState,
+  useRef,
+  useMemo,
+  useEffect,
+  lazy,
+  Suspense,
+  type FormEvent,
+  type ChangeEvent,
+} from "react";
 import { toIndicDigits } from "@/lib/format";
 import {
   Sparkles,
@@ -68,35 +77,45 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { CountryCodeSelect } from "@/components/forms/inputs/CountryCodeSelect";
 import { CustomerInquiryLookupDialog } from "@/components/enquiry/CustomerInquiryLookupDialog";
-import { LuxuryProductShowcase } from "@/components/landing/LuxuryProductShowcase";
-import { WallCladdingCatalog } from "@/components/catalog/WallCladdingCatalog";
-import { StoneVeneerCatalog } from "@/components/catalog/StoneVeneerCatalog";
-import { GlassBricksCatalog } from "@/components/catalog/GlassBricksCatalog";
-import { FlexibleClayCatalog } from "@/components/catalog/FlexibleClayCatalog";
-import { StonePebblesCatalog } from "@/components/catalog/StonePebblesCatalog";
-import { MasterProductCatalog, type ProductTab } from "@/components/catalog/MasterProductCatalog";
 import { DownloadCataloguesDropdown } from "@/components/catalog/DownloadCataloguesDropdown";
-import { InstalledWorksGallery } from "@/components/catalog/InstalledWorksGallery";
-import { ContactCenter } from "@/components/landing/ContactCenter";
 import { JobOpeningsDialog } from "@/components/landing/JobOpeningsDialog";
 import { ShreeYantraHeroShowcase } from "@/components/landing/ShreeYantraHeroShowcase";
-import {
-  RequestEstimateDialog,
-  matchMasterProduct,
-} from "@/components/landing/RequestEstimateDialog";
-import { supabase } from "@/integrations/supabase/client";
-import {
-  submitPublicEnquiryServerFn,
-  type PublicInquiryResult,
-} from "@/lib/enquiries/public-inquiry.functions";
+import { matchMasterProduct } from "@/lib/quotes/matchMasterProduct";
+import type { ProductTab } from "@/components/catalog/MasterProductCatalog";
+import { StonemanMascot } from "@/components/mascot/StonemanMascot";
+
+// Lazy-load heavy below-the-fold catalogs and interactive modal dialogs for near-instant snap load
+const MasterProductCatalog = lazy(() =>
+  import("@/components/catalog/MasterProductCatalog").then((m) => ({
+    default: m.MasterProductCatalog,
+  })),
+);
+const LuxuryProductShowcase = lazy(() =>
+  import("@/components/landing/LuxuryProductShowcase").then((m) => ({
+    default: m.LuxuryProductShowcase,
+  })),
+);
+const ContactCenter = lazy(() =>
+  import("@/components/landing/ContactCenter").then((m) => ({
+    default: m.ContactCenter,
+  })),
+);
+const RequestEstimateDialog = lazy(() =>
+  import("@/components/landing/RequestEstimateDialog").then((m) => ({
+    default: m.RequestEstimateDialog,
+  })),
+);
+const StonemanCustomerDialog = lazy(() =>
+  import("@/components/mascot/StonemanCustomerDialog").then((m) => ({
+    default: m.StonemanCustomerDialog,
+  })),
+);
 import {
   useSiteSettingsValue,
   SITE_SETTINGS_QUERY_KEY,
 } from "@/lib/site-settings/use-site-settings";
 import { fetchSiteSettings } from "@/lib/site-settings/api";
 import { useWebsiteContent } from "@/lib/cms/landing-content-store";
-import { StonemanCustomerDialog } from "@/components/mascot/StonemanCustomerDialog";
-import { StonemanMascot } from "@/components/mascot/StonemanMascot";
 import { LanguageToggle } from "@/components/global/LanguageToggle";
 import { removeThemes } from "@/components/global/ThemeSwitcher";
 import { useTranslation } from "react-i18next";
@@ -439,6 +458,7 @@ function HomePage() {
   const [prepaymentDiscountSelected, setPrepaymentDiscountSelected] = useState(false);
   const [planDescription, setPlanDescription] = useState<string>("");
   const [stonemanOpen, setStonemanOpen] = useState(false);
+  const [stonemanDefaultTab, setStonemanDefaultTab] = useState<"faqs" | "track">("faqs");
 
   // Deep-link / WhatsApp share listener for estimate modal
   useEffect(() => {
@@ -794,15 +814,121 @@ function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
             {/* LEFT COLUMN: Authority, Brand Prestige, Metrics & Value Checklist */}
             <div className="lg:col-span-6 space-y-5 sm:space-y-6 pt-1 lg:pt-2 flex flex-col justify-between animate-in fade-in-50 duration-300">
-              {/* Main Heading */}
-              <h1 className="font-serif text-3xl sm:text-4xl lg:text-[44px] xl:text-[48px] font-normal sm:font-medium tracking-tight text-[#111111] dark:text-stone-100 leading-[1.18] sm:leading-[1.14]">
-                {isEn ? cmsContent.heroTitlePart1 || texts.hero.titlePart1 : texts.hero.titlePart1}
-                <span className="text-[#006788] dark:text-[#38bdf8] font-semibold italic sm:not-italic">
+              {/* Main Heading & MAIN HIGHLIGHT: Standing Stoneman AI Feature */}
+              <div className="space-y-4">
+                <h1 className="font-serif text-3xl sm:text-4xl lg:text-[42px] xl:text-[46px] font-normal sm:font-medium tracking-tight text-[#111111] dark:text-stone-100 leading-[1.18] sm:leading-[1.14]">
                   {isEn
-                    ? cmsContent.heroTitleHighlight || texts.hero.titleHighlight
-                    : texts.hero.titleHighlight}
-                </span>
-              </h1>
+                    ? cmsContent.heroTitlePart1 || texts.hero.titlePart1
+                    : texts.hero.titlePart1}
+                  <span className="text-[#006788] dark:text-[#38bdf8] font-semibold italic sm:not-italic">
+                    {isEn
+                      ? cmsContent.heroTitleHighlight || texts.hero.titleHighlight
+                      : texts.hero.titleHighlight}
+                  </span>
+                </h1>
+
+                {/* MAIN HIGHLIGHT OF THE WEBSITE: With proprietary Stoneman® AI */}
+                <div className="relative overflow-hidden rounded-2xl border-2 border-[#006788]/40 dark:border-[#38bdf8]/40 bg-gradient-to-br from-[#e0f1f5]/90 via-white to-[#e0f1f5]/60 dark:from-stone-900/90 dark:via-stone-950/95 dark:to-[#015474]/30 p-3.5 sm:p-4.5 shadow-[0_6px_24px_rgba(0,103,136,0.14)] dark:shadow-[0_6px_24px_rgba(0,0,0,0.5)] transition-all duration-300 hover:shadow-[0_10px_32px_rgba(0,103,136,0.22)] hover:border-[#006788]/70">
+                  {/* Ambient teal energy glow */}
+                  <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-teal-400/20 dark:bg-teal-500/15 blur-2xl pointer-events-none" />
+
+                  {/* Top Badge Strip */}
+                  <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-[#006788]/15 dark:border-[#38bdf8]/20">
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-2.5 w-2.5 relative">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-500 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-teal-500" />
+                      </span>
+                      <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#015474] dark:text-[#67e8f9]">
+                        {texts.hero.stonemanAiOnline || "AI Copilot Online"}
+                      </span>
+                    </div>
+                    <Badge className="bg-[#006788] hover:bg-[#004863] text-white text-[10px] sm:text-[11px] font-bold px-2.5 py-0.5 tracking-wider shadow-2xs">
+                      {texts.hero.stonemanAiBadge || "PROPRIETARY AI COPILOT"}
+                    </Badge>
+                  </div>
+
+                  {/* Interactive Standing Mascot & Headline Feature */}
+                  <div className="pt-3 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-5">
+                    {/* Standing Mascot with Lively Animation & Click to Open */}
+                    <div
+                      onClick={() => {
+                        setStonemanDefaultTab("faqs");
+                        setStonemanOpen(true);
+                      }}
+                      className="relative shrink-0 cursor-pointer group/mascot flex flex-col items-center"
+                      title="Tap Stoneman to solve stone queries or track order"
+                    >
+                      {/* Shadow & pulse aura at feet */}
+                      <div className="absolute -bottom-1 w-20 h-3 bg-teal-900/25 dark:bg-teal-400/25 rounded-full blur-[2px] animate-stoneman-aura" />
+
+                      <div className="relative w-24 sm:w-28 h-32 sm:h-36 flex items-center justify-center transition-transform duration-300 group-hover/mascot:scale-108 animate-stoneman-beckon">
+                        <picture>
+                          <source srcSet="/stoneman.webp" type="image/webp" />
+                          <img
+                            src="/stoneman.png"
+                            alt="Standing Stoneman AI Mascot"
+                            width={112}
+                            height={144}
+                            fetchPriority="high"
+                            className="h-full w-auto object-contain drop-shadow-[0_6px_16px_rgba(0,103,136,0.35)] select-none pointer-events-none"
+                          />
+                        </picture>
+                      </div>
+                      <span className="text-[11px] font-extrabold text-[#006788] dark:text-[#38bdf8] mt-1 group-hover/mascot:underline tracking-tight">
+                        Stoneman®
+                      </span>
+                    </div>
+
+                    {/* Content & Action Buttons */}
+                    <div className="flex-1 text-center sm:text-left space-y-2.5">
+                      <h2 className="text-xl sm:text-2xl lg:text-[25px] font-extrabold tracking-tight text-[#015474] dark:text-[#67e8f9] leading-snug">
+                        {texts.hero.stonemanAiHighlight || "With proprietary Stoneman® AI."}
+                      </h2>
+
+                      <div className="relative rounded-xl bg-white/95 dark:bg-stone-900/90 border border-[#006788]/20 dark:border-[#38bdf8]/20 p-2.5 sm:p-3 shadow-2xs animate-speech-bob">
+                        <p className="text-xs sm:text-[13px] text-stone-700 dark:text-stone-300 leading-relaxed font-medium">
+                          {texts.hero.stonemanAiSpeech}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-0.5">
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            setStonemanDefaultTab("faqs");
+                            setStonemanOpen(true);
+                          }}
+                          size="sm"
+                          className="h-8.5 px-3.5 rounded-lg bg-[#006788] hover:bg-[#004863] text-white font-bold text-xs gap-1.5 shadow-sm transition-transform hover:scale-[1.02] cursor-pointer"
+                        >
+                          <Sparkles
+                            className="h-3.5 w-3.5 text-teal-200 animate-spin"
+                            style={{ animationDuration: "6s" }}
+                          />
+                          <span>
+                            {texts.hero.stonemanAiAskProducts || "Ask Product Specs & Rates"}
+                          </span>
+                        </Button>
+
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            setStonemanDefaultTab("track");
+                            setStonemanOpen(true);
+                          }}
+                          variant="outline"
+                          size="sm"
+                          className="h-8.5 px-3.5 rounded-lg border-[#006788]/40 hover:border-[#006788] text-[#015474] dark:text-[#67e8f9] bg-white/80 dark:bg-stone-900/80 hover:bg-[#e0f1f5] font-bold text-xs gap-1.5 shadow-2xs transition-transform hover:scale-[1.02] cursor-pointer"
+                        >
+                          <Truck className="h-3.5 w-3.5 text-[#006788] dark:text-[#38bdf8]" />
+                          <span>{texts.hero.stonemanAiTrackOrder || "Track Order Status"}</span>
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {/* 4 Trust Metrics */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-1">
@@ -944,7 +1070,7 @@ function HomePage() {
       {/* 2b. ARCHITECTURAL PRODUCT SHOWCASE & LIVE INSTALLATIONS GALLERY */}
       <section
         id="wall-cladding-catalogue"
-        className="py-14 sm:py-20 border-b border-border/60 bg-gradient-to-b from-stone-50/50 via-background to-stone-50/30 dark:from-stone-950/40 dark:via-background dark:to-stone-950/20 scroll-mt-16"
+        className="content-visibility-auto py-14 sm:py-20 border-b border-border/60 bg-gradient-to-b from-stone-50/50 via-background to-stone-50/30 dark:from-stone-950/40 dark:via-background dark:to-stone-950/20 scroll-mt-16"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-10">
           {/* Section Header */}
@@ -989,28 +1115,41 @@ function HomePage() {
           </div>
 
           {/* MASTER ARCHITECTURAL PRODUCT DISPLAY WITH INTEGRATED TABS */}
-          <MasterProductCatalog
-            activeTab={showcaseTab}
-            onTabChange={(tab) => setShowcaseTab(tab)}
-            onSelectProduct={(productDesc) => {
-              scrollToForm(productDesc);
-            }}
-          />
+          <Suspense
+            fallback={
+              <div className="h-96 w-full rounded-2xl bg-muted/20 animate-pulse flex items-center justify-center text-muted-foreground text-sm font-medium">
+                Loading Architectural Stone Atelier Catalog...
+              </div>
+            }
+          >
+            <MasterProductCatalog
+              activeTab={showcaseTab}
+              onTabChange={(tab) => setShowcaseTab(tab)}
+              onSelectProduct={(productDesc) => {
+                scrollToForm(productDesc);
+              }}
+            />
+          </Suspense>
 
           {/* LUXURY ARCHITECTURAL SHOWCASE (WHEN INSTALLATIONS TAB ACTIVE) */}
           {showcaseTab === "installations" && (
-            <div id="gallery-feed" className="animate-in fade-in duration-300 space-y-12 pt-6">
-              <LuxuryProductShowcase
-                onSelectProduct={scrollToForm}
-                selectedProducts={selectedProducts}
-              />
-            </div>
+            <Suspense fallback={null}>
+              <div id="gallery-feed" className="animate-in fade-in duration-300 space-y-12 pt-6">
+                <LuxuryProductShowcase
+                  onSelectProduct={scrollToForm}
+                  selectedProducts={selectedProducts}
+                />
+              </div>
+            </Suspense>
           )}
         </div>
       </section>
 
       {/* 2. WHY STONE TECH (THE 4 PILLARS) */}
-      <section id="why-us" className="py-16 sm:py-20 border-b border-border/60">
+      <section
+        id="why-us"
+        className="content-visibility-auto py-16 sm:py-20 border-b border-border/60"
+      >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
           <div className="text-center max-w-3xl mx-auto space-y-3">
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#015474] dark:text-[#67e8f9]">
@@ -1071,10 +1210,12 @@ function HomePage() {
       </section>
 
       {/* 3. BROAD "HOW TO REACH US" & VERIFIED RATINGS FOOTER */}
-      <ContactCenter />
+      <Suspense fallback={<div className="h-64 w-full bg-muted/10 animate-pulse" />}>
+        <ContactCenter />
+      </Suspense>
 
       {/* 4. FOOTER WITH BRAND ATELIER & EMPLOYEES LOGIN */}
-      <footer className="border-t border-border/80 bg-background/80 py-6 px-4 text-xs text-muted-foreground pb-24 sm:pb-6">
+      <footer className="content-visibility-auto border-t border-border/80 bg-background/80 py-6 px-4 text-xs text-muted-foreground pb-24 sm:pb-6">
         <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
           <div className="flex items-center gap-2">
             <img
@@ -1154,23 +1295,39 @@ function HomePage() {
 
       {/* StoneMan AI Mascot Assistant & Track Order Dialog */}
       <StonemanMascot
-        onClick={() => setStonemanOpen(true)}
+        onClick={() => {
+          setStonemanDefaultTab("faqs");
+          setStonemanOpen(true);
+        }}
         className={
           stonemanOpen ? "pointer-events-none opacity-0 transition-opacity duration-200" : ""
         }
       />
-      <StonemanCustomerDialog open={stonemanOpen} onOpenChange={setStonemanOpen} />
+      {stonemanOpen && (
+        <Suspense fallback={null}>
+          <StonemanCustomerDialog
+            open={stonemanOpen}
+            onOpenChange={setStonemanOpen}
+            defaultTab={stonemanDefaultTab}
+          />
+        </Suspense>
+      )}
+
       {/* Request for Estimate Dialog (Full 2-Step Form with Uploads & Success View) */}
-      <RequestEstimateDialog
-        open={isEstimateOpen}
-        onOpenChange={setIsEstimateOpen}
-        selectedProducts={selectedProducts}
-        setSelectedProducts={setSelectedProducts}
-        prepaymentDiscountSelected={prepaymentDiscountSelected}
-        setPrepaymentDiscountSelected={setPrepaymentDiscountSelected}
-        planDescription={planDescription}
-        setPlanDescription={setPlanDescription}
-      />
+      {isEstimateOpen && (
+        <Suspense fallback={null}>
+          <RequestEstimateDialog
+            open={isEstimateOpen}
+            onOpenChange={setIsEstimateOpen}
+            selectedProducts={selectedProducts}
+            setSelectedProducts={setSelectedProducts}
+            prepaymentDiscountSelected={prepaymentDiscountSelected}
+            setPrepaymentDiscountSelected={setPrepaymentDiscountSelected}
+            planDescription={planDescription}
+            setPlanDescription={setPlanDescription}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }
