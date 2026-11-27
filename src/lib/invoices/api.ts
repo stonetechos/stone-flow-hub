@@ -64,7 +64,7 @@ export type InvoicePaymentRecord = {
 export async function recalcInvoiceBalances(invoiceId: string): Promise<InvoiceRow | null> {
   const { data: inv } = await getDb()
     .from("invoices")
-    .select("id, status, total")
+    .select("id, status, total, workflow_state")
     .eq("id", invoiceId)
     .maybeSingle();
   if (!inv) return null;
@@ -109,20 +109,37 @@ export async function recalcInvoiceBalances(invoiceId: string): Promise<InvoiceR
     })
     .reduce((acc, a) => acc + (Number(a.amount) || 0), 0);
 
+  // 3b. Sum active write-offs / credit notes for this invoice
+  const { data: cns } = await getDb()
+    .from("credit_notes")
+    .select("amount, status")
+    .eq("invoice_id", invoiceId);
+
+  const writeOffsSum = (cns ?? [])
+    .filter((c) => !c.status || c.status === "active")
+    .reduce((acc, c) => acc + (Number(c.amount) || 0), 0);
+
   const totalPaid = Math.round((paymentsSum + receiptsSum) * 100) / 100;
-  const balanceDue = Math.max(0, Math.round((total - totalPaid) * 100) / 100);
+  const totalSettled = Math.round((totalPaid + writeOffsSum) * 100) / 100;
+  const balanceDue = Math.max(0, Math.round((total - totalSettled) * 100) / 100);
 
   // 4. Update status if appropriate
   let nextStatus = inv.status;
   if (nextStatus !== "cancelled" && nextStatus !== "void") {
-    if (totalPaid >= total && total > 0) {
+    if (totalSettled >= total && total > 0) {
       nextStatus = "paid";
-    } else if (totalPaid > 0) {
+    } else if (totalSettled > 0) {
       nextStatus = "partially_paid";
     } else if (nextStatus === "paid" || nextStatus === "partially_paid") {
       nextStatus = "sent";
     }
   }
+
+  const existingWf = (inv.workflow_state as Record<string, unknown> | null) ?? {};
+  const updatedWf = {
+    ...existingWf,
+    write_off_amount: writeOffsSum,
+  };
 
   const { data: updated, error } = await getDb()
     .from("invoices")
@@ -133,6 +150,7 @@ export async function recalcInvoiceBalances(invoiceId: string): Promise<InvoiceR
       amount_paid: totalPaid,
       balance_due: balanceDue,
       status: nextStatus,
+      workflow_state: updatedWf,
     } as never)
     .eq("id", invoiceId)
     .select("*")

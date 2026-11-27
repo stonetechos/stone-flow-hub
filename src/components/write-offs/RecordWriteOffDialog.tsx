@@ -120,6 +120,8 @@ export function RecordWriteOffDialog({
       }
       qc.invalidateQueries({ queryKey: ["customerLedger", "allSummaries"] });
       qc.invalidateQueries({ queryKey: ["write-offs"] });
+      qc.invalidateQueries({ queryKey: ["credit_notes"] });
+      qc.invalidateQueries({ queryKey: qk.invoices.all });
       qc.invalidateQueries({ queryKey: qk.dashboard });
       qc.invalidateQueries({ queryKey: qk.paymentRegister.all });
 

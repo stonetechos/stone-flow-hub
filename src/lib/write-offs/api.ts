@@ -150,6 +150,16 @@ export async function createWriteOff(input: CreateWriteOffInput): Promise<WriteO
 
   if (error) throw new AppError(mapDbError(error));
 
+  // If tied to an invoice, automatically recalculate invoice balance and status
+  if (input.invoice_id) {
+    try {
+      const { recalcInvoiceBalances } = await import("@/lib/invoices/api");
+      await recalcInvoiceBalances(input.invoice_id);
+    } catch (e) {
+      console.warn("[createWriteOff] failed to recalc invoice balance:", e);
+    }
+  }
+
   const row = data as unknown as {
     id: string;
     cn_no: string;
@@ -291,9 +301,63 @@ export async function getWriteOffSummary(): Promise<WriteOffSummary> {
  * Cancels / deletes a write-off if entered erroneously.
  */
 export async function cancelWriteOff(id: string): Promise<void> {
+  const { data: existing } = await supabase
+    .from("credit_notes")
+    .select("invoice_id")
+    .eq("id", id)
+    .maybeSingle();
+
   const { error } = await supabase
     .from("credit_notes")
     .update({ status: "cancelled" })
     .eq("id", id);
   if (error) throw new AppError(mapDbError(error));
+
+  if (existing?.invoice_id) {
+    try {
+      const { recalcInvoiceBalances } = await import("@/lib/invoices/api");
+      await recalcInvoiceBalances(existing.invoice_id);
+    } catch (e) {
+      console.warn("[cancelWriteOff] failed to recalc invoice balance:", e);
+    }
+  }
+}
+
+/**
+ * Aggregates active write-offs/credit notes by customer and by invoice.
+ * Used across invoice tables and customer dashboards to show invoice-level
+ * write-offs as well as total cumulative write-offs across all orders combined.
+ */
+export async function getCustomerWriteOffTotals(): Promise<{
+  byCustomer: Record<string, number>;
+  byInvoice: Record<string, number>;
+}> {
+  try {
+    const { data, error } = await supabase
+      .from("credit_notes")
+      .select("id, customer_id, invoice_id, amount, status, remarks")
+      .neq("status", "cancelled");
+    if (error) {
+      console.warn("[getCustomerWriteOffTotals] failed to fetch credit notes:", error);
+      return { byCustomer: {}, byInvoice: {} };
+    }
+    const byCustomer: Record<string, number> = {};
+    const byInvoice: Record<string, number> = {};
+
+    for (const cn of data ?? []) {
+      if (cn.status && cn.status !== "active") continue;
+      const amt = Number(cn.amount) || 0;
+      if (amt <= 0) continue;
+      if (cn.customer_id) {
+        byCustomer[cn.customer_id] = (byCustomer[cn.customer_id] || 0) + amt;
+      }
+      if (cn.invoice_id) {
+        byInvoice[cn.invoice_id] = (byInvoice[cn.invoice_id] || 0) + amt;
+      }
+    }
+    return { byCustomer, byInvoice };
+  } catch (err) {
+    console.warn("[getCustomerWriteOffTotals] error:", err);
+    return { byCustomer: {}, byInvoice: {} };
+  }
 }
