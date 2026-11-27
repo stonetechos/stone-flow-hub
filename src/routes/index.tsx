@@ -827,29 +827,29 @@ function HomePage() {
                 </h1>
 
                 {/* MAIN HIGHLIGHT: Open, unboxed text & synced welcoming mascot */}
-                <div className="pt-1 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
-                  {/* Standing Mascot — Scaled to 75%, Static & Dignified */}
+                <div className="pt-1 flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4">
+                  {/* Standing Mascot — Compact Half-Size, Static & Clean */}
                   <div
                     onClick={() => {
                       setStonemanDefaultTab("faqs");
                       setStonemanOpen(true);
                     }}
-                    className="relative shrink-0 cursor-pointer group/mascot flex flex-col items-center select-none"
+                    className="relative shrink-0 cursor-pointer group/mascot flex flex-col items-center select-none pt-0.5"
                     title="Tap StoneMan to solve queries or track order"
                   >
                     {/* Grounded shadow */}
-                    <div className="absolute -bottom-1 w-12 sm:w-14 h-2 bg-stone-900/10 dark:bg-black/30 rounded-full blur-[2px]" />
+                    <div className="absolute -bottom-0.5 w-8 sm:w-10 h-1.5 bg-stone-900/10 dark:bg-black/30 rounded-full blur-[1px]" />
 
-                    <div className="relative w-[66px] sm:w-[78px] md:w-[84px] h-[84px] sm:h-[102px] md:h-[108px] flex items-center justify-center transition-transform duration-200 group-hover/mascot:scale-105">
+                    <div className="relative w-[36px] sm:w-[42px] md:w-[46px] h-[46px] sm:h-[54px] md:h-[60px] flex items-center justify-center transition-transform duration-200 group-hover/mascot:scale-108">
                       <picture>
                         <source srcSet="/stoneman.webp" type="image/webp" />
                         <img
                           src="/stoneman.png"
                           alt="Standing StoneMan Mascot"
-                          width={84}
-                          height={108}
+                          width={46}
+                          height={60}
                           fetchPriority="high"
-                          className="h-full w-auto object-contain select-none pointer-events-none drop-shadow-[0_4px_12px_rgba(0,103,136,0.18)] dark:drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]"
+                          className="h-full w-auto object-contain select-none pointer-events-none drop-shadow-[0_2px_8px_rgba(0,103,136,0.18)] dark:drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
                         />
                       </picture>
                     </div>
