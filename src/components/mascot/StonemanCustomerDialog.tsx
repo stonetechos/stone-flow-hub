@@ -231,53 +231,19 @@ export function StonemanCustomerDialog({
 
           {/* The Big Screen Console Frame - Strict constant dimensions */}
           <div className="relative z-10 flex flex-1 min-h-0 w-full flex-col overflow-hidden rounded-2xl sm:rounded-3xl border-2 sm:border-[3px] border-slate-700/80 bg-slate-950/95 shadow-[0_25px_80px_rgba(0,0,0,0.7)] backdrop-blur-2xl ring-1 ring-teal-500/30 text-slate-100">
-            {/* Screen Top Bezel Grip Notch (held by StoneMan's hands) */}
-            <div className="flex h-7 w-full items-center justify-center bg-slate-900/90 border-b border-slate-800/80 px-4 select-none shrink-0">
-              <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-950 border border-slate-800 text-[9px] font-mono tracking-widest text-teal-400">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-teal-500" />
+            {/* Console Header - Centered directly beneath StoneMan */}
+            <div className="relative flex flex-col items-center justify-center border-b border-slate-800/90 bg-slate-900/80 pt-5 sm:pt-6 pb-3 px-12 sm:px-14 text-center select-none shrink-0">
+              <div className="flex flex-col items-center gap-1 max-w-[90%]">
+                <span className="font-display text-base sm:text-lg font-bold tracking-tight text-white drop-shadow-xs">
+                  StoneMan
                 </span>
-                STONEMAN SCREEN
-              </div>
-            </div>
-
-            {/* Console Header */}
-            <div className="flex items-center justify-between border-b border-slate-800/90 bg-slate-900/70 px-3.5 sm:px-4 py-2.5 shrink-0">
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-[#083b43] to-teal-500 p-0.5 shadow-md">
-                  <picture>
-                    <source srcSet="/stoneman-avatar.webp" type="image/webp" />
-                    <img
-                      src="/stoneman-avatar.png"
-                      alt="StoneMan AI"
-                      className="h-full w-full rounded-[10px] object-cover"
-                    />
-                  </picture>
-                </div>
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-display text-sm font-bold tracking-tight text-white">
-                      StoneMan AI
-                    </span>
-                    <span className="text-[10px] font-semibold text-teal-400 uppercase tracking-wide">
-                      • LIVE
-                    </span>
-                  </div>
-                  <span className="text-[10px] text-slate-400">
-                    Product Knowledge, Milestones & Care
-                  </span>
-                </div>
+                <span className="text-[11px] sm:text-xs text-slate-300/90 font-medium leading-relaxed">
+                  Your personal assistant for knowledge on stone &amp; our AI-run workflow pipeline.
+                </span>
               </div>
 
-              <div className="flex items-center gap-1">
-                <Badge
-                  variant="outline"
-                  className="text-[10px] uppercase font-mono tracking-wider border-teal-500/30 bg-teal-950/40 text-teal-300 hidden sm:inline-flex"
-                >
-                  Mascot Hub
-                </Badge>
-
+              {/* Top-Right Window Controls */}
+              <div className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3.5 flex items-center gap-1 select-auto">
                 {/* Wide screen toggle */}
                 <Button
                   variant="ghost"
