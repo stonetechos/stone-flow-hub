@@ -43,7 +43,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatInr, formatMoneyCompact } from "@/lib/format";
+import { formatInr, formatMoneyCompact, toIndicDigits } from "@/lib/format";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import {
   getSuperAdminFinanceReport,
@@ -55,11 +56,342 @@ import {
   SFT_SAVINGS_ANNUAL_LIMIT_INR,
   type SuperAdminFinanceReport,
   type HsnGroupSummary,
+  type FinancialAiSuggestion,
 } from "@/lib/dashboard/superadmin-finance";
 import { useActiveTheme } from "@/components/global/ThemeSwitcher";
 import { THEME_GAUGE_PALETTES } from "./StatutoryHealthGauge";
 
 const CANONICAL_HSN_CODES = ["6802", "2516", "3214", "3824", "9954", "9965"];
+
+const COCKPIT_TEXTS = {
+  en: {
+    mismatchTitle: "Sales & Purchase Invoicing Mismatch",
+    unbackedSales: "unbacked sales (missing purchase invoices)",
+    stockBuffer: "inward bills ahead of sales (stock buffer)",
+    fullyEquated: "sales and purchases fully equated",
+    billedOutward: "Billed Outward (Sales)",
+    unitsBilled: "units billed",
+    inwardCovered: "Inward Covered (Purchases)",
+    unitsCovered: "units covered",
+    hsnNeeded: "needed",
+    clickInspectMismatch: "Click to inspect itemized HSN deficit & required vendor bills",
+
+    headroomTitle: "Remaining Personal Savings / UPI Headroom",
+    left: "Left",
+    combinedLimit: "combined before ₹20L statutory limit",
+    ramanUpi: "Raman Personal UPI",
+    rishiUpi: "Rishi Personal UPI",
+    aiRecommendation: "Financial Analytical AI Recommendation",
+    openAiStrategy: "Open AI Financial Strategy & Direct Offsets",
+
+    ledgerTitle: "4-Digit HSN Purchase vs. Sales Invoicing Ledger",
+    ledgerDesc:
+      "Benchmark: Equating inward purchases and outward sales strictly by the first 4 numbers of the HSN code. Identifies required supplier purchase invoices.",
+    totalBilledOutward: "Total Billed Outward",
+    unitsSold: "units sold",
+    totalInwardCovered: "Total Inward Covered",
+    unitsPurchased: "units purchased",
+    netMismatchAmt: "Net Mismatch Amount",
+    deficitUnbacked: "Deficit unbacked",
+    inwardBuffer: "Inward buffer",
+    deficitCategories: "Deficit HSN Categories",
+    of: "of",
+    requirePurchaseBills: "require purchase bills",
+    itemizedBreakdown: "Itemized 4-Digit HSN Breakdown & Required Vendor Bills:",
+    clickAddPurchaseHint: 'Click "+ Add Purchase Bill" to record invoices against any HSN deficit',
+    colHsnCategory: "HSN & Category",
+    colSoldOutward: "Sold Outward",
+    colPurchasedInward: "Purchased Inward",
+    colBalanceStatus: "Balance Status",
+    colSuggestedAction: "Suggested Action",
+    allCategories: "All HSN Categories",
+    deficitsOnly: "Deficits Only",
+    addPurchaseBill: "Add Purchase Bill",
+    covered: "Covered",
+    deficitNeeded: "Deficit",
+    balanced: "Balanced",
+    benchmarkNote:
+      "Benchmark rule: To eliminate tax scrutiny risks, outward billing under an HSN must be backed by inward purchases under the same HSN.",
+
+    advisorTitle: "Financial Analytical AI Advisor — Cash Routing & SFT Protection",
+    advisorDesc:
+      "Automated intelligence guarding personal accounts under Income Tax Section 285BA / Rule 114E (₹10 Lakh statutory annual limit).",
+    combinedHeadroom: "Combined Remaining Headroom",
+    simulateOffset: "Direct Customer-to-Agency/Vendor Offset Simulator",
+    offsetDesc:
+      "When a customer opts for a cash settlement, instruct them to pay directly to an external Quarry, Transporter, or Adhesive Agency bank account on Stone Tech's behalf. Zero rupees enter your personal savings accounts, preserving your statutory headroom.",
+    customerCashAmt: "Customer Cash Deal Amount",
+    ifDepositedPersonally: "If Deposited Personally (UPI)",
+    burnsLimit: "Directly burns personal ₹10L limit",
+    withDirectOffset: "With Direct Vendor Offset",
+    savesHeadroom: "Saves headroom!",
+    strategicAiRecs: "Strategic AI Recommendations Generated for Stone Tech:",
+    partnerAuditTitle: "Current Partner Savings Inflow Velocity (FY 2026–27):",
+    ramanSavings: "Raman Personal Savings",
+    rishiSavings: "Rishi Personal Savings",
+    remainingHeadroom: "Remaining headroom:",
+    used: "used",
+  },
+  hi: {
+    mismatchTitle: "बिक्री एवं खरीद इनवॉइसिंग बेमेल",
+    unbackedSales: "असमर्थित बिक्री (खरीद इनवॉइस गायब है)",
+    stockBuffer: "बिक्री से आगे आवक बिल (स्टॉक बफर)",
+    fullyEquated: "बिक्री और खरीद पूरी तरह संतुलित",
+    billedOutward: "जावक बिलिंग (बिक्री)",
+    unitsBilled: "यूनिट बिल किए गए",
+    inwardCovered: "आवक कवर्ड (खरीद)",
+    unitsCovered: "यूनिट कवर किए गए",
+    hsnNeeded: "आवश्यक",
+    clickInspectMismatch: "आइटमवार HSN घाटा और आवश्यक विक्रेता बिल देखने के लिए क्लिक करें",
+
+    headroomTitle: "शेष व्यक्तिगत बचत / UPI हेडरूम",
+    left: "शेष",
+    combinedLimit: "संयुक्त रूप से ₹20 लाख की वैधानिक सीमा से पहले",
+    ramanUpi: "रमन पर्सनल UPI",
+    rishiUpi: "ऋषि पर्सनल UPI",
+    aiRecommendation: "वित्तीय विश्लेषणात्मक AI अनुशंसा",
+    openAiStrategy: "AI वित्तीय रणनीति और प्रत्यक्ष ऑफसेट खोलें",
+
+    ledgerTitle: "4-अंकीय HSN खरीद बनाम बिक्री इनवॉइसिंग बहीखाता",
+    ledgerDesc:
+      "मानक: HSN कोड के पहले 4 अंकों के आधार पर आवक खरीद और जावक बिक्री की समानता। आवश्यक आपूर्तिकर्ता खरीद बिलों की पहचान करता है।",
+    totalBilledOutward: "कुल जावक बिलिंग",
+    unitsSold: "यूनिट बेचे गए",
+    totalInwardCovered: "कुल आवक कवर्ड",
+    unitsPurchased: "यूनिट खरीदे गए",
+    netMismatchAmt: "शुद्ध बेमेल राशि",
+    deficitUnbacked: "असमर्थित घाटा",
+    inwardBuffer: "आवक स्टॉक बफर",
+    deficitCategories: "घाटे वाली HSN श्रेणियां",
+    of: "में से",
+    requirePurchaseBills: "खरीद बिल आवश्यक हैं",
+    itemizedBreakdown: "आइटमवार 4-अंकीय HSN विवरण और आवश्यक विक्रेता बिल:",
+    clickAddPurchaseHint:
+      'किसी भी HSN घाटे के खिलाफ इनवॉइस दर्ज करने के लिए "+ खरीद बिल जोड़ें" पर क्लिक करें',
+    colHsnCategory: "HSN और श्रेणी",
+    colSoldOutward: "जावक बिक्री",
+    colPurchasedInward: "आवक खरीद",
+    colBalanceStatus: "संतुलन स्थिति",
+    colSuggestedAction: "सुझाई गई कार्रवाई",
+    allCategories: "सभी HSN श्रेणियां",
+    deficitsOnly: "केवल घाटा",
+    addPurchaseBill: "खरीद बिल जोड़ें",
+    covered: "कवर्ड",
+    deficitNeeded: "घाटा",
+    balanced: "संतुलित",
+    benchmarkNote:
+      "मानक नियम: टैक्स जांच के जोखिम से बचने के लिए, किसी HSN के तहत जावक बिक्री उसी HSN के तहत आवक खरीद द्वारा समर्थित होनी चाहिए।",
+
+    advisorTitle: "वित्तीय विश्लेषणात्मक AI सलाहकार — कैश रूटिंग और SFT सुरक्षा",
+    advisorDesc:
+      "आयकर धारा 285BA / नियम 114E (₹10 लाख वैधानिक वार्षिक सीमा) के तहत व्यक्तिगत खातों की सुरक्षा करने वाली स्वचालित प्रणाली।",
+    combinedHeadroom: "संयुक्त शेष हेडरूम",
+    simulateOffset: "सीधे ग्राहक-से-एजेंसी/विक्रेता ऑफसेट सिम्युलेटर",
+    offsetDesc:
+      "जब कोई ग्राहक नकद निपटान का विकल्प चुनता है, तो उसे स्टोन टेक की ओर से सीधे बाहरी खदान, ट्रांसपोर्टर या चिपकने वाली एजेंसी के बैंक खाते में भुगतान करने का निर्देश दें। आपके व्यक्तिगत बचत खातों में शून्य रुपये प्रवेश करते हैं।",
+    customerCashAmt: "ग्राहक नकद सौदा राशि",
+    ifDepositedPersonally: "यदि व्यक्तिगत रूप से जमा किया जाए (UPI)",
+    burnsLimit: "सीधे व्यक्तिगत ₹10 लाख सीमा को समाप्त करता है",
+    withDirectOffset: "प्रत्यक्ष विक्रेता ऑफसेट के साथ",
+    savesHeadroom: "हेडरूम सुरक्षित करता है!",
+    strategicAiRecs: "स्टोन टेक के लिए उत्पन्न रणनीतिक AI सिफारिशें:",
+    partnerAuditTitle: "वर्तमान भागीदार बचत आवक वेग (वित्त वर्ष 2026–27):",
+    ramanSavings: "रमन व्यक्तिगत बचत",
+    rishiSavings: "ऋषि व्यक्तिगत बचत",
+    remainingHeadroom: "शेष हेडरूम:",
+    used: "प्रयुक्त",
+  },
+  gu: {
+    mismatchTitle: "સેલ્સ & પર્ચેસ ઇન્વૉઇસિંગ તફાવત",
+    unbackedSales: "અસમર્થિત વેચાણ (ખરીદી ઇન્વૉઇસ ખૂટે છે)",
+    stockBuffer: "વેચાણ કરતાં વધુ ખરીદી બિલ (સ્ટોક બફર)",
+    fullyEquated: "વેચાણ અને ખરીદી સંપૂર્ણ સંતુલિત",
+    billedOutward: "આઉટવર્ડ બિલિંગ (વેચાણ)",
+    unitsBilled: "યુનિટ્સ બિલ થયેલ",
+    inwardCovered: "ઇન્વર્ડ કવર્ડ (ખરીદી)",
+    unitsCovered: "યુનિટ્સ કવર થયેલ",
+    hsnNeeded: "જરૂરી",
+    clickInspectMismatch: "વિગતવાર HSN તફાવત અને જરૂરી વેન્ડર બિલ જોવા ક્લિક કરો",
+
+    headroomTitle: "બાકી પર્સનલ સેવિંગ્સ / UPI હેડરૂમ",
+    left: "બાકી",
+    combinedLimit: "સંયુક્ત રીતે ₹૨૦ લાખની કાનૂની મર્યાદા પહેલાં",
+    ramanUpi: "રમન પર્સનલ UPI",
+    rishiUpi: "ઋષિ પર્સનલ UPI",
+    aiRecommendation: "નાણાકીય વિશ્લેષણાત્મક AI ભલામણ",
+    openAiStrategy: "AI નાણાકીય વ્યૂહરચના અને ડાયરેક્ટ ઑફસેટ્સ ખોલો",
+
+    ledgerTitle: "૪-અંક HSN ખરીદી સામે વેચાણ ઇન્વૉઇસિંગ ખાતાવહી",
+    ledgerDesc:
+      "બેન્ચમાર્ક: HSN કોડના પ્રથમ ૪ અંકોના આધારે ઇન્વર્ડ ખરીદી અને આઉટવર્ડ વેચાણની સમાનતા. જરૂરી સપ્લાયર ખરીદી બિલ ઓળખે છે.",
+    totalBilledOutward: "કુલ આઉટવર્ડ બિલિંગ",
+    unitsSold: "યુનિટ્સ વેચાયા",
+    totalInwardCovered: "કુલ ઇન્વર્ડ કવર્ડ",
+    unitsPurchased: "યુનિટ્સ ખરીદ્યા",
+    netMismatchAmt: "ચોખ્ખી તફાવત રકમ",
+    deficitUnbacked: "અસમર્થિત તફાવત",
+    inwardBuffer: "ઇન્વર્ડ સ્ટોક બફર",
+    deficitCategories: "તફાવત વાળી HSN કેટેગરીઝ",
+    of: "માંથી",
+    requirePurchaseBills: "ખરીદી બિલની જરૂર છે",
+    itemizedBreakdown: "વિગતવાર ૪-અંક HSN વિશ્લેષણ અને જરૂરી વેન્ડર બિલ:",
+    clickAddPurchaseHint: 'કોઈપણ HSN તફાવત સામે ઇન્વૉઇસ નોંધવા "+ ખરીદી બિલ ઉમેરો" પર ક્લિક કરો',
+    colHsnCategory: "HSN અને કેટેગરી",
+    colSoldOutward: "આઉટવર્ડ વેચાણ",
+    colPurchasedInward: "ઇન્વર્ડ ખરીદી",
+    colBalanceStatus: "બેલેન્સ સ્થિતિ",
+    colSuggestedAction: "સૂચવેલ પગલાં",
+    allCategories: "બધી HSN કેટેગરીઝ",
+    deficitsOnly: "માત્ર તફાવત વાળા",
+    addPurchaseBill: "ખરીદી બિલ ઉમેરો",
+    covered: "કવર થયેલ",
+    deficitNeeded: "તફાવત",
+    balanced: "સંતુલિત",
+    benchmarkNote:
+      "બેન્ચમાર્ક નિયમ: ટેક્સ તપાસના જોખમને ટાળવા માટે, ચોક્કસ HSN હેઠળનું આઉટવર્ડ વેચાણ તે જ HSN હેઠળની ઇન્વર્ડ ખરીદી દ્વારા સમર્થિત હોવું જોઈએ.",
+
+    advisorTitle: "નાણાકીય વિશ્લેષણાત્મક AI સલાહકાર — કેશ રાઉટિંગ અને SFT સુરક્ષા",
+    advisorDesc:
+      "ઇન્કમ ટેક્સ કલમ 285BA / નિયમ 114E (₹૧૦ લાખ કાનૂની વાર્ષિક મર્યાદા) હેઠળ અંગત ખાતાઓની રક્ષા કરતી સ્વચાલિત સિસ્ટમ.",
+    combinedHeadroom: "સંયુક્ત બાકી હેડરૂમ",
+    simulateOffset: "સીધા ગ્રાહક-થી-એજન્સી/વેન્ડર ઑફસેટ સિમ્યુલેટર",
+    offsetDesc:
+      "જ્યારે ગ્રાહક રોકડ ચુકવણી પસંદ કરે, ત્યારે સ્ટોન ટેક વતી સીધા બહારની ક્વોરી, ટ્રાન્સપોર્ટર અથવા એડહેસિવ એજન્સીના બેંક ખાતામાં ચૂકવણી કરવા સૂચના આપો. તમારા અંગત બચત ખાતામાં શૂન્ય રૂપિયા જમા થાય છે.",
+    customerCashAmt: "ગ્રાહક રોકડ ડીલ રકમ",
+    ifDepositedPersonally: "જો વ્યક્તિગત રીતે જમા કરવામાં આવે (UPI)",
+    burnsLimit: "સીધી વ્યક્તિગત ₹૧૦ લાખની મર્યાદા ઘટાડે છે",
+    withDirectOffset: "ડાયરેક્ટ વેન્ડર ઑફસેટ સાથે",
+    savesHeadroom: "હેડરૂમ સુરક્ષિત કરે છે!",
+    strategicAiRecs: "સ્ટોન ટેક માટે જનરેટ કરેલ વ્યૂહાત્મક AI ભલામણો:",
+    partnerAuditTitle: "હાલનો પાર્ટનર બચત આવક વેગ (FY ૨૦૨૬–૨૭):",
+    ramanSavings: "રમન અંગત બચત",
+    rishiSavings: "ઋષિ અંગત બચત",
+    remainingHeadroom: "બાકી હેડરૂમ:",
+    used: "વપરાયેલ",
+  },
+};
+
+function localizeAiSuggestionText(
+  suggestion: FinancialAiSuggestion | undefined,
+  lang: "en" | "hi" | "gu",
+): { title: string; summary: string; details: string; actionLabel: string } {
+  if (!suggestion) {
+    return {
+      title: "",
+      summary:
+        lang === "gu"
+          ? "પર્સનલ સેવિંગ્સ એકાઉન્ટને અસર ન થાય તે માટે ગ્રાહકની રોકડ ચૂકવણી સીધી ક્વોરી અથવા ટ્રાન્સપોર્ટ એજન્સી ખાતામાં જમા કરાવો."
+          : lang === "hi"
+            ? "व्यक्तिगत बचत खातों पर असर से बचने के लिए ग्राहक के नकद भुगतान को सीधे खदान या परिवहन एजेंसी खातों में भेजें।"
+            : "Direct customer cash payments to quarry or transport agency accounts to avoid hitting personal savings accounts.",
+      details: "",
+      actionLabel: "",
+    };
+  }
+
+  if (lang === "en") {
+    return {
+      title: suggestion.title,
+      summary: suggestion.summary,
+      details: suggestion.details,
+      actionLabel: suggestion.actionLabel,
+    };
+  }
+
+  if (suggestion.type === "direct_agency_offset") {
+    if (lang === "gu") {
+      return {
+        title: "ગ્રાહકની રોકડ સીધી ક્વોરી / ટ્રાન્સપોર્ટર તરફ વાળો",
+        summary:
+          "રોકડ ડીલ પસંદ કરતા ગ્રાહકોને સ્ટોન ટેકની બાકી ચૂકવણી સામે સીધા ક્વોરી અથવા ટ્રાન્સપોર્ટ એજન્સીના ખાતામાં ચૂકવણી કરવા સૂચના આપો. આનાથી પર્સનલ સેવિંગ્સ ખાતાનો ઉપયોગ સંપૂર્ણપણે બચી જશે.",
+        details:
+          "ઇન્કમ ટેક્સ નિયમ 114E (SFT-004) હેઠળ વ્યક્તિગત બચત ખાતાઓમાં વાર્ષિક ₹૧૦ લાખથી વધુની રોકડ/ક્રેડિટ પર નજર રાખવામાં આવે છે. જ્યારે ગ્રાહક આપણા વતી ટ્રાન્સપોર્ટર અથવા ક્વોરી સપ્લાયરને સીધા ચૂકવે છે, ત્યારે વ્યક્તિગત ખાતામાં ₹૦ જમા થાય છે, જેનાથી ₹૧.૫ લાખનું કાનૂની હેડરૂમ બચે છે અને વેન્ડરની જવાબદારી તાત્કાલિક પતી જાય છે.",
+        actionLabel: "ડાયરેક્ટ એજન્સી ઑફસેટ નોંધો",
+      };
+    }
+    return {
+      title: "ग्राहक का नकद सीधे खदान / ट्रांसपोर्टर को भेजें",
+      summary:
+        "नकद सौदों का विकल्प चुनने वाले ग्राहकों को स्टोन टेक की देनदारी के बदले सीधे खदान या परिवहन एजेंसी खातों में भुगतान करने का निर्देश दें। यह व्यक्तिगत बचत खातों को पूरी तरह से बायपास करता है।",
+      details:
+        "आयकर नियम 114E (SFT-004) के तहत व्यक्तिगत बचत खातों में वार्षिक ₹10 लाख से अधिक की नकदी/जमा पर नजर रखी जाती है। जब कोई ग्राहक हमारी ओर से ट्रांसपोर्टर या सप्लायर को सीधे भुगतान करता है, तो व्यक्तिगत खातों में ₹0 आता है, जिससे वैधानिक हेडरूम सुरक्षित रहता है।",
+      actionLabel: "प्रत्यक्ष एजेंसी ऑफसेट दर्ज करें",
+    };
+  }
+
+  if (suggestion.type === "partner_rebalance") {
+    if (lang === "gu") {
+      return {
+        title: toIndicDigits(
+          suggestion.title
+            .replace("Switch Inbound UPI QR to", "ઇનબાઉન્ડ UPI QR બદલો")
+            .replace(
+              "Maintain Equalized Personal UPI Rotation",
+              "બંને પાર્ટનર્સ વચ્ચે સમાન UPI રોટેશન જાળવો",
+            ),
+          lang,
+        ),
+        summary: toIndicDigits(
+          suggestion.summary
+            .replace(/left/g, "બાકી")
+            .replace(/limit/g, "મર્યાદા")
+            .replace(/headroom/g, "હેડરૂમ"),
+          lang,
+        ),
+        details: toIndicDigits(suggestion.details, lang),
+        actionLabel: toIndicDigits(suggestion.actionLabel, lang),
+      };
+    }
+    return {
+      title: toIndicDigits(
+        suggestion.title
+          .replace("Switch Inbound UPI QR to", "इनबाउंड UPI QR बदलें")
+          .replace(
+            "Maintain Equalized Personal UPI Rotation",
+            "दोनों भागीदारों के बीच समान UPI रोटेशन बनाए रखें",
+          ),
+        lang,
+      ),
+      summary: toIndicDigits(
+        suggestion.summary
+          .replace(/left/g, "शेष")
+          .replace(/limit/g, "सीमा")
+          .replace(/headroom/g, "हेडरूम"),
+        lang,
+      ),
+      details: toIndicDigits(suggestion.details, lang),
+      actionLabel: toIndicDigits(suggestion.actionLabel, lang),
+    };
+  }
+
+  if (suggestion.type === "current_account_route") {
+    if (lang === "gu") {
+      return {
+        title: "₹૧.૫L થી વધુના ટ્રાન્ઝેક્શન કંપની કરન્ટ એકાઉન્ટ તરફ વાળો",
+        summary:
+          "₹૧,૫૦,૦૦૦ થી વધુના ઓર્ડર માટે સત્તાવાર GST ટેક્સ ઇન્વૉઇસ બનાવો અને બેંક ઑફ બરોડા કંપની કરન્ટ એકાઉન્ટમાં RTGS સ્વીકારો (કોઈ વ્યક્તિગત SFT મર્યાદા નથી).",
+        details:
+          "કોર્પોરેટ કરન્ટ એકાઉન્ટમાં કોઈ વ્યક્તિગત SFT મર્યાદા હોતી નથી અને તે ભવિષ્યની ક્રેડિટ લાઇન માટે કંપનીનું સત્તાવાર બેંકિંગ ટર્નઓવર વધારે છે.",
+        actionLabel: "GST ક્વોટ / બિલ બનાવો",
+      };
+    }
+    return {
+      title: "₹1.5L से अधिक के लेन-देन कंपनी चालू खाते में भेजें",
+      summary:
+        "₹1,50,000 से अधिक के ऑर्डर के लिए आधिकारिक GST टैक्स इनवॉइस जारी करें और बैंक ऑफ बड़ौदा कंपनी चालू खाते में RTGS स्वीकार करें (शून्य व्यक्तिगत SFT सीमा)।",
+      details:
+        "कॉर्पोरेट चालू खातों में कोई व्यक्तिगत SFT सीमा नहीं होती है और यह भविष्य की क्रेडिट सुविधाओं के लिए कंपनी के बैंकिंग टर्नओवर को बढ़ाता है।",
+      actionLabel: "GST कोट / बिल बनाएं",
+    };
+  }
+
+  return {
+    title: suggestion.title,
+    summary: suggestion.summary,
+    details: suggestion.details,
+    actionLabel: suggestion.actionLabel,
+  };
+}
 
 interface SuperAdminFinancialCockpitBoxesProps {
   className?: string;
@@ -68,6 +400,10 @@ interface SuperAdminFinancialCockpitBoxesProps {
 export function SuperAdminFinancialCockpitBoxes({
   className,
 }: SuperAdminFinancialCockpitBoxesProps) {
+  const { i18n } = useTranslation();
+  const lang = (i18n.language?.substring(0, 2) || "en") as "en" | "hi" | "gu";
+  const t = COCKPIT_TEXTS[lang] || COCKPIT_TEXTS.en;
+
   const activeThemeId = useActiveTheme();
   const palette = THEME_GAUGE_PALETTES[activeThemeId] || THEME_GAUGE_PALETTES["st-og"];
   const navigate = useNavigate();
@@ -183,7 +519,7 @@ export function SuperAdminFinancialCockpitBoxes({
           {/* Big Amount & Mismatch State */}
           <div>
             <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-              Sales &amp; Purchase Invoicing Mismatch
+              {t.mismatchTitle}
             </div>
 
             {!isDataReady ? (
@@ -203,15 +539,15 @@ export function SuperAdminFinancialCockpitBoxes({
                         : "text-foreground",
                   )}
                 >
-                  {mismatch.formattedMismatch}
+                  {toIndicDigits(mismatch.formattedMismatch, lang)}
                 </span>
 
                 <span className="text-xs font-semibold text-muted-foreground">
                   {mismatch.isDeficit
-                    ? "unbacked sales (missing purchase invoices)"
+                    ? t.unbackedSales
                     : mismatch.netMismatchValue < 0
-                      ? "inward bills ahead of sales (stock buffer)"
-                      : "sales and purchases fully equated"}
+                      ? t.stockBuffer
+                      : t.fullyEquated}
                 </span>
               </div>
             )}
@@ -220,7 +556,7 @@ export function SuperAdminFinancialCockpitBoxes({
             <div className="mt-3 grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-card/80 border border-border/60 text-xs">
               <div>
                 <span className="text-[10px] uppercase font-bold text-muted-foreground block">
-                  Billed Outward (Sales)
+                  {t.billedOutward}
                 </span>
                 {!isDataReady ? (
                   <div className="space-y-1 mt-1">
@@ -230,17 +566,18 @@ export function SuperAdminFinancialCockpitBoxes({
                 ) : (
                   <>
                     <span className="font-mono font-black text-foreground">
-                      {formatInr(mismatch.totalSoldValue)}
+                      {toIndicDigits(formatInr(mismatch.totalSoldValue), lang)}
                     </span>
                     <span className="text-[10px] text-muted-foreground block">
-                      {mismatch.totalSoldQty.toLocaleString("en-IN")} units billed
+                      {toIndicDigits(mismatch.totalSoldQty.toLocaleString("en-IN"), lang)}{" "}
+                      {t.unitsBilled}
                     </span>
                   </>
                 )}
               </div>
               <div className="border-l border-border/60 pl-2.5">
                 <span className="text-[10px] uppercase font-bold text-muted-foreground block">
-                  Inward Covered (Purchases)
+                  {t.inwardCovered}
                 </span>
                 {!isDataReady ? (
                   <div className="space-y-1 mt-1">
@@ -250,10 +587,11 @@ export function SuperAdminFinancialCockpitBoxes({
                 ) : (
                   <>
                     <span className="font-mono font-black text-foreground">
-                      {formatInr(mismatch.totalPurchasedValue)}
+                      {toIndicDigits(formatInr(mismatch.totalPurchasedValue), lang)}
                     </span>
                     <span className="text-[10px] text-muted-foreground block">
-                      {mismatch.totalPurchasedQty.toLocaleString("en-IN")} units covered
+                      {toIndicDigits(mismatch.totalPurchasedQty.toLocaleString("en-IN"), lang)}{" "}
+                      {t.unitsCovered}
                     </span>
                   </>
                 )}
@@ -281,9 +619,11 @@ export function SuperAdminFinancialCockpitBoxes({
                             : "bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800",
                         )}
                       >
-                        <span>HSN {h.hsn4}</span>
+                        <span>HSN {toIndicDigits(h.hsn4, lang)}</span>
                         <span className="font-mono font-normal">
-                          {isDef ? `+${h.deficitQty} ${h.unit} needed` : "✓"}
+                          {isDef
+                            ? `+${toIndicDigits(h.deficitQty, lang)} ${h.unit} ${t.hsnNeeded}`
+                            : "✓"}
                         </span>
                       </span>
                     );
@@ -294,7 +634,7 @@ export function SuperAdminFinancialCockpitBoxes({
             <div className="mt-3.5 pt-2.5 border-t border-border/60 flex items-center justify-between text-xs font-bold text-primary group-hover:text-primary/90">
               <span className="flex items-center gap-1">
                 <FileSpreadsheet className="h-3.5 w-3.5" />
-                <span>Click to inspect itemized HSN deficit &amp; required vendor bills</span>
+                <span>{t.clickInspectMismatch}</span>
               </span>
               <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </div>
@@ -326,7 +666,7 @@ export function SuperAdminFinancialCockpitBoxes({
           {/* Big Amount: Headroom Left */}
           <div>
             <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-              Remaining Personal Savings / UPI Headroom
+              {t.headroomTitle}
             </div>
 
             {!isDataReady ? (
@@ -337,10 +677,10 @@ export function SuperAdminFinancialCockpitBoxes({
             ) : (
               <div className="mt-1 flex items-baseline gap-2 flex-wrap">
                 <span className="font-display text-2xl sm:text-3xl font-black tabular-nums tracking-tight text-[#015474] drop-shadow-2xs">
-                  {formatInr(totalHeadroom)} Left
+                  {toIndicDigits(formatInr(totalHeadroom), lang)} {t.left}
                 </span>
                 <span className="text-xs font-semibold text-muted-foreground">
-                  combined before ₹20L statutory limit
+                  {t.combinedLimit}
                 </span>
               </div>
             )}
@@ -369,10 +709,14 @@ export function SuperAdminFinancialCockpitBoxes({
                   {/* Raman */}
                   <div>
                     <div className="flex items-center justify-between font-semibold text-[11px]">
-                      <span className="text-foreground">Raman Personal UPI</span>
+                      <span className="text-foreground">{t.ramanUpi}</span>
                       <span className="font-mono tabular-nums text-muted-foreground">
-                        {formatInr(raman?.cumulativeInflowsInr ?? 0)} / ₹10L (
-                        {raman?.headroomInr ? `${formatInr(raman.headroomInr)} left` : "₹10L left"})
+                        {toIndicDigits(formatInr(raman?.cumulativeInflowsInr ?? 0), lang)} /{" "}
+                        {toIndicDigits("₹10L", lang)} (
+                        {raman?.headroomInr
+                          ? `${toIndicDigits(formatInr(raman.headroomInr), lang)} ${t.left}`
+                          : `${toIndicDigits("₹10L", lang)} ${t.left}`}
+                        )
                       </span>
                     </div>
                     <Progress
@@ -384,10 +728,14 @@ export function SuperAdminFinancialCockpitBoxes({
                   {/* Rishi */}
                   <div>
                     <div className="flex items-center justify-between font-semibold text-[11px]">
-                      <span className="text-foreground">Rishi Personal UPI</span>
+                      <span className="text-foreground">{t.rishiUpi}</span>
                       <span className="font-mono tabular-nums text-muted-foreground">
-                        {formatInr(rishi?.cumulativeInflowsInr ?? 0)} / ₹10L (
-                        {rishi?.headroomInr ? `${formatInr(rishi.headroomInr)} left` : "₹10L left"})
+                        {toIndicDigits(formatInr(rishi?.cumulativeInflowsInr ?? 0), lang)} /{" "}
+                        {toIndicDigits("₹10L", lang)} (
+                        {rishi?.headroomInr
+                          ? `${toIndicDigits(formatInr(rishi.headroomInr), lang)} ${t.left}`
+                          : `${toIndicDigits("₹10L", lang)} ${t.left}`}
+                        )
                       </span>
                     </div>
                     <Progress
@@ -403,14 +751,13 @@ export function SuperAdminFinancialCockpitBoxes({
             <div className="mt-3 p-2.5 rounded-xl bg-gradient-to-r from-cyan-500/10 via-emerald-500/10 to-transparent border border-cyan-500/30 text-xs">
               <div className="flex items-center gap-1.5 text-cyan-800 dark:text-cyan-300 font-extrabold text-[11px]">
                 <Sparkles className="h-3.5 w-3.5 text-cyan-600 dark:text-cyan-400" />
-                <span>Financial Analytical AI Recommendation</span>
+                <span>{t.aiRecommendation}</span>
               </div>
               {!isDataReady ? (
                 <div className="h-3 w-4/5 bg-slate-200/60 dark:bg-slate-700/60 rounded animate-pulse mt-1.5" />
               ) : (
                 <p className="mt-1 text-[11px] text-muted-foreground leading-relaxed line-clamp-2">
-                  {topOffsetSuggestion?.summary ||
-                    "Direct customer cash payments to quarry or transport agency accounts to avoid hitting personal savings accounts."}
+                  {localizeAiSuggestionText(topOffsetSuggestion, lang).summary}
                 </p>
               )}
             </div>
@@ -419,7 +766,7 @@ export function SuperAdminFinancialCockpitBoxes({
             <div className="mt-3.5 pt-2.5 border-t border-border/60 flex items-center justify-between text-xs font-bold text-primary group-hover:text-primary/90">
               <span className="flex items-center gap-1">
                 <Sparkles className="h-3.5 w-3.5" />
-                <span>Open AI Financial Strategy &amp; Direct Offsets</span>
+                <span>{t.openAiStrategy}</span>
               </span>
               <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </div>
@@ -442,12 +789,9 @@ export function SuperAdminFinancialCockpitBoxes({
               </div>
               <div>
                 <DialogTitle className="font-display text-lg sm:text-xl font-black">
-                  4-Digit HSN Purchase vs. Sales Invoicing Ledger
+                  {t.ledgerTitle}
                 </DialogTitle>
-                <DialogDescription className="text-xs">
-                  Benchmark: Equating inward purchases and outward sales strictly by the first 4
-                  numbers of the HSN code. Identifies required supplier purchase invoices.
-                </DialogDescription>
+                <DialogDescription className="text-xs">{t.ledgerDesc}</DialogDescription>
               </div>
             </div>
           </DialogHeader>
@@ -456,31 +800,32 @@ export function SuperAdminFinancialCockpitBoxes({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-muted/50 border border-border/60">
             <div>
               <span className="text-[10px] font-bold text-muted-foreground uppercase block">
-                Total Billed Outward
+                {t.totalBilledOutward}
               </span>
               <span className="font-mono font-black text-foreground text-sm sm:text-base">
-                {formatInr(mismatch.totalSoldValue)}
+                {toIndicDigits(formatInr(mismatch.totalSoldValue), lang)}
               </span>
               <span className="text-[10px] text-muted-foreground block">
-                {mismatch.totalSoldQty.toLocaleString("en-IN")} units sold
+                {toIndicDigits(mismatch.totalSoldQty.toLocaleString("en-IN"), lang)} {t.unitsSold}
               </span>
             </div>
 
             <div>
               <span className="text-[10px] font-bold text-muted-foreground uppercase block">
-                Total Inward Covered
+                {t.totalInwardCovered}
               </span>
               <span className="font-mono font-black text-foreground text-sm sm:text-base">
-                {formatInr(mismatch.totalPurchasedValue)}
+                {toIndicDigits(formatInr(mismatch.totalPurchasedValue), lang)}
               </span>
               <span className="text-[10px] text-muted-foreground block">
-                {mismatch.totalPurchasedQty.toLocaleString("en-IN")} units purchased
+                {toIndicDigits(mismatch.totalPurchasedQty.toLocaleString("en-IN"), lang)}{" "}
+                {t.unitsPurchased}
               </span>
             </div>
 
             <div>
               <span className="text-[10px] font-bold text-muted-foreground uppercase block">
-                Net Mismatch Amount
+                {t.netMismatchAmt}
               </span>
               <span
                 className={cn(
@@ -488,22 +833,23 @@ export function SuperAdminFinancialCockpitBoxes({
                   mismatch.isDeficit ? "text-[#015474]" : "text-[#006788]",
                 )}
               >
-                {mismatch.formattedMismatch}
+                {toIndicDigits(mismatch.formattedMismatch, lang)}
               </span>
               <span className="text-[10px] text-muted-foreground block">
-                {mismatch.isDeficit ? "Deficit unbacked" : "Inward buffer"}
+                {mismatch.isDeficit ? t.deficitUnbacked : t.inwardBuffer}
               </span>
             </div>
 
             <div>
               <span className="text-[10px] font-bold text-muted-foreground uppercase block">
-                Deficit HSN Categories
+                {t.deficitCategories}
               </span>
               <span className="font-mono font-black text-foreground text-sm sm:text-base">
-                {mismatch.deficitCategoriesCount} of {completeHsnSummary.length}
+                {toIndicDigits(mismatch.deficitCategoriesCount, lang)} {t.of}{" "}
+                {toIndicDigits(completeHsnSummary.length, lang)}
               </span>
               <span className="text-[10px] text-muted-foreground block">
-                require purchase bills
+                {t.requirePurchaseBills}
               </span>
             </div>
           </div>
@@ -511,9 +857,9 @@ export function SuperAdminFinancialCockpitBoxes({
           {/* Itemized HSN Table */}
           <div className="space-y-3 mt-2">
             <div className="text-xs font-bold text-foreground flex items-center justify-between">
-              <span>Itemized 4-Digit HSN Breakdown &amp; Required Vendor Bills:</span>
+              <span>{t.itemizedBreakdown}</span>
               <span className="text-[11px] text-muted-foreground font-normal">
-                Click "+ Add Purchase Bill" to record invoices against any HSN deficit
+                {t.clickAddPurchaseHint}
               </span>
             </div>
 
@@ -680,12 +1026,9 @@ export function SuperAdminFinancialCockpitBoxes({
               </div>
               <div>
                 <DialogTitle className="font-display text-lg sm:text-xl font-black">
-                  Financial Analytical AI Advisor — Cash Routing &amp; SFT Protection
+                  {t.advisorTitle}
                 </DialogTitle>
-                <DialogDescription className="text-xs">
-                  Automated intelligence guarding personal accounts under Income Tax Section 285BA /
-                  Rule 114E (₹10 Lakh statutory annual limit).
-                </DialogDescription>
+                <DialogDescription className="text-xs">{t.advisorDesc}</DialogDescription>
               </div>
             </div>
           </DialogHeader>
@@ -698,7 +1041,7 @@ export function SuperAdminFinancialCockpitBoxes({
                   <Banknote className="h-4 w-4" />
                 </span>
                 <span className="text-xs font-black uppercase text-foreground">
-                  Direct Customer-to-Agency/Vendor Offset Simulator
+                  {t.simulateOffset}
                 </span>
               </div>
               <Badge className="bg-[#006788] text-white text-[10px] font-bold">
@@ -706,19 +1049,15 @@ export function SuperAdminFinancialCockpitBoxes({
               </Badge>
             </div>
 
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              When a customer opts for a cash settlement, instruct them to pay directly to an
-              external Quarry, Transporter, or Adhesive Agency bank account on Stone Tech's behalf.
-              Zero rupees enter your personal savings accounts, preserving your statutory headroom.
-            </p>
+            <p className="text-xs text-muted-foreground leading-relaxed">{t.offsetDesc}</p>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-xs">
               <div className="p-2.5 rounded-lg bg-card/90 border border-border/60">
                 <span className="text-[10px] text-muted-foreground font-bold uppercase block">
-                  Customer Cash Deal Amount
+                  {t.customerCashAmt}
                 </span>
                 <div className="mt-1 font-mono font-black text-base text-foreground">
-                  {formatInr(simOffsetAmount)}
+                  {toIndicDigits(formatInr(simOffsetAmount), lang)}
                 </div>
                 <div className="flex gap-1.5 mt-2">
                   {[50000, 120000, 250000].map((amt) => (
@@ -733,7 +1072,7 @@ export function SuperAdminFinancialCockpitBoxes({
                           : "bg-muted text-muted-foreground border-border",
                       )}
                     >
-                      ₹{formatMoneyCompact(amt)}
+                      ₹{toIndicDigits(formatMoneyCompact(amt), lang)}
                     </button>
                   ))}
                 </div>
@@ -741,23 +1080,25 @@ export function SuperAdminFinancialCockpitBoxes({
 
               <div className="p-2.5 rounded-lg bg-card/90 border border-border/60">
                 <span className="text-[10px] text-muted-foreground font-bold uppercase block">
-                  If Deposited Personally (UPI)
+                  {t.ifDepositedPersonally}
                 </span>
                 <div className="mt-1 font-mono font-black text-base text-[#015474]">
-                  -{formatInr(simOffsetAmount)}
+                  -{toIndicDigits(formatInr(simOffsetAmount), lang)}
                 </div>
                 <span className="text-[10px] text-[#015474] block mt-1 font-medium">
-                  Directly burns personal ₹10L limit
+                  {t.burnsLimit}
                 </span>
               </div>
 
               <div className="p-2.5 rounded-lg bg-card/90 border border-[#c9d1d4] bg-[#e0f1f5]/30">
                 <span className="text-[10px] text-[#015474] font-bold uppercase block">
-                  With Direct Vendor Offset
+                  {t.withDirectOffset}
                 </span>
-                <div className="mt-1 font-mono font-black text-base text-[#006788]">₹0 Impact</div>
+                <div className="mt-1 font-mono font-black text-base text-[#006788]">
+                  {toIndicDigits("₹0", lang)} Impact
+                </div>
                 <span className="text-[10px] text-[#015474] block mt-1 font-medium">
-                  Saves {formatInr(simOffsetAmount)} headroom!
+                  {toIndicDigits(formatInr(simOffsetAmount), lang)} {t.savesHeadroom}
                 </span>
               </div>
             </div>
@@ -765,70 +1106,79 @@ export function SuperAdminFinancialCockpitBoxes({
 
           {/* AI Strategic Action Recommendations List */}
           <div className="space-y-3 mt-2">
-            <div className="text-xs font-bold text-foreground">
-              Strategic AI Recommendations Generated for Stone Tech:
-            </div>
+            <div className="text-xs font-bold text-foreground">{t.strategicAiRecs}</div>
 
             <div className="space-y-2.5">
-              {aiSuggestions.map((sug) => (
-                <div
-                  key={sug.id}
-                  className="p-3.5 rounded-xl border border-border/80 bg-card hover:bg-muted/40 transition-colors space-y-1.5"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5">
-                      <Sparkles className="h-4 w-4 text-primary shrink-0" />
-                      <span className="text-xs font-black text-foreground">{sug.title}</span>
+              {aiSuggestions.map((sug) => {
+                const loc = localizeAiSuggestionText(sug, lang);
+                return (
+                  <div
+                    key={sug.id}
+                    className="p-3.5 rounded-xl border border-border/80 bg-card hover:bg-muted/40 transition-colors space-y-1.5"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <Sparkles className="h-4 w-4 text-primary shrink-0" />
+                        <span className="text-xs font-black text-foreground">
+                          {loc.title || sug.title}
+                        </span>
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "text-[9.5px] font-bold uppercase",
+                          sug.priority === "critical"
+                            ? "bg-[#e0f1f5] text-[#015474] border-[#c9d1d4]"
+                            : sug.priority === "high"
+                              ? "bg-[#e0f1f5] text-[#00597b] border-[#c9d1d4]"
+                              : "bg-[#e0f1f5] text-[#006788] border-[#c9d1d4]",
+                        )}
+                      >
+                        {sug.priority}
+                      </Badge>
                     </div>
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "text-[9.5px] font-bold uppercase",
-                        sug.priority === "critical"
-                          ? "bg-[#e0f1f5] text-[#015474] border-[#c9d1d4]"
-                          : sug.priority === "high"
-                            ? "bg-[#e0f1f5] text-[#00597b] border-[#c9d1d4]"
-                            : "bg-[#e0f1f5] text-[#006788] border-[#c9d1d4]",
-                      )}
-                    >
-                      {sug.priority}
-                    </Badge>
+                    <p className="text-[11.5px] text-muted-foreground leading-relaxed">
+                      {loc.details || sug.details}
+                    </p>
                   </div>
-                  <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                    {sug.details}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
           {/* Live Partner Savings Account Audit */}
           <div className="p-3.5 rounded-xl bg-muted/50 border border-border/60 text-xs space-y-2">
-            <span className="font-bold text-foreground block">
-              Current Partner Savings Inflow Velocity (FY 2026–27):
-            </span>
+            <span className="font-bold text-foreground block">{t.partnerAuditTitle}</span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="p-2.5 rounded-lg bg-card border border-border/60">
                 <div className="flex justify-between font-bold">
-                  <span>Raman Personal Savings</span>
-                  <span className="font-mono">{formatInr(raman?.cumulativeInflowsInr ?? 0)}</span>
+                  <span>{t.ramanSavings}</span>
+                  <span className="font-mono">
+                    {toIndicDigits(formatInr(raman?.cumulativeInflowsInr ?? 0), lang)}
+                  </span>
                 </div>
                 <div className="text-[10.5px] text-muted-foreground mt-1">
-                  Remaining headroom:{" "}
-                  <strong className="text-foreground">{formatInr(ramanHeadroom)}</strong> (
-                  {ramanUsage}% used)
+                  {t.remainingHeadroom}{" "}
+                  <strong className="text-foreground">
+                    {toIndicDigits(formatInr(ramanHeadroom), lang)}
+                  </strong>{" "}
+                  ({toIndicDigits(ramanUsage, lang)}% {t.used})
                 </div>
               </div>
 
               <div className="p-2.5 rounded-lg bg-card border border-border/60">
                 <div className="flex justify-between font-bold">
-                  <span>Rishi Personal Savings</span>
-                  <span className="font-mono">{formatInr(rishi?.cumulativeInflowsInr ?? 0)}</span>
+                  <span>{t.rishiSavings}</span>
+                  <span className="font-mono">
+                    {toIndicDigits(formatInr(rishi?.cumulativeInflowsInr ?? 0), lang)}
+                  </span>
                 </div>
                 <div className="text-[10.5px] text-muted-foreground mt-1">
-                  Remaining headroom:{" "}
-                  <strong className="text-foreground">{formatInr(rishiHeadroom)}</strong> (
-                  {rishiUsage}% used)
+                  {t.remainingHeadroom}{" "}
+                  <strong className="text-foreground">
+                    {toIndicDigits(formatInr(rishiHeadroom), lang)}
+                  </strong>{" "}
+                  ({toIndicDigits(rishiUsage, lang)}% {t.used})
                 </div>
               </div>
             </div>

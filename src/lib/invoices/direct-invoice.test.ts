@@ -99,6 +99,32 @@ describe("Direct Invoice Schemas", () => {
     expect(res.lr_no).toBe("LR-998811");
   });
 
+  test("invoiceCreateSchema accepts catalog product slugs like 'sp_stone_veneer' and sanitizes to null", () => {
+    const res = invoiceCreateSchema.parse({
+      customer_id: "a0000000-0000-0000-0000-000000000001",
+      project_id: "",
+      quote_id: "",
+      items: [
+        {
+          product_id: "sp_stone_veneer",
+          description: "Stone Veneer",
+          quantity: 64,
+          unit: "sqft",
+          unit_price: 120,
+          tax_pct: 5,
+          hsn_sac: "2516",
+        },
+      ],
+    });
+
+    expect(res.project_id).toBeNull();
+    expect(res.quote_id).toBeNull();
+    expect(res.items[0].product_id).toBeNull();
+    expect(res.items[0].description).toBe("Stone Veneer");
+    expect(res.items[0].quantity).toBe(64);
+    expect(res.items[0].unit_price).toBe(120);
+  });
+
   test("computes accurate subtotal, GST and grand total for direct invoice items", () => {
     const items = [
       {

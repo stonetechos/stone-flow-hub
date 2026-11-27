@@ -2,7 +2,7 @@
 import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
 import type { DbTable } from "@/lib/types";
-import { sanitizeSearch } from "@/lib/zod";
+import { isUuid, sanitizeSearch } from "@/lib/zod";
 import {
   invoiceCreateSchema,
   invoiceUpdateSchema,
@@ -557,7 +557,7 @@ export async function createInvoice(input: InvoiceCreateInput): Promise<InvoiceR
       .update({
         customer_id: customerId,
         project_id: projectId,
-        quote_id: parsed.quote_id ?? null,
+        quote_id: isUuid(parsed.quote_id) ? parsed.quote_id : null,
         status: "draft",
         issue_date: parsed.issue_date || new Date().toISOString().slice(0, 10),
         due_date: parsed.due_date || null,
@@ -581,7 +581,7 @@ export async function createInvoice(input: InvoiceCreateInput): Promise<InvoiceR
         invoice_no: "",
         customer_id: customerId,
         project_id: projectId,
-        quote_id: parsed.quote_id ?? null,
+        quote_id: isUuid(parsed.quote_id) ? parsed.quote_id : null,
         status: "draft",
         issue_date: parsed.issue_date || new Date().toISOString().slice(0, 10),
         due_date: parsed.due_date || null,
@@ -598,7 +598,7 @@ export async function createInvoice(input: InvoiceCreateInput): Promise<InvoiceR
 
   const rows = parsed.items.map((it, idx) => ({
     invoice_id: invoice.id,
-    product_id: it.product_id ?? null,
+    product_id: isUuid(it.product_id) ? it.product_id : null,
     description: it.description,
     quantity: Math.round(Number(it.quantity) * 1000) / 1000,
     unit: it.unit ?? null,

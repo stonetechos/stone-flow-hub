@@ -34,7 +34,25 @@ export const zEmail = z.preprocess(
   z.string().email("Enter a valid email").nullable().optional(),
 );
 
+export const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+export const isUuid = (val: unknown): val is string =>
+  typeof val === "string" && UUID_REGEX.test(val.trim());
+
 export const zUuid = z.string().uuid();
+
+/**
+ * Optional UUID validator: empty strings, null, undefined, or non-UUID catalog slugs
+ * (e.g. "sp_stone_veneer") safely resolve to null to avoid Postgres & Zod "Invalid uuid" crashes.
+ */
+export const zOptionalUuid = z.preprocess((v) => {
+  if (v === undefined) return undefined;
+  if (typeof v === "string") {
+    const trimmed = v.trim();
+    return UUID_REGEX.test(trimmed) ? trimmed : null;
+  }
+  return v == null ? null : v;
+}, z.string().uuid().nullable().optional());
+
 export const zMoney = z.coerce.number().nonnegative("Must be 0 or more");
 
 /** Empty-or-null-safe wrapper: uppercases + trims, then either passes

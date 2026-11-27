@@ -45,6 +45,7 @@ import { UnitPicker } from "@/components/forms/UnitPicker";
 import { CatalogProductSelect } from "@/components/quotes/CatalogProductSelect";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
+import { isUuid } from "@/lib/zod";
 import { listQuotes, convertQuoteToInvoice, type QuoteListItem } from "@/lib/quotes/api";
 import {
   createInvoice,
@@ -235,16 +236,16 @@ function NewInvoicePage() {
 
     createDirectMut.mutate({
       customer_id: directCustomer,
-      project_id: directProject || undefined,
+      project_id: isUuid(directProject) ? directProject : undefined,
       issue_date: invoiceDate,
       due_date: dueDate || undefined,
       notes: directNotes.trim() || undefined,
       terms: directTerms.trim() || undefined,
       dispatch_remarks: directDispatchRemarks.trim() || undefined,
       lr_no: directLrNo.trim() || undefined,
-      reuse_invoice_id: selectedVoidInvoiceId || undefined,
+      reuse_invoice_id: isUuid(selectedVoidInvoiceId) ? selectedVoidInvoiceId : undefined,
       items: directItems.map((it, idx) => ({
-        product_id: it.productId || null,
+        product_id: isUuid(it.productId) ? it.productId : null,
         description: it.description.trim(),
         quantity: Number(it.quantity),
         unit: it.unit || "sqft",
@@ -678,7 +679,7 @@ function NewInvoicePage() {
                             onChange={(val) => updateDirectItem(item.id, { description: val })}
                             onSelectCatalogItem={(cat) => {
                               updateDirectItem(item.id, {
-                                productId: cat.id || null,
+                                productId: isUuid(cat.id) ? cat.id : null,
                                 description: cat.name,
                                 unit: cat.defaultUnit || "sqft",
                                 unit_price: cat.defaultPrice ?? 0,

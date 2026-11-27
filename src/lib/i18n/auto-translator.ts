@@ -118,6 +118,113 @@ export const INDIC_DICTIONARY: Record<string, { hi: string; gu: string }> = {
   "Users & Roles": { hi: "उपयोगकर्ता और भूमिकाएं", gu: "વપરાશકર્તા અને ભૂમિકાઓ" },
   "Website CMS": { hi: "वेबसाइट CMS", gu: "વેબસાઇટ CMS" },
 
+  // SuperAdmin Financial Cockpit & Statutory Cards
+  "Sales & Purchase Invoicing Mismatch": {
+    hi: "बिक्री एवं खरीद इनवॉइसिंग बेमेल",
+    gu: "સેલ્સ અને પર્ચેસ ઇન્વૉઇસિંગ તફાવત",
+  },
+  "Sales & Purchase Invoicing": {
+    hi: "बिक्री और खरीद इनवॉइसिंग",
+    gu: "સેલ્સ અને પર્ચેસ ઇન્વૉઇસિંગ",
+  },
+  "Invoicing Mismatch": {
+    hi: "इनवॉइसिंग बेमेल",
+    gu: "ઇન્વૉઇસિંગ તફાવત",
+  },
+  "unbacked sales (missing purchase invoices)": {
+    hi: "असमर्थित बिक्री (खरीद इनवॉइस गायब है)",
+    gu: "અસમર્થિત વેચાણ (ખરીદી ઇન્વૉઇસ ખૂટે છે)",
+  },
+  "inward bills ahead of sales (stock buffer)": {
+    hi: "बिक्री से आगे आवक बिल (स्टॉक बफर)",
+    gu: "વેચાણ કરતાં વધુ ખરીદી બિલ (સ્ટોક બફર)",
+  },
+  "sales and purchases fully equated": {
+    hi: "बिक्री और खरीद पूरी तरह संतुलित",
+    gu: "વેચાણ અને ખરીદી સંપૂર્ણ સંતુલિત",
+  },
+  "Billed Outward (Sales)": {
+    hi: "जावक बिलिंग (बिक्री)",
+    gu: "આઉટવર્ડ બિલિંગ (વેચાણ)",
+  },
+  "Inward Covered (Purchases)": {
+    hi: "આવક કવર્ડ (ખરીદી)",
+    gu: "ઇન્વર્ડ કવર્ડ (ખરીદી)",
+  },
+  "Click to inspect itemized HSN deficit & required vendor bills": {
+    hi: "आइटमवार HSN घाटा और आवश्यक विक्रेता बिल देखने के लिए क्लिक करें",
+    gu: "વિગતવાર HSN તફાવત અને જરૂરી વેન્ડર બિલ જોવા ક્લિક કરો",
+  },
+  "Remaining Personal Savings / UPI Headroom": {
+    hi: "शेष व्यक्तिगत बचत / UPI हेडरूम",
+    gu: "બાકી પર્સનલ સેવિંગ્સ / UPI હેડરૂમ",
+  },
+  "combined before ₹20L statutory limit": {
+    hi: "संयुक्त रूप से ₹20 लाख की वैधानिक सीमा से पहले",
+    gu: "સંયુક્ત રીતે ₹૨૦ લાખની કાનૂની મર્યાદા પહેલાં",
+  },
+  "Raman Personal UPI": {
+    hi: "रमन पर्सनल UPI",
+    gu: "રમન પર્સનલ UPI",
+  },
+  "Rishi Personal UPI": {
+    hi: "ऋषि पर्सनल UPI",
+    gu: "ઋષિ પર્સનલ UPI",
+  },
+  "Financial Analytical AI Recommendation": {
+    hi: "वित्तीय विश्लेषणात्मक AI अनुशंसा",
+    gu: "નાણાકીય વિશ્લેષણાત્મક AI ભલામણ",
+  },
+  "Open AI Financial Strategy & Direct Offsets": {
+    hi: "AI वित्तीय रणनीति और प्रत्यक्ष ऑफसेट खोलें",
+    gu: "AI નાણાકીય વ્યૂહરચના અને ડાયરેક્ટ ઑફસેટ્સ ખોલો",
+  },
+  "Instruct customers opting for cash deals to pay directly to quarry or transport agency accounts against Stone Tech payables. This completely bypasses personal savings accounts.":
+    {
+      hi: "नकद सौदों का विकल्प चुनने वाले ग्राहकों को स्टोन टेक की देनदारी के बदले सीधे खदान या परिवहन एजेंसी खातों में भुगतान करने का निर्देश दें। यह व्यक्तिगत बचत खातों को पूरी तरह से बायपास करता है।",
+      gu: "રોકડ ડીલ પસંદ કરતા ગ્રાહકોને સ્ટોન ટેકની બાકી ચૂકવણી સામે સીધા ક્વોરી અથવા ટ્રાન્સપોર્ટ એજન્સીના ખાતામાં ચૂકવણી કરવા સૂચના આપો. આનાથી પર્સનલ સેવિંગ્સ ખાતાનો ઉપયોગ સંપૂર્ણપણે બચી જશે.",
+    },
+  "Route Customer Cash Directly to Quarry / Transporter": {
+    hi: "ग्राहक का नकद सीधे खदान / ट्रांसपोर्टर को भेजें",
+    gu: "ગ્રાહકની રોકડ સીધી ક્વોરી / ટ્રાન્સપોર્ટર તરફ વાળો",
+  },
+  "Record Direct Agency Offset": {
+    hi: "प्रत्यक्ष एजेंसी ऑफसेट दर्ज करें",
+    gu: "ડાયરેક્ટ એજન્સી ઑફસેટ નોંધો",
+  },
+  "4-Digit HSN Purchase vs. Sales Invoicing Ledger": {
+    hi: "4-अंकीय HSN खरीद बनाम बिक्री इनवॉइसिंग बहीखाता",
+    gu: "૪-અંક HSN ખરીદી સામે વેચાણ ઇન્વૉઇસિંગ ખાતાવહી",
+  },
+  "Total Billed Outward": {
+    hi: "कुल जावक बिलिंग",
+    gu: "કુલ આઉટવર્ડ બિલિંગ",
+  },
+  "Total Inward Covered": {
+    hi: "कुल आवक कवर्ड",
+    gu: "કુલ ઇન્વર્ડ કવર્ડ",
+  },
+  "Net Mismatch Amount": {
+    hi: "शुद्ध बेमेल राशि",
+    gu: "ચોખ્ખી તફાવત રકમ",
+  },
+  "Deficit HSN Categories": {
+    hi: "घाटे वाली HSN श्रेणियां",
+    gu: "તફાવત વાળી HSN કેટેગરીઝ",
+  },
+  "Deficit unbacked": {
+    hi: "असमर्थित घाटा",
+    gu: "અસમર્થિત તફાવત",
+  },
+  "Inward buffer": {
+    hi: "आवक स्टॉक बफर",
+    gu: "ઇન્વર્ડ સ્ટોક બફર",
+  },
+  "require purchase bills": {
+    hi: "खरीद बिल आवश्यक हैं",
+    gu: "ખરીદી બિલની જરૂર છે",
+  },
+
   // Catalog Tabs, Dropdowns & Literal Domain Headings
   "All Collections": { hi: "सभी संग्रह", gu: "બધા સંગ્રહ" },
   "All Types": { hi: "सभी प्रकार", gu: "બધા પ્રકાર" },
@@ -1272,6 +1379,25 @@ export const INDIC_WORD_LEXICON: Record<string, { hi: string; gu: string }> = {
   quantity: { hi: "मात्रा", gu: "જથ્થો" },
   rate: { hi: "दर", gu: "ભાવ" },
   discount: { hi: "छूट", gu: "વળતર" },
+  invoicing: { hi: "इनवॉइसिंग", gu: "ઇન્વૉઇસિંગ" },
+  headroom: { hi: "हेडरूम", gu: "હેડરૂમ" },
+  unbacked: { hi: "असमर्थित", gu: "અસમર્થિત" },
+  mismatch: { hi: "बेमेल", gu: "તફાવત" },
+  deficit: { hi: "घाटा", gu: "તફાવત" },
+  statutory: { hi: "वैधानिक", gu: "કાનૂની" },
+  offset: { hi: "ऑफसेट", gu: "ઑફસેટ" },
+  offsets: { hi: "ऑफसेट", gu: "ઑફસેટ્સ" },
+  itemized: { hi: "आइटमवार", gu: "વિગતવાર" },
+  analytical: { hi: "विश्लेषणात्मक", gu: "વિશ્લેષણાત્મક" },
+  strategy: { hi: "रणनीति", gu: "વ્યૂહરચના" },
+  recommendation: { hi: "अनुशंसा", gu: "ભલામણ" },
+  recommendations: { hi: "सिफारिशें", gu: "ભલામણો" },
+  covered: { hi: "कवर्ड", gu: "કવર થયેલ" },
+  billed: { hi: "बिल किया गया", gu: "બિલ થયેલ" },
+  quarry: { hi: "खदान", gu: "ક્વોરી" },
+  transporter: { hi: "ट्रांसपोर्टर", gu: "ટ્રાન્સપોર્ટર" },
+  left: { hi: "शेष", gu: "બાકી" },
+  needed: { hi: "आवश्यक", gu: "જરૂરી" },
   vehicle: { hi: "वाहन", gu: "વાહન" },
   vehicles: { hi: "वाहन", gu: "વાહનો" },
   truck: { hi: "ट्रक", gu: "ટ્રક" },
