@@ -106,7 +106,10 @@ describe("PDF Generator", () => {
   it("renders authorized signature in quotations and invoices", () => {
     const quoteHtml = renderDocHtml(sampleDoc);
     expect(quoteHtml).toContain('alt="Authorized Signature"');
+    expect(quoteHtml).toContain("height:70px;max-width:190px");
     expect(quoteHtml).toContain("Authorized Signatory");
+    // Ensure QR code dimensions remain untouched
+    expect(quoteHtml).toContain("width:48px;height:48px");
 
     const invoiceDoc: PdfDoc = {
       ...sampleDoc,
@@ -116,8 +119,10 @@ describe("PDF Generator", () => {
     };
     const invoiceHtml = renderDocHtml(invoiceDoc);
     expect(invoiceHtml).toContain('alt="Authorized Signature"');
+    expect(invoiceHtml).toContain("height:70px;max-width:190px");
     expect(invoiceHtml).toContain("Authorized Signatory");
     expect(invoiceHtml).toContain("GST INVOICE");
+    expect(invoiceHtml).toContain("width:48px;height:48px");
   });
 
   it("never renders Balance due on Invoice PDFs (only customer statements)", () => {

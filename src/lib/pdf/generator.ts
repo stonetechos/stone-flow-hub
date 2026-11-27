@@ -406,16 +406,16 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
         </div>
 
         <!-- Right: Authorized Signatory -->
-        <div style="text-align:right;min-width:140px;line-height:1.2;">
+        <div style="text-align:right;min-width:180px;line-height:1.2;">
           ${
             signatureUrl
               ? `
           <div style="margin:2px 0 3px;display:flex;justify-content:flex-end;">
-            <img src="${signatureUrl}" alt="Authorized Signature" style="height:46px;max-width:140px;object-fit:contain;display:block;" />
+            <img src="${signatureUrl}" alt="Authorized Signature" style="height:70px;max-width:190px;object-fit:contain;display:block;" />
           </div>`
               : `
           <div style="font-size:7.5px;font-weight:700;color:${deepTurquoise};text-transform:uppercase;letter-spacing:0.02em;">FOR: ${esc(brand.company_name.toUpperCase())}</div>
-          <div style="height:36px;"></div>
+          <div style="height:48px;"></div>
           <div style="font-size:7px;font-weight:700;color:#1e293b;">PROPRIETOR</div>`
           }
           <div style="font-size:7px;color:${muted};">Authorized Signatory</div>
@@ -1243,7 +1243,7 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
     // Authorized Signatory
     let sigAdded = false;
     try {
-      pdf.addImage(STONE_TECH_SIGNATURE_DATA_URL, "PNG", 148, y + 2, 47, 24);
+      pdf.addImage(STONE_TECH_SIGNATURE_DATA_URL, "PNG", 145, y + 1, 50, 26);
       pdf.setFont("helvetica", "normal");
       pdf.setFontSize(7.5);
       pdf.setTextColor(100, 116, 139);

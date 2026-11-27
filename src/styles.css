@@ -827,6 +827,39 @@
     max-width: 100%;
     position: relative;
   }
+  /* 15.6" laptop screens (standard 1080p at 100% or 125% OS scaling, ~96–144 DPI):
+     enable subpixel antialiasing and contrast-preserving rendering to eliminate thin,
+     washed-out, or soft font outlines and keep borders razor-sharp */
+  @media screen and (max-resolution: 1.5dppx), screen and (max-resolution: 144dpi) {
+    html,
+    body,
+    input,
+    button,
+    select,
+    textarea {
+      -webkit-font-smoothing: subpixel-antialiased;
+      -moz-osx-font-smoothing: auto;
+      text-rendering: optimizeLegibility;
+    }
+  }
+  /* High-DPI / Retina displays (≥1.51dppx / >144dpi) retain clean antialiased smoothing */
+  @media screen and (min-resolution: 1.51dppx), screen and (min-resolution: 145dpi) {
+    html,
+    body,
+    input,
+    button,
+    select,
+    textarea {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+    }
+  }
+  img,
+  svg,
+  canvas {
+    image-rendering: -webkit-optimize-contrast;
+  }
   /* Prevent iOS Safari from auto-zooming and de-calibrating the viewport when focusing inputs */
   @media (max-width: 767px) {
     input:not([type="checkbox"]):not([type="radio"]),
