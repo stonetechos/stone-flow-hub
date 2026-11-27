@@ -133,12 +133,12 @@ export const Route = createFileRoute("/")({
       {
         property: "og:description",
         content:
-          "Explore & download verified architectural natural stone catalogues (Wall Cladding, Ultra-Thin Stone Veneer, Glass Bricks, Flexible Clay Veneers & Stone Pebbles) in English, Hindi & Gujarati.",
+          "Explore & download verified architectural catalogues (Wall Cladding, Ultra-Thin Stone Veneer, Glass Bricks, Flexible Clay Veneers & Stone Pebbles) in English, Hindi & Gujarati.",
       },
       { property: "og:type", content: "website" },
       {
         property: "og:image",
-        content: "https://stonetech.in/branding/stone-tech-og-banner.png?v=4",
+        content: "https://stonetech.in/branding/stone-tech-og-banner.png?v=5",
       },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
@@ -147,11 +147,11 @@ export const Route = createFileRoute("/")({
       {
         name: "twitter:description",
         content:
-          "Explore & download verified architectural natural stone catalogues in English, Hindi & Gujarati. Explore 275+ Wall Claddings & 98+ Stone Veneers.",
+          "Explore & download verified architectural catalogues in English, Hindi & Gujarati. Explore 275+ Wall Claddings & 98+ Stone Veneers.",
       },
       {
         name: "twitter:image",
-        content: "https://stonetech.in/branding/stone-tech-og-banner.png?v=4",
+        content: "https://stonetech.in/branding/stone-tech-og-banner.png?v=5",
       },
     ],
   }),

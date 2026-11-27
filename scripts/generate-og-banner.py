@@ -349,7 +349,7 @@ body {{
       🏛️ ARCHITECTURAL CATALOGUES &amp; SPECIFICATIONS · 2026-27
     </div>
     <h1 class="main-title">
-      Architectural Natural Stone <span>Catalogues</span>
+      Architectural <span>Catalogues</span>
     </h1>
     <p class="subtitle">
       Explore &amp; download complete verified technical catalogues with specifications, sizes and high-resolution textures.

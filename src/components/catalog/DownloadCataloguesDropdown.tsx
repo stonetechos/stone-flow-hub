@@ -106,18 +106,18 @@ export function DownloadCataloguesDropdown({
   const getShareText = () => {
     if (lang === "gu") {
       return (
-        "નમસ્તે! સ્ટોન ટેકના તમામ વાસ્તુશિલ્પીય પ્રાકૃતિક પાષાણ કેટલોગ્સ (વોલ ક્લેડિંગ, સ્ટોન વિનિયર, ગ્લાસ બ્રિક્સ, ક્લે વિનિયર, સ્ટોન પેબલ્સ અને પ્રોજેક્ટ્સ) ઓનલાઇન જોવા અને PDF ડાઉનલોડ કરવા માટે અહીં ક્લિક કરો:\n👉 " +
+        "નમસ્તે! સ્ટોન ટેકના તમામ વાસ્તુશિલ્પીય કેટલોગ્સ (વોલ ક્લેડિંગ, સ્ટોન વિનિયર, ગ્લાસ બ્રિક્સ, ક્લે વિનિયર, સ્ટોન પેબલ્સ અને પ્રોજેક્ટ્સ) ઓનલાઇન જોવા અને PDF ડાઉનલોડ કરવા માટે અહીં ક્લિક કરો:\n👉 " +
         shareUrl
       );
     }
     if (lang === "hi") {
       return (
-        "नमस्ते! स्टोन टेक के सभी वास्तुशिल्पीय प्राकृतिक पाषाण कैटलॉग (वॉल क्लैडिंग, स्टोन विनियर, ग्लास ब्रिक्स, क्ले विनियर, स्टोन पेबल्स एवं प्रोजेक्ट्स) ऑनलाइन देखने एवं PDF डाउनलोड करने हेतु यहाँ क्लिक करें:\n👉 " +
+        "नमस्ते! स्टोन टेक के सभी वास्तुशिल्पीय कैटलॉग (वॉल क्लैडिंग, स्टोन विनियर, ग्लास ब्रिक्स, क्ले विनियर, स्टोन पेबल्स एवं प्रोजेक्ट्स) ऑनलाइन देखने एवं PDF डाउनलोड करने हेतु यहाँ क्लिक करें:\n👉 " +
         shareUrl
       );
     }
     return (
-      "Namaste! Explore & Download Stone Tech's Architectural Natural Stone Catalogues (Wall Cladding, Ultra-Thin Stone Veneer, Glass Bricks, Flexible Clay Veneers, Stone Pebbles & Executed Projects):\n👉 " +
+      "Namaste! Explore & Download Stone Tech's Architectural Catalogues (Wall Cladding, Ultra-Thin Stone Veneer, Glass Bricks, Flexible Clay Veneers, Stone Pebbles & Executed Projects):\n👉 " +
       shareUrl
     );
   };
