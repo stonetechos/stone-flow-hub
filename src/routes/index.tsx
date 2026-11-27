@@ -828,7 +828,7 @@ function HomePage() {
 
                 {/* MAIN HIGHLIGHT: Open, unboxed text & synced welcoming mascot */}
                 <div className="pt-1 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
-                  {/* Standing Mascot with Lively Synced Animation & Click to Open */}
+                  {/* Standing Mascot — Scaled to 75%, Static & Dignified */}
                   <div
                     onClick={() => {
                       setStonemanDefaultTab("faqs");
@@ -837,19 +837,19 @@ function HomePage() {
                     className="relative shrink-0 cursor-pointer group/mascot flex flex-col items-center select-none"
                     title="Tap StoneMan to solve queries or track order"
                   >
-                    {/* Synchronized radiant floor aura pulse */}
-                    <div className="absolute -bottom-1 w-20 h-3 bg-teal-500/30 dark:bg-teal-400/30 rounded-full blur-[3px] animate-stoneman-synced-aura" />
+                    {/* Grounded shadow */}
+                    <div className="absolute -bottom-1 w-12 sm:w-14 h-2 bg-stone-900/10 dark:bg-black/30 rounded-full blur-[2px]" />
 
-                    <div className="relative w-22 sm:w-26 md:w-28 h-28 sm:h-34 md:h-36 flex items-center justify-center transition-transform duration-300 group-hover/mascot:scale-108 animate-stoneman-synced-standing">
+                    <div className="relative w-[66px] sm:w-[78px] md:w-[84px] h-[84px] sm:h-[102px] md:h-[108px] flex items-center justify-center transition-transform duration-200 group-hover/mascot:scale-105">
                       <picture>
                         <source srcSet="/stoneman.webp" type="image/webp" />
                         <img
                           src="/stoneman.png"
                           alt="Standing StoneMan Mascot"
-                          width={112}
-                          height={144}
+                          width={84}
+                          height={108}
                           fetchPriority="high"
-                          className="h-full w-auto object-contain select-none pointer-events-none drop-shadow-[0_8px_20px_rgba(0,103,136,0.3)]"
+                          className="h-full w-auto object-contain select-none pointer-events-none drop-shadow-[0_4px_12px_rgba(0,103,136,0.18)] dark:drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]"
                         />
                       </picture>
                     </div>
