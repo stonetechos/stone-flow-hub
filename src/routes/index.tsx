@@ -55,7 +55,6 @@ import {
   Compass,
   Eye,
   Palette,
-  Truck,
   Search,
   Briefcase,
   Tag,
@@ -854,58 +853,24 @@ function HomePage() {
                         />
                       </picture>
                     </div>
-                    <span className="text-[11px] font-extrabold text-[#006788] dark:text-[#38bdf8] mt-1 group-hover/mascot:underline tracking-tight flex items-center gap-1">
-                      StoneMan®
-                      <span className="text-[10px] text-teal-600 dark:text-teal-400 font-normal">
-                        (Tap me)
-                      </span>
-                    </span>
                   </div>
 
-                  {/* Attractive Highlight Text & Quick Inquiry Actions — Completely Unboxed */}
+                  {/* Attractive Highlight Text — Clean, unboxed & button-free */}
                   <div className="flex-1 text-center sm:text-left space-y-2">
-                    <h2 className="text-xl sm:text-2xl lg:text-[26px] font-extrabold tracking-tight bg-gradient-to-r from-[#006788] via-teal-500 to-[#015474] dark:from-[#38bdf8] dark:via-teal-400 dark:to-cyan-300 bg-clip-text text-transparent leading-snug animate-stoneman-synced-text">
+                    <h2
+                      onClick={() => {
+                        setStonemanDefaultTab("faqs");
+                        setStonemanOpen(true);
+                      }}
+                      className="text-xl sm:text-2xl lg:text-[26px] font-extrabold tracking-tight bg-gradient-to-r from-[#006788] via-teal-500 to-[#015474] dark:from-[#38bdf8] dark:via-teal-400 dark:to-cyan-300 bg-clip-text text-transparent leading-snug animate-stoneman-synced-text cursor-pointer hover:opacity-95"
+                      title="Tap StoneMan to solve queries or track order"
+                    >
                       {texts.hero.stonemanAiHighlight || "With proprietary Stoneman® AI."}
                     </h2>
 
                     <p className="text-xs sm:text-[13px] text-stone-600 dark:text-stone-300 font-medium leading-relaxed max-w-xl">
                       {texts.hero.stonemanAiSpeech}
                     </p>
-
-                    {/* Sleek inline action buttons */}
-                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
-                      <Button
-                        type="button"
-                        onClick={() => {
-                          setStonemanDefaultTab("faqs");
-                          setStonemanOpen(true);
-                        }}
-                        size="sm"
-                        className="h-8.5 px-3.5 rounded-full bg-[#006788] hover:bg-[#004863] text-white font-bold text-xs gap-1.5 shadow-sm transition-transform hover:scale-[1.02] cursor-pointer"
-                      >
-                        <Sparkles
-                          className="h-3.5 w-3.5 text-teal-200 animate-spin"
-                          style={{ animationDuration: "6s" }}
-                        />
-                        <span>
-                          {texts.hero.stonemanAiAskProducts || "Ask Product Specs & Rates"}
-                        </span>
-                      </Button>
-
-                      <Button
-                        type="button"
-                        onClick={() => {
-                          setStonemanDefaultTab("track");
-                          setStonemanOpen(true);
-                        }}
-                        variant="outline"
-                        size="sm"
-                        className="h-8.5 px-3.5 rounded-full border-[#006788]/40 hover:border-[#006788] text-[#015474] dark:text-[#67e8f9] bg-white/70 dark:bg-stone-900/70 hover:bg-[#006788]/10 font-bold text-xs gap-1.5 shadow-2xs transition-transform hover:scale-[1.02] cursor-pointer"
-                      >
-                        <Truck className="h-3.5 w-3.5 text-[#006788] dark:text-[#38bdf8]" />
-                        <span>{texts.hero.stonemanAiTrackOrder || "Track Order Status"}</span>
-                      </Button>
-                    </div>
                   </div>
                 </div>
               </div>

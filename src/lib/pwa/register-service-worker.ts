@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { listPendingOperations } from "@/lib/pwa/sync-queue";
 import { isCapacitorAppOrigin } from "@/lib/capacitor/server-origin-allowlist";
 
-const SW_CACHE_VERSION = "stos-47";
+const SW_CACHE_VERSION = "stos-48";
 let registered = false;
 
 export function registerServiceWorker(): void {
