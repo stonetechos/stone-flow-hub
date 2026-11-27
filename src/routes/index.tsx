@@ -827,104 +827,84 @@ function HomePage() {
                   </span>
                 </h1>
 
-                {/* MAIN HIGHLIGHT OF THE WEBSITE: With proprietary Stoneman® AI */}
-                <div className="relative overflow-hidden rounded-2xl border-2 border-[#006788]/40 dark:border-[#38bdf8]/40 bg-gradient-to-br from-[#e0f1f5]/90 via-white to-[#e0f1f5]/60 dark:from-stone-900/90 dark:via-stone-950/95 dark:to-[#015474]/30 p-3.5 sm:p-4.5 shadow-[0_6px_24px_rgba(0,103,136,0.14)] dark:shadow-[0_6px_24px_rgba(0,0,0,0.5)] transition-all duration-300 hover:shadow-[0_10px_32px_rgba(0,103,136,0.22)] hover:border-[#006788]/70">
-                  {/* Ambient teal energy glow */}
-                  <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-teal-400/20 dark:bg-teal-500/15 blur-2xl pointer-events-none" />
+                {/* MAIN HIGHLIGHT: Open, unboxed text & synced welcoming mascot */}
+                <div className="pt-1 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+                  {/* Standing Mascot with Lively Synced Animation & Click to Open */}
+                  <div
+                    onClick={() => {
+                      setStonemanDefaultTab("faqs");
+                      setStonemanOpen(true);
+                    }}
+                    className="relative shrink-0 cursor-pointer group/mascot flex flex-col items-center select-none"
+                    title="Tap StoneMan to solve queries or track order"
+                  >
+                    {/* Synchronized radiant floor aura pulse */}
+                    <div className="absolute -bottom-1 w-20 h-3 bg-teal-500/30 dark:bg-teal-400/30 rounded-full blur-[3px] animate-stoneman-synced-aura" />
 
-                  {/* Top Badge Strip */}
-                  <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-[#006788]/15 dark:border-[#38bdf8]/20">
-                    <div className="flex items-center gap-2">
-                      <span className="flex h-2.5 w-2.5 relative">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-500 opacity-75" />
-                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-teal-500" />
-                      </span>
-                      <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#015474] dark:text-[#67e8f9]">
-                        {texts.hero.stonemanAiOnline || "AI Copilot Online"}
-                      </span>
+                    <div className="relative w-22 sm:w-26 md:w-28 h-28 sm:h-34 md:h-36 flex items-center justify-center transition-transform duration-300 group-hover/mascot:scale-108 animate-stoneman-synced-standing">
+                      <picture>
+                        <source srcSet="/stoneman.webp" type="image/webp" />
+                        <img
+                          src="/stoneman.png"
+                          alt="Standing StoneMan Mascot"
+                          width={112}
+                          height={144}
+                          fetchPriority="high"
+                          className="h-full w-auto object-contain select-none pointer-events-none drop-shadow-[0_8px_20px_rgba(0,103,136,0.3)]"
+                        />
+                      </picture>
                     </div>
-                    <Badge className="bg-[#006788] hover:bg-[#004863] text-white text-[10px] sm:text-[11px] font-bold px-2.5 py-0.5 tracking-wider shadow-2xs">
-                      {texts.hero.stonemanAiBadge || "PROPRIETARY AI COPILOT"}
-                    </Badge>
+                    <span className="text-[11px] font-extrabold text-[#006788] dark:text-[#38bdf8] mt-1 group-hover/mascot:underline tracking-tight flex items-center gap-1">
+                      StoneMan®
+                      <span className="text-[10px] text-teal-600 dark:text-teal-400 font-normal">
+                        (Tap me)
+                      </span>
+                    </span>
                   </div>
 
-                  {/* Interactive Standing Mascot & Headline Feature */}
-                  <div className="pt-3 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-5">
-                    {/* Standing Mascot with Lively Animation & Click to Open */}
-                    <div
-                      onClick={() => {
-                        setStonemanDefaultTab("faqs");
-                        setStonemanOpen(true);
-                      }}
-                      className="relative shrink-0 cursor-pointer group/mascot flex flex-col items-center"
-                      title="Tap Stoneman to solve stone queries or track order"
-                    >
-                      {/* Shadow & pulse aura at feet */}
-                      <div className="absolute -bottom-1 w-20 h-3 bg-teal-900/25 dark:bg-teal-400/25 rounded-full blur-[2px] animate-stoneman-aura" />
+                  {/* Attractive Highlight Text & Quick Inquiry Actions — Completely Unboxed */}
+                  <div className="flex-1 text-center sm:text-left space-y-2">
+                    <h2 className="text-xl sm:text-2xl lg:text-[26px] font-extrabold tracking-tight bg-gradient-to-r from-[#006788] via-teal-500 to-[#015474] dark:from-[#38bdf8] dark:via-teal-400 dark:to-cyan-300 bg-clip-text text-transparent leading-snug animate-stoneman-synced-text">
+                      {texts.hero.stonemanAiHighlight || "With proprietary Stoneman® AI."}
+                    </h2>
 
-                      <div className="relative w-24 sm:w-28 h-32 sm:h-36 flex items-center justify-center transition-transform duration-300 group-hover/mascot:scale-108 animate-stoneman-beckon">
-                        <picture>
-                          <source srcSet="/stoneman.webp" type="image/webp" />
-                          <img
-                            src="/stoneman.png"
-                            alt="Standing Stoneman AI Mascot"
-                            width={112}
-                            height={144}
-                            fetchPriority="high"
-                            className="h-full w-auto object-contain drop-shadow-[0_6px_16px_rgba(0,103,136,0.35)] select-none pointer-events-none"
-                          />
-                        </picture>
-                      </div>
-                      <span className="text-[11px] font-extrabold text-[#006788] dark:text-[#38bdf8] mt-1 group-hover/mascot:underline tracking-tight">
-                        Stoneman®
-                      </span>
-                    </div>
+                    <p className="text-xs sm:text-[13px] text-stone-600 dark:text-stone-300 font-medium leading-relaxed max-w-xl">
+                      {texts.hero.stonemanAiSpeech}
+                    </p>
 
-                    {/* Content & Action Buttons */}
-                    <div className="flex-1 text-center sm:text-left space-y-2.5">
-                      <h2 className="text-xl sm:text-2xl lg:text-[25px] font-extrabold tracking-tight text-[#015474] dark:text-[#67e8f9] leading-snug">
-                        {texts.hero.stonemanAiHighlight || "With proprietary Stoneman® AI."}
-                      </h2>
+                    {/* Sleek inline action buttons */}
+                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setStonemanDefaultTab("faqs");
+                          setStonemanOpen(true);
+                        }}
+                        size="sm"
+                        className="h-8.5 px-3.5 rounded-full bg-[#006788] hover:bg-[#004863] text-white font-bold text-xs gap-1.5 shadow-sm transition-transform hover:scale-[1.02] cursor-pointer"
+                      >
+                        <Sparkles
+                          className="h-3.5 w-3.5 text-teal-200 animate-spin"
+                          style={{ animationDuration: "6s" }}
+                        />
+                        <span>
+                          {texts.hero.stonemanAiAskProducts || "Ask Product Specs & Rates"}
+                        </span>
+                      </Button>
 
-                      <div className="relative rounded-xl bg-white/95 dark:bg-stone-900/90 border border-[#006788]/20 dark:border-[#38bdf8]/20 p-2.5 sm:p-3 shadow-2xs animate-speech-bob">
-                        <p className="text-xs sm:text-[13px] text-stone-700 dark:text-stone-300 leading-relaxed font-medium">
-                          {texts.hero.stonemanAiSpeech}
-                        </p>
-                      </div>
-
-                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-0.5">
-                        <Button
-                          type="button"
-                          onClick={() => {
-                            setStonemanDefaultTab("faqs");
-                            setStonemanOpen(true);
-                          }}
-                          size="sm"
-                          className="h-8.5 px-3.5 rounded-lg bg-[#006788] hover:bg-[#004863] text-white font-bold text-xs gap-1.5 shadow-sm transition-transform hover:scale-[1.02] cursor-pointer"
-                        >
-                          <Sparkles
-                            className="h-3.5 w-3.5 text-teal-200 animate-spin"
-                            style={{ animationDuration: "6s" }}
-                          />
-                          <span>
-                            {texts.hero.stonemanAiAskProducts || "Ask Product Specs & Rates"}
-                          </span>
-                        </Button>
-
-                        <Button
-                          type="button"
-                          onClick={() => {
-                            setStonemanDefaultTab("track");
-                            setStonemanOpen(true);
-                          }}
-                          variant="outline"
-                          size="sm"
-                          className="h-8.5 px-3.5 rounded-lg border-[#006788]/40 hover:border-[#006788] text-[#015474] dark:text-[#67e8f9] bg-white/80 dark:bg-stone-900/80 hover:bg-[#e0f1f5] font-bold text-xs gap-1.5 shadow-2xs transition-transform hover:scale-[1.02] cursor-pointer"
-                        >
-                          <Truck className="h-3.5 w-3.5 text-[#006788] dark:text-[#38bdf8]" />
-                          <span>{texts.hero.stonemanAiTrackOrder || "Track Order Status"}</span>
-                        </Button>
-                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setStonemanDefaultTab("track");
+                          setStonemanOpen(true);
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="h-8.5 px-3.5 rounded-full border-[#006788]/40 hover:border-[#006788] text-[#015474] dark:text-[#67e8f9] bg-white/70 dark:bg-stone-900/70 hover:bg-[#006788]/10 font-bold text-xs gap-1.5 shadow-2xs transition-transform hover:scale-[1.02] cursor-pointer"
+                      >
+                        <Truck className="h-3.5 w-3.5 text-[#006788] dark:text-[#38bdf8]" />
+                        <span>{texts.hero.stonemanAiTrackOrder || "Track Order Status"}</span>
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -1293,8 +1273,9 @@ function HomePage() {
         className="fixed bottom-0 inset-x-0 h-[env(safe-area-inset-bottom,0px)] bg-[#015474] z-30 pointer-events-none sm:hidden"
       />
 
-      {/* StoneMan AI Mascot Assistant & Track Order Dialog */}
+      {/* StoneMan AI Mascot Assistant & Track Order Dialog (Synced with Hero) */}
       <StonemanMascot
+        synced={true}
         onClick={() => {
           setStonemanDefaultTab("faqs");
           setStonemanOpen(true);

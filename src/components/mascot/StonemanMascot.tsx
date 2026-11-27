@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 interface StonemanMascotProps {
   onClick?: () => void;
   className?: string;
+  synced?: boolean;
 }
 
 const STORAGE_KEY = "stos_stoneman_mascot_pos_v2";
@@ -16,7 +17,7 @@ function clamp(val: number, min: number, max: number): number {
   return Math.min(Math.max(val, min), max);
 }
 
-export function StonemanMascot({ onClick, className }: StonemanMascotProps) {
+export function StonemanMascot({ onClick, className, synced }: StonemanMascotProps) {
   const { t } = useTranslation();
   const [hovered, setHovered] = useState(false);
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
@@ -269,7 +270,9 @@ export function StonemanMascot({ onClick, className }: StonemanMascotProps) {
           "bg-gradient-to-br from-[#0c4e58] via-[#083b43] to-slate-950",
           "border-2 border-teal-400/50 text-white",
           !isDragging &&
-            "animate-stoneman-float animate-stoneman-glow hover:scale-110 hover:border-teal-300",
+            (synced
+              ? "animate-stoneman-synced-floating hover:scale-110 hover:border-teal-300"
+              : "animate-stoneman-float animate-stoneman-glow hover:scale-110 hover:border-teal-300"),
           "transition-shadow transition-border duration-200",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2",
         )}
