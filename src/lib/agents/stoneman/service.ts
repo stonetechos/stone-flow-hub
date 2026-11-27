@@ -25,7 +25,13 @@ export const STONEMAN_PUBLIC_FAQS: PublicFaqItem[] = [
   {
     question: "What types of natural stones does Stone Tech supply?",
     answer:
-      "Stone Tech OS specializes in premium Indian Granites, Italian and Imported Marbles, Natural Sandstones, Slate, Quartzite, and Architectural Stone Cladding tiles.",
+      "Stone Tech specializes in premium Indian Granites, Italian & Imported Marbles, Natural Sandstones, Slate, Quartzite, Natural Stone Wall Cladding (275+ textures), Ultra-Thin Flexible Stone Veneers (98+ finishes), Architectural Glass Bricks, Flexible Clay Veneers, and Handcrafted River Pebbles.",
+    category: "products",
+  },
+  {
+    question: "What if a stone or product is not in your current catalogue?",
+    answer:
+      "If you need a stone variety we used to supply or a custom pattern that was removed from our standard catalogue, ask StoneMan to create a Special Procurement Request. StoneMan will log your requirement directly into our CRM and notify our admin team.",
     category: "products",
   },
   {
@@ -41,9 +47,15 @@ export const STONEMAN_PUBLIC_FAQS: PublicFaqItem[] = [
     category: "process",
   },
   {
+    question: "What are your order payment terms and installation charges?",
+    answer:
+      "For orders under ₹50,000, 100% upfront payment is mandatory for order placement. For natural stone wall cladding projects with total wall coverage under 50 sq ft, a lumpsum installation labour charge of ₹4,000 applies.",
+    category: "process",
+  },
+  {
     question: "How can I track my order delivery?",
     answer:
-      "You can enter your Stone Tech Order Number and registered phone number into the StoneMan tracker on this website to view live milestone updates.",
+      "You can enter your Stone Tech Order Number and registered phone number into the StoneMan tracker on this website to view live milestone updates. Our superadmins are instantly alerted when you track your order.",
     category: "delivery",
   },
 ];

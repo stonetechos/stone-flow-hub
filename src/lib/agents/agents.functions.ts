@@ -355,12 +355,212 @@ const stonemanOrderLookupInput = z.object({
 
 /**
  * Public customer-facing order status lookup (requires phone + order verification).
+ * When an order is tracked, automatically alerts superadmins on their Android phones
+ * via high-priority curtain push notifications & WhatsApp alerts.
  */
 export const lookupStonemanOrder = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => stonemanOrderLookupInput.parse(d))
   .handler(async ({ data }): Promise<CustomerSafeOrderDetails> => {
     const db = getDb();
-    return lookupVerifiedOrder(data, db);
+    const result = await lookupVerifiedOrder(data, db);
+
+    // Notify superadmins on their Android phones through mobile curtain notifications
+    void (async () => {
+      try {
+        const { notifyAdmins } = await import("@/lib/notifications/notify.server");
+        const cleanPhone = (data.phone || "").replace(/\D+/g, "");
+        const maskedPhone =
+          cleanPhone.length >= 10
+            ? `${cleanPhone.slice(0, 3)}****${cleanPhone.slice(-3)}`
+            : "Verified Customer";
+
+        await notifyAdmins({
+          tier: "important",
+          title: `📦 Order #${result.orderNo} Tracked Live`,
+          body: `${result.customerName} (${maskedPhone}) just tracked status for Order #${result.orderNo} on the website. Status: ${result.statusText}`,
+          entityType: "sales_orders",
+          entityId: result.orderNo,
+          linkPath: `/sales-orders`,
+          deliverPush: true,
+        });
+
+        // Also push automated WhatsApp notification to admin phone
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const waMsg = `📦 *Customer Tracked Order #${result.orderNo}*\n\n*Customer:* ${result.customerName}\n*Phone:* ${data.phone || "Verified"}\n*Status:* ${result.statusText}\n*Time:* ${new Date().toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata" })}`;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: mqErr } = await (supabaseAdmin as any).from("message_queue").insert({
+          channel: "whatsapp",
+          to_address: "917742090866",
+          body: waMsg,
+          related_type: "sales_order",
+          related_id: result.orderNo,
+        });
+
+        if (!mqErr) {
+          const { dispatchQueueBatch } = await import("@/lib/notifications/dispatch.server");
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          await dispatchQueueBatch(supabaseAdmin as any, 5);
+        }
+      } catch (notifyErr) {
+        console.warn("[StoneMan] Superadmin tracking notification error:", notifyErr);
+      }
+    })();
+
+    return result;
+  });
+
+const stonemanProcurementInput = z.object({
+  customerName: z.string().trim().min(2, "Please enter your name"),
+  phone: z.string().trim().min(10, "Please enter a valid 10-digit phone number"),
+  city: z.string().trim().min(2, "Please enter your site location/city"),
+  quantitySqft: z.string().trim().min(1, "Please specify estimated quantity (e.g. 250 sqft)"),
+  productName: z.string().trim().min(2, "Please specify the product name or code"),
+  specificRequirements: z.string().trim().optional().default(""),
+});
+
+/**
+ * Public customer-facing Special Procurement Request intake by StoneMan for
+ * discontinued or custom stone products. Automatically creates a CRM customer
+ * and enquiry lead, and sends high-priority Android curtain notifications to superadmins.
+ */
+export const submitStonemanProcurementRequest = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => stonemanProcurementInput.parse(d))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // 1. Normalize phone
+    const cleanDigits = data.phone.replace(/\D/g, "");
+    const searchPhone = cleanDigits.length >= 10 ? cleanDigits.slice(-10) : cleanDigits;
+    const normalizedPhone = `+91 ${cleanDigits}`;
+
+    // 2. Find or create customer
+    let customerId: string | null = null;
+    let customerCode = "";
+
+    try {
+      const { data: existing } = await supabaseAdmin
+        .from("customers")
+        .select("id, name, customer_code")
+        .or(`primary_phone.ilike.%${searchPhone}%,whatsapp.ilike.%${searchPhone}%`)
+        .limit(1);
+
+      if (existing && existing.length > 0) {
+        customerId = existing[0].id;
+        customerCode = existing[0].customer_code;
+      }
+    } catch (err) {
+      console.warn("[StoneMan] Find customer error:", err);
+    }
+
+    if (!customerId) {
+      const fallbackCode = `CUST-${Date.now().toString().slice(-4)}-${Math.floor(1000 + Math.random() * 9000)}`;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: newCust } = await (supabaseAdmin as any)
+        .from("customers")
+        .insert({
+          name: data.customerName,
+          customer_code: fallbackCode,
+          primary_phone: normalizedPhone,
+          whatsapp: normalizedPhone,
+          city: data.city,
+          customer_type: "individual",
+          source: "StoneMan AI — Special Procurement Request",
+          notes: `Special procurement intake created by StoneMan on website for discontinued/custom stone: ${data.productName} (${data.quantitySqft}).`,
+        })
+        .select("id, customer_code")
+        .single();
+
+      if (newCust) {
+        customerId = newCust.id;
+        customerCode = newCust.customer_code;
+      }
+    }
+
+    // 3. Generate sequential enquiry number
+    const enquiryNo = `ENQ-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`;
+
+    const requirementText = [
+      `🚨 SPECIAL PROCUREMENT REQUEST (DISCONTINUED/CUSTOM PRODUCT)`,
+      `Requested Product: ${data.productName}`,
+      `Estimated Quantity: ${data.quantitySqft}`,
+      `Site City: ${data.city}`,
+      data.specificRequirements ? `Customer Notes: ${data.specificRequirements}` : "",
+      `Created By: StoneMan AI Copilot on Website`,
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    // 4. Create CRM Enquiry entry
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: enquiry, error: enqErr } = await (supabaseAdmin as any)
+      .from("enquiries")
+      .insert({
+        enquiry_no: enquiryNo,
+        customer_id: customerId,
+        stage: "new_lead",
+        priority: "high",
+        source: "StoneMan AI — Special Procurement",
+        requirement: requirementText,
+        notes: `Customer WhatsApp: ${normalizedPhone} | City: ${data.city} | Special procurement request for ${data.productName} (${data.quantitySqft})`,
+        external_ref: {
+          product_name: data.productName,
+          quantity_sqft: data.quantitySqft,
+          client_city: data.city,
+          submitted_at: new Date().toISOString(),
+          channel: "stoneman_discontinued_product_intake",
+        },
+      })
+      .select("id, enquiry_no")
+      .single();
+
+    if (enqErr || !enquiry) {
+      console.error("[StoneMan] Enquiry insertion failed:", enqErr);
+      throw new Error(enqErr?.message || "Failed to create special procurement request.");
+    }
+
+    // 5. Notify Superadmins on Android mobile curtain notifications & WhatsApp
+    try {
+      const { notifyAdmins } = await import("@/lib/notifications/notify.server");
+      await notifyAdmins({
+        tier: "critical",
+        title: `🚨 Discontinued Stone Request: ${enquiryNo}`,
+        body: `${data.customerName} (${data.phone}) requested discontinued product: ${data.productName} (${data.quantitySqft}) in ${data.city}. CRM Lead created.`,
+        entityType: "enquiries",
+        entityId: enquiry.id,
+        linkPath: `/website-leads`,
+        deliverPush: true,
+      });
+
+      // Send automated WhatsApp alert to admin phone
+      const waMsg = `🚨 *Special Procurement Request: ${enquiryNo}*\n\n*Product:* ${data.productName}\n*Qty:* ${data.quantitySqft}\n*Customer:* ${data.customerName}\n*Phone:* ${data.phone}\n*City:* ${data.city}${data.specificRequirements ? `\n*Notes:* ${data.specificRequirements}` : ""}\n\n_Lead logged into STOS CRM by StoneMan._`;
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error: mqErr } = await (supabaseAdmin as any).from("message_queue").insert({
+        channel: "whatsapp",
+        to_address: "917742090866",
+        body: waMsg,
+        customer_id: customerId,
+        related_type: "enquiry",
+        related_id: enquiry.id,
+      });
+
+      if (!mqErr) {
+        const { dispatchQueueBatch } = await import("@/lib/notifications/dispatch.server");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await dispatchQueueBatch(supabaseAdmin as any, 5);
+      }
+    } catch (notifErr) {
+      console.warn("[StoneMan] Notification to admins failed:", notifErr);
+    }
+
+    return {
+      success: true,
+      enquiryNo,
+      enquiryId: enquiry.id,
+      customerId,
+      customerCode,
+      message: `Your special request #${enquiryNo} for ${data.productName} has been logged in our CRM and sent directly to our admin team's mobile phones. We will review quarry availability and get back to you on WhatsApp at ${normalizedPhone}.`,
+    };
   });
 
 const stonemanComplaintInput = z.object({

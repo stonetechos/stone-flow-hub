@@ -9,7 +9,7 @@
  * 4. Fixed consistent dimensions across ALL tabs (never changes size).
  * 5. Stone knowledge base, verified order tracking, and complaints.
  */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {
   Search,
@@ -24,6 +24,11 @@ import {
   X,
   Maximize2,
   Minimize2,
+  AlertCircle,
+  Sparkles,
+  ArrowRight,
+  ExternalLink,
+  Layers,
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -38,7 +43,9 @@ import {
   lookupStonemanOrder,
   requestStonemanOrderPin,
   submitStonemanComplaint,
+  submitStonemanProcurementRequest,
 } from "@/lib/agents/agents.functions";
+import { searchStonemanCatalog, type UnifiedCatalogItem } from "@/lib/catalog/stoneman-catalog-ai";
 
 interface StonemanCustomerDialogProps {
   open: boolean;
@@ -79,14 +86,89 @@ export function StonemanCustomerDialog({
     acknowledgementMessage: string;
   } | null>(null);
 
-  // FAQ search
+  // Discontinued / Custom procurement intake state
+  const [isIntakeOpen, setIsIntakeOpen] = useState(false);
+  const [intakeProduct, setIntakeProduct] = useState("");
+  const [intakeName, setIntakeName] = useState("");
+  const [intakePhone, setIntakePhone] = useState("");
+  const [intakeCity, setIntakeCity] = useState("");
+  const [intakeQuantity, setIntakeQuantity] = useState("");
+  const [intakeNotes, setIntakeNotes] = useState("");
+  const [isIntakeSubmitting, setIsIntakeSubmitting] = useState(false);
+  const [intakeSuccess, setIntakeSuccess] = useState<{
+    enquiryNo: string;
+    message: string;
+  } | null>(null);
+
+  // Real-time Catalogue Analysis & Discontinued Product Search
   const [faqSearch, setFaqSearch] = useState("");
+
+  const catalogSearchResult = useMemo(() => {
+    return searchStonemanCatalog(faqSearch);
+  }, [faqSearch]);
 
   const filteredFaqs = STONEMAN_PUBLIC_FAQS.filter(
     (f) =>
+      !faqSearch.trim() ||
       f.question.toLowerCase().includes(faqSearch.toLowerCase()) ||
-      f.answer.toLowerCase().includes(faqSearch.toLowerCase()),
+      f.answer.toLowerCase().includes(faqSearch.toLowerCase()) ||
+      f.category.toLowerCase().includes(faqSearch.toLowerCase()),
   );
+
+  const handleSubmitProcurement = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!intakeName.trim()) {
+      toast.error("Please enter your name.");
+      return;
+    }
+    const cleanP = intakePhone.replace(/\D+/g, "");
+    if (!cleanP || cleanP.length < 10) {
+      toast.error("Please enter a valid 10-digit WhatsApp number.");
+      return;
+    }
+    if (!intakeCity.trim()) {
+      toast.error("Please enter your project city / location.");
+      return;
+    }
+    if (!intakeQuantity.trim()) {
+      toast.error("Please specify required area or quantity (e.g. 250 sqft).");
+      return;
+    }
+
+    setIsIntakeSubmitting(true);
+    try {
+      const res = await submitStonemanProcurementRequest({
+        data: {
+          customerName: intakeName.trim(),
+          phone: cleanP,
+          city: intakeCity.trim(),
+          quantitySqft: intakeQuantity.trim(),
+          productName: intakeProduct.trim() || "Discontinued/Custom Stone Request",
+          specificRequirements: intakeNotes.trim(),
+        },
+      });
+      setIntakeSuccess({
+        enquiryNo: res.enquiryNo,
+        message: res.message,
+      });
+      toast.success(`Request logged in CRM as #${res.enquiryNo}!`);
+    } catch (err) {
+      toast.error(toUserMessage(err));
+    } finally {
+      setIsIntakeSubmitting(false);
+    }
+  };
+
+  const resetIntakeForm = () => {
+    setIntakeSuccess(null);
+    setIsIntakeOpen(false);
+    setIntakeProduct("");
+    setIntakeName("");
+    setIntakePhone("");
+    setIntakeCity("");
+    setIntakeQuantity("");
+    setIntakeNotes("");
+  };
 
   const [isRequestingPin, setIsRequestingPin] = useState(false);
 
@@ -307,61 +389,462 @@ export function StonemanCustomerDialog({
 
             {/* Scrollable Tab Body - Always fills remaining vertical space, NEVER resizes */}
             <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 space-y-4">
-              {/* TAB 1: FAQS */}
+              {/* TAB 1: LIVE CATALOGUE KNOWLEDGE & DISCONTINUED PRODUCTS */}
               {activeTab === "faqs" && (
-                <div className="space-y-3">
+                <div className="space-y-3.5">
+                  {/* Search Bar */}
                   <div className="relative">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
                     <Input
-                      placeholder="Search stone varieties, finishes, cutting process…"
+                      placeholder="Search 550+ stones, finishes, cladding codes, or ask a question…"
                       value={faqSearch}
-                      onChange={(e) => setFaqSearch(e.target.value)}
-                      className="pl-9 text-xs h-9 bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 focus-visible:ring-teal-500"
+                      onChange={(e) => {
+                        setFaqSearch(e.target.value);
+                        if (isIntakeOpen && !intakeSuccess) {
+                          setIsIntakeOpen(false);
+                        }
+                      }}
+                      className="pl-9 pr-8 text-xs h-9 bg-slate-900/90 border-slate-800 text-slate-100 placeholder:text-slate-500 focus-visible:ring-teal-500"
                     />
-                  </div>
-
-                  <div className="space-y-2.5 pt-1">
-                    {filteredFaqs.length === 0 ? (
-                      <div className="text-center py-8 text-slate-400 text-xs">
-                        No matching answers found. Feel free to contact our support team.
-                      </div>
-                    ) : (
-                      filteredFaqs.map((faq, idx) => (
-                        <div
-                          key={idx}
-                          className="p-3.5 rounded-xl border border-slate-800/80 bg-slate-900/60 space-y-1.5 hover:border-slate-700 transition-colors"
-                        >
-                          <h4 className="text-xs font-bold text-slate-100 flex items-start gap-1.5">
-                            <span className="text-teal-400 font-mono font-bold">Q:</span>
-                            <span>{faq.question}</span>
-                          </h4>
-                          <p className="text-xs text-slate-300 pl-4 leading-relaxed">
-                            {faq.answer}
-                          </p>
-                        </div>
-                      ))
+                    {faqSearch && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFaqSearch("");
+                          resetIntakeForm();
+                        }}
+                        className="absolute right-2.5 top-2.5 text-slate-400 hover:text-white"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
                     )}
                   </div>
 
-                  {/* Human escalation */}
-                  <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-                    <span>Need tailored assistance?</span>
-                    <Button
-                      asChild
-                      variant="outline"
-                      size="sm"
-                      className="h-8 text-xs font-semibold gap-1.5 text-teal-300 border-teal-500/40 bg-teal-950/30 hover:bg-teal-900/40 hover:text-white"
-                    >
-                      <a
-                        href="https://api.whatsapp.com/send?phone=917742090866&text=Hi%20StoneMan,%20I%20would%20like%20to%20speak%20with%20a%20human%20stone%20expert."
-                        target="_blank"
-                        rel="noopener noreferrer"
+                  {/* 1. SUCCESS VIEW: Special Procurement CRM Entry Created */}
+                  {intakeSuccess && (
+                    <div className="rounded-xl border border-teal-500/40 bg-teal-950/40 p-4 space-y-3 animate-in fade-in-50 duration-200">
+                      <div className="flex items-start gap-3">
+                        <CheckCircle2 className="h-5 w-5 text-teal-400 shrink-0 mt-0.5" />
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-white">
+                              CRM Request #{intakeSuccess.enquiryNo} Created!
+                            </span>
+                            <Badge className="bg-teal-500/20 text-teal-300 border-teal-500/40 text-[9px]">
+                              ADMIN NOTIFIED
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-teal-100/90 leading-relaxed">
+                            {intakeSuccess.message}
+                          </p>
+                          <p className="text-[11px] text-teal-300/80 pt-1">
+                            📱 An instant Android curtain notification has been delivered to our
+                            superadmins' mobile phones.
+                          </p>
+                        </div>
+                      </div>
+
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={resetIntakeForm}
+                        className="w-full text-xs font-semibold text-teal-300 border-teal-500/40 bg-teal-900/20 hover:bg-teal-900/40"
                       >
-                        <Phone className="h-3 w-3" />
-                        <span>Chat With Expert</span>
-                      </a>
-                    </Button>
-                  </div>
+                        Ask Another Question or Search Stones
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* 2. CONVERSATIONAL INTAKE: Create Request to Admin for Discontinued/Custom Stone */}
+                  {isIntakeOpen && !intakeSuccess && (
+                    <form
+                      onSubmit={handleSubmitProcurement}
+                      className="rounded-xl border border-amber-500/40 bg-slate-900/90 p-4 space-y-3.5 animate-in fade-in-50 duration-200"
+                    >
+                      <div className="flex items-start justify-between border-b border-slate-800 pb-2.5">
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <Sparkles className="h-4 w-4 text-amber-400" />
+                            <h4 className="text-xs font-bold text-white">
+                              Special Admin Procurement Intake
+                            </h4>
+                          </div>
+                          <p className="text-[11px] text-slate-300 mt-0.5">
+                            StoneMan will take your details and create a CRM entry directly for
+                            admin sourcing.
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setIsIntakeOpen(false)}
+                          className="h-6 w-6 text-slate-400 hover:text-white"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+
+                      <div className="space-y-2.5">
+                        <div>
+                          <label className="text-[11px] font-semibold text-slate-300 block mb-1">
+                            Requested Product / Stone Variety
+                          </label>
+                          <Input
+                            value={intakeProduct}
+                            onChange={(e) => setIntakeProduct(e.target.value)}
+                            placeholder="e.g. PU Decorative Faux Stone or Old Quarry Seam Sandstone"
+                            className="text-xs h-8.5 bg-slate-950 border-slate-800 text-slate-100 focus-visible:ring-amber-500"
+                            required
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          <div>
+                            <label className="text-[11px] font-semibold text-slate-300 block mb-1">
+                              Your Name
+                            </label>
+                            <Input
+                              value={intakeName}
+                              onChange={(e) => setIntakeName(e.target.value)}
+                              placeholder="e.g. Rajesh Sharma"
+                              className="text-xs h-8.5 bg-slate-950 border-slate-800 text-slate-100 focus-visible:ring-amber-500"
+                              required
+                            />
+                          </div>
+
+                          <div>
+                            <label className="text-[11px] font-semibold text-slate-300 block mb-1">
+                              10-Digit WhatsApp Number
+                            </label>
+                            <Input
+                              value={intakePhone}
+                              onChange={(e) => setIntakePhone(e.target.value)}
+                              placeholder="e.g. 9876543210"
+                              className="text-xs h-8.5 bg-slate-950 border-slate-800 text-slate-100 focus-visible:ring-amber-500"
+                              maxLength={15}
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          <div>
+                            <label className="text-[11px] font-semibold text-slate-300 block mb-1">
+                              Project City / Location
+                            </label>
+                            <Input
+                              value={intakeCity}
+                              onChange={(e) => setIntakeCity(e.target.value)}
+                              placeholder="e.g. Ahmedabad, Mumbai, Jaipur"
+                              className="text-xs h-8.5 bg-slate-950 border-slate-800 text-slate-100 focus-visible:ring-amber-500"
+                              required
+                            />
+                          </div>
+
+                          <div>
+                            <label className="text-[11px] font-semibold text-slate-300 block mb-1">
+                              Estimated Quantity / Area (Sq Ft)
+                            </label>
+                            <Input
+                              value={intakeQuantity}
+                              onChange={(e) => setIntakeQuantity(e.target.value)}
+                              placeholder="e.g. 350 sqft"
+                              className="text-xs h-8.5 bg-slate-950 border-slate-800 text-slate-100 focus-visible:ring-amber-500"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="text-[11px] font-semibold text-slate-300 block mb-1">
+                            Specific Requirements or Alternative Tolerance
+                          </label>
+                          <Textarea
+                            value={intakeNotes}
+                            onChange={(e) => setIntakeNotes(e.target.value)}
+                            placeholder="Tell us if you need this exact batch only, or if high-end natural stone alternatives can be considered…"
+                            className="text-xs min-h-[50px] bg-slate-950 border-slate-800 text-slate-100 focus-visible:ring-amber-500"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 pt-1">
+                        <Button
+                          type="submit"
+                          disabled={isIntakeSubmitting}
+                          className="flex-1 h-9 text-xs font-bold gap-1.5 bg-amber-600 hover:bg-amber-500 text-slate-950 cursor-pointer shadow-md"
+                        >
+                          {isIntakeSubmitting ? (
+                            <>
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              <span>Creating CRM Entry…</span>
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="h-3.5 w-3.5" />
+                              <span>Submit Request to Admin & Create CRM Lead</span>
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setIsIntakeOpen(false)}
+                          className="h-9 text-xs text-slate-400 hover:text-white"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </form>
+                  )}
+
+                  {/* 3. DISCONTINUED PRODUCT NOTICE (Triggered when user searches for a removed/discontinued product) */}
+                  {!isIntakeOpen && !intakeSuccess && catalogSearchResult.isDiscontinuedMatch && (
+                    <div className="rounded-xl border border-amber-500/40 bg-amber-950/30 p-4 space-y-3 animate-in fade-in-50 duration-200">
+                      <div className="flex items-start gap-3">
+                        <AlertCircle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+                        <div className="space-y-1.5">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] uppercase font-mono tracking-wider border-amber-500/40 bg-amber-950/60 text-amber-300"
+                            >
+                              Discontinued / Removed Product
+                            </Badge>
+                            {catalogSearchResult.discontinuedItem?.id && (
+                              <span className="text-[10px] text-amber-300/70 font-mono">
+                                #{catalogSearchResult.discontinuedItem.id}
+                              </span>
+                            )}
+                          </div>
+                          <h4 className="text-xs font-bold text-amber-100">
+                            {catalogSearchResult.discontinuedItem?.name || faqSearch}
+                          </h4>
+                          <p className="text-xs text-amber-200/95 leading-relaxed font-medium">
+                            {catalogSearchResult.discontinuedMessage}
+                          </p>
+                        </div>
+                      </div>
+
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => {
+                          setIntakeProduct(catalogSearchResult.discontinuedItem?.name || faqSearch);
+                          setIsIntakeOpen(true);
+                        }}
+                        className="w-full h-8.5 text-xs font-bold gap-1.5 bg-amber-600 hover:bg-amber-500 text-slate-950 shadow-md cursor-pointer"
+                      >
+                        <Sparkles className="h-3.5 w-3.5" />
+                        <span>I Need This Only — Create Request to Admin</span>
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* 4. ACTIVE CATALOGUE PRODUCT MATCHES (Real-time analysis from 550+ catalogue items) */}
+                  {!isIntakeOpen &&
+                    !intakeSuccess &&
+                    faqSearch.trim() &&
+                    catalogSearchResult.matches.length > 0 && (
+                      <div className="space-y-3">
+                        {catalogSearchResult.suggestedAnswer && (
+                          <div className="p-3 rounded-xl border border-teal-500/30 bg-teal-950/30 text-xs text-teal-200 leading-relaxed flex items-start gap-2.5">
+                            <Sparkles className="h-4 w-4 text-teal-400 shrink-0 mt-0.5" />
+                            <div>
+                              <p className="font-semibold text-teal-300">Catalogue Analysis</p>
+                              <p className="text-teal-200/90 text-[11px] mt-0.5">
+                                {catalogSearchResult.suggestedAnswer}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="space-y-2">
+                          <h4 className="text-[11px] uppercase tracking-wider font-mono text-slate-400 font-semibold flex items-center justify-between">
+                            <span>
+                              Matching Catalogue Products ({catalogSearchResult.matches.length})
+                            </span>
+                            <span className="text-teal-400 text-[10px]">Real-Time Synced</span>
+                          </h4>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            {catalogSearchResult.matches.slice(0, 6).map((item) => (
+                              <div
+                                key={item.id}
+                                className="p-3 rounded-xl border border-slate-800 bg-slate-900/70 hover:border-teal-500/40 transition-colors flex flex-col justify-between space-y-2"
+                              >
+                                <div className="flex gap-2.5">
+                                  <div className="h-14 w-14 shrink-0 rounded-lg overflow-hidden bg-slate-950 border border-slate-800">
+                                    <img
+                                      src={item.image}
+                                      alt={item.name}
+                                      className="h-full w-full object-cover"
+                                      loading="lazy"
+                                      onError={(e) => {
+                                        (e.target as HTMLImageElement).src =
+                                          "/branding/stone-tech-og-banner.png";
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[9px] font-mono text-teal-400 font-bold">
+                                        {item.id}
+                                      </span>
+                                      <span className="text-[9px] text-slate-400 truncate">
+                                        • {item.stoneType}
+                                      </span>
+                                    </div>
+                                    <h5 className="text-xs font-bold text-slate-100 truncate mt-0.5">
+                                      {item.name}
+                                    </h5>
+                                    <p className="text-[10px] text-slate-400 mt-0.5">
+                                      Thickness: {item.thickness}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center justify-between gap-1 pt-1 border-t border-slate-800/60 text-[10px]">
+                                  <span className="text-slate-400 truncate max-w-[130px]">
+                                    {item.applications[0] || "Wall Cladding"}
+                                  </span>
+                                  <a
+                                    href={`https://api.whatsapp.com/send?phone=917742090866&text=Hi%20Stone%20Tech,%20I%20am%20inquiring%20about%20${encodeURIComponent(
+                                      item.name,
+                                    )}%20(${item.id})%20seen%20on%20StoneMan.`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-teal-400 hover:text-teal-300 font-semibold flex items-center gap-0.5"
+                                  >
+                                    <span>Ask Specs</span>
+                                    <ExternalLink className="h-2.5 w-2.5" />
+                                  </a>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                  {/* 5. DEFAULT VIEW: Category Suggestion Chips & Special Request Banner */}
+                  {!faqSearch.trim() && !isIntakeOpen && !intakeSuccess && (
+                    <div className="space-y-3">
+                      {/* Category Quick Chips */}
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {[
+                          "Indian Granites",
+                          "Italian Marbles",
+                          "Stone Wall Cladding",
+                          "Stone Veneer",
+                          "Glass Bricks",
+                          "Clay & Pebbles",
+                        ].map((cat) => (
+                          <button
+                            key={cat}
+                            type="button"
+                            onClick={() => setFaqSearch(cat)}
+                            className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-slate-900 border border-slate-800 hover:border-teal-500/50 hover:bg-slate-850 text-slate-300 transition-colors cursor-pointer"
+                          >
+                            {cat}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Special Procurement Intake Banner */}
+                      <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-3 flex items-center justify-between gap-3 text-xs">
+                        <div className="flex items-center gap-2">
+                          <Layers className="h-4 w-4 text-amber-400 shrink-0" />
+                          <span className="text-slate-300 text-[11px]">
+                            Looking for a discontinued stone or custom quarry piece?
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIntakeProduct("");
+                            setIsIntakeOpen(true);
+                          }}
+                          className="shrink-0 text-amber-400 hover:text-amber-300 text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+                        >
+                          <span>Request Admin</span>
+                          <ArrowRight className="h-3 w-3" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 6. VERIFIED FAQS LIST */}
+                  {!isIntakeOpen && (
+                    <div className="space-y-2.5 pt-1">
+                      {filteredFaqs.length > 0 && (
+                        <h4 className="text-[11px] uppercase tracking-wider font-mono text-slate-400 font-semibold">
+                          Knowledge & Technical Standards
+                        </h4>
+                      )}
+
+                      {filteredFaqs.length === 0 &&
+                      catalogSearchResult.matches.length === 0 &&
+                      !catalogSearchResult.isDiscontinuedMatch ? (
+                        <div className="text-center py-8 text-slate-400 text-xs space-y-2">
+                          <p>No direct match found in active catalogues.</p>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setIntakeProduct(faqSearch);
+                              setIsIntakeOpen(true);
+                            }}
+                            className="text-xs font-semibold text-amber-400 border-amber-500/40 bg-amber-950/20 hover:bg-amber-900/30"
+                          >
+                            <Sparkles className="h-3.5 w-3.5 mr-1" />
+                            <span>Request This Product to Admin</span>
+                          </Button>
+                        </div>
+                      ) : (
+                        filteredFaqs.map((faq, idx) => (
+                          <div
+                            key={idx}
+                            className="p-3.5 rounded-xl border border-slate-800/80 bg-slate-900/60 space-y-1.5 hover:border-slate-700 transition-colors"
+                          >
+                            <h4 className="text-xs font-bold text-slate-100 flex items-start gap-1.5">
+                              <span className="text-teal-400 font-mono font-bold">Q:</span>
+                              <span>{faq.question}</span>
+                            </h4>
+                            <p className="text-xs text-slate-300 pl-4 leading-relaxed">
+                              {faq.answer}
+                            </p>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+
+                  {/* Human Escalation Link */}
+                  {!isIntakeOpen && (
+                    <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+                      <span>Need bespoke assistance?</span>
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        className="h-8 text-xs font-semibold gap-1.5 text-teal-300 border-teal-500/40 bg-teal-950/30 hover:bg-teal-900/40 hover:text-white"
+                      >
+                        <a
+                          href="https://api.whatsapp.com/send?phone=917742090866&text=Hi%20StoneMan,%20I%20would%20like%20to%20speak%20with%20a%20human%20stone%20expert."
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Phone className="h-3 w-3" />
+                          <span>Chat With Expert</span>
+                        </a>
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
 
