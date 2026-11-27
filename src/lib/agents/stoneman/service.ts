@@ -25,13 +25,22 @@ export const STONEMAN_PUBLIC_FAQS: PublicFaqItem[] = [
   {
     question: "What types of natural stones does Stone Tech supply?",
     answer:
-      "Stone Tech specializes in premium Indian Granites, Italian & Imported Marbles, Natural Sandstones, Slate, Quartzite, Natural Stone Wall Cladding (275+ textures), Ultra-Thin Flexible Stone Veneers (98+ finishes), Architectural Glass Bricks, Flexible Clay Veneers, and Handcrafted River Pebbles.",
+      "Stone Tech curates an extensive architectural stone portfolio, clearly highlighting what is available in ready master catalogues versus what is custom crafted on demand:\n\n" +
+      "📦 In Our Active Master Catalogues (Standard Production & Instant Specs):\n" +
+      "• Natural Stone Wall Cladding (275+ textures, 3D grooved reliefs & fluted profiles)\n" +
+      "• Ultra-Thin Flexible Stone Veneers (98+ translucent & opaque slate/sandstone finishes)\n" +
+      "• Architectural Glass Bricks (Solid crystal & hollow designer blocks)\n" +
+      "• Flexible Clay Veneers (Curvilinear facade panels & 3D textures)\n" +
+      "• Natural River Pebbles & Landscape Gravel (Naturally tumbled river stones & garden borders)\n\n" +
+      "🏛️ Bespoke Atelier Work & Landscape Elements (Crafted on Demand):\n" +
+      "Beyond standard catalogue items, our artisans and CNC workshops custom craft Hand-Carved Sculptures & 3D Murals, Waterfalls & Cascading Fountains, Natural Stone Cobbles & Kerbstones, and bespoke Landscape Elements, alongside quarry-direct Indian Granites, Italian & Imported Marbles, Sandstones, Slate, and Quartzite.\n\n" +
+      "✨ Need something not in our catalogue? If you require a stone variety, retired batch, or custom profile not found in our standard downloadable catalogue, StoneMan will log a Special Procurement Request directly into our CRM for prompt admin review.",
     category: "products",
   },
   {
     question: "What if a stone or product is not in your current catalogue?",
     answer:
-      "If you need a stone variety we used to supply or a custom pattern that was removed from our standard catalogue, ask StoneMan to create a Special Procurement Request. StoneMan will log your requirement directly into our CRM and notify our admin team.",
+      "If you need a stone variety we used to supply, a retired quarry seam, or a bespoke custom pattern (including specialized sculptures, waterfalls, or custom cobble sizing) not found in our standard downloadable catalogue, ask StoneMan to create a Special Procurement Request. StoneMan will log your requirements, area, and drawings directly into our CRM and instantly notify our admin team.",
     category: "products",
   },
   {

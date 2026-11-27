@@ -644,6 +644,44 @@ export function StonemanCustomerDialog({
                     </div>
                   )}
 
+                  {/* 3B. ON-DEMAND BESPOKE ATELIER NOTICE (Sculptures, Waterfalls, Fountains, Cobbles, Landscape) */}
+                  {!isIntakeOpen && !intakeSuccess && catalogSearchResult.isBespokeCraftMatch && (
+                    <div className="rounded-xl border border-teal-500/40 bg-teal-950/30 p-4 space-y-3 animate-in fade-in-50 duration-200">
+                      <div className="flex items-start gap-3">
+                        <Sparkles className="h-5 w-5 text-teal-400 shrink-0 mt-0.5" />
+                        <div className="space-y-1.5">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] uppercase font-mono tracking-wider border-teal-500/40 bg-teal-950/60 text-teal-300"
+                            >
+                              Bespoke Atelier Fabrication (Crafted on Demand)
+                            </Badge>
+                          </div>
+                          <h4 className="text-xs font-bold text-teal-100">
+                            {catalogSearchResult.bespokeCraftItem?.name || faqSearch}
+                          </h4>
+                          <p className="text-xs text-teal-200/95 leading-relaxed font-medium">
+                            {catalogSearchResult.bespokeCraftMessage}
+                          </p>
+                        </div>
+                      </div>
+
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => {
+                          setIntakeProduct(catalogSearchResult.bespokeCraftItem?.name || faqSearch);
+                          setIsIntakeOpen(true);
+                        }}
+                        className="w-full h-8.5 text-xs font-bold gap-1.5 bg-teal-600 hover:bg-teal-500 text-slate-950 shadow-md cursor-pointer"
+                      >
+                        <Sparkles className="h-3.5 w-3.5" />
+                        <span>Request Custom Architecture / Admin Quote</span>
+                      </Button>
+                    </div>
+                  )}
+
                   {/* 4. ACTIVE CATALOGUE PRODUCT MATCHES (Real-time analysis from 550+ catalogue items) */}
                   {!isIntakeOpen &&
                     !intakeSuccess &&
@@ -736,12 +774,15 @@ export function StonemanCustomerDialog({
                       {/* Category Quick Chips */}
                       <div className="flex flex-wrap items-center gap-1.5">
                         {[
-                          "Indian Granites",
-                          "Italian Marbles",
-                          "Stone Wall Cladding",
+                          "Wall Cladding",
                           "Stone Veneer",
                           "Glass Bricks",
-                          "Clay & Pebbles",
+                          "Clay Veneers",
+                          "River Pebbles",
+                          "Sculptures & Murals",
+                          "Waterfalls & Fountains",
+                          "Stone Cobbles",
+                          "Granite & Marble",
                         ].map((cat) => (
                           <button
                             key={cat}
@@ -815,7 +856,7 @@ export function StonemanCustomerDialog({
                               <span className="text-teal-400 font-mono font-bold">Q:</span>
                               <span>{faq.question}</span>
                             </h4>
-                            <p className="text-xs text-slate-300 pl-4 leading-relaxed">
+                            <p className="text-xs text-slate-300 pl-4 leading-relaxed whitespace-pre-line">
                               {faq.answer}
                             </p>
                           </div>

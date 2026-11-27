@@ -167,10 +167,95 @@ export interface CatalogSearchResult {
   isDiscontinuedMatch: boolean;
   discontinuedMessage?: string;
   discontinuedItem?: UnifiedCatalogItem;
+  isBespokeCraftMatch?: boolean;
+  bespokeCraftMessage?: string;
+  bespokeCraftItem?: {
+    id: string;
+    name: string;
+    category: string;
+    description: string;
+  };
   matches: UnifiedCatalogItem[];
   matchedStoneTypes: string[];
   suggestedAnswer?: string;
 }
+
+/**
+ * On-demand bespoke architectural stone fabrications executed at our CNC & carving atelier.
+ * These are crafted on order to site specifications rather than fixed catalogue SKUs.
+ */
+export const BESPOKE_CRAFT_COLLECTIONS = [
+  {
+    id: "BESPOKE-SCULPT",
+    name: "Hand-Carved Stone Sculptures & Murals",
+    category: "Bespoke Atelier (Custom Fabrication)",
+    keywords: [
+      "sculpture",
+      "sculptures",
+      "statue",
+      "statues",
+      "stone carving",
+      "mural",
+      "murals",
+      "carved stone",
+      "mandir carving",
+      "jali",
+    ],
+    description:
+      "Custom sculpted by master stone craftsmen and precision CNC ateliers. Tailored to custom dimensions, temple/residence architecture, and stone selection.",
+  },
+  {
+    id: "BESPOKE-WATER",
+    name: "Architectural Waterfalls & Stone Fountains",
+    category: "Water Architecture (Custom Fabrication)",
+    keywords: [
+      "waterfall",
+      "waterfalls",
+      "fountain",
+      "fountains",
+      "water feature",
+      "water body",
+      "cascade",
+      "stone spout",
+    ],
+    description:
+      "Custom engineered natural stone cascading waterfalls, sheer descent stone spouts, and carved garden fountains for luxury villas and landscapes.",
+  },
+  {
+    id: "BESPOKE-COBBLE",
+    name: "Natural Stone Cobbles & Kerbstones",
+    category: "Paving & Landscape (Custom Sizing)",
+    keywords: [
+      "cobble",
+      "cobbles",
+      "cobblestone",
+      "cobblestones",
+      "kerbstone",
+      "kerb",
+      "driveway stone",
+      "paving block",
+      "pathway stone",
+    ],
+    description:
+      "Hand-dressed, flamed, or tumbled natural stone cobbles (Sandstone, Granite, Basalt) engineered for heavy-duty driveways, walkways, and courtyards.",
+  },
+  {
+    id: "BESPOKE-LANDSCAPE",
+    name: "Architectural Landscape Elements",
+    category: "Landscape Elements (Custom Fabrication)",
+    keywords: [
+      "landscape",
+      "landscape elements",
+      "landscape feature",
+      "stone planter",
+      "stone bench",
+      "garden element",
+      "stepping stone",
+    ],
+    description:
+      "Bespoke stone monolith planters, solid stone benches, landscape pergolas, and natural stepping stones tailored to landscape master plans.",
+  },
+];
 
 /**
  * Searches the unified catalogue with intelligence:
@@ -267,6 +352,24 @@ export function searchStonemanCatalog(
     .filter((entry) => entry.score > 0)
     .sort((a, b) => b.score - a.score)
     .map((entry) => entry.item);
+
+  // 3. Check for On-Demand Bespoke Architectural Craft (Sculptures, Waterfalls, Cobbles, Landscape)
+  const matchedBespoke = BESPOKE_CRAFT_COLLECTIONS.find((craft) =>
+    craft.keywords.some((kw) => cleanQ.includes(kw) || kw.includes(cleanQ)),
+  );
+
+  if (matchedBespoke) {
+    return {
+      query,
+      isDiscontinuedMatch: false,
+      isBespokeCraftMatch: true,
+      bespokeCraftItem: matchedBespoke,
+      bespokeCraftMessage: `Stone Tech crafts bespoke ${matchedBespoke.name} on order through our dedicated artisan workshops and CNC ateliers. While our ready master catalogues focus on Natural Stone Wall Cladding, Ultra-Thin Flexible Stone Veneers, Architectural Glass Bricks, Flexible Clay Veneers, and Natural River Pebbles, custom architectural fabrications are executed to site drawings and dimensions. Tap below to share your specifications or drawings for an admin quote!`,
+      matches: scoredMatches.slice(0, 8),
+      matchedStoneTypes: ["Granite", "Sandstone", "Marble", "Basalt"],
+      suggestedAnswer: `We manufacture custom ${matchedBespoke.name}. These are bespoke architectural fabrications crafted on order to your site measurements rather than off-the-shelf catalogue SKUs.`,
+    };
+  }
 
   const matchedStoneTypes = Array.from(
     new Set(scoredMatches.map((m) => m.stoneType).filter(Boolean)),

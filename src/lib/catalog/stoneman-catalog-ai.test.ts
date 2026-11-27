@@ -46,4 +46,19 @@ describe("StoneMan Real-Time Catalogue Sync & AI Engine", () => {
     );
     expect(res.discontinuedItem?.id).toBe("ST-WC-015");
   });
+
+  it("detects bespoke on-demand architectural crafts (sculptures, waterfalls, cobbles) and highlights them clearly", () => {
+    const sculptureRes = searchStonemanCatalog("stone sculpture");
+    expect(sculptureRes.isBespokeCraftMatch).toBe(true);
+    expect(sculptureRes.bespokeCraftItem?.name).toContain("Sculptures");
+    expect(sculptureRes.bespokeCraftMessage).toContain("bespoke");
+
+    const waterfallRes = searchStonemanCatalog("waterfalls and fountains");
+    expect(waterfallRes.isBespokeCraftMatch).toBe(true);
+    expect(waterfallRes.bespokeCraftItem?.name).toContain("Waterfalls & Stone Fountains");
+
+    const cobbleRes = searchStonemanCatalog("stone cobbles");
+    expect(cobbleRes.isBespokeCraftMatch).toBe(true);
+    expect(cobbleRes.bespokeCraftItem?.name).toContain("Natural Stone Cobbles");
+  });
 });
