@@ -827,8 +827,8 @@ function HomePage() {
                 </h1>
 
                 {/* MAIN HIGHLIGHT: Open, unboxed text & synced welcoming mascot */}
-                <div className="pt-1 flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4">
-                  {/* Standing Mascot — Compact Half-Size, Static & Clean */}
+                <div className="pt-1 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+                  {/* Standing Mascot — Twice Size, Static & Grounded */}
                   <div
                     onClick={() => {
                       setStonemanDefaultTab("faqs");
@@ -838,18 +838,18 @@ function HomePage() {
                     title="Tap StoneMan to solve queries or track order"
                   >
                     {/* Grounded shadow */}
-                    <div className="absolute -bottom-0.5 w-8 sm:w-10 h-1.5 bg-stone-900/10 dark:bg-black/30 rounded-full blur-[1px]" />
+                    <div className="absolute -bottom-1 w-16 sm:w-20 h-2 bg-stone-900/10 dark:bg-black/30 rounded-full blur-[2px]" />
 
-                    <div className="relative w-[36px] sm:w-[42px] md:w-[46px] h-[46px] sm:h-[54px] md:h-[60px] flex items-center justify-center transition-transform duration-200 group-hover/mascot:scale-108">
+                    <div className="relative w-[72px] sm:w-[84px] md:w-[92px] h-[92px] sm:h-[108px] md:h-[120px] flex items-center justify-center transition-transform duration-200 group-hover/mascot:scale-105">
                       <picture>
                         <source srcSet="/stoneman.webp" type="image/webp" />
                         <img
                           src="/stoneman.png"
                           alt="Standing StoneMan Mascot"
-                          width={46}
-                          height={60}
+                          width={92}
+                          height={120}
                           fetchPriority="high"
-                          className="h-full w-auto object-contain select-none pointer-events-none drop-shadow-[0_2px_8px_rgba(0,103,136,0.18)] dark:drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
+                          className="h-full w-auto object-contain select-none pointer-events-none drop-shadow-[0_4px_12px_rgba(0,103,136,0.18)] dark:drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]"
                         />
                       </picture>
                     </div>
