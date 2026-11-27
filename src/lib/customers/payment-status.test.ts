@@ -226,6 +226,49 @@ describe("Customer directory sorting and 4-Tier ranking", () => {
         null,
       ),
     ).toBe(2);
+
+    // Completed delivery/order AND fully paid / no dues -> Tier 10 even if activeOrderCount or ledger balance is reported
+    expect(
+      getCustomerDirectoryRank(
+        {
+          workflow_state: {
+            response_status: "order_completed",
+            payment_status: "no_dues",
+          },
+        },
+        {
+          orderInfo: { activeOrderCount: 1, completedOrderCount: 1, hasCompletedOrder: true },
+          ledgerSummary: {
+            totalDebit: 64317,
+            totalCredit: 64317,
+            balance: 0,
+            entryCount: 2,
+            lastEntryAt: null,
+          },
+        },
+      ),
+    ).toBe(10);
+
+    expect(
+      getCustomerDirectoryRank(
+        {
+          workflow_state: {
+            response_status: "order_completed",
+            payment_status: "full_payment_received",
+          },
+        },
+        {
+          orderInfo: { activeOrderCount: 1, completedOrderCount: 1, hasCompletedOrder: true },
+          ledgerSummary: {
+            totalDebit: 10000,
+            totalCredit: 10000,
+            balance: 0,
+            entryCount: 2,
+            lastEntryAt: null,
+          },
+        },
+      ),
+    ).toBe(10);
   });
 
   it("sorts customers across tiers and places completed & fully paid customers back in the list by customer number", () => {
@@ -313,6 +356,75 @@ describe("Customer directory sorting and 4-Tier ranking", () => {
       "CUS-000037", // Tier 10 (serial 37, completed & fully paid)
       "CUS-000026", // Tier 10 (serial 26, completed & fully paid)
       "CUS-000027", // Tier 99 (serial 27, pushed to very last)
+    ]);
+  });
+
+  it("ensures completed and fully paid / no dues customers move to Tier 10 so newly added customers ladder up", () => {
+    const list: Partial<CustomerRow>[] = [
+      {
+        id: "stallion-44",
+        customer_code: "CUS-000044",
+        workflow_state: {
+          response_status: "order_completed",
+          payment_status: "part_payment_received",
+        },
+      },
+      {
+        id: "designnbuy-37",
+        customer_code: "CUS-000037",
+        workflow_state: { response_status: "order_completed", payment_status: "no_dues" },
+      },
+      {
+        id: "gagan-35",
+        customer_code: "CUS-000035",
+        workflow_state: {
+          response_status: "order_completed",
+          payment_status: "part_payment_received",
+        },
+      },
+      {
+        id: "dinesh-1",
+        customer_code: "CUS-000001",
+        workflow_state: {
+          response_status: "order_completed",
+          payment_status: "full_payment_received",
+        },
+      },
+      {
+        id: "dhiren-75",
+        customer_code: "CUS-000075",
+        workflow_state: { response_status: "active_responsive" },
+      },
+    ];
+
+    const sorted = [...list].sort((a, b) =>
+      compareCustomersForDirectory(a as CustomerRow, b as CustomerRow, {
+        getOrderInfo: (id) =>
+          id === "dhiren-75"
+            ? null
+            : { activeOrderCount: 1, completedOrderCount: 1, hasCompletedOrder: true },
+        getLedgerSummary: () => ({
+          totalDebit: 50000,
+          totalCredit: 50000,
+          balance: 0,
+          entryCount: 2,
+          lastEntryAt: null,
+        }),
+      }),
+    );
+
+    // Expected order:
+    // Priority table:
+    // Tier 2 (Order completed + part payment received): 44, 35
+    // Tier 3 (Newly added customer laddered up): 75
+    // Non-priority serial placement (Completed and fully paid / no dues):
+    // Tier 10: 37, 1
+    expect(sorted.map((c) => c.customer_code)).toEqual([
+      "CUS-000044", // Tier 2 (Part Paid)
+      "CUS-000035", // Tier 2 (Part Paid)
+      "CUS-000075", // Tier 3 (New Lead ladders up!)
+      "CUS-000037", // Tier 10 (Completed, No Dues placed by serial number)
+      "CUS-000001", // Tier 10 (Completed, Fully Paid placed by serial number)
     ]);
   });
 });

@@ -207,11 +207,15 @@ function CustomersPage() {
 
     for (const item of pipelineQuery.data ?? []) {
       if (!item.customerId) continue;
+      const statusLower = (item.status || "").toLowerCase();
       const isCompleted =
         item.health === "completed" ||
-        ["received", "completed", "delivered", "closed", "dispatched"].includes(
-          (item.status || "").toLowerCase(),
-        );
+        statusLower.includes("fulfilled") ||
+        statusLower.includes("completed") ||
+        statusLower.includes("delivered") ||
+        statusLower.includes("received") ||
+        statusLower.includes("closed") ||
+        statusLower.includes("dispatched");
 
       const existing = map.get(item.customerId);
       const deadline = isCompleted ? null : item.customerDeadline || item.vendorDeadline;
