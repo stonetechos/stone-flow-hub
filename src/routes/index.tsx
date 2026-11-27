@@ -827,14 +827,14 @@ function HomePage() {
                 </h1>
 
                 {/* MAIN HIGHLIGHT: Open, unboxed text & synced welcoming mascot */}
-                <div className="pt-1 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+                <div className="pt-1 flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
                   {/* Standing Mascot — Twice Size, Static & Grounded */}
                   <div
                     onClick={() => {
                       setStonemanDefaultTab("faqs");
                       setStonemanOpen(true);
                     }}
-                    className="relative shrink-0 cursor-pointer group/mascot flex flex-col items-center select-none pt-0.5"
+                    className="relative shrink-0 cursor-pointer group/mascot flex flex-col items-center select-none"
                     title="Tap StoneMan to solve queries or track order"
                   >
                     {/* Grounded shadow */}
@@ -855,22 +855,18 @@ function HomePage() {
                     </div>
                   </div>
 
-                  {/* Attractive Highlight Text — Clean, unboxed & button-free */}
-                  <div className="flex-1 text-center sm:text-left space-y-2">
+                  {/* Attractive Highlight Text — Centered vertically with standing mascot */}
+                  <div className="flex-1 text-center sm:text-left">
                     <h2
                       onClick={() => {
                         setStonemanDefaultTab("faqs");
                         setStonemanOpen(true);
                       }}
-                      className="text-xl sm:text-2xl lg:text-[26px] font-extrabold tracking-tight bg-gradient-to-r from-[#006788] via-teal-500 to-[#015474] dark:from-[#38bdf8] dark:via-teal-400 dark:to-cyan-300 bg-clip-text text-transparent leading-snug animate-stoneman-synced-text cursor-pointer hover:opacity-95"
+                      className="text-xl sm:text-2xl lg:text-[28px] font-extrabold tracking-tight bg-gradient-to-r from-[#006788] via-teal-500 to-[#015474] dark:from-[#38bdf8] dark:via-teal-400 dark:to-cyan-300 bg-clip-text text-transparent leading-snug animate-stoneman-synced-text cursor-pointer hover:opacity-95"
                       title="Tap StoneMan to solve queries or track order"
                     >
                       {texts.hero.stonemanAiHighlight || "With proprietary Stoneman® AI."}
                     </h2>
-
-                    <p className="text-xs sm:text-[13px] text-stone-600 dark:text-stone-300 font-medium leading-relaxed max-w-xl">
-                      {texts.hero.stonemanAiSpeech}
-                    </p>
                   </div>
                 </div>
               </div>
