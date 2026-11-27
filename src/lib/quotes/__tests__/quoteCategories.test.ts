@@ -649,4 +649,116 @@ describe("quoteCategories", () => {
       "it_carting",
     ]);
   });
+
+  describe("minimum lumpsum ₹4,000 installation labour for wall area < 50 sq ft", () => {
+    it("applies ₹4,000 lumpsum labour when wall area is less than 50 sq ft", () => {
+      // 1 wall: 6ft x 5ft = 30 sq ft (< 50 sq ft)
+      const walls: EstimateWall[] = [
+        { id: "w_small", name: "Balcony Wall", height: 6, length: 5, unit: "ft", sqft: 30 },
+      ];
+      const products: EstimateProduct[] = [
+        {
+          id: "p_small",
+          wallId: "w_small",
+          materialCategory: "sandstone_cladding",
+          productName: "Mint Sandstone",
+          pricePerUnit: 180,
+          priceUnit: "sqft",
+          quantityToOrder: 32,
+          amount: 5760,
+          wastagePct: 5,
+        },
+      ];
+      const existingItems = [
+        {
+          id: "it_stone",
+          description: "Sandstone Cladding — Mint Sandstone",
+          quantity: 32,
+          unit: "sqft",
+          unit_price: 180,
+        },
+        {
+          id: "it_labour",
+          description: "Installation Labour",
+          quantity: 30,
+          unit: "sqft",
+          unit_price: 80,
+        },
+      ];
+
+      const result = calculateConsumableUpdates(walls, products, existingItems);
+      expect(result.totalWallSqft).toBe(30);
+
+      // Labour worksheet amount must be ₹4,000 lumpsum
+      expect(result.updatedWorksheet.installation.labour.amount).toBe(4000);
+      expect(result.summary.isLumpSumLabour).toBe(true);
+      expect(result.summary.labourAmount).toBe(4000);
+
+      // Item patch must convert labour to 1 lump sum @ ₹4,000
+      const labourPatch = result.itemPatches.find((p) => p.id === "it_labour");
+      expect(labourPatch).toBeDefined();
+      expect(labourPatch?.newQuantity).toBe(1);
+      expect(labourPatch?.unit).toBe("lump sum");
+      expect(labourPatch?.unit_price).toBe(4000);
+      expect(labourPatch?.description).toContain("Lump Sum < 50 sq ft");
+    });
+
+    it("reverts back to per-sqft calculation when wall area is updated to 50 sq ft or greater", () => {
+      // 1 wall: 10ft x 6ft = 60 sq ft (>= 50 sq ft)
+      const walls: EstimateWall[] = [
+        {
+          id: "w_large",
+          name: "Living Room Feature Wall",
+          height: 10,
+          length: 6,
+          unit: "ft",
+          sqft: 60,
+        },
+      ];
+      const products: EstimateProduct[] = [
+        {
+          id: "p_large",
+          wallId: "w_large",
+          materialCategory: "sandstone_cladding",
+          productName: "Mint Sandstone",
+          pricePerUnit: 180,
+          priceUnit: "sqft",
+          quantityToOrder: 63,
+          amount: 11340,
+          wastagePct: 5,
+        },
+      ];
+      // Existing item was previously a lumpsum item
+      const existingItems = [
+        {
+          id: "it_stone",
+          description: "Sandstone Cladding — Mint Sandstone",
+          quantity: 63,
+          unit: "sqft",
+          unit_price: 180,
+        },
+        {
+          id: "it_labour",
+          description: "Installation Labour (Lump Sum < 50 sq ft)",
+          quantity: 1,
+          unit: "lump sum",
+          unit_price: 4000,
+        },
+      ];
+
+      const result = calculateConsumableUpdates(walls, products, existingItems);
+      expect(result.totalWallSqft).toBe(60);
+
+      // Labour worksheet amount must be 60 * 80 = ₹4,800
+      expect(result.updatedWorksheet.installation.labour.amount).toBe(4800);
+      expect(result.summary.isLumpSumLabour).toBe(false);
+
+      // Item patch must revert labour back to 60 sqft
+      const labourPatch = result.itemPatches.find((p) => p.id === "it_labour");
+      expect(labourPatch).toBeDefined();
+      expect(labourPatch?.newQuantity).toBe(60);
+      expect(labourPatch?.unit).toBe("sqft");
+      expect(labourPatch?.description).toBe("Installation Labour");
+    });
+  });
 });

@@ -36,6 +36,7 @@ import {
   Truck,
   FileText,
   Sparkles,
+  Info,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -71,6 +72,9 @@ import {
   DISCOUNT_PCT,
   isCrazyPatternProduct,
   calculateAdhesiveUnits,
+  MIN_WALL_CLADDING_INSTALLATION_LABOUR_SQFT,
+  MIN_WALL_CLADDING_INSTALLATION_LABOUR_LUMPSUM,
+  calculateWallCladdingLabourAmount,
 } from "@/lib/quotes/estimateCatalog";
 import type {
   EstimateWorksheet,
@@ -402,9 +406,12 @@ export function EstimateStudioCalculator({
       : totalWallSqft;
   }, [labourSqftOverride, totalWallSqft]);
 
+  const isLumpsumLabour =
+    effectiveLabourSqft > 0 && effectiveLabourSqft < MIN_WALL_CLADDING_INSTALLATION_LABOUR_SQFT;
+
   const autoLabourAmount = useMemo(
-    () => (Number(labourRate) || 0) * effectiveLabourSqft,
-    [labourRate, effectiveLabourSqft],
+    () => calculateWallCladdingLabourAmount(effectiveLabourSqft, Number(labourRate) || 0),
+    [effectiveLabourSqft, labourRate],
   );
 
   const labourAmount = useMemo(() => {
@@ -658,15 +665,29 @@ export function EstimateStudioCalculator({
       }
     }
     if (includeInstallation && effectiveLabourAmount > 0) {
-      out.push({
-        product_id: null,
-        description: "Installation Labour",
-        quantity: Math.round(effectiveLabourSqft * 100) / 100,
-        unit: "sqft",
-        unit_price: Number(labourRate) || 0,
-        tax_pct: 0,
-        fulfilment: null,
-      });
+      const isLumpSum =
+        effectiveLabourSqft > 0 && effectiveLabourSqft < MIN_WALL_CLADDING_INSTALLATION_LABOUR_SQFT;
+      if (isLumpSum) {
+        out.push({
+          product_id: null,
+          description: "Installation Labour (Lump Sum < 50 sq ft)",
+          quantity: 1,
+          unit: "lump sum",
+          unit_price: effectiveLabourAmount,
+          tax_pct: 0,
+          fulfilment: null,
+        });
+      } else {
+        out.push({
+          product_id: null,
+          description: "Installation Labour",
+          quantity: Math.round(effectiveLabourSqft * 100) / 100,
+          unit: "sqft",
+          unit_price: Number(labourRate) || 0,
+          tax_pct: 0,
+          fulfilment: null,
+        });
+      }
     }
     if (includeInstallation) {
       for (const l of adhesiveLines) {
@@ -1383,16 +1404,20 @@ export function EstimateStudioCalculator({
                 label={
                   <div className="flex items-center justify-between">
                     <span>Labour amount (₹)</span>
-                    {labourAmountOverride !== null && (
+                    {labourAmountOverride !== null ? (
                       <button
                         type="button"
                         onClick={() => setLabourAmountOverride(null)}
                         className="text-[10px] text-blue-600 hover:underline cursor-pointer"
-                        title="Reset to calculated rate × sq ft"
+                        title="Reset to calculated rate × sq ft / lumpsum"
                       >
                         Auto ({formatInr(autoLabourAmount)})
                       </button>
-                    )}
+                    ) : isLumpsumLabour ? (
+                      <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+                        Lump sum (&lt; 50 sq ft)
+                      </span>
+                    ) : null}
                   </div>
                 }
                 className="col-span-12 md:col-span-3"
@@ -1415,6 +1440,17 @@ export function EstimateStudioCalculator({
                 />
               </LineField>
             </div>
+
+            {isLumpsumLabour && (
+              <div className="mt-2 flex items-center gap-1.5 rounded-sm border border-amber-200 bg-amber-50/70 p-2 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-300">
+                <Info className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                <span>
+                  <strong>Minimum Lumpsum Applied:</strong> Total wall coverage is{" "}
+                  {effectiveLabourSqft.toFixed(1)} sq ft (&lt; 50 sq ft). Minimum installation
+                  labour charge of ₹4,000 is applied.
+                </span>
+              </div>
+            )}
 
             <div>
               <div className="mb-1.5 flex flex-wrap items-center justify-between gap-1.5">

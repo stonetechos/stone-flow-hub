@@ -18,6 +18,10 @@ import {
   calculateAdhesiveUnits,
   ADHESIVE_CATALOG,
   SEALER_CATALOG,
+  DEFAULT_INSTALLATION_LABOUR_RATE_PER_SQFT,
+  MIN_WALL_CLADDING_INSTALLATION_LABOUR_SQFT,
+  MIN_WALL_CLADDING_INSTALLATION_LABOUR_LUMPSUM,
+  calculateWallCladdingLabourAmount,
   type LengthUnit,
   type AdhesiveCatalogItem,
   type SealerCatalogItem,
@@ -206,6 +210,7 @@ export interface ProposedConsumableUpdates {
     currentQuantity: number;
     newQuantity: number;
     unit?: string | null;
+    unit_price?: number;
   }>;
   // Product updates
   productPatches: Array<{
@@ -219,6 +224,8 @@ export interface ProposedConsumableUpdates {
   // Summary for UI display
   summary: {
     labourSqft: number;
+    isLumpSumLabour?: boolean;
+    labourAmount?: number;
     cementAdhesiveBags: number;
     actualCementBagsInQuote?: number;
     cementBreakdownText?: string;
@@ -427,16 +434,51 @@ export function calculateConsumableUpdates(
 
   // 2. Installation Labour
   const labourItem = existingItems.find((it) => categorizeQuoteItem(it) === "installation_labour");
+  const isExistingLabourLumpSum =
+    labourItem?.unit === "lump sum" ||
+    Boolean(labourItem?.description?.toLowerCase().includes("lump sum"));
+
+  const resolvedLabourRate =
+    !isExistingLabourLumpSum && Number(labourItem?.unit_price) > 0
+      ? Number(labourItem?.unit_price)
+      : currentWorksheet?.installation?.labour?.ratePerSqft &&
+          currentWorksheet.installation.labour.ratePerSqft < 1000
+        ? currentWorksheet.installation.labour.ratePerSqft
+        : DEFAULT_INSTALLATION_LABOUR_RATE_PER_SQFT;
+
   if (labourItem) {
-    const newLabourQty = totalWallSqft;
-    if (Number(labourItem.quantity) !== newLabourQty) {
+    const isLumpSum =
+      totalWallSqft > 0 && totalWallSqft < MIN_WALL_CLADDING_INSTALLATION_LABOUR_SQFT;
+    const newLabourQty = isLumpSum ? 1 : totalWallSqft;
+    const newUnit = isLumpSum
+      ? "lump sum"
+      : labourItem.unit && labourItem.unit !== "lump sum"
+        ? labourItem.unit
+        : "sqft";
+
+    const expectedUnitPrice = isLumpSum
+      ? MIN_WALL_CLADDING_INSTALLATION_LABOUR_LUMPSUM
+      : resolvedLabourRate;
+
+    const qtyDiff = Number(labourItem.quantity) !== newLabourQty;
+    const unitDiff = isLumpSum ? labourItem.unit !== "lump sum" : labourItem.unit === "lump sum";
+    const priceDiff = Number(labourItem.unit_price) !== expectedUnitPrice;
+
+    if (qtyDiff || unitDiff || priceDiff) {
       itemPatches.push({
         id: labourItem.id,
-        description: labourItem.description || "Installation Labour",
+        description: isLumpSum
+          ? labourItem.description?.includes("Lump Sum")
+            ? labourItem.description
+            : "Installation Labour (Lump Sum < 50 sq ft)"
+          : labourItem.description?.includes("Lump Sum")
+            ? "Installation Labour"
+            : labourItem.description || "Installation Labour",
         category: "installation_labour",
         currentQuantity: Number(labourItem.quantity) || 0,
         newQuantity: newLabourQty,
-        unit: labourItem.unit || "sqft",
+        unit: newUnit,
+        unit_price: expectedUnitPrice,
       });
     }
   }
@@ -600,8 +642,8 @@ export function calculateConsumableUpdates(
     products: updatedProducts,
     installation: {
       labour: {
-        ratePerSqft: Number(labourItem?.unit_price) || 80,
-        amount: (Number(labourItem?.unit_price) || 80) * totalWallSqft,
+        ratePerSqft: resolvedLabourRate,
+        amount: calculateWallCladdingLabourAmount(totalWallSqft, resolvedLabourRate),
       },
       adhesives: [],
       sealer: null,
@@ -643,9 +685,8 @@ export function calculateConsumableUpdates(
       })()
     : null;
 
-  const labourAmount =
-    (baseWs.installation?.labour?.ratePerSqft || Number(labourItem?.unit_price) || 80) *
-    totalWallSqft;
+  const labourRate = baseWs.installation?.labour?.ratePerSqft || resolvedLabourRate;
+  const labourAmount = calculateWallCladdingLabourAmount(totalWallSqft, labourRate);
   const sealerLabourAmount =
     (baseWs.installation?.sealerLabour?.ratePerSqft || Number(sealerLabourItem?.unit_price) || 10) *
     totalWallSqft;
@@ -692,6 +733,9 @@ export function calculateConsumableUpdates(
     productPatches,
     summary: {
       labourSqft: totalWallSqft,
+      isLumpSumLabour:
+        totalWallSqft > 0 && totalWallSqft < MIN_WALL_CLADDING_INSTALLATION_LABOUR_SQFT,
+      labourAmount,
       cementAdhesiveBags: calculatedCementBags,
       actualCementBagsInQuote: totalCementBagsInQuote,
       cementBreakdownText,

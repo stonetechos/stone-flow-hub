@@ -225,6 +225,27 @@ export const SEALER_CATALOG: SealerCatalogItem[] = [
 
 export const DEFAULT_SEALER_APPLICATION_RATE_PER_SQFT = 10;
 
+export const DEFAULT_INSTALLATION_LABOUR_RATE_PER_SQFT = 80;
+export const MIN_WALL_CLADDING_INSTALLATION_LABOUR_SQFT = 50;
+export const MIN_WALL_CLADDING_INSTALLATION_LABOUR_LUMPSUM = 4000;
+
+/**
+ * Calculates installation labour amount for natural stone wall cladding.
+ * Business rule: If total project wall coverage area is less than 50 sq ft (and > 0),
+ * apply a minimum lumpsum charge of Rs 4,000 for installation labour.
+ * For 50 sq ft or greater, calculate ratePerSqft * sqft.
+ */
+export function calculateWallCladdingLabourAmount(
+  sqft: number,
+  ratePerSqft: number = DEFAULT_INSTALLATION_LABOUR_RATE_PER_SQFT,
+): number {
+  if (!isFinite(sqft) || sqft <= 0) return 0;
+  if (sqft < MIN_WALL_CLADDING_INSTALLATION_LABOUR_SQFT) {
+    return MIN_WALL_CLADDING_INSTALLATION_LABOUR_LUMPSUM;
+  }
+  return Math.round(sqft * ratePerSqft * 100) / 100;
+}
+
 export const DISCOUNT_SQFT_THRESHOLD = 500;
 export const DISCOUNT_PCT = 7.5;
 

@@ -43,6 +43,8 @@ import {
   LENGTH_UNIT_LABELS,
   wallSqft,
   ceilWhole,
+  MIN_WALL_CLADDING_INSTALLATION_LABOUR_SQFT,
+  MIN_WALL_CLADDING_INSTALLATION_LABOUR_LUMPSUM,
 } from "@/lib/quotes/estimateCatalog";
 import {
   type EstimateWall,
@@ -397,7 +399,11 @@ export function QuoteWallDetailsEditor({
 
       // Apply patches (e.g. decreasing or increasing product qty, labour, adhesive bags, PU buckets, sealers)
       for (const patch of consumableUpdates.itemPatches) {
-        await updateQuoteItem(patch.id, { quantity: patch.newQuantity });
+        const patchPayload: Record<string, unknown> = { quantity: patch.newQuantity };
+        if (patch.unit) patchPayload.unit = patch.unit;
+        if (patch.unit_price !== undefined) patchPayload.unit_price = patch.unit_price;
+        if (patch.description) patchPayload.description = patch.description;
+        await updateQuoteItem(patch.id, patchPayload);
       }
 
       // Update surface dimension notes and clear cash HSN
@@ -485,7 +491,11 @@ export function QuoteWallDetailsEditor({
 
       // Apply patches to scale down remaining labour and consumables
       for (const patch of consumableUpdates.itemPatches) {
-        await updateQuoteItem(patch.id, { quantity: patch.newQuantity });
+        const patchPayload: Record<string, unknown> = { quantity: patch.newQuantity };
+        if (patch.unit) patchPayload.unit = patch.unit;
+        if (patch.unit_price !== undefined) patchPayload.unit_price = patch.unit_price;
+        if (patch.description) patchPayload.description = patch.description;
+        await updateQuoteItem(patch.id, patchPayload);
       }
 
       await updateQuote(quoteId, {
@@ -523,7 +533,11 @@ export function QuoteWallDetailsEditor({
       );
 
       for (const patch of consumableUpdates.itemPatches) {
-        await updateQuoteItem(patch.id, { quantity: patch.newQuantity });
+        const patchPayload: Record<string, unknown> = { quantity: patch.newQuantity };
+        if (patch.unit) patchPayload.unit = patch.unit;
+        if (patch.unit_price !== undefined) patchPayload.unit_price = patch.unit_price;
+        if (patch.description) patchPayload.description = patch.description;
+        await updateQuoteItem(patch.id, patchPayload);
       }
 
       // Ensure every surface product has clean details in notes & suppress cash HSN
@@ -599,14 +613,19 @@ export function QuoteWallDetailsEditor({
 
       // 1. Add Labour if missing
       if (!hasLabourItem && updates.summary.labourSqft > 0) {
+        const isLumpSum = updates.summary.labourSqft < MIN_WALL_CLADDING_INSTALLATION_LABOUR_SQFT;
         await addQuoteItem(quoteId, {
-          description: "Installation Labour",
-          quantity: updates.summary.labourSqft,
-          unit: "sq.ft",
-          unit_price: 80,
+          description: isLumpSum
+            ? "Installation Labour (Lump Sum < 50 sq ft)"
+            : "Installation Labour",
+          quantity: isLumpSum ? 1 : updates.summary.labourSqft,
+          unit: isLumpSum ? "lump sum" : "sq.ft",
+          unit_price: isLumpSum ? MIN_WALL_CLADDING_INSTALLATION_LABOUR_LUMPSUM : 80,
           tax_pct: saleMode === "cash" ? 0 : 0,
           hsn_sac: saleMode === "cash" ? null : "9954",
-          notes: "Installation, alignment, scaffolding, and mortar/adhesive fixing",
+          notes: isLumpSum
+            ? "Minimum lumpsum installation labour charges for project coverage under 50 sq.ft"
+            : "Installation, alignment, scaffolding, and mortar/adhesive fixing",
           fulfilment: defaultFulfilment,
         });
       }
@@ -1000,10 +1019,25 @@ export function QuoteWallDetailsEditor({
                       </Badge>
                     </div>
                     <span className="text-sm font-bold text-slate-800 block">
-                      {liveConsumables.summary.labourSqft} sq.ft
+                      {liveConsumables.summary.labourSqft > 0 &&
+                      liveConsumables.summary.labourSqft <
+                        MIN_WALL_CLADDING_INSTALLATION_LABOUR_SQFT ? (
+                        <>
+                          ₹4,000{" "}
+                          <span className="text-[11px] font-normal text-amber-700">
+                            (Lump Sum &lt; 50 sq.ft)
+                          </span>
+                        </>
+                      ) : (
+                        `${liveConsumables.summary.labourSqft} sq.ft`
+                      )}
                     </span>
                     <span className="text-[10px] text-muted-foreground">
-                      Full surface cladding fixing
+                      {liveConsumables.summary.labourSqft > 0 &&
+                      liveConsumables.summary.labourSqft <
+                        MIN_WALL_CLADDING_INSTALLATION_LABOUR_SQFT
+                        ? `Min. charge applied (${liveConsumables.summary.labourSqft} sq.ft area)`
+                        : "Full surface cladding fixing"}
                     </span>
                   </div>
 

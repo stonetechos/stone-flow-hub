@@ -15,6 +15,9 @@ import {
   DEFAULT_MURAL_OVERLAY_THICKNESS_MM,
   DEFAULT_MURAL_OVERLAY_STONE_PRICE,
   COMMON_OVERLAY_STONE_TYPES,
+  calculateWallCladdingLabourAmount,
+  MIN_WALL_CLADDING_INSTALLATION_LABOUR_SQFT,
+  MIN_WALL_CLADDING_INSTALLATION_LABOUR_LUMPSUM,
 } from "./estimateCatalog";
 import { CARTING_CATALOG, MASTER_PRODUCT_CATALOG } from "./catalog";
 import {
@@ -804,6 +807,37 @@ describe("estimateCatalog - rounding and wastage calculations", () => {
       );
 
       expect(items.length).toBe(0);
+    });
+  });
+
+  describe("calculateWallCladdingLabourAmount", () => {
+    it("returns 0 for zero or negative sqft", () => {
+      expect(calculateWallCladdingLabourAmount(0)).toBe(0);
+      expect(calculateWallCladdingLabourAmount(-10)).toBe(0);
+    });
+
+    it("applies minimum lumpsum ₹4,000 when project wall coverage is less than 50 sq ft", () => {
+      expect(MIN_WALL_CLADDING_INSTALLATION_LABOUR_SQFT).toBe(50);
+      expect(MIN_WALL_CLADDING_INSTALLATION_LABOUR_LUMPSUM).toBe(4000);
+
+      // Areas < 50 sq ft must return lumpsum 4000
+      expect(calculateWallCladdingLabourAmount(10)).toBe(4000);
+      expect(calculateWallCladdingLabourAmount(25)).toBe(4000);
+      expect(calculateWallCladdingLabourAmount(30)).toBe(4000);
+      expect(calculateWallCladdingLabourAmount(49.9)).toBe(4000);
+    });
+
+    it("calculates rate * sqft when coverage is 50 sq ft or greater", () => {
+      // At exactly 50 sq ft: 50 * 80 = 4000
+      expect(calculateWallCladdingLabourAmount(50)).toBe(4000);
+      // Above 50 sq ft: standard rate applies
+      expect(calculateWallCladdingLabourAmount(60)).toBe(4800);
+      expect(calculateWallCladdingLabourAmount(100)).toBe(8000);
+      // Custom ratePerSqft
+      expect(calculateWallCladdingLabourAmount(100, 100)).toBe(10000);
+      expect(calculateWallCladdingLabourAmount(60, 90)).toBe(5400);
+      // When area < 50, minimum lumpsum applies regardless of per-sqft rate
+      expect(calculateWallCladdingLabourAmount(30, 90)).toBe(4000);
     });
   });
 });
