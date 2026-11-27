@@ -96,6 +96,7 @@ import {
 import { fetchSiteSettings } from "@/lib/site-settings/api";
 import { useWebsiteContent } from "@/lib/cms/landing-content-store";
 import { StonemanCustomerDialog } from "@/components/mascot/StonemanCustomerDialog";
+import { StonemanMascot } from "@/components/mascot/StonemanMascot";
 import { LanguageToggle } from "@/components/global/LanguageToggle";
 import { removeThemes } from "@/components/global/ThemeSwitcher";
 import { useTranslation } from "react-i18next";
@@ -1151,7 +1152,13 @@ function HomePage() {
         className="fixed bottom-0 inset-x-0 h-[env(safe-area-inset-bottom,0px)] bg-[#015474] z-30 pointer-events-none sm:hidden"
       />
 
-      {/* StoneMan AI Customer Track Order Dialog */}
+      {/* StoneMan AI Mascot Assistant & Track Order Dialog */}
+      <StonemanMascot
+        onClick={() => setStonemanOpen(true)}
+        className={
+          stonemanOpen ? "pointer-events-none opacity-0 transition-opacity duration-200" : ""
+        }
+      />
       <StonemanCustomerDialog open={stonemanOpen} onOpenChange={setStonemanOpen} />
       {/* Request for Estimate Dialog (Full 2-Step Form with Uploads & Success View) */}
       <RequestEstimateDialog
