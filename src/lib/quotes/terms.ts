@@ -109,7 +109,7 @@ export function buildPaymentTermsTerm(
   const offerClause = includePrepaymentOffer ? `\n   • ${EARLY_PAYMENT_DISCOUNT_DISCLAIMER}` : "";
 
   if (isUnderFiftyThousand) {
-    return `The payment terms are 100% advance payment required upon order confirmation prior to material procurement and dispatch (applicable for order value under ₹50,000).${offerClause}`;
+    return `The payment terms are: 100% payment is mandatory for placing the order prior to material procurement and dispatch (applicable for complete order value under ₹50,000).${offerClause}`;
   }
 
   if (dealScope === "supply_and_installation") {
@@ -263,6 +263,44 @@ export function hasEarlyPaymentDiscountDisclaimer(termsText?: string | null): bo
       lower.includes("5% instant discount") ||
       lower.includes("avail 5%"))
   );
+}
+
+/** Checks whether a terms text already contains the 100% mandatory payment clause for orders under ₹50,000. */
+export function hasUnderFiftyThousandMandatoryPayment(termsText?: string | null): boolean {
+  if (!termsText) return false;
+  const lower = termsText.toLowerCase();
+  return (
+    lower.includes("100% payment is mandatory") ||
+    lower.includes("100% payment is mendatory") ||
+    lower.includes("100% advance payment is mandatory") ||
+    lower.includes("100% advance payment required")
+  );
+}
+
+/**
+ * Replaces or inserts the Payment Terms clause in an existing terms string.
+ */
+export function updatePaymentTermInTerms(termsText: string, newPaymentTerm: string): string {
+  if (!termsText || !termsText.trim()) return `Payment Terms: ${newPaymentTerm}`;
+  const lines = termsText.split("\n\n");
+  let replaced = false;
+
+  const newLines = lines.map((line) => {
+    const match = line.match(/^(\d+[.)]\s*)?Payment Terms:\s*/i);
+    if (match) {
+      replaced = true;
+      const prefix = match[1] || "";
+      return `${prefix}Payment Terms: ${newPaymentTerm}`;
+    }
+    return line;
+  });
+
+  if (!replaced) {
+    // Insert after delivery timeline (usually pos 1 or 2)
+    newLines.splice(1, 0, `Payment Terms: ${newPaymentTerm}`);
+  }
+
+  return newLines.join("\n\n");
 }
 
 /**

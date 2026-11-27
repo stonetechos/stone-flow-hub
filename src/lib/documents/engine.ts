@@ -27,6 +27,10 @@ import {
   stripCashDealGstClause,
   hasEarlyPaymentDiscountDisclaimer,
   generateQuoteTerms,
+  ADVANCE_PAYMENT_THRESHOLD_INR,
+  buildPaymentTermsTerm,
+  updatePaymentTermInTerms,
+  hasUnderFiftyThousandMandatoryPayment,
 } from "@/lib/quotes/terms";
 import { getQuoteSaleMode } from "@/lib/quotes/sale-mode";
 import { findCatalogItemByNameOrCode } from "@/lib/quotes/catalog";
@@ -465,6 +469,15 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
         effectiveTerms = ensureTermsHaveCashDealGstClause(effectiveTerms);
       } else {
         effectiveTerms = stripCashDealGstClause(effectiveTerms);
+      }
+
+      if (
+        Number(q.total) > 0 &&
+        Number(q.total) < ADVANCE_PAYMENT_THRESHOLD_INR &&
+        !hasUnderFiftyThousandMandatoryPayment(effectiveTerms)
+      ) {
+        const paymentTerm = buildPaymentTermsTerm(scope, Number(q.total), includePrepaymentOffer);
+        effectiveTerms = updatePaymentTermInTerms(effectiveTerms, paymentTerm);
       }
       return {
         doc: {

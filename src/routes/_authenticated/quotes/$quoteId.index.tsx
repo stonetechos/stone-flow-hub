@@ -1499,7 +1499,7 @@ function QuoteDetailPage() {
                     variant="outline"
                     className="bg-[#e0f1f5] text-[#015474] border-[#c9d1d4] text-[10px]"
                   >
-                    {t("quotes.under50kAdvance", "< ₹50k: 100% Advance")}
+                    {t("quotes.under50kAdvance", "< ₹50k: 100% Mandatory Payment")}
                   </Badge>
                 )}
                 <Badge variant="outline" className="text-[10px]">

@@ -22,6 +22,9 @@ import {
   stripEarlyPaymentOffer,
   EARLY_PAYMENT_DISCOUNT_DISCLAIMER,
   ADVANCE_PAYMENT_THRESHOLD_INR,
+  hasUnderFiftyThousandMandatoryPayment,
+  updatePaymentTermInTerms,
+  buildPaymentTermsTerm,
 } from "@/lib/quotes/terms";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -312,10 +315,10 @@ export function QuoteTermsManager({
           {isUnderFiftyThousand ? (
             <Badge
               variant="outline"
-              className="bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/30 dark:text-amber-300 text-[11px] gap-1"
+              className="bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/30 dark:text-amber-300 text-[11px] gap-1 font-semibold"
             >
               <AlertCircle className="h-3 w-3" />
-              Order &lt; ₹50k: 100% Advance
+              Order &lt; ₹50k: 100% Mandatory Payment
             </Badge>
           ) : (
             <Badge
@@ -570,9 +573,15 @@ export function QuoteTermsManager({
             size="sm"
             onClick={() => handleApplyStandardTerms("supply_only")}
             className="h-7 text-xs gap-1 cursor-pointer bg-muted/30 hover:bg-muted"
-            title="Populate standard Supply Only terms with 80/20 payment"
+            title={
+              isUnderFiftyThousand
+                ? "Populate standard Supply Only terms with 100% mandatory payment"
+                : "Populate standard Supply Only terms with 80/20 payment"
+            }
           >
-            Insert Supply Terms (80/20)
+            {isUnderFiftyThousand
+              ? "Insert Supply Terms (100% Mandatory)"
+              : "Insert Supply Terms (80/20)"}
           </Button>
           <Button
             type="button"
@@ -580,9 +589,15 @@ export function QuoteTermsManager({
             size="sm"
             onClick={() => handleApplyStandardTerms("supply_and_installation")}
             className="h-7 text-xs gap-1 cursor-pointer bg-muted/30 hover:bg-muted"
-            title="Populate standard Supply + Installation terms with 50/30/20 payment"
+            title={
+              isUnderFiftyThousand
+                ? "Populate standard Supply + Installation terms with 100% mandatory payment"
+                : "Populate standard Supply + Installation terms with 50/30/20 payment"
+            }
           >
-            Insert Supply + Install Terms (50/30/20)
+            {isUnderFiftyThousand
+              ? "Insert Supply + Install Terms (100% Mandatory)"
+              : "Insert Supply + Install Terms (50/30/20)"}
           </Button>
           {hasTermsContent && (
             <Button
@@ -599,6 +614,32 @@ export function QuoteTermsManager({
           )}
         </div>
       </div>
+
+      {/* Warning banner when order is under ₹50k but terms do not have 100% mandatory payment */}
+      {isUnderFiftyThousand && hasTermsContent && !hasUnderFiftyThousandMandatoryPayment(terms) && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-md border border-amber-300 bg-amber-50/80 dark:bg-amber-950/30 p-2.5 text-xs text-amber-900 dark:text-amber-200">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 shrink-0 text-amber-600" />
+            <span>
+              <strong>Complete Order Under ₹50,000 ({formatInr(totalAmount)}):</strong> 100% payment
+              is mandatory for placing the order.
+            </span>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              const paymentTerm = buildPaymentTermsTerm(dealScope, totalAmount, isPrepaymentOffer);
+              const updated = updatePaymentTermInTerms(terms, paymentTerm);
+              onChangeTerms(updated);
+            }}
+            className="h-7 text-[11px] font-semibold bg-white dark:bg-slate-900 border-amber-400 hover:bg-amber-100 shrink-0 cursor-pointer text-amber-900 dark:text-amber-100"
+          >
+            Apply 100% Mandatory Payment
+          </Button>
+        </div>
+      )}
 
       {/* Terms & Conditions Textarea */}
       <div className="space-y-1.5">

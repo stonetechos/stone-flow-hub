@@ -16,7 +16,7 @@
  * are swept in `activate`.
  */
 
-const CACHE_VERSION = "stos-40";
+const CACHE_VERSION = "stos-41";
 const STATIC_CACHE = `stos-static-${CACHE_VERSION}`;
 const OFFLINE_URL = "/offline.html";
 

@@ -18,6 +18,8 @@ import {
   getQuoteTermsList,
   hasClientBreakageDisclaimer,
   hasEarlyPaymentDiscountDisclaimer,
+  hasUnderFiftyThousandMandatoryPayment,
+  updatePaymentTermInTerms,
 } from "./terms";
 
 describe("Quote Terms & Conditions Engine", () => {
@@ -66,13 +68,13 @@ describe("Quote Terms & Conditions Engine", () => {
     it("enforces 100% advance payment when order total is less than ₹50,000 for Supply Only", () => {
       expect(ADVANCE_PAYMENT_THRESHOLD_INR).toBe(50000);
       const term = buildPaymentTermsTerm("supply_only", 35000);
-      expect(term).toContain("100% advance payment required");
-      expect(term).toContain("applicable for order value under ₹50,000");
+      expect(term).toContain("100% payment is mandatory for placing the order");
+      expect(term).toContain("applicable for complete order value under ₹50,000");
     });
 
     it("enforces 100% advance payment when order total is less than ₹50,000 for Supply + Installation", () => {
       const term = buildPaymentTermsTerm("supply_and_installation", 49999);
-      expect(term).toContain("100% advance payment required");
+      expect(term).toContain("100% payment is mandatory for placing the order");
     });
 
     it("applies 80% advance and 20% on delivery for Supply Only when total >= ₹50,000", () => {
@@ -81,7 +83,7 @@ describe("Quote Terms & Conditions Engine", () => {
       expect(term).toContain(
         "20% balance payment has to be provided once the material gets delivered",
       );
-      expect(term).not.toContain("100% advance payment required");
+      expect(term).not.toContain("100% payment is mandatory");
     });
 
     it("applies 50% advance, 30% delivery, and 20% installation for Supply + Installation when total >= ₹50,000", () => {
@@ -91,7 +93,7 @@ describe("Quote Terms & Conditions Engine", () => {
       expect(term).toContain(
         "remaining 20% balance payment to be provided upon completion of installation",
       );
-      expect(term).not.toContain("100% advance payment required");
+      expect(term).not.toContain("100% payment is mandatory");
     });
 
     it("includes the 100% advance payment 5% discount disclaimer in all payment term modes", () => {
@@ -202,7 +204,7 @@ describe("Quote Terms & Conditions Engine", () => {
       });
 
       expect(fullText).toContain("1. Delivery Timeline:");
-      expect(fullText).toContain("100% advance payment required");
+      expect(fullText).toContain("100% payment is mandatory for placing the order");
       expect(fullText).toContain("Ahmedabad Jurisdiction");
       expect(fullText.split("\n\n").length).toBe(7);
     });
@@ -342,6 +344,43 @@ describe("Quote Terms & Conditions Engine", () => {
           },
         ),
       ).toBe(false);
+    });
+  });
+
+  describe("Under ₹50,000 Mandatory Payment Helpers", () => {
+    it("identifies 100% mandatory payment clause accurately with hasUnderFiftyThousandMandatoryPayment", () => {
+      expect(
+        hasUnderFiftyThousandMandatoryPayment(
+          "Payment Terms: The payment terms are: 100% payment is mandatory for placing the order prior to material procurement and dispatch.",
+        ),
+      ).toBe(true);
+      expect(
+        hasUnderFiftyThousandMandatoryPayment(
+          "Payment Terms: 100% advance payment required upon order confirmation.",
+        ),
+      ).toBe(true);
+      expect(
+        hasUnderFiftyThousandMandatoryPayment(
+          "Payment Terms: The payment terms are 80% advance token upon order booking.",
+        ),
+      ).toBe(false);
+      expect(hasUnderFiftyThousandMandatoryPayment("")).toBe(false);
+      expect(hasUnderFiftyThousandMandatoryPayment(null)).toBe(false);
+    });
+
+    it("replaces existing payment terms with 100% mandatory payment term using updatePaymentTermInTerms", () => {
+      const original =
+        "1. Delivery Timeline: 15 days.\n\n2. Payment Terms: The payment terms are 80% advance token upon order booking, and 20% on delivery.\n\n3. Non-Returnable.";
+      const newPaymentTerm =
+        "The payment terms are: 100% payment is mandatory for placing the order prior to material procurement and dispatch (applicable for complete order value under ₹50,000).";
+
+      const updated = updatePaymentTermInTerms(original, newPaymentTerm);
+      expect(updated).toContain(
+        "2. Payment Terms: The payment terms are: 100% payment is mandatory for placing the order",
+      );
+      expect(updated).not.toContain("80% advance token");
+      expect(updated).toContain("1. Delivery Timeline: 15 days.");
+      expect(updated).toContain("3. Non-Returnable.");
     });
   });
 
