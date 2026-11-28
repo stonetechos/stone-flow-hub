@@ -823,12 +823,22 @@ function HomePage() {
                     {isEn
                       ? cmsContent.heroTitleHighlight || texts.hero.titleHighlight
                       : texts.hero.titleHighlight}
+                  </span>{" "}
+                  <span
+                    onClick={() => {
+                      setStonemanDefaultTab("faqs");
+                      setStonemanOpen(true);
+                    }}
+                    className="font-sans text-2xl sm:text-3xl lg:text-[34px] xl:text-[38px] font-extrabold tracking-tight bg-gradient-to-r from-[#006788] via-teal-500 to-[#015474] dark:from-[#38bdf8] dark:via-teal-400 dark:to-cyan-300 bg-clip-text text-transparent animate-stoneman-synced-text cursor-pointer hover:opacity-95 inline align-baseline"
+                    title="Tap StoneMan to solve queries or track order"
+                  >
+                    {texts.hero.stonemanAiHighlight ||
+                      "With our proprietory AI chatbot, StoneMan®!"}
                   </span>
                 </h1>
 
-                {/* MAIN HIGHLIGHT: Open, unboxed text & synced welcoming mascot */}
-                <div className="pt-1 flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-                  {/* Standing Mascot — Twice Size, Static & Grounded */}
+                {/* Standing StoneMan Mascot — Static & Grounded */}
+                <div className="pt-2 flex items-center">
                   <div
                     onClick={() => {
                       setStonemanDefaultTab("faqs");
@@ -853,20 +863,6 @@ function HomePage() {
                         />
                       </picture>
                     </div>
-                  </div>
-
-                  {/* Attractive Highlight Text — Centered vertically with standing mascot */}
-                  <div className="flex-1 text-center sm:text-left">
-                    <h2
-                      onClick={() => {
-                        setStonemanDefaultTab("faqs");
-                        setStonemanOpen(true);
-                      }}
-                      className="text-xl sm:text-2xl lg:text-[28px] font-extrabold tracking-tight bg-gradient-to-r from-[#006788] via-teal-500 to-[#015474] dark:from-[#38bdf8] dark:via-teal-400 dark:to-cyan-300 bg-clip-text text-transparent leading-snug animate-stoneman-synced-text cursor-pointer hover:opacity-95"
-                      title="Tap StoneMan to solve queries or track order"
-                    >
-                      {texts.hero.stonemanAiHighlight || "With proprietary Stoneman® AI."}
-                    </h2>
                   </div>
                 </div>
               </div>

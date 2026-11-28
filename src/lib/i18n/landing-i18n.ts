@@ -64,7 +64,7 @@ export const LANDING_UI_TRANSLATIONS = {
     hero: {
       titlePart1: "Architectural Stone, Crafted for ",
       titleHighlight: "Extraordinary Spaces.",
-      stonemanAiHighlight: "With proprietary Stoneman® AI.",
+      stonemanAiHighlight: "With our proprietory AI chatbot, StoneMan®!",
       stonemanAiOnline: "AI Copilot Online",
       stonemanAiBadge: "Proprietary AI Copilot",
       stonemanAiSpeech:
@@ -302,7 +302,7 @@ export const LANDING_UI_TRANSLATIONS = {
     hero: {
       titlePart1: "वास्तुशिल्प प्राकृतिक पत्थर, विशेष रूप से निर्मित ",
       titleHighlight: "असाधारण स्थानों के लिए।",
-      stonemanAiHighlight: "हमारे विशेष Stoneman® AI के साथ।",
+      stonemanAiHighlight: "हमारे मालिकाना AI चैटबॉट, StoneMan® के साथ!",
       stonemanAiOnline: "AI कोपायलट सक्रिय",
       stonemanAiBadge: "स्वामित्वयुक्त AI कोपायलट",
       stonemanAiSpeech:
@@ -540,7 +540,7 @@ export const LANDING_UI_TRANSLATIONS = {
     hero: {
       titlePart1: "વાસ્તુશિલ્પ નેચરલ સ્ટોન, ખાસ નિર્મિત ",
       titleHighlight: "અસાધારણ જગ્યાઓ માટે.",
-      stonemanAiHighlight: "અમારા માલિકીના Stoneman® AI સાથે.",
+      stonemanAiHighlight: "અમારા માલિકીના AI ચેટબોટ, StoneMan® સાથે!",
       stonemanAiOnline: "AI કોપાયલટ સક્રિય",
       stonemanAiBadge: "માલિકીનું AI કોપાયલટ",
       stonemanAiSpeech:
