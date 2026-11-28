@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Truck, FileText, CheckCircle2 } from "lucide-react";
+import { Loader2, Truck, FileText, CheckCircle2, Check, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -19,7 +19,7 @@ import { Field } from "@/components/forms/Field";
 import { FormLayout, FormSection, FormGrid, FormActions } from "@/components/forms/FormLayout";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
-import { createDispatch, replaceDispatchItems } from "@/lib/dispatch/api";
+import { createDispatch, replaceDispatchItems, getQuoteDeliveryStatus } from "@/lib/dispatch/api";
 import {
   DISPATCH_STATUSES,
   type DispatchCreateInput,
@@ -37,12 +37,14 @@ import { recordConversion } from "@/lib/lineage/api";
 import { dispatchSystemNotification } from "@/lib/notifications/systemNotifications.functions";
 import { compareQuoteAndDispatchItems } from "@/lib/dispatch/variance";
 import { findBestQuoteForCustomer } from "@/lib/dispatch/matching";
+import { cn } from "@/lib/utils";
 
 const search = z.object({
   so: z.string().uuid().optional(),
   customer: z.string().uuid().optional(),
   quote: z.string().uuid().optional(),
   invoice: z.string().uuid().optional(),
+  type: z.enum(["material", "work_completion"]).optional(),
 });
 
 export const Route = createFileRoute("/_authenticated/dispatch/new")({
@@ -60,6 +62,9 @@ function NewDispatchPage() {
   const qc = useQueryClient();
   const params = Route.useSearch();
   const [selectedQuoteId, setSelectedQuoteId] = useState<string | null>(params.quote ?? null);
+  const [challanType, setChallanType] = useState<"material" | "work_completion">(
+    params.type === "work_completion" ? "work_completion" : "material",
+  );
 
   const orders = useQuery({
     queryKey: qk.salesOrders.list("", ""),
@@ -87,13 +92,46 @@ function NewDispatchPage() {
     delivered_by: null,
     received_by: null,
     carting_charge: 0,
-    remarks: null,
-    notes: null,
+    remarks:
+      params.type === "work_completion"
+        ? "Work is finished from our end. We request you to kindly verify and if you have any feedback regarding the same, do let us know."
+        : null,
+    notes: params.type === "work_completion" ? "[Work Completion Challan]" : null,
   });
   const [items, setItems] = useState<DispatchItemInput[]>([]);
 
   const set = <K extends keyof DispatchCreateInput>(k: K, v: DispatchCreateInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
+
+  const handleChallanTypeChange = (type: "material" | "work_completion") => {
+    setChallanType(type);
+    if (type === "work_completion") {
+      if (
+        !form.remarks ||
+        form.remarks.includes("Goods dispatched in good condition") ||
+        form.remarks.trim() === ""
+      ) {
+        set(
+          "remarks",
+          "Work is finished from our end. We request you to kindly verify and if you have any feedback regarding the same, do let us know.",
+        );
+      }
+      const wcTag = "[Work Completion Challan]";
+      if (!form.notes?.includes(wcTag)) {
+        set("notes", form.notes ? `${wcTag} ${form.notes}` : wcTag);
+      }
+    } else {
+      if (
+        form.remarks ===
+        "Work is finished from our end. We request you to kindly verify and if you have any feedback regarding the same, do let us know."
+      ) {
+        set("remarks", null);
+      }
+      if (form.notes?.includes("[Work Completion Challan]")) {
+        set("notes", form.notes.replace(/\[Work Completion Challan\]\s*/g, ""));
+      }
+    }
+  };
 
   const customerQuotes = useMemo(() => {
     if (!form.customer_id || !quotesList.data) return [];
@@ -125,26 +163,87 @@ function NewDispatchPage() {
     setSelectedQuoteId(quoteId);
     if (!quoteId) return;
     try {
-      const [quote, quoteItems] = await Promise.all([getQuote(quoteId), getQuoteItems(quoteId)]);
+      const [quote, quoteItems, deliveryStatus] = await Promise.all([
+        getQuote(quoteId),
+        getQuoteItems(quoteId),
+        getQuoteDeliveryStatus(quoteId),
+      ]);
       if (quote) {
+        const isWorkComp = challanType === "work_completion";
         setForm((f) => ({
           ...f,
           customer_id: f.customer_id ?? quote.customer_id,
           project_id: f.project_id ?? quote.project_id,
-          notes: f.notes ?? `Delivery challan for Quote #${quote.quote_no}`,
+          remarks:
+            f.remarks ??
+            (isWorkComp
+              ? "Work is finished from our end. We request you to kindly verify and if you have any feedback regarding the same, do let us know."
+              : null),
+          notes:
+            f.notes ??
+            (isWorkComp
+              ? `[Work Completion Challan] Work completion and handover challan for Quote #${quote.quote_no}`
+              : `Delivery challan for Quote #${quote.quote_no}`),
         }));
         if (quoteItems && quoteItems.length > 0) {
-          setItems(
-            quoteItems.map((qi, idx) => ({
-              product_id: qi.product_id,
-              product_name: qi.description || null,
-              description: qi.description || "Stone item",
-              unit: qi.unit || "sqft",
-              quantity: Number(qi.quantity) || 1,
-              sort_order: idx + 1,
-            })),
+          const remainingMap = new Map(
+            (deliveryStatus?.lines ?? []).map((l) => [l.sales_order_item_id, l.remaining]),
           );
-          toast.success(`Loaded ${quoteItems.length} items from Quote #${quote.quote_no}`);
+          const remainingByName = new Map(
+            (deliveryStatus?.lines ?? []).map((l) => [
+              (l.product_name || l.description || "").trim().toLowerCase(),
+              l.remaining,
+            ]),
+          );
+
+          setItems(
+            quoteItems.map((qi, idx) => {
+              const nameKey = (qi.description || "").trim().toLowerCase();
+              const rem = remainingMap.has(qi.id)
+                ? remainingMap.get(qi.id)!
+                : remainingByName.has(nameKey)
+                  ? remainingByName.get(nameKey)!
+                  : Number(qi.quantity) || 1;
+
+              const isLabour =
+                (qi.description || "").toLowerCase().includes("install") ||
+                (qi.description || "").toLowerCase().includes("labour") ||
+                (qi.description || "").toLowerCase().includes("labor") ||
+                (qi.description || "").toLowerCase().includes("fixing") ||
+                (qi.description || "").toLowerCase().includes("handover");
+
+              let initQty = rem;
+              if (isWorkComp) {
+                const hasLabourItems = quoteItems.some(
+                  (item) =>
+                    (item.description || "").toLowerCase().includes("install") ||
+                    (item.description || "").toLowerCase().includes("labour") ||
+                    (item.description || "").toLowerCase().includes("labor") ||
+                    (item.description || "").toLowerCase().includes("fixing"),
+                );
+                initQty = hasLabourItems ? (isLabour ? rem : 0) : rem;
+              } else {
+                const hasMaterialItems = quoteItems.some(
+                  (item) =>
+                    !(item.description || "").toLowerCase().includes("install") &&
+                    !(item.description || "").toLowerCase().includes("labour") &&
+                    !(item.description || "").toLowerCase().includes("fixing"),
+                );
+                initQty = hasMaterialItems ? (isLabour ? 0 : rem) : rem;
+              }
+
+              return {
+                sales_order_item_id: qi.id,
+                product_id: qi.product_id,
+                product_name: qi.description || null,
+                description: qi.description || "Stone item",
+                unit: qi.unit || "sqft",
+                quantity: initQty,
+                sort_order: idx + 1,
+              };
+            }),
+          );
+          toast.success(`Loaded items from Quote #${quote.quote_no}`);
         }
       }
     } catch (e) {
@@ -175,35 +274,92 @@ function NewDispatchPage() {
 
   // Preload customer/project/items when Quote chosen (Cash delivery challan before invoice)
   const quoteQuery = useQuery({
-    queryKey: ["dispatch", "new", "quote-defaults", params.quote ?? ""],
+    queryKey: ["dispatch", "new", "quote-defaults", params.quote ?? "", challanType],
     queryFn: async () => {
       if (!params.quote) return null;
-      const [quote, quoteItems] = await Promise.all([
+      const [quote, quoteItems, deliveryStatus] = await Promise.all([
         getQuote(params.quote),
         getQuoteItems(params.quote),
+        getQuoteDeliveryStatus(params.quote),
       ]);
       if (quote) {
+        const isWorkComp = challanType === "work_completion";
         setForm((f) => ({
           ...f,
           customer_id: f.customer_id ?? quote.customer_id,
           project_id: f.project_id ?? quote.project_id,
+          remarks:
+            f.remarks ??
+            (isWorkComp
+              ? "Work is finished from our end. We request you to kindly verify and if you have any feedback regarding the same, do let us know."
+              : null),
           notes:
-            f.notes ?? `Cash deal delivery challan before invoice for Quote #${quote.quote_no}`,
+            f.notes ??
+            (isWorkComp
+              ? `[Work Completion Challan] Work completion and handover challan for Quote #${quote.quote_no}`
+              : `Cash deal delivery challan before invoice for Quote #${quote.quote_no}`),
         }));
         if (quoteItems && quoteItems.length > 0) {
+          const remainingMap = new Map(
+            (deliveryStatus?.lines ?? []).map((l) => [l.sales_order_item_id, l.remaining]),
+          );
+          const remainingByName = new Map(
+            (deliveryStatus?.lines ?? []).map((l) => [
+              (l.product_name || l.description || "").trim().toLowerCase(),
+              l.remaining,
+            ]),
+          );
+
           setItems(
-            quoteItems.map((qi, idx) => ({
-              product_id: qi.product_id,
-              product_name: qi.description || null,
-              description: qi.description || "Stone item",
-              unit: qi.unit || "sqft",
-              quantity: Number(qi.quantity) || 1,
-              sort_order: idx + 1,
-            })),
+            quoteItems.map((qi, idx) => {
+              const nameKey = (qi.description || "").trim().toLowerCase();
+              const rem = remainingMap.has(qi.id)
+                ? remainingMap.get(qi.id)!
+                : remainingByName.has(nameKey)
+                  ? remainingByName.get(nameKey)!
+                  : Number(qi.quantity) || 1;
+
+              const isLabour =
+                (qi.description || "").toLowerCase().includes("install") ||
+                (qi.description || "").toLowerCase().includes("labour") ||
+                (qi.description || "").toLowerCase().includes("labor") ||
+                (qi.description || "").toLowerCase().includes("fixing") ||
+                (qi.description || "").toLowerCase().includes("handover");
+
+              let initQty = rem;
+              if (isWorkComp) {
+                const hasLabourItems = quoteItems.some(
+                  (item) =>
+                    (item.description || "").toLowerCase().includes("install") ||
+                    (item.description || "").toLowerCase().includes("labour") ||
+                    (item.description || "").toLowerCase().includes("labor") ||
+                    (item.description || "").toLowerCase().includes("fixing"),
+                );
+                initQty = hasLabourItems ? (isLabour ? rem : 0) : rem;
+              } else {
+                const hasMaterialItems = quoteItems.some(
+                  (item) =>
+                    !(item.description || "").toLowerCase().includes("install") &&
+                    !(item.description || "").toLowerCase().includes("labour") &&
+                    !(item.description || "").toLowerCase().includes("fixing"),
+                );
+                initQty = hasMaterialItems ? (isLabour ? 0 : rem) : rem;
+              }
+
+              return {
+                sales_order_item_id: qi.id,
+                product_id: qi.product_id,
+                product_name: qi.description || null,
+                description: qi.description || "Stone item",
+                unit: qi.unit || "sqft",
+                quantity: initQty,
+                sort_order: idx + 1,
+              };
+            }),
           );
         }
       }
-      return { quote, quoteItems };
+      return { quote, quoteItems, deliveryStatus };
     },
     enabled: !!params.quote,
   });
@@ -248,9 +404,35 @@ function NewDispatchPage() {
       if (!payload.form.customer_id && !payload.form.sales_order_id) {
         throw new Error("Please select a customer or sales order");
       }
+
+      // Strict item selection: only include items with quantity > 0
+      const activeItems = payload.items
+        .filter((it) => Number(it.quantity) > 0)
+        .map((it, idx) => ({ ...it, sort_order: idx + 1 }));
+
+      if (activeItems.length === 0) {
+        throw new Error(
+          "Please select at least one line item with a quantity greater than 0 to include in this challan.",
+        );
+      }
+
       const linkedQuoteId = selectedQuoteId ?? params.quote ?? null;
       let quoteObj: Awaited<ReturnType<typeof getQuote>> = null;
       let quoteItems: Awaited<ReturnType<typeof getQuoteItems>> = [];
+
+      let finalRemarks = payload.form.remarks;
+      let finalNotes = payload.form.notes;
+
+      if (challanType === "work_completion") {
+        if (!finalRemarks || finalRemarks.trim() === "") {
+          finalRemarks =
+            "Work is finished from our end. We request you to kindly verify and if you have any feedback regarding the same, do let us know.";
+        }
+        const wcTag = "[Work Completion Challan]";
+        if (!finalNotes?.includes(wcTag)) {
+          finalNotes = finalNotes ? `${wcTag} ${finalNotes}` : wcTag;
+        }
+      }
 
       if (linkedQuoteId) {
         try {
@@ -262,20 +444,26 @@ function NewDispatchPage() {
           quoteItems = qiRes;
 
           const tag = `[Quote: ${quoteObj?.quote_no || "Quotation"} | QUO_ID:${linkedQuoteId}]`;
-          if (!payload.form.notes?.includes(tag)) {
-            payload.form.notes = payload.form.notes ? `${payload.form.notes}\n${tag}` : tag;
+          if (!finalNotes?.includes(tag)) {
+            finalNotes = finalNotes ? `${finalNotes}\n${tag}` : tag;
           }
         } catch (e) {
           console.warn("[dispatch/new] failed to load quote for linkage", e);
         }
       }
 
-      const row = await createDispatch({ ...payload.form, quote_id: linkedQuoteId });
-      if (payload.items.length > 0) {
-        await replaceDispatchItems(row.id, payload.items);
+      const row = await createDispatch({
+        ...payload.form,
+        remarks: finalRemarks,
+        notes: finalNotes,
+        quote_id: linkedQuoteId,
+      });
+
+      if (activeItems.length > 0) {
+        await replaceDispatchItems(row.id, activeItems);
       }
 
-      // Check variance if quote was linked
+      // Check variance if quote was linked and not a progressive / work-completion stage
       let varianceReport: ReturnType<typeof compareQuoteAndDispatchItems> | null = null;
       if (linkedQuoteId && quoteObj) {
         void recordConversion({
@@ -285,31 +473,47 @@ function NewDispatchPage() {
           targetId: row.id,
           customerId: payload.form.customer_id,
           projectId: payload.form.project_id,
-          meta: { quote_no: quoteObj.quote_no, dispatch_no: row.dispatch_no },
+          meta: {
+            quote_no: quoteObj.quote_no,
+            dispatch_no: row.dispatch_no,
+            challan_type: challanType,
+          },
         }).catch((err) => console.warn("[lineage] recordConversion failed", err));
 
-        varianceReport = compareQuoteAndDispatchItems(quoteItems, payload.items);
-        if (varianceReport.hasVariance) {
-          void dispatchSystemNotification({
-            scope: "admin",
-            tier: "critical",
-            title: `⚠️ Challan Discrepancy: ${row.dispatch_no} vs ${quoteObj.quote_no}`,
-            body: `Delivery Challan ${row.dispatch_no} has product discrepancies against Quote #${quoteObj.quote_no}: ${varianceReport.summaryText}. Flagged on dashboard.`,
-            entityType: "dispatch",
-            entityId: row.id,
-            linkPath: `/dispatch/${row.id}`,
-          });
+        if (challanType !== "work_completion") {
+          try {
+            const quoteDeliveryStatus = await getQuoteDeliveryStatus(linkedQuoteId);
+            // Only flag variance on single full dispatch, not staged progressive deliveries
+            if (quoteDeliveryStatus.challanCount <= 1) {
+              varianceReport = compareQuoteAndDispatchItems(quoteItems, activeItems);
+              if (varianceReport.hasVariance) {
+                void dispatchSystemNotification({
+                  scope: "admin",
+                  tier: "critical",
+                  title: `⚠️ Challan Discrepancy: ${row.dispatch_no} vs ${quoteObj.quote_no}`,
+                  body: `Delivery Challan ${row.dispatch_no} has product discrepancies against Quote #${quoteObj.quote_no}: ${varianceReport.summaryText}. Flagged on dashboard.`,
+                  entityType: "dispatch",
+                  entityId: row.id,
+                  linkPath: `/dispatch/${row.id}`,
+                });
+              }
+            }
+          } catch (statusErr) {
+            console.warn("[dispatch/new] failed to check progressive status", statusErr);
+          }
         }
       }
 
-      return { row, varianceReport, quoteNo: quoteObj?.quote_no };
+      return { row, varianceReport, quoteNo: quoteObj?.quote_no, challanType };
     },
-    onSuccess: ({ row, varianceReport, quoteNo }) => {
+    onSuccess: ({ row, varianceReport, quoteNo, challanType: createdType }) => {
       if (varianceReport?.hasVariance) {
         toast.warning(
           `Delivery challan ${row.dispatch_no} created with ${varianceReport.varianceCount} product discrepancy(s) against Quote #${quoteNo}. Super admins flagged on dashboard.`,
           { duration: 7000 },
         );
+      } else if (createdType === "work_completion") {
+        toast.success(`Work Completion Challan ${row.dispatch_no} created successfully`);
       } else {
         toast.success(`Delivery challan ${row.dispatch_no} created`);
       }
@@ -322,13 +526,108 @@ function NewDispatchPage() {
   return (
     <div>
       <PageHeader
-        title={params.quote ? "Delivery Challan (Cash Deal)" : "New delivery challan"}
+        title={
+          challanType === "work_completion"
+            ? "Work Completion Challan"
+            : params.quote
+              ? "Delivery Challan (Cash Deal)"
+              : "New delivery challan"
+        }
         subtitle={
-          params.quote
-            ? "Issue delivery challan directly for approved quotation before invoice generation."
-            : "Record what is leaving the yard for delivery to the customer."
+          challanType === "work_completion"
+            ? "Issue completion and site handover challan with customer verification sign-off and feedback request."
+            : params.quote
+              ? "Issue delivery challan directly for approved quotation before invoice generation."
+              : "Record what is leaving the yard for delivery to the customer."
         }
       />
+
+      {/* Challan Type Selector Cards */}
+      <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <button
+          type="button"
+          onClick={() => handleChallanTypeChange("material")}
+          className={cn(
+            "flex items-start gap-3 p-3.5 rounded-xl border text-left transition-all cursor-pointer",
+            challanType === "material"
+              ? "border-primary bg-primary/5 ring-2 ring-primary/20 shadow-xs"
+              : "border-border/70 hover:border-border hover:bg-muted/40",
+          )}
+        >
+          <div
+            className={cn(
+              "p-2 rounded-lg shrink-0",
+              challanType === "material"
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground",
+            )}
+          >
+            <Truck className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="font-semibold text-sm flex items-center gap-1.5">
+              Material Delivery Challan
+              {challanType === "material" && <Check className="h-3.5 w-3.5 text-primary" />}
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              For natural stone slabs, tiles, adhesives, sealers, and consumables dispatched to
+              site.
+            </p>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleChallanTypeChange("work_completion")}
+          className={cn(
+            "flex items-start gap-3 p-3.5 rounded-xl border text-left transition-all cursor-pointer",
+            challanType === "work_completion"
+              ? "border-emerald-600 bg-emerald-500/10 ring-2 ring-emerald-500/20 shadow-xs dark:bg-emerald-950/30 dark:border-emerald-500"
+              : "border-border/70 hover:border-border hover:bg-muted/40",
+          )}
+        >
+          <div
+            className={cn(
+              "p-2 rounded-lg shrink-0",
+              challanType === "work_completion"
+                ? "bg-emerald-600 text-white"
+                : "bg-muted text-muted-foreground",
+            )}
+          >
+            <CheckCircle2 className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="font-semibold text-sm flex items-center gap-1.5 text-emerald-900 dark:text-emerald-200">
+              Work Completion Challan
+              {challanType === "work_completion" && (
+                <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              For completed stone installation, fabrication, handover & customer feedback
+              verification.
+            </p>
+          </div>
+        </button>
+      </div>
+
+      {challanType === "work_completion" && (
+        <div className="mb-4 flex items-start gap-3 rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-3.5 text-xs text-emerald-900 dark:text-emerald-200 shadow-2xs">
+          <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <div className="font-semibold text-sm">Work Completion Handover Notice Included</div>
+            <p className="text-muted-foreground">
+              This challan includes the official customer verification message:{" "}
+              <em className="text-foreground font-medium">
+                &ldquo;Work is finished from our end. We request you to kindly verify and if you
+                have any feedback regarding the same, do let us know.&rdquo;
+              </em>{" "}
+              and prints with the dedicated customer verification & feedback sign-off section.
+            </p>
+          </div>
+        </div>
+      )}
+
       {quoteQuery.data?.quote && (
         <div className="mb-4 flex items-center justify-between rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-200 shadow-xs">
           <div className="flex items-center gap-2.5">
@@ -592,8 +891,16 @@ function NewDispatchPage() {
         </FormSection>
 
         <FormSection
-          title="Delivery Challan Line Items (Products, Adhesives & Sealers)"
-          description="Specify natural stone products, adhesives, and sealers to accompany this delivery."
+          title={
+            challanType === "work_completion"
+              ? "Work Completion & Handover Items (Installation & Services)"
+              : "Delivery Challan Line Items (Products, Adhesives & Sealers)"
+          }
+          description={
+            challanType === "work_completion"
+              ? "Select finished installation, fabrication, or services for handover verification. Excluded items can be challaned separately."
+              : "Specify natural stone products, adhesives, and sealers for this delivery. Excluded items can be dispatched in later challans."
+          }
         >
           <DispatchItemsEditor
             salesOrderId={form.sales_order_id ?? null}
@@ -605,15 +912,23 @@ function NewDispatchPage() {
 
         <FormSection
           title="Remarks & Internal Notes"
-          description="Additional dispatch instructions or internal references."
+          description={
+            challanType === "work_completion"
+              ? "Customer verification handover notice and internal references."
+              : "Additional dispatch instructions or internal references."
+          }
         >
           <FormGrid>
-            <Field label="Remarks">
+            <Field label="Remarks (Visible on Challan)">
               <Textarea
                 rows={2}
                 value={form.remarks ?? ""}
                 onChange={(e) => set("remarks", e.target.value || null)}
-                placeholder="Remarks visible on challan"
+                placeholder={
+                  challanType === "work_completion"
+                    ? "Work is finished from our end. We request you to kindly verify and if you have any feedback regarding the same, do let us know."
+                    : "Remarks visible on challan"
+                }
               />
             </Field>
             <Field label="Internal notes">
@@ -635,8 +950,19 @@ function NewDispatchPage() {
             </Button>
           }
           primary={
-            <Button type="submit" disabled={mut.isPending}>
-              {mut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create challan
+            <Button
+              type="submit"
+              disabled={mut.isPending}
+              className={
+                challanType === "work_completion"
+                  ? "bg-emerald-700 hover:bg-emerald-800 text-white font-semibold shadow-xs"
+                  : ""
+              }
+            >
+              {mut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {challanType === "work_completion"
+                ? "Create work completion challan"
+                : "Create delivery challan"}
             </Button>
           }
         />

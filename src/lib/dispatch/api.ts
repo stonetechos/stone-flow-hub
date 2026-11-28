@@ -326,6 +326,72 @@ export async function getSalesOrderDeliveryStatus(soId: string): Promise<Deliver
   };
 }
 
+/**
+ * Tracks delivery and dispatch progress against an approved Quotation across
+ * one or multiple delivery challans (progressive / partial dispatching).
+ */
+export async function getQuoteDeliveryStatus(
+  quoteId: string,
+  excludeDispatchId?: string,
+): Promise<DeliveryStatus> {
+  const [{ data: items, error: iErr }, { data: dispatches, error: dErr }] = await Promise.all([
+    getDb()
+      .from("quote_items")
+      .select("id,product_id,description,unit,quantity,sort_order")
+      .eq("quote_id", quoteId)
+      .order("sort_order", { ascending: true }),
+    getDb().from("dispatches").select("id,status").eq("quote_id", quoteId),
+  ]);
+  if (iErr) throw new AppError(mapDbError(iErr));
+  if (dErr) throw new AppError(mapDbError(dErr));
+
+  const activeDispatchIds = (dispatches ?? [])
+    .filter((d) => d.status !== "cancelled" && (!excludeDispatchId || d.id !== excludeDispatchId))
+    .map((d) => d.id);
+
+  let deliveredByKey: Record<string, number> = {};
+  if (activeDispatchIds.length > 0) {
+    const { data: di, error: diErr } = await getDb()
+      .from("dispatch_items")
+      .select("product_id,product_name,description,quantity")
+      .in("dispatch_id", activeDispatchIds);
+    if (diErr) throw new AppError(mapDbError(diErr));
+
+    deliveredByKey = (di ?? []).reduce<Record<string, number>>((acc, row) => {
+      const key = row.product_id
+        ? `p:${row.product_id}`
+        : `d:${(row.product_name || row.description || "").trim().toLowerCase()}`;
+      acc[key] = (acc[key] ?? 0) + Number(row.quantity || 0);
+      return acc;
+    }, {});
+  }
+
+  const lines: DeliveryLine[] = (items ?? []).map((it) => {
+    const ordered = Number(it.quantity || 0);
+    const key = it.product_id
+      ? `p:${it.product_id}`
+      : `d:${(it.description || "").trim().toLowerCase()}`;
+    const d = deliveredByKey[key] ?? 0;
+    return {
+      sales_order_item_id: it.id,
+      product_name: it.description || "Stone item",
+      description: it.description || "Stone item",
+      unit: it.unit,
+      ordered,
+      delivered: d,
+      remaining: Math.max(0, ordered - d),
+    };
+  });
+
+  return {
+    lines,
+    challanCount: (dispatches ?? []).length,
+    totalOrdered: lines.reduce((s, l) => s + l.ordered, 0),
+    totalDelivered: lines.reduce((s, l) => s + l.delivered, 0),
+    totalRemaining: lines.reduce((s, l) => s + l.remaining, 0),
+  };
+}
+
 // Committed demand by product
 export type CommittedDemandRow = {
   product_id: string;

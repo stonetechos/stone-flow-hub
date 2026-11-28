@@ -29,6 +29,7 @@ import { amountToIndianWords } from "@/lib/format/words";
 import {
   hasEarlyPaymentDiscountDisclaimer,
   ensureTermsHaveCashDealGstClause,
+  stripEarlyPaymentOffer,
 } from "@/lib/quotes/terms";
 
 export type DocKind =
@@ -179,12 +180,23 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
     /invoice/i.test(doc.title || "") ||
     /invoice/i.test(doc.number || "") ||
     /inv[-_\d]/i.test(doc.number || "");
+  const isChallan =
+    doc.kind === "delivery_challan" ||
+    /challan/i.test(doc.title || "") ||
+    /dsp[-_\d]/i.test(doc.number || "");
+  const isWorkCompletion =
+    /completion/i.test(doc.title || "") ||
+    /handover/i.test(doc.title || "") ||
+    /work.*finished/i.test(doc.notes || "") ||
+    /work.*completed/i.test(doc.notes || "");
 
-  const titleText = isQuote
-    ? "QUOTE"
-    : isInvoice
-      ? "GST INVOICE"
-      : (doc.title || doc.kind || "DOCUMENT").toUpperCase();
+  const titleText = isWorkCompletion
+    ? "WORK COMPLETION CHALLAN"
+    : isQuote
+      ? "QUOTE"
+      : isInvoice
+        ? "GST INVOICE"
+        : (doc.title || doc.kind || "DOCUMENT").toUpperCase();
 
   const numberLabel = isQuote ? "# :" : isInvoice ? "Invoice#" : "# :";
   const dateLabel = isQuote ? "Quote Date" : "Date";
@@ -382,8 +394,15 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
 
   const bankAndSignatoryBlock = isCash
     ? `<div class="bank-signatory-block avoid-break" style="margin-top:12px;padding:8px 10px;display:flex;justify-content:space-between;align-items:flex-end;min-height:65px;">
-        <div style="font-size:8px;color:#94a3b8;font-style:italic;">
-          ${doc.kind === "delivery_challan" ? "Goods Received in Good Order &amp; Condition" : ""}
+        <div style="font-size:8px;color:#64748b;font-style:italic;line-height:1.4;">
+          ${
+            isWorkCompletion
+              ? `<strong style="font-weight:700;color:#0f172a;font-style:normal;">Customer Verification &amp; Sign-off:</strong><br/>
+                 Work verified &amp; accepted in good order · Feedback / Signature`
+              : isChallan
+                ? "Goods Received in Good Order &amp; Condition"
+                : ""
+          }
         </div>
         <div style="text-align:right;min-width:180px;min-height:60px;">
           <!-- Blank unprinted space reserved for physical rubber stamp and signature -->
@@ -424,9 +443,13 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
     </div>`;
 
   // Terms & Conditions: Compact 2-column grid when multi-item (quotes only, never invoices)
-  const rawTerms = (
+  let rawTerms = (
     isCash && !isInvoice ? ensureTermsHaveCashDealGstClause(doc.terms) : doc.terms || ""
   ).trim();
+  // Delivery challans, work completion challans, and invoices must NEVER carry promotional/prepayment offer terms
+  if (isChallan || isInvoice) {
+    rawTerms = stripEarlyPaymentOffer(rawTerms);
+  }
   let termsHtml = "";
   if (rawTerms && !isInvoice) {
     const termLines = rawTerms
@@ -740,9 +763,11 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
       </div>
     </div>
 
-    <!-- 100% Advance Payment 5% Discount Disclaimer Callout (Quotes Only, Suppressed when offer is removed or excluded) -->
+    <!-- 100% Advance Payment 5% Discount Disclaimer Callout (Quotes Only, Suppressed when offer is removed or excluded, never on delivery challans or invoices) -->
     ${
+      isQuote &&
       !isInvoice &&
+      !isChallan &&
       doc.includePrepaymentOffer !== false &&
       (doc.includePrepaymentOffer === true ||
         !doc.terms ||

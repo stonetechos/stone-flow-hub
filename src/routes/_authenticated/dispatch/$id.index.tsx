@@ -9,6 +9,7 @@ import {
   Calendar,
   Loader2,
   MessageSquare,
+  CheckCircle2,
 } from "lucide-react";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { OrderTrackingWhatsappDialog } from "@/components/orders/OrderTrackingWhatsappDialog";
@@ -26,6 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { DocumentToolbar } from "@/components/documents/DocumentToolbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { StatusPill } from "@/components/entity/StatusPill";
 import { AttachmentsPanel, NotesPanel, TimelinePanel } from "@/components/entity/DetailPanels";
 import { qk } from "@/lib/query-keys";
@@ -113,51 +115,84 @@ function DispatchDetailPage() {
           <ArrowLeft className="mr-2 h-4 w-4" /> Back
         </Button>
       </div>
-      <PageHeader
-        title={r.dispatch_no}
-        subtitle={`Delivery challan · ${r.dispatch_date}`}
-        actions={
-          <DetailActionBar
-            pin={{ entityType: "dispatch", entityId: id, label: r.dispatch_no }}
-            primary={
-              <>
-                <Button size="sm" onClick={() => nav({ to: "/dispatch/$id/edit", params: { id } })}>
-                  <Pencil className="mr-2 h-4 w-4" /> Edit
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="border-emerald-500/40 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:border-emerald-700/60 dark:hover:bg-emerald-950/30"
-                  onClick={() => setTrackingWhatsappOpen(true)}
-                  title="Send customer visual tracking link and AI status update via WhatsApp"
-                >
-                  <MessageSquare className="mr-1.5 h-3.5 w-3.5 text-emerald-600 fill-current" />
-                  WhatsApp Tracking
-                </Button>
-                <DocumentToolbar entity="delivery_challan" entityId={id} />
-              </>
-            }
-            overflow={[
-              {
-                label: "Documents",
-                icon: <FolderOpen className="h-4 w-4" />,
-                onSelect: () =>
-                  document
-                    .getElementById("dispatch-documents")
-                    ?.scrollIntoView({ behavior: "smooth", block: "start" }),
-              },
-              {
-                label: "Timeline",
-                icon: <History className="h-4 w-4" />,
-                onSelect: () =>
-                  document
-                    .getElementById("dispatch-timeline")
-                    ?.scrollIntoView({ behavior: "smooth", block: "start" }),
-              },
-            ]}
-          />
-        }
-      />
+      {(() => {
+        const isWorkComp =
+          Boolean(r.notes?.toLowerCase().includes("work completion")) ||
+          Boolean(r.remarks?.toLowerCase().includes("work is finished"));
+        return (
+          <>
+            <PageHeader
+              eyebrow={
+                isWorkComp ? (
+                  <Badge className="bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-semibold px-2.5 py-0.5 shadow-2xs">
+                    Work Completion Challan
+                  </Badge>
+                ) : undefined
+              }
+              title={r.dispatch_no}
+              subtitle={`${isWorkComp ? "Work completion challan" : "Delivery challan"} · ${r.dispatch_date}`}
+              actions={
+                <DetailActionBar
+                  pin={{ entityType: "dispatch", entityId: id, label: r.dispatch_no }}
+                  primary={
+                    <>
+                      <Button
+                        size="sm"
+                        onClick={() => nav({ to: "/dispatch/$id/edit", params: { id } })}
+                      >
+                        <Pencil className="mr-2 h-4 w-4" /> Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-emerald-500/40 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:border-emerald-700/60 dark:hover:bg-emerald-950/30"
+                        onClick={() => setTrackingWhatsappOpen(true)}
+                        title="Send customer visual tracking link and AI status update via WhatsApp"
+                      >
+                        <MessageSquare className="mr-1.5 h-3.5 w-3.5 text-emerald-600 fill-current" />
+                        WhatsApp Tracking
+                      </Button>
+                      <DocumentToolbar entity="delivery_challan" entityId={id} />
+                    </>
+                  }
+                  overflow={[
+                    {
+                      label: "Documents",
+                      icon: <FolderOpen className="h-4 w-4" />,
+                      onSelect: () =>
+                        document
+                          .getElementById("dispatch-documents")
+                          ?.scrollIntoView({ behavior: "smooth", block: "start" }),
+                    },
+                    {
+                      label: "Timeline",
+                      icon: <History className="h-4 w-4" />,
+                      onSelect: () =>
+                        document
+                          .getElementById("dispatch-timeline")
+                          ?.scrollIntoView({ behavior: "smooth", block: "start" }),
+                    },
+                  ]}
+                />
+              }
+            />
+            {isWorkComp && (
+              <div className="mb-4 flex items-start gap-3 rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-3.5 text-xs text-emerald-900 dark:text-emerald-200 shadow-2xs">
+                <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <div className="font-semibold text-sm">
+                    Work Completion & Handover Verification
+                  </div>
+                  <p className="text-muted-foreground">
+                    &ldquo;Work is finished from our end. We request you to kindly verify and if you
+                    have any feedback regarding the same, do let us know.&rdquo;
+                  </p>
+                </div>
+              </div>
+            )}
+          </>
+        );
+      })()}
       <GuidedNextStep
         entity="dispatch"
         entityId={id}

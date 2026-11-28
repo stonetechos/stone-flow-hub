@@ -5,6 +5,7 @@ import { qk } from "@/lib/query-keys";
 import { getDispatch, listDispatchItems } from "@/lib/dispatch/api";
 import { loadBranding, DEFAULT_BRANDING } from "@/lib/branding";
 import { formatInr } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
 import { toUserMessage } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,13 @@ function PrintDispatchPage() {
   const r = q.data;
   const b = brand.data ?? DEFAULT_BRANDING;
   const rows = items.data ?? [];
+  const isWorkCompletion =
+    r.remarks?.toLowerCase().includes("work completion") ||
+    r.notes?.toLowerCase().includes("work completion") ||
+    r.remarks?.toLowerCase().includes("work is finished") ||
+    r.notes?.toLowerCase().includes("work is finished") ||
+    r.remarks?.toLowerCase().includes("completion of work") ||
+    r.notes?.toLowerCase().includes("completion of work");
 
   return (
     <div className="mx-auto max-w-[820px] bg-white p-8 text-slate-900 print:p-0">
@@ -90,7 +98,9 @@ function PrintDispatchPage() {
           </div>
         </div>
         <div className="text-right">
-          <div className="text-xs uppercase tracking-wide text-slate-500">Delivery Challan</div>
+          <div className="text-xs uppercase tracking-wide text-slate-500">
+            {isWorkCompletion ? "Work Completion Challan" : "Delivery Challan"}
+          </div>
           <div className="text-xl font-bold">{r.dispatch_no}</div>
           <div className="text-xs text-slate-600">Date: {r.dispatch_date}</div>
         </div>
@@ -183,9 +193,28 @@ function PrintDispatchPage() {
       </table>
 
       {r.remarks && (
-        <section className="mb-6 text-sm">
-          <div className="text-xs font-semibold uppercase text-slate-500">Remarks</div>
-          <div className="whitespace-pre-wrap">{r.remarks}</div>
+        <section
+          className={cn(
+            "mb-6 text-sm",
+            isWorkCompletion && "rounded border border-cyan-200 bg-cyan-50/60 p-3",
+          )}
+        >
+          <div
+            className={cn(
+              "text-xs font-semibold uppercase",
+              isWorkCompletion ? "text-cyan-800" : "text-slate-500",
+            )}
+          >
+            {isWorkCompletion ? "Work Handover & Verification Notice" : "Remarks"}
+          </div>
+          <div
+            className={cn(
+              "whitespace-pre-wrap",
+              isWorkCompletion && "mt-1 font-medium text-slate-800",
+            )}
+          >
+            {r.remarks}
+          </div>
         </section>
       )}
 
@@ -207,7 +236,9 @@ function PrintDispatchPage() {
           ) : (
             <div className="mb-10 border-b border-slate-400" />
           )}
-          <div className="text-xs text-slate-500">Delivered by</div>
+          <div className="text-xs text-slate-500">
+            {isWorkCompletion ? "Work Handed Over by" : "Delivered by"}
+          </div>
           <div>{r.delivered_by ?? "—"}</div>
           <div className="text-xs text-slate-500 mt-2">
             For {b.company_name}
@@ -216,13 +247,19 @@ function PrintDispatchPage() {
         </div>
         <div>
           <div className="mb-10 border-b border-slate-400" />
-          <div className="text-xs text-slate-500">Received by (with seal & signature)</div>
+          <div className="text-xs text-slate-500">
+            {isWorkCompletion
+              ? "Work Verified & Accepted by (Signature & Feedback)"
+              : "Received by (with seal & signature)"}
+          </div>
           <div>{r.received_by ?? "—"}</div>
         </div>
       </section>
 
       <footer className="mt-8 text-center text-[10px] text-slate-400">
-        This is a delivery challan and NOT a tax invoice.
+        {isWorkCompletion
+          ? "This is a work completion challan and NOT a tax invoice."
+          : "This is a delivery challan and NOT a tax invoice."}
       </footer>
     </div>
   );

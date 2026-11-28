@@ -587,48 +587,105 @@ function QuoteDetailPage() {
                 )}
 
                 {isAccepted && (
-                  <Button
-                    size="sm"
-                    className={
-                      primaryDispatch
-                        ? "border-[#c9d1d4] text-[#015474] bg-[#e0f1f5]/60 hover:bg-[#e0f1f5] shadow-xs"
-                        : "bg-[#006788] hover:bg-[#00597b] text-white shadow-xs font-semibold"
-                    }
-                    variant={primaryDispatch ? "outline" : "default"}
-                    onClick={() => {
-                      if (primaryDispatch) {
-                        nav({ to: "/dispatch/$id", params: { id: primaryDispatch.id } });
-                      } else {
+                  <>
+                    <Button
+                      size="sm"
+                      className={
+                        primaryDispatch
+                          ? "border-[#c9d1d4] text-[#015474] bg-[#e0f1f5]/60 hover:bg-[#e0f1f5] shadow-xs"
+                          : "bg-[#006788] hover:bg-[#00597b] text-white shadow-xs font-semibold"
+                      }
+                      variant={primaryDispatch ? "outline" : "default"}
+                      onClick={() => {
+                        if (primaryDispatch) {
+                          nav({ to: "/dispatch/$id", params: { id: primaryDispatch.id } });
+                        } else {
+                          nav({
+                            to: "/dispatch/new",
+                            search: {
+                              quote: quoteId,
+                              customer: quote.customer_id,
+                              type: "material",
+                              ...(linkedSo.data ? { so: linkedSo.data.id } : {}),
+                            },
+                          });
+                        }
+                      }}
+                      title={
+                        primaryDispatch
+                          ? `View Delivery Challan ${primaryDispatch.dispatch_no}`
+                          : saleMode === "cash"
+                            ? "Issue Delivery Challan for cash transaction (no tax invoice)"
+                            : "Raise Delivery Challan before generating tax invoice"
+                      }
+                    >
+                      <Truck className="mr-1.5 h-4 w-4" />
+                      <span className="hidden sm:inline">
+                        {primaryDispatch
+                          ? `Challan (${primaryDispatch.dispatch_no})`
+                          : saleMode === "cash"
+                            ? "Issue Delivery Challan"
+                            : "Raise Delivery Challan"}
+                      </span>
+                      <span className="sm:hidden">
+                        {primaryDispatch ? primaryDispatch.dispatch_no : "Challan"}
+                      </span>
+                    </Button>
+
+                    {primaryDispatch && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="hidden sm:inline-flex border-[#c9d1d4] text-[#015474] hover:bg-[#e0f1f5] shadow-xs"
+                        onClick={() =>
+                          nav({
+                            to: "/dispatch/new",
+                            search: {
+                              quote: quoteId,
+                              customer: quote.customer_id,
+                              type: "material",
+                              ...(linkedSo.data ? { so: linkedSo.data.id } : {}),
+                            },
+                          })
+                        }
+                        title="Create subsequent delivery challan for remaining materials or sealers"
+                      >
+                        <Plus className="mr-1 h-3.5 w-3.5 text-amber-600" />
+                        <span>Delivery Challan</span>
+                      </Button>
+                    )}
+
+                    <Button
+                      size="sm"
+                      className={
+                        primaryDispatch
+                          ? "bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs font-semibold"
+                          : "hidden sm:inline-flex border-emerald-600/40 text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 font-medium shadow-xs"
+                      }
+                      variant={primaryDispatch ? "default" : "outline"}
+                      onClick={() =>
                         nav({
                           to: "/dispatch/new",
                           search: {
                             quote: quoteId,
                             customer: quote.customer_id,
+                            type: "work_completion",
                             ...(linkedSo.data ? { so: linkedSo.data.id } : {}),
                           },
-                        });
+                        })
                       }
-                    }}
-                    title={
-                      primaryDispatch
-                        ? `View Delivery Challan ${primaryDispatch.dispatch_no}`
-                        : saleMode === "cash"
-                          ? "Issue Delivery Challan for cash transaction (no tax invoice)"
-                          : "Raise Delivery Challan before generating tax invoice"
-                    }
-                  >
-                    <Truck className="mr-1.5 h-4 w-4" />
-                    <span className="hidden sm:inline">
-                      {primaryDispatch
-                        ? `Challan (${primaryDispatch.dispatch_no})`
-                        : saleMode === "cash"
-                          ? "Issue Delivery Challan"
-                          : "Raise Delivery Challan"}
-                    </span>
-                    <span className="sm:hidden">
-                      {primaryDispatch ? primaryDispatch.dispatch_no : "Challan"}
-                    </span>
-                  </Button>
+                      title="Create Work Completion Challan (with customer verification and feedback request)"
+                    >
+                      <CheckCircle2
+                        className={cn(
+                          "mr-1.5 h-4 w-4",
+                          primaryDispatch ? "text-emerald-200" : "text-emerald-600",
+                        )}
+                      />
+                      <span className="hidden sm:inline">Work Completion Challan</span>
+                      <span className="sm:hidden">Completion</span>
+                    </Button>
+                  </>
                 )}
 
                 {/* Secondary buttons visible inline on md+ screens, accessible in ⋮ on mobile */}
@@ -831,8 +888,22 @@ function QuoteDetailPage() {
                 : []),
               ...(isAccepted
                 ? [
+                    ...(primaryDispatch
+                      ? [
+                          {
+                            label: `View Challan #${primaryDispatch.dispatch_no}`,
+                            icon: <Truck className="h-4 w-4 text-primary" />,
+                            onSelect: () =>
+                              nav({ to: "/dispatch/$id", params: { id: primaryDispatch.id } }),
+                          },
+                        ]
+                      : []),
                     {
-                      label: saleMode === "cash" ? "Issue Delivery Challan" : "Delivery Challan",
+                      label: primaryDispatch
+                        ? "New Delivery Challan (Materials / Sealers)"
+                        : saleMode === "cash"
+                          ? "Issue Delivery Challan"
+                          : "Delivery Challan",
                       icon: <Truck className="h-4 w-4 text-amber-600" />,
                       onSelect: () =>
                         nav({
@@ -840,6 +911,21 @@ function QuoteDetailPage() {
                           search: {
                             quote: quoteId,
                             customer: quote.customer_id,
+                            type: "material",
+                            ...(linkedSo.data ? { so: linkedSo.data.id } : {}),
+                          },
+                        }),
+                    },
+                    {
+                      label: "New Work Completion Challan",
+                      icon: <CheckCircle2 className="h-4 w-4 text-emerald-600" />,
+                      onSelect: () =>
+                        nav({
+                          to: "/dispatch/new",
+                          search: {
+                            quote: quoteId,
+                            customer: quote.customer_id,
+                            type: "work_completion",
                             ...(linkedSo.data ? { so: linkedSo.data.id } : {}),
                           },
                         }),

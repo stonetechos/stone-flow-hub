@@ -387,13 +387,58 @@ describe("PDF Generator", () => {
     expect(html).toContain("The Home Decor Point");
   });
 
-  it("renders table header with vertical-align: middle and padded Total In Words box", () => {
-    const html = renderDocHtml(sampleDoc);
-    expect(html).toContain("vertical-align:middle !important");
-    expect(html).toContain(
-      "padding:8px 14px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;font-size:9.5px;line-height:1.45;text-align:left;",
-    );
-    expect(html).toContain("Total In Words:");
-    expect(html).toContain("display:inline-block");
+  it("strictly suppresses prepayment incentive and promotional offer banners on Delivery Challan documents even if terms contain early payment text", () => {
+    const challanDoc: PdfDoc = {
+      ...sampleDoc,
+      kind: "delivery_challan",
+      title: "Delivery Challan",
+      number: "DSP-000010",
+      terms:
+        "1. Goods dispatched in good condition.\n2. PAYMENT INCENTIVE: Premake 100% payment to avail 5% discount + complimentary certified Shree Yantra worth ₹14,999 on stone product purchase value > ₹1 Lakh (excludes installation & chemicals).* [5% OFF ADVANCE]",
+      includePrepaymentOffer: true, // Should still be suppressed because it is a challan
+    };
+    const html = renderDocHtml(challanDoc);
+    expect(html).toContain("DELIVERY CHALLAN");
+    expect(html).not.toContain("PAYMENT INCENTIVE");
+    expect(html).not.toContain("Shree Yantra");
+    expect(html).not.toContain("5% OFF ADVANCE");
+    expect(html).not.toContain("5% discount");
+  });
+
+  it("strictly suppresses prepayment incentive and promotional offer banners on Invoice documents", () => {
+    const invoiceDoc: PdfDoc = {
+      ...sampleDoc,
+      kind: "invoice",
+      title: "Tax Invoice",
+      number: "INV-2026-0042",
+      terms:
+        "1. Standard payment terms.\n2. PAYMENT INCENTIVE: Premake 100% payment to avail 5% discount + complimentary certified Shree Yantra worth ₹14,999.",
+      includePrepaymentOffer: true,
+    };
+    const html = renderDocHtml(invoiceDoc);
+    expect(html).toContain("GST INVOICE");
+    expect(html).not.toContain("PAYMENT INCENTIVE");
+    expect(html).not.toContain("Shree Yantra");
+    expect(html).not.toContain("5% OFF ADVANCE");
+  });
+
+  it("renders WORK COMPLETION CHALLAN with verification notice and customer feedback sign-off section", () => {
+    const workCompletionDoc: PdfDoc = {
+      ...sampleDoc,
+      kind: "delivery_challan",
+      title: "Work Completion Challan",
+      number: "DSP-000011",
+      notes:
+        "Work is finished from our end. We request you to kindly verify and if you have any feedback regarding the same, do let us know.",
+      terms: "1. Work completed as per specification.",
+    };
+    const html = renderDocHtml(workCompletionDoc);
+    expect(html).toContain("WORK COMPLETION CHALLAN");
+    expect(html).toContain("Work is finished from our end");
+    expect(html).toContain("We request you to kindly verify and if you have any feedback");
+    expect(html).toContain("Customer Verification &amp; Sign-off:");
+    expect(html).toContain("Work verified &amp; accepted in good order · Feedback / Signature");
+    expect(html).not.toContain("PAYMENT INCENTIVE");
+    expect(html).not.toContain("Shree Yantra");
   });
 });

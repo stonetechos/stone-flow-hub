@@ -706,6 +706,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
           date: i.issue_date ?? i.created_at?.slice(0, 10) ?? "",
           from: companyFrom,
           to: customerParty(cust),
+          includePrepaymentOffer: false,
           lines,
           totals,
           meta: invMeta,
@@ -815,28 +816,51 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
         qty: it.quantity,
         unit: it.unit ?? "",
       }));
+
+      const isWorkCompletion =
+        d.remarks?.toLowerCase().includes("work completion") ||
+        d.notes?.toLowerCase().includes("work completion") ||
+        d.remarks?.toLowerCase().includes("work is finished") ||
+        d.notes?.toLowerCase().includes("work is finished") ||
+        d.remarks?.toLowerCase().includes("completion of work") ||
+        d.notes?.toLowerCase().includes("completion of work");
+
+      const title = isWorkCompletion ? "Work Completion Challan" : "Delivery Challan";
+      const defaultNotes = isWorkCompletion
+        ? "Work is finished from our end. We request you to kindly verify and if you have any feedback regarding the same, do let us know."
+        : "Goods dispatched in good condition. Please acknowledge receipt on this challan.";
+
       return {
         doc: {
           kind: "delivery_challan",
-          title: "Delivery Challan",
+          title,
           number: d.dispatch_no,
           date: d.dispatch_date ?? d.created_at?.slice(0, 10) ?? "",
           from: companyFrom,
           to: customerParty(cust),
           isCashDeal: true,
           saleMode: "cash",
-          meta: [
-            { label: "Site address", value: d.site_address ?? "—" },
-            { label: "Vehicle", value: d.vehicle_no ?? "—" },
-            { label: "Driver", value: d.driver_name ?? "—" },
-            { label: "Driver phone", value: d.driver_phone ?? "—" },
-            { label: "LR / Tracking", value: d.lr_no ?? d.tracking_no ?? "—" },
-            { label: "Carrier", value: d.carrier ?? "—" },
-          ],
+          includePrepaymentOffer: false,
+          meta: isWorkCompletion
+            ? [
+                { label: "Site address", value: d.site_address ?? "—" },
+                { label: "Work status", value: "Completed & Handed Over" },
+                {
+                  label: "Completed by",
+                  value: d.delivered_by ?? d.driver_name ?? "Stone Tech Team",
+                },
+                { label: "Verified by", value: d.received_by ?? cust?.name ?? "—" },
+              ]
+            : [
+                { label: "Site address", value: d.site_address ?? "—" },
+                { label: "Vehicle", value: d.vehicle_no ?? "—" },
+                { label: "Driver", value: d.driver_name ?? "—" },
+                { label: "Driver phone", value: d.driver_phone ?? "—" },
+                { label: "LR / Tracking", value: d.lr_no ?? d.tracking_no ?? "—" },
+                { label: "Carrier", value: d.carrier ?? "—" },
+              ],
           lines,
-          notes:
-            d.remarks ??
-            "Goods dispatched in good condition. Please acknowledge receipt on this challan.",
+          notes: d.remarks ?? defaultNotes,
         },
         meta: {
           toName: cust?.name ?? "—",
